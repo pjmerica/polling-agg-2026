@@ -1,0 +1,14 @@
+requests
+beautifulsoup4
+pandas
+numpy
+scipy
+matplotlib
+seaborn
+plotly
+jupyter
+sqlalchemy
+python-dotenv
+lxml
+httpx
+aiohttp
