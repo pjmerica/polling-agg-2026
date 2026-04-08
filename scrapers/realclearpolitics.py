@@ -1,22 +1,31 @@
 """
 RealClearPolitics polling data scraper.
 
-RCP does not publish a public API, but their pages load poll data from
-hidden JSON endpoints. To find them:
-  1. Go to any RCP polling page, e.g.:
-     https://www.realclearpolitics.com/epolls/2026/senate/
-  2. Open browser DevTools -> Network -> XHR/Fetch
-  3. Reload the page and look for requests to endpoints like:
-     https://www.realclearpolitics.com/epolls/json/XXXXX_latest.js?1234567890
-  The number (XXXXX) is a race-specific ID.
+STATUS: RCP blocks all programmatic access (returns 403 for all paths including
+the main domain). Their anti-scraping is aggressive — they block on IP + UA.
 
-Known RCP race list endpoint (verify for 2026):
-  https://www.realclearpolitics.com/epolls/2026/senate/
+Options to get RCP data:
+  1. MANUAL EXPORT (recommended short term):
+     - Visit https://www.realclearpolitics.com/epolls/2026/senate/ in browser
+     - Open DevTools -> Network -> filter XHR/Fetch
+     - Reload the page; look for requests matching: /epolls/json/XXXXX_latest.js
+     - Copy those URLs and paste them into RCP_RACE_URLS below
+     - Then run: python scrapers/realclearpolitics.py --fetch-from-urls
 
-TODO: Find and document the 2026 race ID list endpoint.
-TODO: Implement pagination if RCP paginates their race list.
+  2. SELENIUM (medium term):
+     - Use selenium with a real browser to bypass 403
+     - pip install selenium
+     - Needs chromedriver; or use playwright
 
-NOTE: RCP is more aggressive about scraping than 538. Use polite delays (1-2s between requests).
+  3. THIRD-PARTY MIRROR:
+     - Wikipedia election articles often embed RCP averages
+     - Some datasets on GitHub archive historical RCP data
+
+JSON format (verified for 2024 cycle, likely stable):
+  URL: https://www.realclearpolitics.com/epolls/json/{race_id}_latest.js?{timestamp}
+  Response is JSONP wrapped: rcview({...}) or plain JSON depending on race
+  Key fields: poll[].pollster, poll[].start_date, poll[].end_date,
+              poll[].sample, poll[].moe, poll[].candidates[{name, party, value}]
 """
 
 import time

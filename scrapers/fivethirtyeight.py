@@ -1,20 +1,24 @@
 """
 FiveThirtyEight / ABC News polling data scraper.
 
-538 publishes polling data as public CSVs. These URLs are stable across cycles
-but the filenames change per election year — verify them each cycle.
+STATUS: DEAD AS OF 2026-04-07.
+All CSV endpoints return HTML (200 with an HTML page, not CSV data).
+538 appears to have discontinued their public data CSVs after ABC News acquired them.
 
-Known working CSV endpoints (2024 cycle as reference):
-  - All polls:      https://projects.fivethirtyeight.com/polls/data/all_polls.csv
-  - Senate polls:   https://projects.fivethirtyeight.com/polls/data/senate_polls.csv
-  - Governor polls: https://projects.fivethirtyeight.com/polls/data/governor_polls.csv
-  - House polls:    https://projects.fivethirtyeight.com/polls/data/house_polls.csv
-  - Pollster ratings: https://projects.fivethirtyeight.com/pollster-ratings/pollster-ratings.csv
+URLs that no longer work:
+  https://projects.fivethirtyeight.com/polls/data/senate_polls.csv
+  https://projects.fivethirtyeight.com/polls/data/governor_polls.csv
+  https://projects.fivethirtyeight.com/polls/data/house_polls.csv
+  https://projects.fivethirtyeight.com/pollster-ratings/pollster-ratings.csv
 
-For 2026, check: https://projects.fivethirtyeight.com/polls/
-and inspect Network tab for updated CSV URLs.
+Alternatives:
+  - Nate Silver's Silver Bulletin (substack) may publish data separately
+  - MIT Election Data and Science Lab (https://electionlab.mit.edu/data) has historical
+  - Cook Political Report has ratings but not raw polls
+  - The current primary structured polling source for this project is Kalshi (scrapers/kalshi.py)
 
-TODO: Verify 2026 CSV URLs are live — they typically go up ~18 months before election day.
+This file is kept as a reference stub. Recheck in summer 2026 — 538 sometimes activates
+data pipelines 6 months before election day.
 """
 
 import requests

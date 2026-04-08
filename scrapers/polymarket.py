@@ -2,131 +2,159 @@
 Polymarket prediction market scraper.
 
 Polymarket has a public REST API — no auth required for read operations.
+Gamma API base: https://gamma-api.polymarket.com/
 
-Docs: https://docs.polymarket.com/
-CLOB API base: https://clob.polymarket.com/
-Gamma (markets) API base: https://gamma-api.polymarket.com/
+Key findings from API exploration (2026-04-07):
+  - The `tag` and `category` filters are largely ineffective — most markets
+    have empty category fields. Filtering by question text is more reliable.
+  - 2026 election markets are sparse (~17 in first 1000 active markets).
+    Mostly control questions (who wins Senate/House) and primary races.
+  - Prices are in decimal probability form (0.0 - 1.0), e.g. 0.87 = 87%.
+  - Markets with prices ["0", "0"] are closed/resolved with no current market.
 
-Useful endpoints:
-  GET https://gamma-api.polymarket.com/markets
-    ?tag=politics           filter by tag
-    ?limit=100              pagination
-    ?offset=0
-    Returns list of market objects
+Pagination: use offset parameter, stop when batch < limit.
 
-  GET https://gamma-api.polymarket.com/markets/{condition_id}
-    Single market details including current prices
-
-  GET https://clob.polymarket.com/prices-history?market={token_id}&...
-    Price history for a market token
-
-Market object key fields:
-  condition_id, question, description, end_date_iso,
-  active, closed, tags,
-  outcomes (list of strings, e.g. ["Yes","No"] or candidate names),
-  outcomePrices (list of current prices, implied probabilities)
-
-TODO: Build a tag/keyword filter to find all US election markets.
-      Tags to try: "politics", "elections", "2026-elections", "us-senate", "us-governor"
-      Also search by question text containing state names + "Senate"/"Governor"
+Market object key fields (verified):
+  id, question, conditionId, slug, endDate, liquidity, startDate,
+  image, icon, description, outcomes, outcomePrices, volume, active,
+  marketType, closed, resolutionSource
 """
 
-import requests
+import time
+import urllib.request
+import urllib.parse
+import json
 import pandas as pd
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 RAW_DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
-
 GAMMA_BASE = "https://gamma-api.polymarket.com"
 HEADERS = {"User-Agent": "Mozilla/5.0 (research/polling-aggregator)"}
 
-ELECTION_TAGS = ["politics", "elections"]  # TODO: verify correct tag names for 2026
+# Keywords to identify US election markets by question text
+ELECTION_KEYWORDS = [
+    "senate", "senator", "governor", "gubernatorial",
+    "house seat", "congressional district", "congress",
+    "win the seat", "2026 midterm", "2026 election",
+    "control the senate", "control the house",
+    "balance of power",
+]
+
+# Keywords that look like election but are NOT US races
+EXCLUDE_KEYWORDS = [
+    "nhl", "nba", "nfl", "mlb", "soccer", "stanley cup",
+    "premier league", "world cup",
+]
 
 
-def fetch_markets(tag: str = "politics", limit: int = 100) -> list[dict]:
+def _get(path: str, params: dict = None) -> list | dict:
+    url = f"{GAMMA_BASE}{path}"
+    if params:
+        url += "?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(url, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=15) as r:
+        return json.loads(r.read())
+
+
+def fetch_all_active_markets(limit: int = 100) -> list[dict]:
     """
-    Fetch all active markets for a given tag, handling pagination.
-
-    TODO: Verify tag names by browsing https://polymarket.com and inspecting
-    the Network tab for the tag used in election market URLs.
+    Paginate through ALL active Polymarket markets.
+    Returns only election-related ones.
     """
-    markets = []
+    all_markets = []
     offset = 0
+    page = 0
+
     while True:
-        url = f"{GAMMA_BASE}/markets"
-        params = {"tag": tag, "limit": limit, "offset": offset, "active": "true"}
-        resp = requests.get(url, headers=HEADERS, params=params, timeout=30)
-        resp.raise_for_status()
-        batch = resp.json()
+        batch = _get("/markets", {"limit": limit, "active": "true", "closed": "false", "offset": offset})
         if not batch:
             break
-        markets.extend(batch)
+
+        for m in batch:
+            q = m.get("question", "").lower()
+            if (
+                any(k in q for k in ELECTION_KEYWORDS)
+                and not any(k in q for k in EXCLUDE_KEYWORDS)
+            ):
+                all_markets.append(m)
+
+        page += 1
         if len(batch) < limit:
             break
         offset += limit
-    return markets
 
+        if page % 10 == 0:
+            print(f"  Scanned {offset} markets, found {len(all_markets)} election markets so far")
 
-def filter_election_markets(markets: list[dict]) -> list[dict]:
-    """
-    Filter markets down to US Senate, Governor, and House races.
-
-    TODO: Refine these keywords once we see actual market question text.
-    """
-    keywords = [
-        "senate", "senator", "governor", "gubernatorial",
-        "house of representatives", "congressional"
-    ]
-    result = []
-    for m in markets:
-        q = m.get("question", "").lower()
-        if any(kw in q for kw in keywords):
-            result.append(m)
-    return result
+    return all_markets
 
 
 def parse_market(m: dict) -> dict:
-    """
-    Flatten a Polymarket market object to a standard row.
-
-    TODO: Map to canonical race_id once utils/races.py exists.
-    """
+    """Flatten a Polymarket market into a standard row."""
     outcomes = m.get("outcomes", [])
     prices = m.get("outcomePrices", [])
 
+    # Build outcome->price pairs
+    outcome_price_pairs = {}
+    if outcomes and prices and len(outcomes) == len(prices):
+        for o, p in zip(outcomes, prices):
+            try:
+                outcome_price_pairs[o] = float(p)
+            except (ValueError, TypeError):
+                outcome_price_pairs[o] = None
+
+    # For Yes/No markets, extract the "Yes" price as implied_prob
+    implied_prob = None
+    if "Yes" in outcome_price_pairs:
+        implied_prob = outcome_price_pairs["Yes"]
+    elif len(outcome_price_pairs) == 2:
+        # Take the first non-"No" outcome
+        for k, v in outcome_price_pairs.items():
+            if k.lower() != "no":
+                implied_prob = v
+                break
+
     return {
-        "condition_id": m.get("conditionId") or m.get("condition_id"),
+        "source": "polymarket",
+        "condition_id": m.get("conditionId"),
+        "market_id": m.get("id"),
         "question": m.get("question"),
-        "end_date": m.get("endDateIso") or m.get("end_date_iso"),
+        "end_date": m.get("endDate"),
         "active": m.get("active"),
         "closed": m.get("closed"),
-        "outcomes": "|".join(outcomes) if outcomes else None,
-        "prices": "|".join(str(p) for p in prices) if prices else None,
-        "fetched_at": datetime.utcnow().isoformat(),
-        # TODO: add race_id matched from utils/races.py
+        "market_type": m.get("marketType"),
+        "liquidity": m.get("liquidity"),
+        "volume": m.get("volume"),
+        "outcomes": "|".join(str(o) for o in outcomes),
+        "prices": "|".join(str(p) for p in prices),
+        "implied_prob": implied_prob,
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        # race_id: left null here — matching to canonical IDs is done in analysis/aggregator.py
+        # Polymarket markets are mostly control/primary questions, not individual race winners yet
     }
 
 
 def run():
-    """Fetch Polymarket election markets and save to CSV."""
+    """Fetch Polymarket election markets and save to data/raw/polymarket_markets.csv."""
     RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    all_markets = []
-    for tag in ELECTION_TAGS:
-        print(f"Fetching Polymarket markets with tag='{tag}'...")
-        # TODO: uncomment once tags are verified
-        # markets = fetch_markets(tag=tag)
-        # election_markets = filter_election_markets(markets)
-        # all_markets.extend(election_markets)
-        # print(f"  Found {len(election_markets)} election markets (tag={tag})")
-        print(f"  TODO: verify tag name '{tag}' at https://polymarket.com")
+    print("Scanning Polymarket for election markets (paginating all active markets)...")
+    markets = fetch_all_active_markets()
+    print(f"  Found {len(markets)} election-related markets")
 
-    if all_markets:
-        rows = [parse_market(m) for m in all_markets]
-        df = pd.DataFrame(rows).drop_duplicates(subset=["condition_id"])
-        df.to_csv(RAW_DATA_DIR / "polymarket_markets.csv", index=False)
-        print(f"Saved {len(df)} markets to data/raw/polymarket_markets.csv")
+    if not markets:
+        print("No markets found. Polymarket 2026 election coverage may be sparse this far out.")
+        return
+
+    rows = [parse_market(m) for m in markets]
+    df = pd.DataFrame(rows).drop_duplicates(subset=["condition_id"])
+    out_path = RAW_DATA_DIR / "polymarket_markets.csv"
+    df.to_csv(out_path, index=False)
+    print(f"Saved {len(df)} markets to {out_path}")
+    print("\nMarket questions found:")
+    for q in df["question"].tolist():
+        print(f"  - {q}")
 
 
 if __name__ == "__main__":
