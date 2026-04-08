@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Election Forecast Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<script src="data.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { padding: 24px 32px 16px; border-bottom: 1px solid #1e2433; }
+  header h1 { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
+  header p { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+  .controls { display: flex; gap: 12px; padding: 16px 32px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
+  .controls label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+  .controls select, .controls input[type=range] { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; cursor: pointer; }
+  .controls select:focus { outline: none; border-color: #4f6ef7; }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .stat-bar { display: flex; gap: 24px; padding: 16px 32px; border-bottom: 1px solid #1e2433; }
+  .stat { text-align: center; }
+  .stat .val { font-size: 1.6rem; font-weight: 700; }
+  .stat .lbl { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat.dem .val { color: #60a5fa; }
+  .stat.rep .val { color: #f87171; }
+  .stat.toss .val { color: #facc15; }
+  .stat.total .val { color: #a78bfa; }
+  .main { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+  .chart-box { padding: 20px 24px; border-bottom: 1px solid #1e2433; }
+  .chart-box:nth-child(odd) { border-right: 1px solid #1e2433; }
+  .chart-box h2 { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  #table-section { padding: 20px 32px 40px; }
+  #table-section h2 { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  .search-wrap { margin-bottom: 10px; }
+  .search-wrap input { width: 280px; background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 7px 12px; font-size: 0.85rem; }
+  .search-wrap input::placeholder { color: #4a5568; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e2433; cursor: pointer; user-select: none; white-space: nowrap; }
+  th:hover { color: #94a3b8; }
+  th.sorted { color: #a78bfa; }
+  td { padding: 7px 12px; border-bottom: 1px solid #161b27; }
+  tr:hover td { background: #1a2035; }
+  .bar-cell { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; background: #1e2433; border-radius: 3px; height: 8px; overflow: hidden; max-width: 120px; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.2s; }
+  .pct-lbl { font-weight: 600; min-width: 36px; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 99px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.02em; }
+  .badge.D { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .badge.R { background: rgba(248,113,113,0.15); color: #f87171; }
+  .badge.I { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .badge.open { background: rgba(250,204,21,0.12); color: #facc15; }
+  .src-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; background: #1e2433; color: #64748b; margin-left: 2px; }
+  .rating { font-weight: 700; }
+  .rating.safe-r { color: #ef4444; }
+  .rating.likely-r { color: #f87171; }
+  .rating.lean-r { color: #fca5a5; }
+  .rating.toss { color: #facc15; }
+  .rating.lean-d { color: #93c5fd; }
+  .rating.likely-d { color: #60a5fa; }
+  .rating.safe-d { color: #3b82f6; }
+  .fullwidth { grid-column: 1 / -1; border-right: none !important; }
+  #scatter-chart { height: 420px; }
+  #senate-chart, #gov-chart, #house-chart { height: 360px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>2026 Election Forecast Dashboard</h1>
+  <p id="updated-lbl">Sources: Kalshi · NYT Polls &nbsp;|&nbsp; Updated: —</p>
+</header>
+
+<div class="controls">
+  <div class="filter-group">
+    <label>Office</label>
+    <select id="filter-office">
+      <option value="ALL">All</option>
+      <option value="SEN">Senate</option>
+      <option value="GOV">Governor</option>
+      <option value="H">House</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Sources</label>
+    <select id="filter-source">
+      <option value="ALL">All</option>
+      <option value="kalshi">Kalshi only</option>
+      <option value="nyt">NYT polls only</option>
+      <option value="both">Both</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Competitive only (±<span id="comp-val">20</span>%)</label>
+    <input type="range" id="comp-slider" min="5" max="50" value="20" step="5">
+  </div>
+</div>
+
+<div class="stat-bar" id="stat-bar"></div>
+
+<div class="main">
+  <div class="chart-box fullwidth">
+    <h2>Race Competitiveness — Implied Democrat Win Probability</h2>
+    <div id="scatter-chart"></div>
+  </div>
+  <div class="chart-box">
+    <h2>Senate Races</h2>
+    <div id="senate-chart"></div>
+  </div>
+  <div class="chart-box">
+    <h2>Governor Races</h2>
+    <div id="gov-chart"></div>
+  </div>
+  <div class="chart-box fullwidth">
+    <h2>House Races (data available)</h2>
+    <div id="house-chart"></div>
+  </div>
+</div>
+
+<div id="table-section">
+  <h2>All Races</h2>
+  <div class="search-wrap"><input type="text" id="search" placeholder="Search state, race…"></div>
+  <table id="race-table">
+    <thead>
+      <tr>
+        <th data-col="label">Race</th>
+        <th data-col="office">Office</th>
+        <th data-col="incumbent_party">Inc. Party</th>
+        <th data-col="incumbent_name">Incumbent</th>
+        <th data-col="implied_prob_avg">Dem Win Prob</th>
+        <th data-col="rating">Rating</th>
+        <th data-col="n_sources"># Signals</th>
+        <th data-col="sources">Sources</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<script>
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function rating(p) {
+  if (p === null || p === '') return { text: '—', cls: '' };
+  const d = +p;
+  if (d >= 0.85)  return { text: 'Safe D',    cls: 'safe-d' };
+  if (d >= 0.70)  return { text: 'Likely D',  cls: 'likely-d' };
+  if (d >= 0.55)  return { text: 'Lean D',    cls: 'lean-d' };
+  if (d >= 0.45)  return { text: 'Toss-up',   cls: 'toss' };
+  if (d >= 0.30)  return { text: 'Lean R',    cls: 'lean-r' };
+  if (d >= 0.15)  return { text: 'Likely R',  cls: 'likely-r' };
+  return                 { text: 'Safe R',     cls: 'safe-r' };
+}
+
+function barColor(p) {
+  if (p >= 0.5) return `rgba(96,165,250,${0.4 + 0.6 * ((p - 0.5) / 0.5)})`;
+  return `rgba(248,113,113,${0.4 + 0.6 * ((0.5 - p) / 0.5)})`;
+}
+
+function pctLabel(p) {
+  if (p === null || p === '') return '—';
+  return (p * 100).toFixed(1) + '%';
+}
+
+function partyBadge(party) {
+  if (!party) return `<span class="badge open">Open</span>`;
+  return `<span class="badge ${party}">${party}</span>`;
+}
+
+// ── state ────────────────────────────────────────────────────────────────────
+let sortCol = 'implied_prob_avg', sortDir = 1;
+let filterOffice = 'ALL', filterSource = 'ALL', compThreshold = 0.20, searchQ = '';
+
+function applyFilters(data) {
+  return data.filter(r => {
+    if (filterOffice !== 'ALL' && r.office !== filterOffice) return false;
+    if (filterSource === 'kalshi' && !r.sources.includes('kalshi')) return false;
+    if (filterSource === 'nyt'    && !r.sources.includes('nyt'))    return false;
+    if (filterSource === 'both'   && !(r.sources.includes('kalshi') && r.sources.includes('nyt'))) return false;
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      if (!r.label.toLowerCase().includes(q) && !r.state.toLowerCase().includes(q) && !r.race_id.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function applyCompFilter(data) {
+  return data.filter(r => {
+    const p = r.implied_prob_avg;
+    if (p === '' || p === null) return false;
+    return Math.abs(p - 0.5) <= compThreshold;
+  });
+}
+
+// ── stats bar ────────────────────────────────────────────────────────────────
+function renderStats(data) {
+  const filtered = applyFilters(data);
+  const demSafe   = filtered.filter(r => r.implied_prob_avg !== '' && +r.implied_prob_avg >= 0.55).length;
+  const repSafe   = filtered.filter(r => r.implied_prob_avg !== '' && +r.implied_prob_avg < 0.45).length;
+  const toss      = filtered.filter(r => r.implied_prob_avg !== '' && Math.abs(+r.implied_prob_avg - 0.5) < 0.05).length;
+  const total     = filtered.length;
+  document.getElementById('stat-bar').innerHTML = `
+    <div class="stat total"><div class="val">${total}</div><div class="lbl">Races tracked</div></div>
+    <div class="stat dem"><div class="val">${demSafe}</div><div class="lbl">Leaning/Safe D</div></div>
+    <div class="stat rep"><div class="val">${repSafe}</div><div class="lbl">Leaning/Safe R</div></div>
+    <div class="stat toss"><div class="val">${toss}</div><div class="lbl">True toss-ups (±5%)</div></div>
+  `;
+}
+
+// ── scatter chart ─────────────────────────────────────────────────────────────
+function renderScatter(data) {
+  const filtered = applyFilters(data).filter(r => r.implied_prob_avg !== '');
+  const offices = ['SEN', 'GOV', 'H'];
+  const colors  = { SEN: '#a78bfa', GOV: '#34d399', H: '#60a5fa' };
+  const names   = { SEN: 'Senate', GOV: 'Governor', H: 'House' };
+
+  const traces = offices.map(off => {
+    const rows = filtered.filter(r => r.office === off);
+    return {
+      type: 'scatter',
+      mode: 'markers',
+      name: names[off],
+      x: rows.map(r => +r.implied_prob_avg),
+      y: rows.map(() => off),
+      text: rows.map(r => `${r.label}<br>Dem prob: ${pctLabel(r.implied_prob_avg)}<br>${rating(r.implied_prob_avg).text}<br>Signals: ${r.n_sources}<br>Sources: ${r.sources}`),
+      hovertemplate: '%{text}<extra></extra>',
+      marker: {
+        size: rows.map(r => Math.max(6, Math.min(18, Math.sqrt(+r.n_sources || 1) * 3.5))),
+        color: rows.map(r => +r.implied_prob_avg),
+        colorscale: [[0, '#ef4444'], [0.5, '#facc15'], [1, '#3b82f6']],
+        cmin: 0, cmax: 1,
+        line: { color: colors[off], width: 1.2 },
+        opacity: 0.85,
+      }
+    };
+  });
+
+  const layout = {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { t: 10, b: 50, l: 80, r: 20 },
+    xaxis: {
+      title: 'Implied Democrat Win Probability', range: [0, 1],
+      gridcolor: '#1e2433', tickformat: '.0%', color: '#64748b',
+      tickvals: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    },
+    yaxis: { gridcolor: '#1e2433', color: '#64748b' },
+    legend: { bgcolor: 'transparent', font: { color: '#94a3b8' } },
+    shapes: [{
+      type: 'line', x0: 0.5, x1: 0.5, y0: -0.5, y1: 2.5,
+      line: { color: '#facc15', width: 1, dash: 'dot' }
+    }],
+    font: { color: '#94a3b8' },
+  };
+
+  Plotly.react('scatter-chart', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+// ── bar charts ────────────────────────────────────────────────────────────────
+function renderBar(divId, data, office) {
+  const rows = applyFilters({ ...data, filter: r => r.office === office })
+    .filter(r => r.implied_prob_avg !== '')
+    .sort((a, b) => +b.implied_prob_avg - +a.implied_prob_avg);
+
+  // For House, only show races we have data for
+  const display = rows.filter(r => r.office === office);
+
+  const colors = display.map(r => +r.implied_prob_avg >= 0.5 ? '#3b82f6' : '#ef4444');
+  const trace = {
+    type: 'bar',
+    orientation: 'h',
+    x: display.map(r => +r.implied_prob_avg),
+    y: display.map(r => r.label),
+    text: display.map(r => pctLabel(r.implied_prob_avg)),
+    textposition: 'outside',
+    textfont: { color: '#94a3b8', size: 10 },
+    marker: { color: colors, opacity: 0.8 },
+    hovertemplate: '%{y}: %{x:.1%}<extra></extra>',
+  };
+
+  const layout = {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { t: 10, b: 30, l: 80, r: 60 },
+    xaxis: { range: [0, 1.05], tickformat: '.0%', gridcolor: '#1e2433', color: '#64748b' },
+    yaxis: { gridcolor: '#1e2433', color: '#94a3b8', tickfont: { size: 10 }, automargin: true },
+    shapes: [{ type: 'line', x0: 0.5, x1: 0.5, y0: -0.5, y1: display.length - 0.5, line: { color: '#facc15', width: 1, dash: 'dot' } }],
+    font: { color: '#94a3b8' },
+    bargap: 0.25,
+  };
+
+  Plotly.react(divId, [trace], layout, { responsive: true, displayModeBar: false });
+}
+
+function filterForOffice(data, office) {
+  return applyFilters(data.filter(r => r.office === office));
+}
+
+// ── table ─────────────────────────────────────────────────────────────────────
+function renderTable(data) {
+  let rows = applyFilters(data);
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    rows = rows.filter(r =>
+      r.label.toLowerCase().includes(q) ||
+      r.state.toLowerCase().includes(q) ||
+      r.race_id.toLowerCase().includes(q) ||
+      (r.incumbent_name || '').toLowerCase().includes(q)
+    );
+  }
+
+  rows.sort((a, b) => {
+    let av = a[sortCol] ?? '', bv = b[sortCol] ?? '';
+    if (sortCol === 'implied_prob_avg') { av = av === '' ? -1 : +av; bv = bv === '' ? -1 : +bv; }
+    if (sortCol === 'n_sources') { av = +av || 0; bv = +bv || 0; }
+    if (sortCol === 'rating') { av = av === '' ? -1 : +(a.implied_prob_avg ?? -1); bv = bv === '' ? -1 : +(b.implied_prob_avg ?? -1); }
+    if (av < bv) return -sortDir;
+    if (av > bv) return sortDir;
+    return 0;
+  });
+
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = rows.map(r => {
+    const p = r.implied_prob_avg !== '' ? +r.implied_prob_avg : null;
+    const rat = rating(p);
+    const src = (r.sources || '').split('|').map(s => `<span class="src-badge">${s}</span>`).join('');
+    const barW = p !== null ? Math.round(p * 100) : 0;
+    return `<tr>
+      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.75rem">${r.state}</span></td>
+      <td>${r.office}</td>
+      <td>${partyBadge(r.incumbent_party)}</td>
+      <td style="color:#94a3b8;font-size:0.8rem">${r.incumbent_name || '—'}</td>
+      <td>
+        <div class="bar-cell">
+          <div class="bar-bg"><div class="bar-fill" style="width:${barW}%;background:${p !== null ? barColor(p) : '#333'}"></div></div>
+          <span class="pct-lbl" style="color:${p !== null ? barColor(p) : '#4a5568'}">${pctLabel(p)}</span>
+        </div>
+      </td>
+      <td><span class="rating ${rat.cls}">${rat.text}</span></td>
+      <td style="color:#64748b;text-align:center">${r.n_sources}</td>
+      <td>${src}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── wire up controls ──────────────────────────────────────────────────────────
+function renderAll() {
+  renderStats(RACES);
+  renderScatter(RACES);
+  renderBar('senate-chart', filterForOffice(RACES, 'SEN'), 'SEN');
+  renderBar('gov-chart',    filterForOffice(RACES, 'GOV'), 'GOV');
+  renderBar('house-chart',  filterForOffice(RACES, 'H'),   'H');
+  renderTable(RACES);
+}
+
+// Override renderBar to use pre-filtered data
+function renderBar(divId, rows, office) {
+  const display = rows.filter(r => r.implied_prob_avg !== '').sort((a,b) => +b.implied_prob_avg - +a.implied_prob_avg);
+  const colors = display.map(r => +r.implied_prob_avg >= 0.5 ? '#3b82f6' : '#ef4444');
+  const trace = {
+    type: 'bar', orientation: 'h',
+    x: display.map(r => +r.implied_prob_avg),
+    y: display.map(r => r.label),
+    text: display.map(r => pctLabel(r.implied_prob_avg)),
+    textposition: 'outside', textfont: { color: '#94a3b8', size: 10 },
+    marker: { color: colors, opacity: 0.8 },
+    hovertemplate: '%{y}: %{x:.1%}<extra></extra>',
+  };
+  const h = Math.max(300, display.length * 22);
+  const layout = {
+    height: h,
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { t: 10, b: 30, l: 90, r: 60 },
+    xaxis: { range: [0, 1.12], tickformat: '.0%', gridcolor: '#1e2433', color: '#64748b' },
+    yaxis: { gridcolor: '#1e2433', color: '#94a3b8', tickfont: { size: 10 }, automargin: true },
+    shapes: [{ type: 'line', x0: 0.5, x1: 0.5, y0: -0.5, y1: display.length - 0.5, line: { color: '#facc15', width: 1, dash: 'dot' } }],
+    font: { color: '#94a3b8' }, bargap: 0.3,
+  };
+  Plotly.react(divId, [trace], layout, { responsive: true, displayModeBar: false });
+}
+
+document.getElementById('filter-office').addEventListener('change', e => { filterOffice = e.target.value; renderAll(); });
+document.getElementById('filter-source').addEventListener('change', e => { filterSource = e.target.value; renderAll(); });
+document.getElementById('comp-slider').addEventListener('input', e => {
+  compThreshold = +e.target.value / 100;
+  document.getElementById('comp-val').textContent = e.target.value;
+});
+document.getElementById('search').addEventListener('input', e => { searchQ = e.target.value; renderTable(RACES); });
+
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    renderTable(RACES);
+  });
+});
+
+// Set updated label
+const updated = RACES.length > 0 ? RACES[0].updated_at : '';
+if (updated) {
+  const d = new Date(updated);
+  document.getElementById('updated-lbl').textContent =
+    `Sources: Kalshi · NYT Polls  |  Updated: ${d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`;
+}
+
+renderAll();
+</script>
+</body>
+</html>

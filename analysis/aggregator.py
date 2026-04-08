@@ -71,6 +71,21 @@ def load_polymarket() -> pd.DataFrame:
     return df[["race_id", "source", "market_title", "implied_prob", "weight", "fetched_at"]]
 
 
+def load_nyt_polls() -> pd.DataFrame:
+    """Load NYT polls CSV."""
+    path = RAW_DIR / "nyt_polls.csv"
+    if not path.exists():
+        print("  nyt_polls.csv not found — run scrapers/nytimes.py first")
+        return pd.DataFrame()
+    df = pd.read_csv(path)
+    df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
+    df["source"] = "nyt"
+    if "market_title" not in df.columns:
+        df["market_title"] = df.get("pollster", "NYT poll")
+    df["weight"] = pd.to_numeric(df.get("weight", 1), errors="coerce").fillna(1.0)
+    return df[["race_id", "source", "market_title", "implied_prob", "weight", "fetched_at"]]
+
+
 def load_rcp_polls() -> pd.DataFrame:
     """Load RCP polls if available."""
     path = RAW_DIR / "rcp_polls.csv"
@@ -151,6 +166,11 @@ def run():
     if not polymarket.empty:
         print(f"  Polymarket: {len(polymarket)} market rows across {polymarket['race_id'].nunique()} races")
         frames.append(polymarket)
+
+    nyt = load_nyt_polls()
+    if not nyt.empty:
+        print(f"  NYT polls: {len(nyt)} rows across {nyt['race_id'].nunique()} races")
+        frames.append(nyt)
 
     rcp = load_rcp_polls()
     if not rcp.empty:
