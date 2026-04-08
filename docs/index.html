@@ -3,173 +3,318 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026 Election Forecast Dashboard</title>
+<title>2026 Election Dashboard</title>
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <script src="data.js"></script>
+<script src="polls_data.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
-  header { padding: 24px 32px 16px; border-bottom: 1px solid #1e2433; }
-  header h1 { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
-  header p { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
-  .controls { display: flex; gap: 12px; padding: 16px 32px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
-  .controls label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
-  .controls select, .controls input[type=range] { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; cursor: pointer; }
-  .controls select:focus { outline: none; border-color: #4f6ef7; }
-  .filter-group { display: flex; align-items: center; gap: 6px; }
-  .stat-bar { display: flex; gap: 24px; padding: 16px 32px; border-bottom: 1px solid #1e2433; }
-  .stat { text-align: center; }
-  .stat .val { font-size: 1.6rem; font-weight: 700; }
-  .stat .lbl { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
-  .stat.dem .val { color: #60a5fa; }
-  .stat.rep .val { color: #f87171; }
-  .stat.toss .val { color: #facc15; }
-  .stat.total .val { color: #a78bfa; }
-  .main { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
-  .chart-box { padding: 20px 24px; border-bottom: 1px solid #1e2433; }
-  .chart-box:nth-child(odd) { border-right: 1px solid #1e2433; }
-  .chart-box h2 { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-  #table-section { padding: 20px 32px 40px; }
-  #table-section h2 { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-  .search-wrap { margin-bottom: 10px; }
-  .search-wrap input { width: 280px; background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 7px 12px; font-size: 0.85rem; }
-  .search-wrap input::placeholder { color: #4a5568; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e2433; cursor: pointer; user-select: none; white-space: nowrap; }
-  th:hover { color: #94a3b8; }
-  th.sorted { color: #a78bfa; }
-  td { padding: 7px 12px; border-bottom: 1px solid #161b27; }
-  tr:hover td { background: #1a2035; }
-  .bar-cell { display: flex; align-items: center; gap: 8px; }
-  .bar-bg { flex: 1; background: #1e2433; border-radius: 3px; height: 8px; overflow: hidden; max-width: 120px; }
-  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.2s; }
-  .pct-lbl { font-weight: 600; min-width: 36px; }
-  .badge { display: inline-block; padding: 2px 7px; border-radius: 99px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.02em; }
-  .badge.D { background: rgba(96,165,250,0.15); color: #60a5fa; }
-  .badge.R { background: rgba(248,113,113,0.15); color: #f87171; }
-  .badge.I { background: rgba(167,139,250,0.15); color: #a78bfa; }
-  .badge.open { background: rgba(250,204,21,0.12); color: #facc15; }
-  .src-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; background: #1e2433; color: #64748b; margin-left: 2px; }
-  .rating { font-weight: 700; }
-  .rating.safe-r { color: #ef4444; }
-  .rating.likely-r { color: #f87171; }
-  .rating.lean-r { color: #fca5a5; }
-  .rating.toss { color: #facc15; }
-  .rating.lean-d { color: #93c5fd; }
-  .rating.likely-d { color: #60a5fa; }
-  .rating.safe-d { color: #3b82f6; }
-  .fullwidth { grid-column: 1 / -1; border-right: none !important; }
-  #scatter-chart { height: 420px; }
-  #senate-chart, #gov-chart, #house-chart { height: 360px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+/* ── header + tabs ── */
+header { padding: 18px 28px 0; border-bottom: 1px solid #1e2433; display: flex; flex-direction: column; gap: 12px; }
+header h1 { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; }
+header p  { font-size: 0.78rem; color: #64748b; }
+.tabs { display: flex; gap: 0; }
+.tab-btn { padding: 10px 22px; font-size: 0.82rem; font-weight: 600; color: #64748b; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.tab-btn:hover { color: #94a3b8; }
+.tab-btn.active { color: #e2e8f0; border-bottom-color: #4f6ef7; }
+
+/* ── tab panels ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ════════════════════════════════════════
+   DASHBOARD TAB
+   ════════════════════════════════════════ */
+.controls { display: flex; gap: 12px; padding: 14px 28px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
+.controls label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+.controls select, .controls input[type=range] { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.84rem; cursor: pointer; }
+.controls select:focus { outline: none; border-color: #4f6ef7; }
+.filter-group { display: flex; align-items: center; gap: 6px; }
+
+.stat-bar { display: flex; gap: 24px; padding: 14px 28px; border-bottom: 1px solid #1e2433; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat .val { font-size: 1.6rem; font-weight: 700; }
+.stat .lbl { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat.dem .val  { color: #60a5fa; }
+.stat.rep .val  { color: #f87171; }
+.stat.toss .val { color: #facc15; }
+.stat.total .val{ color: #a78bfa; }
+
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; }
+@media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+.chart-box { padding: 18px 22px; border-bottom: 1px solid #1e2433; }
+.chart-box:nth-child(odd) { border-right: 1px solid #1e2433; }
+.chart-box.fullwidth { grid-column: 1 / -1; border-right: none !important; }
+.chart-box h2 { font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+
+#table-section { padding: 18px 28px 40px; }
+#table-section h2 { font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.search-wrap { margin-bottom: 10px; }
+.search-wrap input { width: 280px; background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 7px 12px; font-size: 0.84rem; }
+.search-wrap input::placeholder { color: #4a5568; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e2433; cursor: pointer; user-select: none; white-space: nowrap; }
+th:hover { color: #94a3b8; }
+th.sorted { color: #a78bfa; }
+td { padding: 7px 12px; border-bottom: 1px solid #161b27; }
+tr:hover td { background: #1a2035; }
+
+.bar-cell { display: flex; align-items: center; gap: 8px; }
+.bar-bg { flex: 1; background: #1e2433; border-radius: 3px; height: 8px; overflow: hidden; max-width: 120px; }
+.bar-fill { height: 100%; border-radius: 3px; }
+.pct-lbl { font-weight: 600; min-width: 36px; }
+
+.badge { display: inline-block; padding: 2px 7px; border-radius: 99px; font-size: 0.68rem; font-weight: 700; }
+.badge.D    { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+.badge.R    { background: rgba(248,113,113,0.15); color: #f87171; }
+.badge.I    { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.badge.open { background: rgba(250,204,21,0.12);  color: #facc15; }
+.badge.SEN  { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.badge.GOV  { background: rgba(52,211,153,0.15);  color: #34d399; }
+.badge.H    { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+
+.src-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; background: #1e2433; color: #64748b; margin-left: 2px; }
+.rating { font-weight: 700; }
+.rating.safe-r   { color: #ef4444; }
+.rating.likely-r { color: #f87171; }
+.rating.lean-r   { color: #fca5a5; }
+.rating.toss     { color: #facc15; }
+.rating.lean-d   { color: #93c5fd; }
+.rating.likely-d { color: #60a5fa; }
+.rating.safe-d   { color: #3b82f6; }
+
+/* ════════════════════════════════════════
+   POLL EXPLORER TAB
+   ════════════════════════════════════════ */
+.poll-layout { display: flex; height: calc(100vh - 105px); }
+
+.sidebar { width: 290px; min-width: 240px; border-right: 1px solid #1e2433; display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-top { padding: 10px 12px; border-bottom: 1px solid #1e2433; display: flex; flex-direction: column; gap: 7px; }
+.sidebar-top input, .sidebar-top select { width: 100%; background: #1a2035; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.82rem; }
+.sidebar-top input::placeholder { color: #4a5568; }
+.filter-row { display: flex; gap: 6px; }
+.filter-row select { flex: 1; }
+.over50-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.77rem; color: #94a3b8; cursor: pointer; }
+.over50-toggle input[type=checkbox] { accent-color: #facc15; width: 14px; height: 14px; cursor: pointer; }
+
+.race-list { flex: 1; overflow-y: auto; }
+.race-item { padding: 9px 13px; border-bottom: 1px solid #161b27; cursor: pointer; }
+.race-item:hover { background: #1a2035; }
+.race-item.active { background: #1e2d50; border-left: 3px solid #4f6ef7; }
+.race-item .race-label { font-weight: 600; font-size: 0.86rem; color: #e2e8f0; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.race-item .race-meta  { font-size: 0.72rem; color: #64748b; margin-top: 2px; }
+.flag-50 { display: inline-block; background: rgba(250,204,21,0.18); color: #facc15; border-radius: 4px; padding: 1px 5px; font-size: 0.64rem; font-weight: 700; }
+
+.poll-detail { flex: 1; overflow-y: auto; padding: 18px 24px 40px; }
+.poll-detail-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: #2d3748; font-size: 0.95rem; }
+
+.detail-header { margin-bottom: 16px; }
+.detail-header h2 { font-size: 1.1rem; font-weight: 700; }
+.detail-header p  { font-size: 0.76rem; color: #64748b; margin-top: 3px; }
+
+.stage-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.stage-tab { padding: 4px 13px; border-radius: 99px; font-size: 0.74rem; font-weight: 600; cursor: pointer; border: 1px solid #2d3748; color: #64748b; background: transparent; }
+.stage-tab.active { background: #1e2d50; border-color: #4f6ef7; color: #93c5fd; }
+
+.poll-card { background: #131822; border: 1px solid #1e2433; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+.poll-card.has-flag { border-color: rgba(250,204,21,0.4); }
+.poll-header { padding: 9px 13px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid #1a2230; }
+.poll-pollster { font-size: 0.84rem; font-weight: 600; color: #e2e8f0; }
+.poll-meta     { font-size: 0.71rem; color: #64748b; margin-top: 2px; }
+.poll-badges   { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+.mini-badge { border-radius: 4px; padding: 2px 6px; font-size: 0.64rem; font-weight: 700; }
+.mini-badge.partisan { background: rgba(248,113,113,0.12); color: #f87171; }
+.mini-badge.stage    { background: #1e2433; color: #64748b; }
+.mini-badge.over50   { background: rgba(250,204,21,0.18); color: #facc15; }
+
+.candidates { padding: 9px 13px; display: flex; flex-direction: column; gap: 7px; }
+.cand-row  { display: flex; align-items: center; gap: 9px; }
+.cand-party { width: 24px; text-align: center; font-size: 0.64rem; font-weight: 700; flex-shrink: 0; }
+.cand-party.D    { color: #60a5fa; }
+.cand-party.R    { color: #f87171; }
+.cand-party.I    { color: #a78bfa; }
+.cand-party.NONE { color: #374151; }
+.cand-name { width: 170px; font-size: 0.81rem; color: #e2e8f0; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.poll-bar-bg   { flex: 1; background: #1e2433; border-radius: 3px; height: 9px; overflow: hidden; }
+.poll-bar-fill { height: 100%; border-radius: 3px; }
+.cand-pct    { width: 40px; text-align: right; font-size: 0.81rem; font-weight: 600; flex-shrink: 0; }
+.over50-mark { font-size: 0.62rem; color: #facc15; font-weight: 700; flex-shrink: 0; }
+
+.empty-msg { color: #4a5568; font-size: 0.84rem; padding: 20px 0; text-align: center; }
+
+@media (max-width: 700px) {
+  .poll-layout { flex-direction: column; height: auto; }
+  .sidebar { width: 100%; height: 45vh; border-right: none; border-bottom: 1px solid #1e2433; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>2026 Election Forecast Dashboard</h1>
-  <p id="updated-lbl">Sources: Kalshi · NYT Polls &nbsp;|&nbsp; Updated: — &nbsp;|&nbsp; <a href="polls.html" style="color:#4f6ef7;text-decoration:none">Poll Explorer →</a></p>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">
+    <h1>2026 Election Dashboard</h1>
+    <p id="updated-lbl">Sources: Kalshi · NYT Polls</p>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="polls">Poll Explorer</button>
+  </div>
 </header>
 
-<div class="controls">
-  <div class="filter-group">
-    <label>Office</label>
-    <select id="filter-office">
-      <option value="ALL">All</option>
-      <option value="SEN">Senate</option>
-      <option value="GOV">Governor</option>
-      <option value="H">House</option>
-    </select>
+<!-- ══════════════════════════════════════════════
+     TAB 1: DASHBOARD
+     ══════════════════════════════════════════════ -->
+<div id="tab-dashboard" class="tab-panel active">
+
+  <div class="controls">
+    <div class="filter-group">
+      <label>Office</label>
+      <select id="filter-office">
+        <option value="ALL">All</option>
+        <option value="SEN">Senate</option>
+        <option value="GOV">Governor</option>
+        <option value="H">House</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Sources</label>
+      <select id="filter-source">
+        <option value="ALL">All</option>
+        <option value="kalshi">Kalshi only</option>
+        <option value="nyt">NYT polls only</option>
+        <option value="both">Both</option>
+      </select>
+    </div>
   </div>
-  <div class="filter-group">
-    <label>Sources</label>
-    <select id="filter-source">
-      <option value="ALL">All</option>
-      <option value="kalshi">Kalshi only</option>
-      <option value="nyt">NYT polls only</option>
-      <option value="both">Both</option>
-    </select>
+
+  <div class="stat-bar" id="stat-bar"></div>
+
+  <div class="charts-grid">
+    <div class="chart-box fullwidth">
+      <h2>Race Competitiveness — Implied Democrat Win Probability</h2>
+      <div id="scatter-chart" style="height:400px"></div>
+    </div>
+    <div class="chart-box">
+      <h2>Senate Races</h2>
+      <div id="senate-chart"></div>
+    </div>
+    <div class="chart-box">
+      <h2>Governor Races</h2>
+      <div id="gov-chart"></div>
+    </div>
+    <div class="chart-box fullwidth">
+      <h2>House Races (data available)</h2>
+      <div id="house-chart"></div>
+    </div>
   </div>
-  <div class="filter-group">
-    <label>Competitive only (±<span id="comp-val">20</span>%)</label>
-    <input type="range" id="comp-slider" min="5" max="50" value="20" step="5">
+
+  <div id="table-section">
+    <h2>All Races</h2>
+    <div class="search-wrap"><input type="text" id="search" placeholder="Search state, race…"></div>
+    <table>
+      <thead>
+        <tr>
+          <th data-col="label">Race</th>
+          <th data-col="office">Office</th>
+          <th data-col="incumbent_party">Inc. Party</th>
+          <th data-col="incumbent_name">Incumbent</th>
+          <th data-col="implied_prob_avg">Dem Win Prob</th>
+          <th data-col="rating">Rating</th>
+          <th data-col="n_sources"># Signals</th>
+          <th data-col="sources">Sources</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
   </div>
 </div>
 
-<div class="stat-bar" id="stat-bar"></div>
+<!-- ══════════════════════════════════════════════
+     TAB 2: POLL EXPLORER
+     ══════════════════════════════════════════════ -->
+<div id="tab-polls" class="tab-panel">
+  <div class="poll-layout">
 
-<div class="main">
-  <div class="chart-box fullwidth">
-    <h2>Race Competitiveness — Implied Democrat Win Probability</h2>
-    <div id="scatter-chart"></div>
-  </div>
-  <div class="chart-box">
-    <h2>Senate Races</h2>
-    <div id="senate-chart"></div>
-  </div>
-  <div class="chart-box">
-    <h2>Governor Races</h2>
-    <div id="gov-chart"></div>
-  </div>
-  <div class="chart-box fullwidth">
-    <h2>House Races (data available)</h2>
-    <div id="house-chart"></div>
-  </div>
-</div>
+    <div class="sidebar">
+      <div class="sidebar-top">
+        <input type="text" id="p-search" placeholder="Search race, state…">
+        <div class="filter-row">
+          <select id="p-office">
+            <option value="ALL">All offices</option>
+            <option value="SEN">Senate</option>
+            <option value="GOV">Governor</option>
+            <option value="H">House</option>
+          </select>
+          <select id="p-stage">
+            <option value="ALL">All stages</option>
+            <option value="general">General</option>
+            <option value="primary">Primary</option>
+          </select>
+        </div>
+        <label class="over50-toggle">
+          <input type="checkbox" id="p-only50">
+          Only races with a candidate &gt;50%
+        </label>
+      </div>
+      <div class="race-list" id="race-list"></div>
+    </div>
 
-<div id="table-section">
-  <h2>All Races</h2>
-  <div class="search-wrap"><input type="text" id="search" placeholder="Search state, race…"></div>
-  <table id="race-table">
-    <thead>
-      <tr>
-        <th data-col="label">Race</th>
-        <th data-col="office">Office</th>
-        <th data-col="incumbent_party">Inc. Party</th>
-        <th data-col="incumbent_name">Incumbent</th>
-        <th data-col="implied_prob_avg">Dem Win Prob</th>
-        <th data-col="rating">Rating</th>
-        <th data-col="n_sources"># Signals</th>
-        <th data-col="sources">Sources</th>
-      </tr>
-    </thead>
-    <tbody id="table-body"></tbody>
-  </table>
+    <div class="poll-detail" id="poll-detail">
+      <div class="poll-detail-placeholder">Select a race to see polls</div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-// ── helpers ──────────────────────────────────────────────────────────────────
-
+// ════════════════════════════════════════════════
+// SHARED HELPERS
+// ════════════════════════════════════════════════
 function rating(p) {
   if (p === null || p === '') return { text: '—', cls: '' };
   const d = +p;
-  if (d >= 0.85)  return { text: 'Safe D',    cls: 'safe-d' };
-  if (d >= 0.70)  return { text: 'Likely D',  cls: 'likely-d' };
-  if (d >= 0.55)  return { text: 'Lean D',    cls: 'lean-d' };
-  if (d >= 0.45)  return { text: 'Toss-up',   cls: 'toss' };
-  if (d >= 0.30)  return { text: 'Lean R',    cls: 'lean-r' };
-  if (d >= 0.15)  return { text: 'Likely R',  cls: 'likely-r' };
-  return                 { text: 'Safe R',     cls: 'safe-r' };
+  if (d >= 0.85) return { text: 'Safe D',    cls: 'safe-d' };
+  if (d >= 0.70) return { text: 'Likely D',  cls: 'likely-d' };
+  if (d >= 0.55) return { text: 'Lean D',    cls: 'lean-d' };
+  if (d >= 0.45) return { text: 'Toss-up',   cls: 'toss' };
+  if (d >= 0.30) return { text: 'Lean R',    cls: 'lean-r' };
+  if (d >= 0.15) return { text: 'Likely R',  cls: 'likely-r' };
+  return               { text: 'Safe R',     cls: 'safe-r' };
 }
-
 function barColor(p) {
   if (p >= 0.5) return `rgba(96,165,250,${0.4 + 0.6 * ((p - 0.5) / 0.5)})`;
   return `rgba(248,113,113,${0.4 + 0.6 * ((0.5 - p) / 0.5)})`;
 }
-
 function pctLabel(p) {
   if (p === null || p === '') return '—';
   return (p * 100).toFixed(1) + '%';
 }
-
 function partyBadge(party) {
   if (!party) return `<span class="badge open">Open</span>`;
   return `<span class="badge ${party}">${party}</span>`;
 }
 
-// ── state ────────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'dashboard') renderAll();
+  });
+});
+
+// ════════════════════════════════════════════════
+// DASHBOARD TAB
+// ════════════════════════════════════════════════
 let sortCol = 'implied_prob_avg', sortDir = 1;
-let filterOffice = 'ALL', filterSource = 'ALL', compThreshold = 0.20, searchQ = '';
+let filterOffice = 'ALL', filterSource = 'ALL', searchQ = '';
 
 function applyFilters(data) {
   return data.filter(r => {
@@ -185,156 +330,92 @@ function applyFilters(data) {
   });
 }
 
-function applyCompFilter(data) {
-  return data.filter(r => {
-    const p = r.implied_prob_avg;
-    if (p === '' || p === null) return false;
-    return Math.abs(p - 0.5) <= compThreshold;
-  });
-}
-
-// ── stats bar ────────────────────────────────────────────────────────────────
 function renderStats(data) {
-  const filtered = applyFilters(data);
-  const demSafe   = filtered.filter(r => r.implied_prob_avg !== '' && +r.implied_prob_avg >= 0.55).length;
-  const repSafe   = filtered.filter(r => r.implied_prob_avg !== '' && +r.implied_prob_avg < 0.45).length;
-  const toss      = filtered.filter(r => r.implied_prob_avg !== '' && Math.abs(+r.implied_prob_avg - 0.5) < 0.05).length;
-  const total     = filtered.length;
+  const f = applyFilters(data);
+  const demSafe = f.filter(r => r.implied_prob_avg !== '' && +r.implied_prob_avg >= 0.55).length;
+  const repSafe = f.filter(r => r.implied_prob_avg !== '' && +r.implied_prob_avg <  0.45).length;
+  const toss    = f.filter(r => r.implied_prob_avg !== '' && Math.abs(+r.implied_prob_avg - 0.5) < 0.05).length;
   document.getElementById('stat-bar').innerHTML = `
-    <div class="stat total"><div class="val">${total}</div><div class="lbl">Races tracked</div></div>
+    <div class="stat total"><div class="val">${f.length}</div><div class="lbl">Races tracked</div></div>
     <div class="stat dem"><div class="val">${demSafe}</div><div class="lbl">Leaning/Safe D</div></div>
     <div class="stat rep"><div class="val">${repSafe}</div><div class="lbl">Leaning/Safe R</div></div>
-    <div class="stat toss"><div class="val">${toss}</div><div class="lbl">True toss-ups (±5%)</div></div>
-  `;
+    <div class="stat toss"><div class="val">${toss}</div><div class="lbl">True toss-ups (±5%)</div></div>`;
 }
 
-// ── scatter chart ─────────────────────────────────────────────────────────────
 function renderScatter(data) {
   const filtered = applyFilters(data).filter(r => r.implied_prob_avg !== '');
-  const offices = ['SEN', 'GOV', 'H'];
-  const colors  = { SEN: '#a78bfa', GOV: '#34d399', H: '#60a5fa' };
-  const names   = { SEN: 'Senate', GOV: 'Governor', H: 'House' };
-
+  const offices = ['SEN','GOV','H'];
+  const colors  = { SEN:'#a78bfa', GOV:'#34d399', H:'#60a5fa' };
+  const names   = { SEN:'Senate', GOV:'Governor', H:'House' };
   const traces = offices.map(off => {
     const rows = filtered.filter(r => r.office === off);
     return {
-      type: 'scatter',
-      mode: 'markers',
-      name: names[off],
+      type:'scatter', mode:'markers', name: names[off],
       x: rows.map(r => +r.implied_prob_avg),
       y: rows.map(() => off),
       text: rows.map(r => `${r.label}<br>Dem prob: ${pctLabel(r.implied_prob_avg)}<br>${rating(r.implied_prob_avg).text}<br>Signals: ${r.n_sources}<br>Sources: ${r.sources}`),
       hovertemplate: '%{text}<extra></extra>',
       marker: {
-        size: rows.map(r => Math.max(6, Math.min(18, Math.sqrt(+r.n_sources || 1) * 3.5))),
+        size: rows.map(r => Math.max(6, Math.min(18, Math.sqrt(+r.n_sources||1)*3.5))),
         color: rows.map(r => +r.implied_prob_avg),
-        colorscale: [[0, '#ef4444'], [0.5, '#facc15'], [1, '#3b82f6']],
-        cmin: 0, cmax: 1,
-        line: { color: colors[off], width: 1.2 },
-        opacity: 0.85,
+        colorscale: [[0,'#ef4444'],[0.5,'#facc15'],[1,'#3b82f6']],
+        cmin:0, cmax:1, line:{ color: colors[off], width:1.2 }, opacity:0.85,
       }
     };
   });
-
-  const layout = {
-    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-    margin: { t: 10, b: 50, l: 80, r: 20 },
-    xaxis: {
-      title: 'Implied Democrat Win Probability', range: [0, 1],
-      gridcolor: '#1e2433', tickformat: '.0%', color: '#64748b',
-      tickvals: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    },
-    yaxis: { gridcolor: '#1e2433', color: '#64748b' },
-    legend: { bgcolor: 'transparent', font: { color: '#94a3b8' } },
-    shapes: [{
-      type: 'line', x0: 0.5, x1: 0.5, y0: -0.5, y1: 2.5,
-      line: { color: '#facc15', width: 1, dash: 'dot' }
-    }],
-    font: { color: '#94a3b8' },
-  };
-
-  Plotly.react('scatter-chart', traces, layout, { responsive: true, displayModeBar: false });
+  Plotly.react('scatter-chart', traces, {
+    paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+    margin:{t:10,b:50,l:80,r:20},
+    xaxis:{ title:'Implied Democrat Win Probability', range:[0,1], gridcolor:'#1e2433', tickformat:'.0%', color:'#64748b', tickvals:[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1] },
+    yaxis:{ gridcolor:'#1e2433', color:'#64748b' },
+    legend:{ bgcolor:'transparent', font:{color:'#94a3b8'} },
+    shapes:[{ type:'line', x0:.5, x1:.5, y0:-.5, y1:2.5, line:{color:'#facc15',width:1,dash:'dot'} }],
+    font:{color:'#94a3b8'},
+  }, { responsive:true, displayModeBar:false });
 }
 
-// ── bar charts ────────────────────────────────────────────────────────────────
-function renderBar(divId, data, office) {
-  const rows = applyFilters({ ...data, filter: r => r.office === office })
-    .filter(r => r.implied_prob_avg !== '')
-    .sort((a, b) => +b.implied_prob_avg - +a.implied_prob_avg);
-
-  // For House, only show races we have data for
-  const display = rows.filter(r => r.office === office);
-
-  const colors = display.map(r => +r.implied_prob_avg >= 0.5 ? '#3b82f6' : '#ef4444');
-  const trace = {
-    type: 'bar',
-    orientation: 'h',
+function renderBar(divId, rows) {
+  const display = rows.filter(r => r.implied_prob_avg !== '').sort((a,b) => +b.implied_prob_avg - +a.implied_prob_avg);
+  const h = Math.max(280, display.length * 22);
+  Plotly.react(divId, [{
+    type:'bar', orientation:'h',
     x: display.map(r => +r.implied_prob_avg),
     y: display.map(r => r.label),
     text: display.map(r => pctLabel(r.implied_prob_avg)),
-    textposition: 'outside',
-    textfont: { color: '#94a3b8', size: 10 },
-    marker: { color: colors, opacity: 0.8 },
-    hovertemplate: '%{y}: %{x:.1%}<extra></extra>',
-  };
-
-  const layout = {
-    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-    margin: { t: 10, b: 30, l: 80, r: 60 },
-    xaxis: { range: [0, 1.05], tickformat: '.0%', gridcolor: '#1e2433', color: '#64748b' },
-    yaxis: { gridcolor: '#1e2433', color: '#94a3b8', tickfont: { size: 10 }, automargin: true },
-    shapes: [{ type: 'line', x0: 0.5, x1: 0.5, y0: -0.5, y1: display.length - 0.5, line: { color: '#facc15', width: 1, dash: 'dot' } }],
-    font: { color: '#94a3b8' },
-    bargap: 0.25,
-  };
-
-  Plotly.react(divId, [trace], layout, { responsive: true, displayModeBar: false });
+    textposition:'outside', textfont:{color:'#94a3b8',size:10},
+    marker:{ color: display.map(r => +r.implied_prob_avg >= 0.5 ? '#3b82f6' : '#ef4444'), opacity:0.8 },
+    hovertemplate:'%{y}: %{x:.1%}<extra></extra>',
+  }], {
+    height:h, paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+    margin:{t:10,b:30,l:90,r:60},
+    xaxis:{ range:[0,1.12], tickformat:'.0%', gridcolor:'#1e2433', color:'#64748b' },
+    yaxis:{ gridcolor:'#1e2433', color:'#94a3b8', tickfont:{size:10}, automargin:true },
+    shapes:[{ type:'line', x0:.5, x1:.5, y0:-.5, y1:display.length-.5, line:{color:'#facc15',width:1,dash:'dot'} }],
+    font:{color:'#94a3b8'}, bargap:.3,
+  }, { responsive:true, displayModeBar:false });
 }
 
-function filterForOffice(data, office) {
-  return applyFilters(data.filter(r => r.office === office));
-}
-
-// ── table ─────────────────────────────────────────────────────────────────────
 function renderTable(data) {
   let rows = applyFilters(data);
-  if (searchQ) {
-    const q = searchQ.toLowerCase();
-    rows = rows.filter(r =>
-      r.label.toLowerCase().includes(q) ||
-      r.state.toLowerCase().includes(q) ||
-      r.race_id.toLowerCase().includes(q) ||
-      (r.incumbent_name || '').toLowerCase().includes(q)
-    );
-  }
-
-  rows.sort((a, b) => {
+  rows.sort((a,b) => {
     let av = a[sortCol] ?? '', bv = b[sortCol] ?? '';
-    if (sortCol === 'implied_prob_avg') { av = av === '' ? -1 : +av; bv = bv === '' ? -1 : +bv; }
-    if (sortCol === 'n_sources') { av = +av || 0; bv = +bv || 0; }
-    if (sortCol === 'rating') { av = av === '' ? -1 : +(a.implied_prob_avg ?? -1); bv = bv === '' ? -1 : +(b.implied_prob_avg ?? -1); }
-    if (av < bv) return -sortDir;
-    if (av > bv) return sortDir;
-    return 0;
+    if (sortCol === 'implied_prob_avg' || sortCol === 'n_sources') { av = +av||0; bv = +bv||0; }
+    if (av < bv) return -sortDir; if (av > bv) return sortDir; return 0;
   });
-
-  const tbody = document.getElementById('table-body');
-  tbody.innerHTML = rows.map(r => {
+  document.getElementById('table-body').innerHTML = rows.map(r => {
     const p = r.implied_prob_avg !== '' ? +r.implied_prob_avg : null;
     const rat = rating(p);
-    const src = (r.sources || '').split('|').map(s => `<span class="src-badge">${s}</span>`).join('');
-    const barW = p !== null ? Math.round(p * 100) : 0;
+    const src = (r.sources||'').split('|').map(s => `<span class="src-badge">${s}</span>`).join('');
+    const barW = p !== null ? Math.round(p*100) : 0;
     return `<tr>
-      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.75rem">${r.state}</span></td>
+      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
       <td>${r.office}</td>
       <td>${partyBadge(r.incumbent_party)}</td>
-      <td style="color:#94a3b8;font-size:0.8rem">${r.incumbent_name || '—'}</td>
-      <td>
-        <div class="bar-cell">
-          <div class="bar-bg"><div class="bar-fill" style="width:${barW}%;background:${p !== null ? barColor(p) : '#333'}"></div></div>
-          <span class="pct-lbl" style="color:${p !== null ? barColor(p) : '#4a5568'}">${pctLabel(p)}</span>
-        </div>
-      </td>
+      <td style="color:#94a3b8;font-size:0.79rem">${r.incumbent_name||'—'}</td>
+      <td><div class="bar-cell">
+        <div class="bar-bg"><div class="bar-fill" style="width:${barW}%;background:${p!==null?barColor(p):'#333'}"></div></div>
+        <span class="pct-lbl" style="color:${p!==null?barColor(p):'#4a5568'}">${pctLabel(p)}</span>
+      </div></td>
       <td><span class="rating ${rat.cls}">${rat.text}</span></td>
       <td style="color:#64748b;text-align:center">${r.n_sources}</td>
       <td>${src}</td>
@@ -342,69 +423,140 @@ function renderTable(data) {
   }).join('');
 }
 
-// ── wire up controls ──────────────────────────────────────────────────────────
 function renderAll() {
   renderStats(RACES);
   renderScatter(RACES);
-  renderBar('senate-chart', filterForOffice(RACES, 'SEN'), 'SEN');
-  renderBar('gov-chart',    filterForOffice(RACES, 'GOV'), 'GOV');
-  renderBar('house-chart',  filterForOffice(RACES, 'H'),   'H');
+  renderBar('senate-chart', applyFilters(RACES.filter(r => r.office==='SEN')));
+  renderBar('gov-chart',    applyFilters(RACES.filter(r => r.office==='GOV')));
+  renderBar('house-chart',  applyFilters(RACES.filter(r => r.office==='H')));
   renderTable(RACES);
-}
-
-// Override renderBar to use pre-filtered data
-function renderBar(divId, rows, office) {
-  const display = rows.filter(r => r.implied_prob_avg !== '').sort((a,b) => +b.implied_prob_avg - +a.implied_prob_avg);
-  const colors = display.map(r => +r.implied_prob_avg >= 0.5 ? '#3b82f6' : '#ef4444');
-  const trace = {
-    type: 'bar', orientation: 'h',
-    x: display.map(r => +r.implied_prob_avg),
-    y: display.map(r => r.label),
-    text: display.map(r => pctLabel(r.implied_prob_avg)),
-    textposition: 'outside', textfont: { color: '#94a3b8', size: 10 },
-    marker: { color: colors, opacity: 0.8 },
-    hovertemplate: '%{y}: %{x:.1%}<extra></extra>',
-  };
-  const h = Math.max(300, display.length * 22);
-  const layout = {
-    height: h,
-    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-    margin: { t: 10, b: 30, l: 90, r: 60 },
-    xaxis: { range: [0, 1.12], tickformat: '.0%', gridcolor: '#1e2433', color: '#64748b' },
-    yaxis: { gridcolor: '#1e2433', color: '#94a3b8', tickfont: { size: 10 }, automargin: true },
-    shapes: [{ type: 'line', x0: 0.5, x1: 0.5, y0: -0.5, y1: display.length - 0.5, line: { color: '#facc15', width: 1, dash: 'dot' } }],
-    font: { color: '#94a3b8' }, bargap: 0.3,
-  };
-  Plotly.react(divId, [trace], layout, { responsive: true, displayModeBar: false });
 }
 
 document.getElementById('filter-office').addEventListener('change', e => { filterOffice = e.target.value; renderAll(); });
 document.getElementById('filter-source').addEventListener('change', e => { filterSource = e.target.value; renderAll(); });
-document.getElementById('comp-slider').addEventListener('input', e => {
-  compThreshold = +e.target.value / 100;
-  document.getElementById('comp-val').textContent = e.target.value;
-});
 document.getElementById('search').addEventListener('input', e => { searchQ = e.target.value; renderTable(RACES); });
-
 document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => {
-    const col = th.dataset.col;
-    if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
+    if (sortCol === th.dataset.col) sortDir *= -1; else { sortCol = th.dataset.col; sortDir = 1; }
     document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
     th.classList.add('sorted');
     renderTable(RACES);
   });
 });
 
-// Set updated label
 const updated = RACES.length > 0 ? RACES[0].updated_at : '';
 if (updated) {
   const d = new Date(updated);
   document.getElementById('updated-lbl').textContent =
-    `Sources: Kalshi · NYT Polls  |  Updated: ${d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`;
+    `Sources: Kalshi · NYT Polls  ·  Updated ${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
 }
 
+// ════════════════════════════════════════════════
+// POLL EXPLORER TAB
+// ════════════════════════════════════════════════
+let activeRaceId = null;
+let pOffice = 'ALL', pStage = 'ALL', pSearch = '', pOnly50 = false;
+let activeStageTab = 'ALL';
+
+function pollsFiltered() {
+  return POLLS.filter(r => {
+    if (pOffice !== 'ALL' && r.office !== pOffice) return false;
+    if (pOnly50 && r.n_over50 === 0) return false;
+    if (pSearch) {
+      const q = pSearch.toLowerCase();
+      if (!r.label.toLowerCase().includes(q) && !r.state.toLowerCase().includes(q)) return false;
+    }
+    if (pStage !== 'ALL' && !r.polls.some(p => p.stage === pStage)) return false;
+    return true;
+  });
+}
+
+function renderSidebar() {
+  const races = pollsFiltered();
+  const el = document.getElementById('race-list');
+  if (!races.length) { el.innerHTML = '<div class="empty-msg">No races match filters</div>'; return; }
+  el.innerHTML = races.map(r => `
+    <div class="race-item${r.race_id === activeRaceId ? ' active' : ''}" data-id="${r.race_id}">
+      <div class="race-label">
+        <span class="badge ${r.office}">${r.office}</span>
+        ${r.label}
+        ${r.n_over50 > 0 ? `<span class="flag-50">▲50% ×${r.n_over50}</span>` : ''}
+      </div>
+      <div class="race-meta">${r.state} · ${r.n_polls} poll${r.n_polls!==1?'s':''}</div>
+    </div>`).join('');
+  el.querySelectorAll('.race-item').forEach(el => {
+    el.addEventListener('click', () => {
+      activeRaceId = el.dataset.id;
+      activeStageTab = 'ALL';
+      renderSidebar();
+      renderPollDetail();
+    });
+  });
+}
+
+function renderPollDetail() {
+  const race = POLLS.find(r => r.race_id === activeRaceId);
+  const el = document.getElementById('poll-detail');
+  if (!race) { el.innerHTML = '<div class="poll-detail-placeholder">Select a race to see polls</div>'; return; }
+
+  const stages = ['ALL', ...new Set(race.polls.map(p => p.stage))];
+  let polls = race.polls;
+  if (activeStageTab !== 'ALL') polls = polls.filter(p => p.stage === activeStageTab);
+  if (pStage !== 'ALL') polls = polls.filter(p => p.stage === pStage);
+
+  const stageTabsHtml = stages.map(s => `
+    <button class="stage-tab${activeStageTab===s?' active':''}" data-stage="${s}">
+      ${s==='ALL'?'All':s.charAt(0).toUpperCase()+s.slice(1)}
+    </button>`).join('');
+
+  const pollsHtml = polls.map(p => {
+    const candsHtml = p.candidates.map(c => {
+      const pc = c.party==='DEM'?'D': c.party==='REP'?'R': (c.party||'NONE');
+      const col = pc==='D'?'#3b82f6': pc==='R'?'#ef4444':'#a78bfa';
+      const barW = Math.min(100, c.pct);
+      return `<div class="cand-row">
+        <span class="cand-party ${pc}">${pc}</span>
+        <span class="cand-name" title="${c.name}">${c.name}</span>
+        <div class="poll-bar-bg"><div class="poll-bar-fill" style="width:${barW}%;background:${col};opacity:${0.45+0.55*(barW/100)}"></div></div>
+        <span class="cand-pct" style="color:${c.over50?'#facc15':'#94a3b8'}">${c.pct}%</span>
+        ${c.over50?'<span class="over50-mark">▲50%</span>':''}
+      </div>`;
+    }).join('');
+    return `<div class="poll-card${p.any_over50?' has-flag':''}">
+      <div class="poll-header">
+        <div><div class="poll-pollster">${p.pollster}</div><div class="poll-meta">${p.end_date}${p.sample_size?' · n='+p.sample_size.toLocaleString():''}</div></div>
+        <div class="poll-badges">
+          <span class="mini-badge stage">${p.stage}</span>
+          ${p.partisan?'<span class="mini-badge partisan">Partisan</span>':''}
+          ${p.any_over50?'<span class="mini-badge over50">▲50% flag</span>':''}
+        </div>
+      </div>
+      <div class="candidates">${candsHtml}</div>
+    </div>`;
+  }).join('') || '<div class="empty-msg">No polls for this filter</div>';
+
+  el.innerHTML = `
+    <div class="detail-header">
+      <h2>${race.label} — ${race.state}</h2>
+      <p>${race.n_polls} poll${race.n_polls!==1?'s':''} · ${race.n_over50} with a candidate over 50%</p>
+    </div>
+    <div class="stage-tabs">${stageTabsHtml}</div>
+    ${pollsHtml}`;
+
+  el.querySelectorAll('.stage-tab').forEach(btn => {
+    btn.addEventListener('click', () => { activeStageTab = btn.dataset.stage; renderPollDetail(); });
+  });
+}
+
+document.getElementById('p-search').addEventListener('input', e => { pSearch = e.target.value; renderSidebar(); });
+document.getElementById('p-office').addEventListener('change', e => { pOffice = e.target.value; renderSidebar(); });
+document.getElementById('p-stage').addEventListener('change', e => { pStage = e.target.value; renderSidebar(); renderPollDetail(); });
+document.getElementById('p-only50').addEventListener('change', e => { pOnly50 = e.target.checked; renderSidebar(); });
+
+// ── init ──
 renderAll();
+renderSidebar();
+if (POLLS.length > 0) { activeRaceId = POLLS[0].race_id; renderSidebar(); renderPollDetail(); }
 </script>
 </body>
 </html>
