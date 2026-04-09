@@ -267,6 +267,13 @@ tr:hover td { background: #1a2035; }
 <div id="tab-mismatch" class="tab-panel">
   <div class="mismatch-controls">
     <div class="filter-group">
+      <label>Stage</label>
+      <select id="mm-stage">
+        <option value="general">General Election</option>
+        <option value="primary">Primary</option>
+      </select>
+    </div>
+    <div class="filter-group">
       <label>Office</label>
       <select id="mm-office">
         <option value="ALL">All</option>
@@ -275,35 +282,29 @@ tr:hover td { background: #1a2035; }
         <option value="H">House</option>
       </select>
     </div>
+    <div class="filter-group" id="mm-party-wrap" style="display:none">
+      <label>Party</label>
+      <select id="mm-party">
+        <option value="ALL">All</option>
+        <option value="DEM">Dem primary</option>
+        <option value="REP">Rep primary</option>
+      </select>
+    </div>
     <div class="filter-group">
       <label>Direction</label>
       <select id="mm-direction">
         <option value="ALL">All mismatches</option>
-        <option value="mkt-dem">Market favors Dem more</option>
-        <option value="mkt-rep">Market favors Rep more</option>
+        <option value="mkt-dem">Market favors leader more</option>
+        <option value="mkt-rep">Polls favor leader more</option>
       </select>
     </div>
   </div>
   <div class="mismatch-body">
-    <p class="mismatch-explainer">
-      <strong>What this shows:</strong> For each race with both NYT polling data and a Kalshi prediction market,
-      this compares the weighted average Democrat poll share (raw %) against the Kalshi implied Democrat win probability.
-      A large gap means the market and polls are telling different stories —
-      either the market is pricing in something the polls aren't capturing yet, or the polls are an outlier.
-      <strong>Note:</strong> poll share ≠ win probability, so some gap is always expected — large gaps are the signal.
-    </p>
+    <p class="mismatch-explainer" id="mm-explainer"></p>
     <div id="mismatch-chart"></div>
     <table class="mm-table">
       <thead>
-        <tr>
-          <th data-mmcol="label">Race</th>
-          <th data-mmcol="office">Office</th>
-          <th data-mmcol="nyt_dem_share">Polls (Dem %)</th>
-          <th data-mmcol="kalshi_dem_prob">Market (Dem win prob)</th>
-          <th data-mmcol="gap">Gap</th>
-          <th data-mmcol="abs_gap">Abs Gap</th>
-          <th>Favors</th>
-        </tr>
+        <tr id="mm-thead"></tr>
       </thead>
       <tbody id="mm-table-body"></tbody>
     </table>
@@ -634,12 +635,14 @@ document.getElementById('p-only50').addEventListener('change', e => { pOnly50 = 
 // ════════════════════════════════════════════════
 // MISMATCH TAB
 // ════════════════════════════════════════════════
-let mmOffice = 'ALL', mmDirection = 'ALL';
+let mmStage = 'general', mmOffice = 'ALL', mmDirection = 'ALL', mmParty = 'ALL';
 let mmSortCol = 'abs_gap', mmSortDir = -1;
 
 function mmFiltered() {
-  return MISMATCH.filter(r => {
+  const data = mmStage === 'general' ? MISMATCH.general : MISMATCH.primary;
+  return data.filter(r => {
     if (mmOffice !== 'ALL' && r.office !== mmOffice) return false;
+    if (mmStage === 'primary' && mmParty !== 'ALL' && r.prim_party !== mmParty) return false;
     if (mmDirection === 'mkt-dem' && r.gap <= 0) return false;
     if (mmDirection === 'mkt-rep' && r.gap >= 0) return false;
     return true;
@@ -648,40 +651,60 @@ function mmFiltered() {
 
 function renderMismatchChart() {
   const rows = mmFiltered();
+  const isGen = mmStage === 'general';
   const sorted = [...rows].sort((a,b) => b.gap - a.gap);
   const colors = sorted.map(r => r.gap > 0 ? '#3b82f6' : '#ef4444');
+  const yLabels = sorted.map(r => isGen ? r.label : `${r.label} (${r.prim_party})`);
   const h = Math.max(300, sorted.length * 22);
   Plotly.react('mismatch-chart', [{
     type: 'bar', orientation: 'h',
     x: sorted.map(r => r.gap),
-    y: sorted.map(r => r.label),
-    text: sorted.map(r => (r.gap > 0 ? '+' : '') + (r.gap * 100).toFixed(1) + '%'),
-    textposition: 'outside', textfont: { color: '#94a3b8', size: 10 },
-    marker: { color: colors, opacity: 0.8 },
-    hovertemplate: '<b>%{y}</b><br>Gap: %{x:.1%}<br>Polls (Dem): ' +
-      sorted.map(r => (r.nyt_dem_share*100).toFixed(1)+'%').join('<br>') +
-      '<extra></extra>',
+    y: yLabels,
     customdata: sorted.map(r => [
       (r.nyt_dem_share*100).toFixed(1),
       (r.kalshi_dem_prob*100).toFixed(1),
+      isGen ? '' : (r.candidate || ''),
     ]),
-    hovertemplate: '<b>%{y}</b><br>Polls Dem share: %{customdata[0]}%<br>Market Dem win prob: %{customdata[1]}%<br>Gap: %{x:.1%}<extra></extra>',
+    hovertemplate: isGen
+      ? '<b>%{y}</b><br>Polls Dem share: %{customdata[0]}%<br>Market Dem win prob: %{customdata[1]}%<br>Gap: %{x:.1%}<extra></extra>'
+      : '<b>%{y}</b><br>Poll leader: %{customdata[2]} (%{customdata[0]}%)<br>Market leader prob: %{customdata[1]}%<br>Gap: %{x:.1%}<extra></extra>',
+    textposition: 'outside', textfont: { color: '#94a3b8', size: 10 },
+    marker: { color: colors, opacity: 0.8 },
   }], {
     height: h,
     paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-    margin: { t: 10, b: 40, l: 90, r: 70 },
+    margin: { t: 30, b: 40, l: 110, r: 70 },
     xaxis: { tickformat: '.0%', gridcolor: '#1e2433', color: '#64748b', zeroline: true, zerolinecolor: '#facc15', zerolinewidth: 1 },
     yaxis: { gridcolor: '#1e2433', color: '#94a3b8', tickfont: { size: 10 }, automargin: true },
     font: { color: '#94a3b8' }, bargap: 0.3,
-    annotations: [{
-      x: 0, y: 1.02, xref: 'paper', yref: 'paper', xanchor: 'center',
-      text: '← Market favors Rep more  |  Market favors Dem more →',
-      showarrow: false, font: { size: 11, color: '#4a5568' },
-    }],
+    annotations: [{ x: 0, y: 1.04, xref:'paper', yref:'paper', xanchor:'center',
+      text: '← Polls favor leader more  |  Market favors leader more →',
+      showarrow: false, font: { size: 11, color: '#4a5568' } }],
   }, { responsive: true, displayModeBar: false });
 }
 
 function renderMismatchTable() {
+  const isGen = mmStage === 'general';
+  // Update thead
+  document.getElementById('mm-thead').innerHTML = isGen
+    ? `<th data-mmcol="label">Race</th><th data-mmcol="office">Office</th>
+       <th data-mmcol="nyt_dem_share">Polls (Dem %)</th>
+       <th data-mmcol="kalshi_dem_prob">Market (Dem win prob)</th>
+       <th data-mmcol="gap">Gap</th><th data-mmcol="abs_gap">Abs Gap</th><th>Favors</th>`
+    : `<th data-mmcol="label">Race</th><th data-mmcol="office">Office</th>
+       <th data-mmcol="prim_party">Party</th>
+       <th data-mmcol="candidate">Poll Leader</th>
+       <th data-mmcol="nyt_dem_share">Poll Share</th>
+       <th data-mmcol="kalshi_dem_prob">Market Prob</th>
+       <th data-mmcol="gap">Gap</th><th data-mmcol="abs_gap">Abs Gap</th>`;
+
+  // Update explainer
+  document.getElementById('mm-explainer').innerHTML = isGen
+    ? `<strong>General election:</strong> Compares weighted average Democrat poll share vs. Kalshi implied Democrat win probability.
+       Large gaps mean the market and polls disagree. Note: raw poll share ≠ win probability, so some gap is always expected.`
+    : `<strong>Primary:</strong> Compares the leading candidate's poll share vs. their Kalshi nomination probability.
+       Gaps here often reflect the market pricing in late-breaking endorsements or momentum not yet captured by polls.`;
+
   let rows = mmFiltered();
   rows = [...rows].sort((a,b) => {
     let av = a[mmSortCol] ?? 0, bv = b[mmSortCol] ?? 0;
@@ -689,51 +712,58 @@ function renderMismatchTable() {
   });
 
   document.getElementById('mm-table-body').innerHTML = rows.map(r => {
-    const gap = r.gap;
-    const absPct = Math.abs(gap);
-    // Gap bar: centered at 50%, fills left (rep) or right (dem)
+    const gap = r.gap, absPct = Math.abs(gap);
     const barW = Math.min(50, absPct * 100);
     const barLeft = gap < 0 ? `${50 - barW}%` : '50%';
     const barColor = gap > 0 ? '#3b82f6' : '#ef4444';
     const gapStr = (gap > 0 ? '+' : '') + (gap * 100).toFixed(1) + 'pp';
-    const favorMkt = gap > 0
-      ? '<span class="favor-badge mkt-dem">Mkt→D</span>'
-      : '<span class="favor-badge mkt-rep">Mkt→R</span>';
+    const partyCol = r.prim_party === 'DEM' ? '#60a5fa' : r.prim_party === 'REP' ? '#f87171' : '#94a3b8';
+    const favorBadge = gap > 0
+      ? '<span class="favor-badge mkt-dem">Mkt higher</span>'
+      : '<span class="favor-badge mkt-rep">Poll higher</span>';
 
-    return `<tr>
+    const baseRow = `
       <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
-      <td>${r.office}</td>
+      <td>${r.office}</td>`;
+    const primaryExtra = isGen ? '' : `
+      <td style="color:${partyCol};font-weight:700">${r.prim_party}</td>
+      <td style="color:#94a3b8;font-size:0.79rem">${r.candidate || '—'}</td>`;
+    const probCols = `
       <td style="color:#94a3b8">${(r.nyt_dem_share*100).toFixed(1)}%</td>
-      <td style="color:#94a3b8">${(r.kalshi_dem_prob*100).toFixed(1)}%</td>
-      <td>
-        <div class="gap-bar-wrap">
-          <div class="gap-bar-center">
-            <div class="gap-bar-fill" style="left:${barLeft};width:${barW}%;background:${barColor};opacity:0.8"></div>
-          </div>
-          <span class="gap-val" style="color:${barColor}">${gapStr}</span>
-        </div>
-      </td>
+      <td style="color:#94a3b8">${(r.kalshi_dem_prob*100).toFixed(1)}%</td>`;
+    const gapCols = `
+      <td><div class="gap-bar-wrap">
+        <div class="gap-bar-center"><div class="gap-bar-fill" style="left:${barLeft};width:${barW}%;background:${barColor};opacity:0.8"></div></div>
+        <span class="gap-val" style="color:${barColor}">${gapStr}</span>
+      </div></td>
       <td style="color:#64748b">${(absPct*100).toFixed(1)}pp</td>
-      <td>${favorMkt}</td>
-    </tr>`;
+      ${isGen ? `<td>${favorBadge}</td>` : ''}`;
+
+    return `<tr>${baseRow}${primaryExtra}${probCols}${gapCols}</tr>`;
   }).join('');
+
+  // Re-wire sort headers
+  document.querySelectorAll('th[data-mmcol]').forEach(th => {
+    th.addEventListener('click', () => {
+      if (mmSortCol === th.dataset.mmcol) mmSortDir *= -1; else { mmSortCol = th.dataset.mmcol; mmSortDir = -1; }
+      document.querySelectorAll('th[data-mmcol]').forEach(t => t.classList.remove('sorted'));
+      th.classList.add('sorted');
+      renderMismatchTable();
+    });
+  });
 }
 
 function renderMismatch() {
+  const isPrimary = mmStage === 'primary';
+  document.getElementById('mm-party-wrap').style.display = isPrimary ? '' : 'none';
   renderMismatchChart();
   renderMismatchTable();
 }
 
+document.getElementById('mm-stage').addEventListener('change', e => { mmStage = e.target.value; renderMismatch(); });
 document.getElementById('mm-office').addEventListener('change', e => { mmOffice = e.target.value; renderMismatch(); });
+document.getElementById('mm-party').addEventListener('change', e => { mmParty = e.target.value; renderMismatch(); });
 document.getElementById('mm-direction').addEventListener('change', e => { mmDirection = e.target.value; renderMismatch(); });
-document.querySelectorAll('th[data-mmcol]').forEach(th => {
-  th.addEventListener('click', () => {
-    if (mmSortCol === th.dataset.mmcol) mmSortDir *= -1; else { mmSortCol = th.dataset.mmcol; mmSortDir = -1; }
-    document.querySelectorAll('th[data-mmcol]').forEach(t => t.classList.remove('sorted'));
-    th.classList.add('sorted');
-    renderMismatchTable();
-  });
-});
 
 // ── init ──
 renderAll();
