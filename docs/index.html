@@ -7,6 +7,7 @@
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <script src="data.js"></script>
 <script src="polls_data.js"></script>
+<script src="mismatch_data.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
@@ -149,6 +150,33 @@ tr:hover td { background: #1a2035; }
   .poll-layout { flex-direction: column; height: auto; }
   .sidebar { width: 100%; height: 45vh; border-right: none; border-bottom: 1px solid #1e2433; }
 }
+
+/* ════════════════════════════════════════
+   MISMATCH TAB
+   ════════════════════════════════════════ */
+.mismatch-controls { display: flex; gap: 12px; padding: 14px 28px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
+.mismatch-controls label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+.mismatch-controls select { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.84rem; cursor: pointer; }
+.mismatch-body { padding: 20px 28px 40px; }
+.mismatch-explainer { font-size: 0.8rem; color: #64748b; margin-bottom: 18px; max-width: 700px; line-height: 1.6; }
+.mismatch-explainer strong { color: #94a3b8; }
+#mismatch-chart { margin-bottom: 28px; }
+.mm-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.mm-table th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e2433; cursor: pointer; user-select: none; white-space: nowrap; }
+.mm-table th:hover { color: #94a3b8; }
+.mm-table th.sorted { color: #a78bfa; }
+.mm-table td { padding: 8px 12px; border-bottom: 1px solid #161b27; }
+.mm-table tr:hover td { background: #1a2035; }
+.gap-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.gap-bar-center { position: relative; width: 140px; height: 10px; background: #1e2433; border-radius: 3px; flex-shrink: 0; }
+.gap-bar-fill { position: absolute; top: 0; height: 100%; border-radius: 3px; }
+.gap-val { font-weight: 700; min-width: 52px; font-size: 0.82rem; }
+.gap-label { font-size: 0.72rem; color: #64748b; }
+.favor-badge { display: inline-block; padding: 2px 7px; border-radius: 99px; font-size: 0.68rem; font-weight: 700; }
+.favor-badge.mkt-dem { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.favor-badge.mkt-rep { background: rgba(248,113,113,0.15); color: #f87171; }
+.favor-badge.poll-dem { background: rgba(96,165,250,0.08); color: #93c5fd; border: 1px solid rgba(96,165,250,0.3); }
+.favor-badge.poll-rep { background: rgba(248,113,113,0.08); color: #fca5a5; border: 1px solid rgba(248,113,113,0.3); }
 </style>
 </head>
 <body>
@@ -161,6 +189,7 @@ tr:hover td { background: #1a2035; }
   <div class="tabs">
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="polls">Poll Explorer</button>
+    <button class="tab-btn" data-tab="mismatch">Polling vs Markets</button>
   </div>
 </header>
 
@@ -228,6 +257,55 @@ tr:hover td { background: #1a2035; }
         </tr>
       </thead>
       <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 3: POLLING vs MARKETS MISMATCH
+     ══════════════════════════════════════════════ -->
+<div id="tab-mismatch" class="tab-panel">
+  <div class="mismatch-controls">
+    <div class="filter-group">
+      <label>Office</label>
+      <select id="mm-office">
+        <option value="ALL">All</option>
+        <option value="SEN">Senate</option>
+        <option value="GOV">Governor</option>
+        <option value="H">House</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Direction</label>
+      <select id="mm-direction">
+        <option value="ALL">All mismatches</option>
+        <option value="mkt-dem">Market favors Dem more</option>
+        <option value="mkt-rep">Market favors Rep more</option>
+      </select>
+    </div>
+  </div>
+  <div class="mismatch-body">
+    <p class="mismatch-explainer">
+      <strong>What this shows:</strong> For each race with both NYT polling data and a Kalshi prediction market,
+      this compares the weighted average Democrat poll share (raw %) against the Kalshi implied Democrat win probability.
+      A large gap means the market and polls are telling different stories —
+      either the market is pricing in something the polls aren't capturing yet, or the polls are an outlier.
+      <strong>Note:</strong> poll share ≠ win probability, so some gap is always expected — large gaps are the signal.
+    </p>
+    <div id="mismatch-chart"></div>
+    <table class="mm-table">
+      <thead>
+        <tr>
+          <th data-mmcol="label">Race</th>
+          <th data-mmcol="office">Office</th>
+          <th data-mmcol="nyt_dem_share">Polls (Dem %)</th>
+          <th data-mmcol="kalshi_dem_prob">Market (Dem win prob)</th>
+          <th data-mmcol="gap">Gap</th>
+          <th data-mmcol="abs_gap">Abs Gap</th>
+          <th>Favors</th>
+        </tr>
+      </thead>
+      <tbody id="mm-table-body"></tbody>
     </table>
   </div>
 </div>
@@ -553,10 +631,115 @@ document.getElementById('p-office').addEventListener('change', e => { pOffice = 
 document.getElementById('p-stage').addEventListener('change', e => { pStage = e.target.value; renderSidebar(); renderPollDetail(); });
 document.getElementById('p-only50').addEventListener('change', e => { pOnly50 = e.target.checked; renderSidebar(); });
 
+// ════════════════════════════════════════════════
+// MISMATCH TAB
+// ════════════════════════════════════════════════
+let mmOffice = 'ALL', mmDirection = 'ALL';
+let mmSortCol = 'abs_gap', mmSortDir = -1;
+
+function mmFiltered() {
+  return MISMATCH.filter(r => {
+    if (mmOffice !== 'ALL' && r.office !== mmOffice) return false;
+    if (mmDirection === 'mkt-dem' && r.gap <= 0) return false;
+    if (mmDirection === 'mkt-rep' && r.gap >= 0) return false;
+    return true;
+  });
+}
+
+function renderMismatchChart() {
+  const rows = mmFiltered();
+  const sorted = [...rows].sort((a,b) => b.gap - a.gap);
+  const colors = sorted.map(r => r.gap > 0 ? '#3b82f6' : '#ef4444');
+  const h = Math.max(300, sorted.length * 22);
+  Plotly.react('mismatch-chart', [{
+    type: 'bar', orientation: 'h',
+    x: sorted.map(r => r.gap),
+    y: sorted.map(r => r.label),
+    text: sorted.map(r => (r.gap > 0 ? '+' : '') + (r.gap * 100).toFixed(1) + '%'),
+    textposition: 'outside', textfont: { color: '#94a3b8', size: 10 },
+    marker: { color: colors, opacity: 0.8 },
+    hovertemplate: '<b>%{y}</b><br>Gap: %{x:.1%}<br>Polls (Dem): ' +
+      sorted.map(r => (r.nyt_dem_share*100).toFixed(1)+'%').join('<br>') +
+      '<extra></extra>',
+    customdata: sorted.map(r => [
+      (r.nyt_dem_share*100).toFixed(1),
+      (r.kalshi_dem_prob*100).toFixed(1),
+    ]),
+    hovertemplate: '<b>%{y}</b><br>Polls Dem share: %{customdata[0]}%<br>Market Dem win prob: %{customdata[1]}%<br>Gap: %{x:.1%}<extra></extra>',
+  }], {
+    height: h,
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { t: 10, b: 40, l: 90, r: 70 },
+    xaxis: { tickformat: '.0%', gridcolor: '#1e2433', color: '#64748b', zeroline: true, zerolinecolor: '#facc15', zerolinewidth: 1 },
+    yaxis: { gridcolor: '#1e2433', color: '#94a3b8', tickfont: { size: 10 }, automargin: true },
+    font: { color: '#94a3b8' }, bargap: 0.3,
+    annotations: [{
+      x: 0, y: 1.02, xref: 'paper', yref: 'paper', xanchor: 'center',
+      text: '← Market favors Rep more  |  Market favors Dem more →',
+      showarrow: false, font: { size: 11, color: '#4a5568' },
+    }],
+  }, { responsive: true, displayModeBar: false });
+}
+
+function renderMismatchTable() {
+  let rows = mmFiltered();
+  rows = [...rows].sort((a,b) => {
+    let av = a[mmSortCol] ?? 0, bv = b[mmSortCol] ?? 0;
+    if (av < bv) return -mmSortDir; if (av > bv) return mmSortDir; return 0;
+  });
+
+  document.getElementById('mm-table-body').innerHTML = rows.map(r => {
+    const gap = r.gap;
+    const absPct = Math.abs(gap);
+    // Gap bar: centered at 50%, fills left (rep) or right (dem)
+    const barW = Math.min(50, absPct * 100);
+    const barLeft = gap < 0 ? `${50 - barW}%` : '50%';
+    const barColor = gap > 0 ? '#3b82f6' : '#ef4444';
+    const gapStr = (gap > 0 ? '+' : '') + (gap * 100).toFixed(1) + 'pp';
+    const favorMkt = gap > 0
+      ? '<span class="favor-badge mkt-dem">Mkt→D</span>'
+      : '<span class="favor-badge mkt-rep">Mkt→R</span>';
+
+    return `<tr>
+      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
+      <td>${r.office}</td>
+      <td style="color:#94a3b8">${(r.nyt_dem_share*100).toFixed(1)}%</td>
+      <td style="color:#94a3b8">${(r.kalshi_dem_prob*100).toFixed(1)}%</td>
+      <td>
+        <div class="gap-bar-wrap">
+          <div class="gap-bar-center">
+            <div class="gap-bar-fill" style="left:${barLeft};width:${barW}%;background:${barColor};opacity:0.8"></div>
+          </div>
+          <span class="gap-val" style="color:${barColor}">${gapStr}</span>
+        </div>
+      </td>
+      <td style="color:#64748b">${(absPct*100).toFixed(1)}pp</td>
+      <td>${favorMkt}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMismatch() {
+  renderMismatchChart();
+  renderMismatchTable();
+}
+
+document.getElementById('mm-office').addEventListener('change', e => { mmOffice = e.target.value; renderMismatch(); });
+document.getElementById('mm-direction').addEventListener('change', e => { mmDirection = e.target.value; renderMismatch(); });
+document.querySelectorAll('th[data-mmcol]').forEach(th => {
+  th.addEventListener('click', () => {
+    if (mmSortCol === th.dataset.mmcol) mmSortDir *= -1; else { mmSortCol = th.dataset.mmcol; mmSortDir = -1; }
+    document.querySelectorAll('th[data-mmcol]').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    renderMismatchTable();
+  });
+});
+
 // ── init ──
 renderAll();
 renderSidebar();
 if (POLLS.length > 0) { activeRaceId = POLLS[0].race_id; renderSidebar(); renderPollDetail(); }
+renderMismatch();
 </script>
 </body>
 </html>
