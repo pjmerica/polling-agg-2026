@@ -86,6 +86,21 @@ def load_nyt_polls() -> pd.DataFrame:
     return df[["race_id", "source", "market_title", "implied_prob", "weight", "fetched_at"]]
 
 
+def load_predictit() -> pd.DataFrame:
+    """Load PredictIt markets CSV."""
+    path = RAW_DIR / "predictit_markets.csv"
+    if not path.exists():
+        print("  predictit_markets.csv not found — run scrapers/predictit.py first")
+        return pd.DataFrame()
+    df = pd.read_csv(path)
+    df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
+    df["source"] = "predictit"
+    df["market_title"] = df["contract_name"].fillna(df["market_name"])
+    # PredictIt has no open_interest — weight equally
+    df["weight"] = 1.0
+    return df[["race_id", "source", "market_title", "implied_prob", "weight", "fetched_at"]]
+
+
 def load_rcp_polls() -> pd.DataFrame:
     """Load RCP polls if available."""
     path = RAW_DIR / "rcp_polls.csv"
@@ -171,6 +186,11 @@ def run():
     if not nyt.empty:
         print(f"  NYT polls: {len(nyt)} rows across {nyt['race_id'].nunique()} races")
         frames.append(nyt)
+
+    predictit = load_predictit()
+    if not predictit.empty:
+        print(f"  PredictIt: {len(predictit)} contract rows across {predictit['race_id'].nunique()} races")
+        frames.append(predictit)
 
     rcp = load_rcp_polls()
     if not rcp.empty:
