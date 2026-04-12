@@ -298,6 +298,28 @@ tr:hover td { background: #1a2035; }
         <option value="mkt-rep">Polls favor leader more</option>
       </select>
     </div>
+    <div class="filter-group">
+      <label>Min poll %</label>
+      <select id="mm-minpoll">
+        <option value="0">Any</option>
+        <option value="0.45">≥ 45%</option>
+        <option value="0.48">≥ 48%</option>
+        <option value="0.50">≥ 50%</option>
+        <option value="0.55">≥ 55%</option>
+        <option value="0.60">≥ 60%</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Min market %</label>
+      <select id="mm-minmarket">
+        <option value="0">Any</option>
+        <option value="0.45">≥ 45%</option>
+        <option value="0.48">≥ 48%</option>
+        <option value="0.50">≥ 50%</option>
+        <option value="0.55">≥ 55%</option>
+        <option value="0.60">≥ 60%</option>
+      </select>
+    </div>
   </div>
   <div class="mismatch-body">
     <p class="mismatch-explainer" id="mm-explainer"></p>
@@ -636,6 +658,7 @@ document.getElementById('p-only50').addEventListener('change', e => { pOnly50 = 
 // MISMATCH TAB
 // ════════════════════════════════════════════════
 let mmStage = 'general', mmOffice = 'ALL', mmDirection = 'ALL', mmParty = 'ALL';
+let mmMinPoll = 0, mmMinMarket = 0;
 let mmSortCol = 'abs_gap', mmSortDir = -1;
 
 function mmFiltered() {
@@ -645,6 +668,8 @@ function mmFiltered() {
     if (mmStage === 'primary' && mmParty !== 'ALL' && r.prim_party !== mmParty) return false;
     if (mmDirection === 'mkt-dem' && r.gap <= 0) return false;
     if (mmDirection === 'mkt-rep' && r.gap >= 0) return false;
+    if (mmMinPoll > 0 && (r.nyt_dem_share ?? 0) < mmMinPoll) return false;
+    if (mmMinMarket > 0 && (r.kalshi_dem_prob ?? 0) < mmMinMarket) return false;
     return true;
   });
 }
@@ -764,6 +789,8 @@ document.getElementById('mm-stage').addEventListener('change', e => { mmStage = 
 document.getElementById('mm-office').addEventListener('change', e => { mmOffice = e.target.value; renderMismatch(); });
 document.getElementById('mm-party').addEventListener('change', e => { mmParty = e.target.value; renderMismatch(); });
 document.getElementById('mm-direction').addEventListener('change', e => { mmDirection = e.target.value; renderMismatch(); });
+document.getElementById('mm-minpoll').addEventListener('change', e => { mmMinPoll = parseFloat(e.target.value); renderMismatch(); });
+document.getElementById('mm-minmarket').addEventListener('change', e => { mmMinMarket = parseFloat(e.target.value); renderMismatch(); });
 
 // ── init ──
 renderAll();
