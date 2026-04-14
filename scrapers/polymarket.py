@@ -21,6 +21,7 @@ Market object key fields (verified):
 """
 
 import time
+import re
 import urllib.request
 import urllib.parse
 import json
@@ -46,6 +47,72 @@ EXCLUDE_KEYWORDS = [
     "nhl", "nba", "nfl", "mlb", "soccer", "stanley cup",
     "premier league", "world cup",
 ]
+
+STATE_NAME_TO_ABBREV = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",
+    "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE",
+    "florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID",
+    "illinois": "IL", "indiana": "IN", "iowa": "IA", "kansas": "KS",
+    "kentucky": "KY", "louisiana": "LA", "maine": "ME", "maryland": "MD",
+    "massachusetts": "MA", "michigan": "MI", "minnesota": "MN", "mississippi": "MS",
+    "missouri": "MO", "montana": "MT", "nebraska": "NE", "nevada": "NV",
+    "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY",
+    "north carolina": "NC", "north dakota": "ND", "ohio": "OH", "oklahoma": "OK",
+    "oregon": "OR", "pennsylvania": "PA", "rhode island": "RI", "south carolina": "SC",
+    "south dakota": "SD", "tennessee": "TN", "texas": "TX", "utah": "UT",
+    "vermont": "VT", "virginia": "VA", "washington": "WA", "west virginia": "WV",
+    "wisconsin": "WI", "wyoming": "WY",
+}
+
+# State abbreviation patterns in questions like "NY-16", "CA-37"
+STATE_ABBREVS = set(STATE_NAME_TO_ABBREV.values())
+
+
+def infer_race_id(question: str) -> str | None:
+    """Map a Polymarket question to a canonical race_id."""
+    q = question.lower()
+
+    # Skip control/balance-of-power questions
+    if any(k in q for k in ["control the", "balance of power", "how many seats", "which party will win the"]):
+        return None
+
+    # House: patterns like "NY-16 House seat", "CA-37 house", "AZ-07"
+    m = re.search(r'\b([A-Z]{2})-(\d{1,2})\b', question)
+    if m:
+        sa = m.group(1)
+        dist = str(int(m.group(2))).zfill(2)
+        if sa in STATE_ABBREVS:
+            return f"2026-H-{sa}-{dist}"
+
+    # Find state by full name
+    state_abbrev = None
+    for name, abbrev in STATE_NAME_TO_ABBREV.items():
+        if name in q:
+            state_abbrev = abbrev
+            break
+
+    if not state_abbrev:
+        return None
+
+    # Senate
+    if "senate" in q or "senator" in q:
+        if state_abbrev == "FL" and "special" in q:
+            return f"2026-SEN-FL-S"
+        if state_abbrev == "OH" and "special" in q:
+            return f"2026-SEN-OH-S"
+        return f"2026-SEN-{state_abbrev}"
+
+    # Governor
+    if "governor" in q or "gubernatorial" in q or "governor election" in q:
+        return f"2026-GOV-{state_abbrev}"
+
+    # House with district number in text
+    m2 = re.search(r"(\d+)(?:st|nd|rd|th)?\s*(?:congressional\s*)?district", q)
+    if m2 and ("house" in q or "congressional" in q or "district" in q):
+        dist = str(int(m2.group(1))).zfill(2)
+        return f"2026-H-{state_abbrev}-{dist}"
+
+    return None
 
 
 def _get(path: str, params: dict = None) -> list | dict:
@@ -109,29 +176,34 @@ def parse_market(m: dict) -> dict:
     if "Yes" in outcome_price_pairs:
         implied_prob = outcome_price_pairs["Yes"]
     elif len(outcome_price_pairs) == 2:
-        # Take the first non-"No" outcome
         for k, v in outcome_price_pairs.items():
             if k.lower() != "no":
                 implied_prob = v
                 break
 
+    question = m.get("question", "")
+    race_id = infer_race_id(question)
+
+    # Fallback: use lastTradePrice if outcome parsing failed
+    if implied_prob is None:
+        implied_prob = m.get("lastTradePrice")
+
     return {
         "source": "polymarket",
         "condition_id": m.get("conditionId"),
         "market_id": m.get("id"),
-        "question": m.get("question"),
+        "question": question,
+        "race_id": race_id,
         "end_date": m.get("endDate"),
         "active": m.get("active"),
         "closed": m.get("closed"),
         "market_type": m.get("marketType"),
         "liquidity": m.get("liquidity"),
         "volume": m.get("volume"),
-        "outcomes": "|".join(str(o) for o in outcomes),
-        "prices": "|".join(str(p) for p in prices),
+        "best_ask": m.get("bestAsk"),
+        "best_bid": m.get("bestBid"),
         "implied_prob": implied_prob,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
-        # race_id: left null here — matching to canonical IDs is done in analysis/aggregator.py
-        # Polymarket markets are mostly control/primary questions, not individual race winners yet
     }
 
 

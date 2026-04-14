@@ -4,12 +4,12 @@ Cross-market arbitrage scanner.
 Compares implied probabilities for the same event across Kalshi, PredictIt,
 and Polymarket. Flags gaps that exceed a threshold after estimated fees.
 
-Fee assumptions:
-  Kalshi:    ~7% round-trip (maker/taker on entry + exit)
-  PredictIt: ~10% on profits + 5% on withdrawal -> ~15% effective round-trip
-  Polymarket: ~2% round-trip (low fee CLOB)
+Fee assumptions (round-trip):
+  Kalshi:    ~7%  (maker/taker on entry + exit)
+  PredictIt: ~15% (10% on profits + 5% withdrawal)
+  Polymarket: ~2% (low-fee CLOB)
 
-Output: docs/arb_data.js
+Output: docs/arb_data.js — array of {pair, race_id, label, prob_a, prob_b, raw_gap_pp, net_gap_pp, profitable, action}
 """
 
 import pandas as pd
@@ -21,7 +21,6 @@ from datetime import datetime, timezone
 ROOT = Path(__file__).parent.parent
 RAW = ROOT / "data" / "raw"
 
-# Effective round-trip fee per platform (rough estimate)
 FEES = {
     "kalshi":    0.07,
     "predictit": 0.15,
@@ -29,18 +28,16 @@ FEES = {
 }
 
 
+# ── loaders ──────────────────────────────────────────────────────────────────
+
 def load_kalshi_general():
-    """
-    Extract Kalshi Democrat/Republican win probabilities per race.
-    Use the highest open_interest market for each race+party.
-    """
+    """Dem/Rep win prob per race — pick highest open_interest market per race+party."""
     path = RAW / "kalshi_markets.csv"
     if not path.exists():
         return pd.DataFrame()
     df = pd.read_csv(path)
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
 
-    # Identify party from title
     dem_mask = df["market_title"].str.contains(
         r"Democrat(?:ic)?s?\s+win|Will Democrat(?:ic)?s?\s+win", case=False, na=False
     ) & ~df["market_title"].str.contains("nominee|primary|nominate", case=False, na=False)
@@ -48,53 +45,118 @@ def load_kalshi_general():
         r"Republican(?:s)?\s+win|Will Republican(?:s)?\s+win", case=False, na=False
     ) & ~df["market_title"].str.contains("nominee|primary|nominate", case=False, na=False)
 
-    dem = df[dem_mask].copy()
-    rep = df[rep_mask].copy()
-
     def best(g):
         oi = pd.to_numeric(g["open_interest"], errors="coerce").fillna(0)
         idx = oi.idxmax()
         return g.loc[idx, ["implied_prob", "open_interest", "market_title"]]
 
-    dem_agg = dem.groupby("race_id").apply(best, include_groups=False).reset_index()
-    dem_agg = dem_agg.rename(columns={"implied_prob": "kalshi_dem", "open_interest": "kalshi_oi_dem", "market_title": "kalshi_title_dem"})
+    dem = df[dem_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
+    dem = dem.rename(columns={"implied_prob": "kalshi_dem", "open_interest": "kalshi_oi"})
 
-    rep_agg = rep.groupby("race_id").apply(best, include_groups=False).reset_index()
-    rep_agg = rep_agg.rename(columns={"implied_prob": "kalshi_rep", "open_interest": "kalshi_oi_rep", "market_title": "kalshi_title_rep"})
+    rep = df[rep_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
+    rep = rep.rename(columns={"implied_prob": "kalshi_rep"})
 
-    merged = dem_agg.merge(rep_agg, on="race_id", how="outer")
-    merged["source"] = "kalshi"
-    return merged
+    return dem[["race_id", "kalshi_dem", "kalshi_oi"]].merge(
+        rep[["race_id", "kalshi_rep"]], on="race_id", how="outer"
+    )
 
 
 def load_predictit_general():
-    """
-    Extract PredictIt Democrat/Republican implied probs per race.
-    PredictIt contract_name is 'Democratic' or 'Republican'.
-    """
+    """Democratic/Republican party contracts per race."""
     path = RAW / "predictit_markets.csv"
     if not path.exists():
         return pd.DataFrame()
     df = pd.read_csv(path)
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
+    df = df[df["contract_name"].str.strip().isin(["Democratic", "Republican"])].copy()
 
-    # Only party-level general election contracts (not candidate-specific)
-    party_mask = df["contract_name"].str.strip().isin(["Democratic", "Republican"])
-    df = df[party_mask].copy()
+    dem = df[df["contract_name"].str.strip() == "Democratic"][
+        ["race_id", "implied_prob", "best_buy_yes", "best_sell_yes"]
+    ].rename(columns={"implied_prob": "pi_dem", "best_buy_yes": "pi_dem_buy", "best_sell_yes": "pi_dem_sell"})
 
-    dem = df[df["contract_name"].str.strip() == "Democratic"][["race_id", "implied_prob", "best_buy_yes", "best_sell_yes"]].copy()
-    rep = df[df["contract_name"].str.strip() == "Republican"][["race_id", "implied_prob", "best_buy_yes", "best_sell_yes"]].copy()
+    rep = df[df["contract_name"].str.strip() == "Republican"][
+        ["race_id", "implied_prob"]
+    ].rename(columns={"implied_prob": "pi_rep"})
 
-    dem = dem.rename(columns={"implied_prob": "pi_dem", "best_buy_yes": "pi_dem_buy", "best_sell_yes": "pi_dem_sell"})
-    rep = rep.rename(columns={"implied_prob": "pi_rep", "best_buy_yes": "pi_rep_buy", "best_sell_yes": "pi_rep_sell"})
+    return dem.merge(rep, on="race_id", how="outer")
 
-    merged = dem.merge(rep, on="race_id", how="outer")
-    merged["source"] = "predictit"
-    return merged
+
+def load_polymarket_general():
+    """
+    Polymarket Yes prices for Democrat/Republican win questions.
+    For 'Will Democrats win X' -> dem prob = implied_prob (Yes price).
+    For 'Will Republicans win X' -> rep prob = implied_prob.
+    We prefer the Dem-framed question when available.
+    """
+    path = RAW / "polymarket_markets.csv"
+    if not path.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(path)
+
+    # Parse implied_prob from prices field (stored as JSON-like string)
+    def parse_prob(row):
+        try:
+            prices_raw = str(row.get("prices", ""))
+            # Strip brackets and split on comma
+            prices_raw = prices_raw.strip("[]").replace('"', "").replace("'", "")
+            parts = [p.strip() for p in prices_raw.split(",")]
+            outcomes_raw = str(row.get("outcomes", ""))
+            outcomes_raw = outcomes_raw.strip("[]").replace('"', "").replace("'", "")
+            outcomes = [o.strip() for o in outcomes_raw.split(",")]
+            pairs = dict(zip(outcomes, [float(p) for p in parts]))
+            if "Yes" in pairs:
+                return pairs["Yes"]
+            for k, v in pairs.items():
+                if k.lower() != "no":
+                    return v
+        except Exception:
+            pass
+        return None
+
+    if "implied_prob" not in df.columns or df["implied_prob"].isna().all():
+        df["implied_prob"] = df.apply(parse_prob, axis=1)
+
+    if "race_id" not in df.columns:
+        return pd.DataFrame()
+
+    df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
+    df["implied_prob"] = pd.to_numeric(df["implied_prob"], errors="coerce")
+    df = df.dropna(subset=["implied_prob"])
+
+    # Classify as dem or rep question
+    q = df["question"].str.lower()
+    df["is_dem"] = q.str.contains(r"democrat|democratic", na=False) & ~q.str.contains(r"republican", na=False)
+    df["is_rep"] = q.str.contains(r"republican", na=False) & ~q.str.contains(r"democrat|democratic", na=False)
+
+    # Keep only general win questions (not nominee/primary)
+    df = df[~q.str.contains("nominee|primary|nominate|advance", na=False)]
+
+    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity"]].copy()
+    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity"]].copy()
+
+    # Best by liquidity per race
+    def best_liq(g):
+        liq = pd.to_numeric(g["liquidity"], errors="coerce").fillna(0)
+        return g.loc[liq.idxmax()]
+
+    if not dem.empty:
+        dem = dem.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
+        dem = dem.rename(columns={"implied_prob": "pm_dem", "liquidity": "pm_liq"})
+
+    if not rep.empty:
+        rep = rep.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
+        rep = rep.rename(columns={"implied_prob": "pm_rep", "liquidity": "pm_rep_liq"})
+
+    if dem.empty and rep.empty:
+        return pd.DataFrame()
+
+    result = dem[["race_id", "pm_dem", "pm_liq"]] if not dem.empty else pd.DataFrame(columns=["race_id", "pm_dem", "pm_liq"])
+    if not rep.empty:
+        result = result.merge(rep[["race_id", "pm_rep"]], on="race_id", how="outer")
+    return result
 
 
 def get_race_meta():
-    """Load race metadata from utils/races.py."""
     import sys
     sys.path.insert(0, str(ROOT))
     try:
@@ -110,95 +172,128 @@ def get_race_meta():
         return pd.DataFrame(columns=["race_id", "state", "state_abbrev", "office", "label"])
 
 
-def compute_arb_opportunities(combined):
-    """
-    For each race with both Kalshi and PredictIt data, compute:
-      - raw gap: abs(kalshi_dem - pi_dem)
-      - net gap after fees: raw_gap - (kalshi_fee + pi_fee)
-      - which side to buy/sell for each platform
-    """
-    rows = []
-    for _, r in combined.iterrows():
-        k_dem = r.get("kalshi_dem")
-        pi_dem = r.get("pi_dem")
-        k_rep = r.get("kalshi_rep")
-        pi_rep = r.get("pi_rep")
+# ── arb computation ───────────────────────────────────────────────────────────
 
-        if pd.isna(k_dem) or pd.isna(pi_dem):
-            continue
+def make_pair(race_id, label, state, office,
+              prob_a, prob_b, platform_a, platform_b,
+              extra=None):
+    """Generate one arb row for a pair of platforms."""
+    if pd.isna(prob_a) or pd.isna(prob_b):
+        return None
+    prob_a, prob_b = float(prob_a), float(prob_b)
+    raw_gap = abs(prob_a - prob_b)
+    net_gap = raw_gap - FEES[platform_a] - FEES[platform_b]
 
-        raw_gap = abs(k_dem - pi_dem)
-        net_gap = round(raw_gap - FEES["kalshi"] - FEES["predictit"], 4)
+    if prob_a > prob_b:
+        action = f"Buy Dem on {platform_b.title()}, Sell Dem on {platform_a.title()}"
+        higher = platform_a
+    else:
+        action = f"Buy Dem on {platform_a.title()}, Sell Dem on {platform_b.title()}"
+        higher = platform_b
 
-        # Direction
-        if k_dem > pi_dem:
-            action = "Buy Dem on PredictIt, Sell Dem (Buy Rep) on Kalshi"
-            direction = "kalshi_higher"
-        else:
-            action = "Buy Dem on Kalshi, Sell Dem (Buy Rep) on PredictIt"
-            direction = "pi_higher"
-
-        rows.append({
-            "race_id": r["race_id"],
-            "state": r.get("state", ""),
-            "state_abbrev": r.get("state_abbrev", ""),
-            "office": r.get("office", ""),
-            "label": r.get("label", r["race_id"]),
-            "kalshi_dem": round(float(k_dem), 4),
-            "kalshi_rep": round(float(k_rep), 4) if not pd.isna(k_rep) else None,
-            "pi_dem": round(float(pi_dem), 4),
-            "pi_rep": round(float(pi_rep), 4) if not pd.isna(pi_rep) else None,
-            "pi_dem_buy": round(float(r["pi_dem_buy"]), 4) if not pd.isna(r.get("pi_dem_buy", float("nan"))) else None,
-            "pi_dem_sell": round(float(r["pi_dem_sell"]), 4) if not pd.isna(r.get("pi_dem_sell", float("nan"))) else None,
-            "raw_gap_pp": round(raw_gap * 100, 2),
-            "net_gap_pp": round(net_gap * 100, 2),
-            "profitable": bool(net_gap > 0),
-            "direction": direction,
-            "action": action,
-            "kalshi_oi": r.get("kalshi_oi_dem"),
-            "fetched_at": datetime.now(timezone.utc).isoformat(),
-        })
-
-    return pd.DataFrame(rows)
+    row = {
+        "race_id": race_id,
+        "label": label,
+        "state": state,
+        "office": office,
+        "pair": f"{platform_a}/{platform_b}",
+        "platform_a": platform_a,
+        "platform_b": platform_b,
+        f"{platform_a}_dem": round(prob_a, 4),
+        f"{platform_b}_dem": round(prob_b, 4),
+        "raw_gap_pp": round(raw_gap * 100, 2),
+        "net_gap_pp": round(net_gap * 100, 2),
+        "profitable": bool(net_gap > 0),
+        "higher_platform": higher,
+        "action": action,
+    }
+    if extra:
+        row.update(extra)
+    return row
 
 
 def run():
-    print("Loading Kalshi general election markets...")
+    print("Loading markets...")
     kalshi = load_kalshi_general()
-    print(f"  {len(kalshi)} races with Kalshi party probs")
-
-    print("Loading PredictIt general election markets...")
     pi = load_predictit_general()
-    print(f"  {len(pi)} races with PredictIt party probs")
-
+    pm = load_polymarket_general()
     meta = get_race_meta()
 
-    # Merge all on race_id
-    combined = kalshi.merge(pi, on="race_id", how="inner")
-    combined = combined.merge(meta, on="race_id", how="left")
-    print(f"  {len(combined)} races with data on both platforms")
+    print(f"  Kalshi: {len(kalshi)} races")
+    print(f"  PredictIt: {len(pi)} races")
+    print(f"  Polymarket: {len(pm)} races")
 
-    arb = compute_arb_opportunities(combined)
-    arb = arb.sort_values("raw_gap_pp", ascending=False)
+    def add_meta(df):
+        return df.merge(meta, on="race_id", how="left")
+
+    kalshi = add_meta(kalshi)
+    pi = add_meta(pi)
+    pm = add_meta(pm) if not pm.empty else pm
+
+    rows = []
+
+    # ── Kalshi vs PredictIt ──
+    kpi = kalshi.merge(pi, on="race_id", how="inner")
+    for _, r in kpi.iterrows():
+        row = make_pair(
+            r["race_id"], r.get("label", r["race_id"]), r.get("state", ""), r.get("office", ""),
+            r.get("kalshi_dem"), r.get("pi_dem"),
+            "kalshi", "predictit",
+            extra={
+                "pi_dem_buy": r.get("pi_dem_buy"),
+                "pi_dem_sell": r.get("pi_dem_sell"),
+                "kalshi_oi": r.get("kalshi_oi"),
+            }
+        )
+        if row:
+            rows.append(row)
+
+    # ── Kalshi vs Polymarket ──
+    if not pm.empty and "pm_dem" in pm.columns:
+        kpm = kalshi.merge(pm, on="race_id", how="inner")
+        for _, r in kpm.iterrows():
+            row = make_pair(
+                r["race_id"], r.get("label", r["race_id"]), r.get("state", ""), r.get("office", ""),
+                r.get("kalshi_dem"), r.get("pm_dem"),
+                "kalshi", "polymarket",
+                extra={"pm_liq": r.get("pm_liq"), "kalshi_oi": r.get("kalshi_oi")}
+            )
+            if row:
+                rows.append(row)
+
+    # ── PredictIt vs Polymarket ──
+    if not pm.empty and "pm_dem" in pm.columns:
+        pipm = pi.merge(pm, on="race_id", how="inner")
+        for _, r in pipm.iterrows():
+            row = make_pair(
+                r["race_id"], r.get("label", r["race_id"]), r.get("state", ""), r.get("office", ""),
+                r.get("pi_dem"), r.get("pm_dem"),
+                "predictit", "polymarket",
+                extra={"pm_liq": r.get("pm_liq"), "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell")}
+            )
+            if row:
+                rows.append(row)
+
+    arb = pd.DataFrame(rows).sort_values("raw_gap_pp", ascending=False)
 
     profitable = arb[arb["profitable"]]
-    print(f"\nPotentially profitable after fees: {len(profitable)} / {len(arb)} races")
+    print(f"\nTotal cross-market pairs: {len(arb)}")
+    print(f"Profitable after fees: {len(profitable)}")
     if not profitable.empty:
-        print(profitable[["label", "kalshi_dem", "pi_dem", "raw_gap_pp", "net_gap_pp", "action"]].to_string(index=False))
+        print(profitable[["pair", "label", "raw_gap_pp", "net_gap_pp", "action"]].to_string(index=False))
 
-    print(f"\nAll gaps (top 20):")
-    print(arb[["label", "kalshi_dem", "pi_dem", "raw_gap_pp", "net_gap_pp"]].head(20).to_string(index=False))
+    print(f"\nTop 20 gaps:")
+    print(arb[["pair", "label", "raw_gap_pp", "net_gap_pp"]].head(20).to_string(index=False))
 
-    # Write JS data file
-    out = ROOT / "docs" / "arb_data.js"
-    records = arb.to_dict(orient="records")
-    # Clean NaN for JSON
+    # Write JS
     def clean(v):
         if isinstance(v, float) and np.isnan(v):
             return None
         return v
-    records = [{k: clean(v) for k, v in row.items()} for row in records]
 
+    records = [{k: clean(v) for k, v in row.items()} for row in arb.to_dict(orient="records")]
+
+    out = ROOT / "docs" / "arb_data.js"
     with open(out, "w") as f:
         f.write("const ARB = ")
         json.dump({
@@ -207,7 +302,7 @@ def run():
             "races": records,
         }, f, separators=(",", ":"))
         f.write(";")
-    print(f"\nWrote {len(records)} races to docs/arb_data.js")
+    print(f"\nWrote {len(records)} pairs to docs/arb_data.js")
 
 
 if __name__ == "__main__":

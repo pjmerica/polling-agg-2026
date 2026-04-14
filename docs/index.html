@@ -345,6 +345,15 @@ tr:hover td { background: #1a2035; }
 <div id="tab-arb" class="tab-panel">
   <div class="mismatch-controls">
     <div class="filter-group">
+      <label>Platform pair</label>
+      <select id="arb-pair">
+        <option value="ALL">All pairs</option>
+        <option value="kalshi/predictit">Kalshi vs PredictIt</option>
+        <option value="kalshi/polymarket">Kalshi vs Polymarket</option>
+        <option value="predictit/polymarket">PredictIt vs Polymarket</option>
+      </select>
+    </div>
+    <div class="filter-group">
       <label>Office</label>
       <select id="arb-office">
         <option value="ALL">All</option>
@@ -373,8 +382,8 @@ tr:hover td { background: #1a2035; }
   </div>
   <div class="mismatch-body">
     <p class="mismatch-explainer">
-      <strong>Kalshi vs PredictIt:</strong> Same race, different prices. The raw gap is the difference in implied Democrat win probability between platforms.
-      Net gap subtracts estimated round-trip fees (Kalshi ~7%, PredictIt ~15%). A positive net gap means a theoretical arbitrage exists — but liquidity, timing risk, and withdrawal limits often make execution impractical.
+      Same race, different prices across prediction markets. <strong>Raw gap</strong> = difference in implied Dem win probability between platforms.
+      <strong>Net gap</strong> subtracts estimated round-trip fees (Kalshi ~7%, PredictIt ~15%, Polymarket ~2%). Positive net gap = theoretical arb — but liquidity, timing risk, and withdrawal limits often make execution impractical.
       <span id="arb-updated" style="color:#4a5568;font-size:0.75rem;display:block;margin-top:4px;"></span>
     </p>
     <table class="mm-table" id="arb-table">
@@ -382,8 +391,9 @@ tr:hover td { background: #1a2035; }
         <tr>
           <th data-arbcol="label" class="sorted">Race</th>
           <th data-arbcol="office">Office</th>
-          <th data-arbcol="kalshi_dem">Kalshi Dem%</th>
-          <th data-arbcol="pi_dem">PredictIt Dem%</th>
+          <th data-arbcol="pair">Pair</th>
+          <th data-arbcol="platform_a">Platform A Dem%</th>
+          <th data-arbcol="platform_b">Platform B Dem%</th>
           <th data-arbcol="raw_gap_pp">Raw Gap</th>
           <th data-arbcol="net_gap_pp">Net Gap (after fees)</th>
           <th>Action</th>
@@ -856,16 +866,23 @@ document.getElementById('mm-minmarket').addEventListener('change', e => { mmMinM
 // ════════════════════════════════════════════════
 // ARB SCANNER TAB
 // ════════════════════════════════════════════════
-let arbOffice = 'ALL', arbMinGap = 0, arbProfitable = 'all';
+let arbOffice = 'ALL', arbMinGap = 0, arbProfitable = 'all', arbPair = 'ALL';
 let arbSortCol = 'raw_gap_pp', arbSortDir = -1;
 
 function arbFiltered() {
   return ARB.races.filter(r => {
+    if (arbPair !== 'ALL' && r.pair !== arbPair) return false;
     if (arbOffice !== 'ALL' && r.office !== arbOffice) return false;
     if (arbMinGap > 0 && r.raw_gap_pp < arbMinGap) return false;
     if (arbProfitable === 'profitable' && !r.profitable) return false;
     return true;
   });
+}
+
+const PLATFORM_COLORS = { kalshi: '#34d399', predictit: '#f87171', polymarket: '#a78bfa' };
+function platLabel(p) {
+  const colors = { kalshi:'#34d399', predictit:'#f87171', polymarket:'#a78bfa' };
+  return `<span style="color:${colors[p]||'#94a3b8'};font-weight:700">${p.charAt(0).toUpperCase()+p.slice(1)}</span>`;
 }
 
 function renderArbTable() {
@@ -880,26 +897,34 @@ function renderArbTable() {
     if (av < bv) return -arbSortDir; if (av > bv) return arbSortDir; return 0;
   });
 
-  const fees = ARB.fees || {};
   document.getElementById('arb-table-body').innerHTML = rows.map(r => {
     const rawStr = r.raw_gap_pp.toFixed(1) + 'pp';
     const netStr = (r.net_gap_pp > 0 ? '+' : '') + r.net_gap_pp.toFixed(1) + 'pp';
     const netCls = r.profitable ? 'arb-gap-pos' : 'arb-gap-neg';
     const profBadge = r.profitable ? '<span class="arb-profitable">★ Profitable</span>' : '';
-    const kDem = r.kalshi_dem != null ? (r.kalshi_dem * 100).toFixed(1) + '%' : '—';
-    const piDem = r.pi_dem != null ? (r.pi_dem * 100).toFixed(1) + '%' : '—';
-    const piSpread = (r.pi_dem_buy != null && r.pi_dem_sell != null)
-      ? ` <span style="color:#4a5568;font-size:0.7rem">(${(r.pi_dem_buy*100).toFixed(0)}/${(r.pi_dem_sell*100).toFixed(0)})</span>` : '';
+    // Get probs dynamically by platform name
+    const pa = r.platform_a, pb = r.platform_b;
+    const probA = r[`${pa}_dem`] != null ? (r[`${pa}_dem`] * 100).toFixed(1) + '%' : '—';
+    const probB = r[`${pb}_dem`] != null ? (r[`${pb}_dem`] * 100).toFixed(1) + '%' : '—';
+    // Show bid/ask for PredictIt if available
+    const piSpread = (pa === 'predictit' || pb === 'predictit')
+      ? (r.pi_dem_buy != null && r.pi_dem_sell != null
+        ? ` <span style="color:#4a5568;font-size:0.7rem">(${(r.pi_dem_buy*100).toFixed(0)}/${(r.pi_dem_sell*100).toFixed(0)})</span>`
+        : '') : '';
+    const probAHtml = `${probA}${pa === 'predictit' ? piSpread : ''}`;
+    const probBHtml = `${probB}${pb === 'predictit' ? piSpread : ''}`;
+
     return `<tr>
-      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
-      <td>${r.office}</td>
-      <td style="color:#94a3b8">${kDem}</td>
-      <td style="color:#94a3b8">${piDem}${piSpread}</td>
+      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state||''}</span></td>
+      <td>${r.office||''}</td>
+      <td style="font-size:0.78rem">${platLabel(pa)} vs ${platLabel(pb)}</td>
+      <td style="color:#94a3b8">${platLabel(pa)} ${probAHtml}</td>
+      <td style="color:#94a3b8">${platLabel(pb)} ${probBHtml}</td>
       <td style="color:#e2e8f0;font-weight:600">${rawStr}</td>
       <td class="${netCls}">${netStr} ${profBadge}</td>
       <td class="arb-action">${r.action}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="7" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
 
   // Wire sort headers
   document.querySelectorAll('#arb-table th[data-arbcol]').forEach(th => {
@@ -914,6 +939,7 @@ function renderArbTable() {
   });
 }
 
+document.getElementById('arb-pair').addEventListener('change', e => { arbPair = e.target.value; renderArbTable(); });
 document.getElementById('arb-office').addEventListener('change', e => { arbOffice = e.target.value; renderArbTable(); });
 document.getElementById('arb-mingap').addEventListener('change', e => { arbMinGap = parseFloat(e.target.value); renderArbTable(); });
 document.getElementById('arb-profitable').addEventListener('change', e => { arbProfitable = e.target.value; renderArbTable(); });
