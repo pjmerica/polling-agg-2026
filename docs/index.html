@@ -398,7 +398,7 @@ tr:hover td { background: #1a2035; }
           <th data-arbcol="raw_gap_pp">Raw Gap</th>
           <th data-arbcol="net_gap_pp">Net Gap</th>
           <th data-arbcol="guaranteed_return_pct">Guaranteed Return</th>
-          <th>Stake Ratio</th>
+          <th>Bet ($100 total)</th>
           <th>Action / Links</th>
         </tr>
       </thead>
@@ -923,9 +923,9 @@ function renderArbTable() {
       ? `<span class="arb-gap-pos" style="font-weight:700">${r.guaranteed_return_pct.toFixed(1)}%</span>`
       : '<span style="color:#4a5568">—</span>';
 
-    // Stake ratio
-    const stakeCell = isGuaranteed && r.stake_a_pct != null
-      ? `<span style="font-size:0.72rem;color:#94a3b8">${platLabel(pa)} ${r.stake_a_pct}% / ${platLabel(pb)} ${r.stake_b_pct}%</span>`
+    // Stake ratio — show as dollar amounts for $100 total
+    const stakeCell = isGuaranteed && r.stake_a_dollars != null
+      ? `<span style="font-size:0.72rem;color:#94a3b8">${platLabel(pa)} <strong>$${r.stake_a_dollars.toFixed(2)}</strong> / ${platLabel(pb)} <strong>$${r.stake_b_dollars.toFixed(2)}</strong><br><span style="color:#34d399;font-size:0.68rem">+$${r.profit_dollars != null ? r.profit_dollars.toFixed(2) : '—'} profit</span></span>`
       : '<span style="color:#4a5568">—</span>';
 
     // Probs

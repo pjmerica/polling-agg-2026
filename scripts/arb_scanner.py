@@ -202,6 +202,9 @@ def compute_arb_math(prob_a, prob_b, prob_a_rep, prob_b_rep, fee_a, fee_b):
         "guaranteed_return_pct": None,
         "stake_a_pct": None,
         "stake_b_pct": None,
+        "stake_a_dollars": None,
+        "stake_b_dollars": None,
+        "profit_dollars": None,
         "stake_note": None,
     }
 
@@ -229,6 +232,9 @@ def compute_arb_math(prob_a, prob_b, prob_a_rep, prob_b_rep, fee_a, fee_b):
                 sB = (1 - prob_a) / denom if denom > 0 else 0.5
                 result["stake_a_pct"] = round(sA * 100, 1)
                 result["stake_b_pct"] = round(sB * 100, 1)
+                result["stake_a_dollars"] = round(sA * 100, 2)
+                result["stake_b_dollars"] = round(sB * 100, 2)
+                result["profit_dollars"] = round(net_return * 100, 2)
                 result["stake_note"] = f"Buy Dem on A ({round(sA*100,1)}% of bankroll) + Buy Rep on B ({round(sB*100,1)}%)"
             else:
                 denom = 2 - prob_b - rep_a
@@ -236,6 +242,9 @@ def compute_arb_math(prob_a, prob_b, prob_a_rep, prob_b_rep, fee_a, fee_b):
                 sA = (1 - prob_b) / denom if denom > 0 else 0.5
                 result["stake_a_pct"] = round(sA * 100, 1)
                 result["stake_b_pct"] = round(sB * 100, 1)
+                result["stake_a_dollars"] = round(sA * 100, 2)
+                result["stake_b_dollars"] = round(sB * 100, 2)
+                result["profit_dollars"] = round(net_return * 100, 2)
                 result["stake_note"] = f"Buy Rep on A ({round(sA*100,1)}% of bankroll) + Buy Dem on B ({round(sB*100,1)}%)"
 
     return result
