@@ -363,13 +363,19 @@ tr:hover td { background: #1a2035; }
       </select>
     </div>
     <div class="filter-group">
-      <label>Min gap (pp)</label>
-      <select id="arb-mingap">
-        <option value="0">Any</option>
-        <option value="2">≥ 2pp</option>
-        <option value="5">≥ 5pp</option>
-        <option value="8">≥ 8pp</option>
-        <option value="10">≥ 10pp</option>
+      <label>Min gap: <span id="arb-gap-min-val">0pp</span></label>
+      <input type="range" id="arb-mingap" min="0" max="40" step="1" value="0" style="min-width:130px;cursor:pointer;accent-color:#60a5fa">
+    </div>
+    <div class="filter-group">
+      <label>Max gap: <span id="arb-gap-max-val">100pp</span></label>
+      <input type="range" id="arb-maxgap" min="0" max="100" step="1" value="100" style="min-width:130px;cursor:pointer;accent-color:#f87171">
+    </div>
+    <div class="filter-group">
+      <label>Suspicious (&gt;40pp)</label>
+      <select id="arb-suspicious">
+        <option value="hide">Hide suspicious</option>
+        <option value="all">Show all</option>
+        <option value="only">Suspicious only</option>
       </select>
     </div>
     <div class="filter-group">
@@ -869,7 +875,7 @@ document.getElementById('mm-minmarket').addEventListener('change', e => { mmMinM
 // ════════════════════════════════════════════════
 // ARB SCANNER TAB
 // ════════════════════════════════════════════════
-let arbOffice = 'ALL', arbMinGap = 0, arbProfitable = 'all', arbPair = 'ALL';
+let arbOffice = 'ALL', arbMinGap = 0, arbMaxGap = 100, arbSuspicious = 'hide', arbProfitable = 'all', arbPair = 'ALL';
 let arbSortCol = 'raw_gap_pp', arbSortDir = -1;
 
 function arbFiltered() {
@@ -877,6 +883,9 @@ function arbFiltered() {
     if (arbPair !== 'ALL' && r.pair !== arbPair) return false;
     if (arbOffice !== 'ALL' && r.office !== arbOffice) return false;
     if (arbMinGap > 0 && r.raw_gap_pp < arbMinGap) return false;
+    if (arbMaxGap < 100 && r.raw_gap_pp > arbMaxGap) return false;
+    if (arbSuspicious === 'hide' && r.suspicious) return false;
+    if (arbSuspicious === 'only' && !r.suspicious) return false;
     if (arbProfitable === 'profitable' && !r.profitable) return false;
     if (arbProfitable === 'guaranteed' && r.arb_type !== 'guaranteed') return false;
     return true;
@@ -969,7 +978,17 @@ function renderArbTable() {
 
 document.getElementById('arb-pair').addEventListener('change', e => { arbPair = e.target.value; renderArbTable(); });
 document.getElementById('arb-office').addEventListener('change', e => { arbOffice = e.target.value; renderArbTable(); });
-document.getElementById('arb-mingap').addEventListener('change', e => { arbMinGap = parseFloat(e.target.value); renderArbTable(); });
+document.getElementById('arb-mingap').addEventListener('input', e => {
+  arbMinGap = parseFloat(e.target.value);
+  document.getElementById('arb-gap-min-val').textContent = arbMinGap + 'pp';
+  renderArbTable();
+});
+document.getElementById('arb-maxgap').addEventListener('input', e => {
+  arbMaxGap = parseFloat(e.target.value);
+  document.getElementById('arb-gap-max-val').textContent = arbMaxGap === 100 ? '100pp' : arbMaxGap + 'pp';
+  renderArbTable();
+});
+document.getElementById('arb-suspicious').addEventListener('change', e => { arbSuspicious = e.target.value; renderArbTable(); });
 document.getElementById('arb-profitable').addEventListener('change', e => { arbProfitable = e.target.value; renderArbTable(); });
 
 // ── init ──
