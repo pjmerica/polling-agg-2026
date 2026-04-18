@@ -48,10 +48,10 @@ def predictit_url(market_id):
         return None
     return f"https://www.predictit.org/markets/detail/{int(market_id)}"
 
-def polymarket_url(condition_id):
-    if pd.isna(condition_id) or not condition_id:
+def polymarket_url(slug):
+    if pd.isna(slug) or not slug:
         return None
-    return f"https://polymarket.com/event/{condition_id}"
+    return f"https://polymarket.com/event/{slug}"
 
 
 # ── loaders ──────────────────────────────────────────────────────────────────
@@ -134,8 +134,19 @@ def load_polymarket_general():
     df["is_rep"] = q.str.contains(r"republican", na=False) & ~q.str.contains(r"democrat|democratic", na=False)
     df = df[~q.str.contains("nominee|primary|nominate|advance", na=False)]
 
-    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity", "condition_id"]].copy()
-    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity", "condition_id"]].copy()
+    # Prefer new event_slug column if present; fall back to condition_id for legacy CSVs.
+    slug_col = "event_slug" if "event_slug" in df.columns else ("url_slug" if "url_slug" in df.columns else None)
+    if slug_col is None:
+        df["_slug"] = df.get("condition_id", "")
+    else:
+        df["_slug"] = df[slug_col].fillna("").astype(str)
+        # Fallback to market_slug when event_slug is blank
+        if "market_slug" in df.columns:
+            mask = df["_slug"].eq("")
+            df.loc[mask, "_slug"] = df.loc[mask, "market_slug"].fillna("").astype(str)
+
+    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity", "_slug"]].copy()
+    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity", "_slug"]].copy()
 
     def best_liq(g):
         liq = pd.to_numeric(g["liquidity"], errors="coerce").fillna(0)
@@ -143,21 +154,28 @@ def load_polymarket_general():
 
     if not dem.empty:
         dem = dem.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
-        dem = dem.rename(columns={"implied_prob": "pm_dem", "liquidity": "pm_liq", "condition_id": "pm_dem_condition"})
+        dem = dem.rename(columns={"implied_prob": "pm_dem", "liquidity": "pm_liq", "_slug": "pm_dem_slug"})
 
     if not rep.empty:
         rep = rep.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
-        rep = rep.rename(columns={"implied_prob": "pm_rep", "liquidity": "pm_rep_liq", "condition_id": "pm_rep_condition"})
+        rep = rep.rename(columns={"implied_prob": "pm_rep", "liquidity": "pm_rep_liq", "_slug": "pm_rep_slug"})
 
     if dem.empty and rep.empty:
         return pd.DataFrame()
 
-    result = dem[["race_id", "pm_dem", "pm_liq", "pm_dem_condition"]] if not dem.empty \
-        else pd.DataFrame(columns=["race_id", "pm_dem", "pm_liq", "pm_dem_condition"])
+    result = dem[["race_id", "pm_dem", "pm_liq", "pm_dem_slug"]] if not dem.empty \
+        else pd.DataFrame(columns=["race_id", "pm_dem", "pm_liq", "pm_dem_slug"])
     if not rep.empty:
-        result = result.merge(rep[["race_id", "pm_rep", "pm_rep_condition"]], on="race_id", how="outer")
+        result = result.merge(rep[["race_id", "pm_rep", "pm_rep_slug"]], on="race_id", how="outer")
 
-    result["pm_url"] = result["pm_dem_condition"].apply(polymarket_url)
+    # Prefer dem slug for the URL; fall back to rep slug.
+    if "pm_rep_slug" in result.columns:
+        result["pm_url"] = result["pm_dem_slug"].where(
+            result["pm_dem_slug"].notna() & (result["pm_dem_slug"] != ""),
+            result["pm_rep_slug"],
+        ).apply(polymarket_url)
+    else:
+        result["pm_url"] = result["pm_dem_slug"].apply(polymarket_url)
     return result
 
 

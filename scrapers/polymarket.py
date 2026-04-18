@@ -43,9 +43,11 @@ ELECTION_KEYWORDS = [
 ]
 
 # Keywords that look like election but are NOT US races
+# (e.g. "Ottawa Senators vs. Hurricanes" hits "senator" keyword → filter out)
 EXCLUDE_KEYWORDS = [
-    "nhl", "nba", "nfl", "mlb", "soccer", "stanley cup",
-    "premier league", "world cup",
+    "nhl", "nba", "nfl", "mlb", "ahl", "mls", "soccer", "stanley cup",
+    "premier league", "world cup", " vs.", " vs ", "o/u ",
+    "spread:", "over/under", "puck line", "moneyline", "ml (",
 ]
 
 STATE_NAME_TO_ABBREV = {
@@ -126,25 +128,34 @@ def _get(path: str, params: dict = None) -> list | dict:
 
 def fetch_all_active_markets(limit: int = 100) -> list[dict]:
     """
-    Paginate through ALL active Polymarket markets.
-    Returns only election-related ones.
+    Paginate through ALL active Polymarket events; flatten into markets.
+    Each market is annotated with its parent event_slug so we can build
+    working polymarket.com/event/{slug} URLs.
+    Returns only election-related markets.
     """
     all_markets = []
     offset = 0
     page = 0
 
     while True:
-        batch = _get("/markets", {"limit": limit, "active": "true", "closed": "false", "offset": offset})
+        batch = _get("/events", {"limit": limit, "active": "true", "closed": "false", "offset": offset})
         if not batch:
             break
 
-        for m in batch:
-            q = m.get("question", "").lower()
-            if (
-                any(k in q for k in ELECTION_KEYWORDS)
-                and not any(k in q for k in EXCLUDE_KEYWORDS)
-            ):
-                all_markets.append(m)
+        for event in batch:
+            event_slug = event.get("slug", "") or ""
+            event_title = event.get("title", "") or ""
+            for m in event.get("markets", []) or []:
+                q = m.get("question", "").lower()
+                t = event_title.lower()
+                combined = q + " " + t
+                if (
+                    any(k in combined for k in ELECTION_KEYWORDS)
+                    and not any(k in combined for k in EXCLUDE_KEYWORDS)
+                ):
+                    m["_event_slug"] = event_slug
+                    m["_event_title"] = event_title
+                    all_markets.append(m)
 
         page += 1
         if len(batch) < limit:
@@ -152,7 +163,7 @@ def fetch_all_active_markets(limit: int = 100) -> list[dict]:
         offset += limit
 
         if page % 10 == 0:
-            print(f"  Scanned {offset} markets, found {len(all_markets)} election markets so far")
+            print(f"  Scanned {offset} events, found {len(all_markets)} election markets so far")
 
     return all_markets
 
@@ -188,6 +199,10 @@ def parse_market(m: dict) -> dict:
     if implied_prob is None:
         implied_prob = m.get("lastTradePrice")
 
+    event_slug = m.get("_event_slug", "") or ""
+    market_slug = m.get("slug", "") or ""
+    url_slug = event_slug or market_slug
+
     return {
         "source": "polymarket",
         "condition_id": m.get("conditionId"),
@@ -203,6 +218,9 @@ def parse_market(m: dict) -> dict:
         "best_ask": m.get("bestAsk"),
         "best_bid": m.get("bestBid"),
         "implied_prob": implied_prob,
+        "event_slug": event_slug,
+        "market_slug": market_slug,
+        "url_slug": url_slug,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
 
