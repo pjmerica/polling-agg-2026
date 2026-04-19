@@ -400,22 +400,9 @@ def run():
 
     arb = pd.DataFrame(rows).sort_values(["arb_type", "raw_gap_pp"], ascending=[True, False])
 
-    # Volume floor: drop pairs where any side that reports volume has < $500.
-    # PredictIt is exempt (no public volume).
-    MIN_VOLUME = 500.0
-    before = len(arb)
+    # Volume is exposed in JSON so the dashboard can filter live.
     arb["volume_a"] = pd.to_numeric(arb.get("volume_a"), errors="coerce")
     arb["volume_b"] = pd.to_numeric(arb.get("volume_b"), errors="coerce")
-
-    def passes_volume(row):
-        va, vb = row.get("volume_a"), row.get("volume_b")
-        pa, pb = row["platform_a"], row["platform_b"]
-        ok_a = (pa == "predictit") or (pd.notna(va) and va >= MIN_VOLUME)
-        ok_b = (pb == "predictit") or (pd.notna(vb) and vb >= MIN_VOLUME)
-        return ok_a and ok_b
-
-    arb = arb[arb.apply(passes_volume, axis=1)].copy()
-    print(f"After ${int(MIN_VOLUME)} volume floor: {len(arb)} pairs (dropped {before - len(arb)})")
 
     guaranteed = arb[arb["arb_type"] == "guaranteed"]
     profitable = arb[arb["profitable"]]

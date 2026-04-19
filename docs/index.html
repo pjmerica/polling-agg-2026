@@ -371,6 +371,10 @@ tr:hover td { background: #1a2035; }
       <input type="range" id="arb-maxgap" min="0" max="100" step="1" value="100" style="min-width:130px;cursor:pointer;accent-color:#f87171">
     </div>
     <div class="filter-group">
+      <label>Min volume: <span id="arb-vol-min-val">$500</span></label>
+      <input type="range" id="arb-minvol" min="0" max="9" step="1" value="3" style="min-width:130px;cursor:pointer;accent-color:#34d399">
+    </div>
+    <div class="filter-group">
       <label>Suspicious (&gt;40pp)</label>
       <select id="arb-suspicious">
         <option value="hide">Hide suspicious</option>
@@ -876,6 +880,14 @@ document.getElementById('mm-minmarket').addEventListener('change', e => { mmMinM
 // ARB SCANNER TAB
 // ════════════════════════════════════════════════
 let arbOffice = 'ALL', arbMinGap = 0, arbMaxGap = 100, arbSuspicious = 'hide', arbProfitable = 'all', arbPair = 'ALL';
+const ARB_VOL_STOPS = [0, 100, 250, 500, 1000, 5000, 10000, 50000, 100000, 1000000];
+let arbMinVol = ARB_VOL_STOPS[3];
+function arbFmtVol(v) {
+  if (v === 0) return '$0';
+  if (v >= 1000000) return '$1M+';
+  if (v >= 1000) return '$' + (v / 1000) + 'k';
+  return '$' + v;
+}
 let arbSortCol = 'raw_gap_pp', arbSortDir = -1;
 
 function arbFiltered() {
@@ -884,6 +896,12 @@ function arbFiltered() {
     if (arbOffice !== 'ALL' && r.office !== arbOffice) return false;
     if (arbMinGap > 0 && r.raw_gap_pp < arbMinGap) return false;
     if (arbMaxGap < 100 && r.raw_gap_pp > arbMaxGap) return false;
+    if (arbMinVol > 0) {
+      const va = r.volume_a, vb = r.volume_b;
+      const okA = r.platform_a === 'predictit' || (va != null && va >= arbMinVol);
+      const okB = r.platform_b === 'predictit' || (vb != null && vb >= arbMinVol);
+      if (!okA || !okB) return false;
+    }
     if (arbSuspicious === 'hide' && r.suspicious) return false;
     if (arbSuspicious === 'only' && !r.suspicious) return false;
     if (arbProfitable === 'profitable' && !r.profitable) return false;
@@ -981,6 +999,11 @@ document.getElementById('arb-office').addEventListener('change', e => { arbOffic
 document.getElementById('arb-mingap').addEventListener('input', e => {
   arbMinGap = parseFloat(e.target.value);
   document.getElementById('arb-gap-min-val').textContent = arbMinGap + 'pp';
+  renderArbTable();
+});
+document.getElementById('arb-minvol').addEventListener('input', e => {
+  arbMinVol = ARB_VOL_STOPS[parseInt(e.target.value)] ?? 0;
+  document.getElementById('arb-vol-min-val').textContent = arbFmtVol(arbMinVol);
   renderArbTable();
 });
 document.getElementById('arb-maxgap').addEventListener('input', e => {
