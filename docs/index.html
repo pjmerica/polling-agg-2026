@@ -606,6 +606,15 @@ function renderTable(data) {
       <td>${src}</td>
     </tr>`;
   }).join('');
+
+  // Update sort arrows on the races table headers
+  document.querySelectorAll('th[data-col]').forEach(th => {
+    if (!th.dataset.label) th.dataset.label = th.textContent.trim();
+    const isActive = th.dataset.col === sortCol;
+    const arrow = isActive ? (sortDir === 1 ? ' \u25B2' : ' \u25BC') : '';
+    th.textContent = th.dataset.label + arrow;
+    th.classList.toggle('sorted', isActive);
+  });
 }
 
 function renderAll() {
@@ -981,16 +990,22 @@ function renderArbTable() {
     </tr>`;
   }).join('') || '<tr><td colspan="10" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
 
-  // Wire sort headers
+  // Wire sort headers + draw arrow on the active column
   document.querySelectorAll('#arb-table th[data-arbcol]').forEach(th => {
+    if (!th.dataset.label) th.dataset.label = th.textContent.trim();
+    const isActive = th.dataset.arbcol === arbSortCol;
+    const arrow = isActive ? (arbSortDir === -1 ? ' \u25BC' : ' \u25B2') : '';
+    th.textContent = th.dataset.label + arrow;
+    th.classList.toggle('sorted', isActive);
     th.style.cursor = 'pointer';
-    th.addEventListener('click', () => {
-      if (arbSortCol === th.dataset.arbcol) arbSortDir *= -1;
-      else { arbSortCol = th.dataset.arbcol; arbSortDir = -1; }
-      document.querySelectorAll('#arb-table th[data-arbcol]').forEach(t => t.classList.remove('sorted'));
-      th.classList.add('sorted');
-      renderArbTable();
-    });
+    if (!th.dataset.wired) {
+      th.dataset.wired = '1';
+      th.addEventListener('click', () => {
+        if (arbSortCol === th.dataset.arbcol) arbSortDir *= -1;
+        else { arbSortCol = th.dataset.arbcol; arbSortDir = -1; }
+        renderArbTable();
+      });
+    }
   });
 }
 
