@@ -74,19 +74,20 @@ def load_kalshi_general():
     def best(g):
         oi = pd.to_numeric(g["open_interest"], errors="coerce").fillna(0)
         idx = oi.idxmax()
-        return g.loc[idx, ["implied_prob", "open_interest", "series_ticker", "market_title"]]
+        return g.loc[idx, ["implied_prob", "open_interest", "volume", "series_ticker", "market_title"]]
 
     dem = df[dem_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
     dem = dem.rename(columns={
         "implied_prob": "kalshi_dem",
         "open_interest": "kalshi_oi",
+        "volume": "kalshi_volume",
         "series_ticker": "kalshi_series_ticker",
     })
 
     rep = df[rep_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
     rep = rep.rename(columns={"implied_prob": "kalshi_rep", "series_ticker": "kalshi_rep_ticker"})
 
-    merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_series_ticker"]].merge(
+    merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_volume", "kalshi_series_ticker"]].merge(
         rep[["race_id", "kalshi_rep", "kalshi_rep_ticker"]], on="race_id", how="outer"
     )
     merged["kalshi_url"] = merged["kalshi_series_ticker"].apply(kalshi_url)
@@ -145,8 +146,8 @@ def load_polymarket_general():
             mask = df["_slug"].eq("")
             df.loc[mask, "_slug"] = df.loc[mask, "market_slug"].fillna("").astype(str)
 
-    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity", "_slug"]].copy()
-    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity", "_slug"]].copy()
+    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity", "volume", "_slug"]].copy()
+    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity", "volume", "_slug"]].copy()
 
     def best_liq(g):
         liq = pd.to_numeric(g["liquidity"], errors="coerce").fillna(0)
@@ -154,7 +155,7 @@ def load_polymarket_general():
 
     if not dem.empty:
         dem = dem.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
-        dem = dem.rename(columns={"implied_prob": "pm_dem", "liquidity": "pm_liq", "_slug": "pm_dem_slug"})
+        dem = dem.rename(columns={"implied_prob": "pm_dem", "liquidity": "pm_liq", "volume": "pm_volume", "_slug": "pm_dem_slug"})
 
     if not rep.empty:
         rep = rep.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
@@ -163,8 +164,8 @@ def load_polymarket_general():
     if dem.empty and rep.empty:
         return pd.DataFrame()
 
-    result = dem[["race_id", "pm_dem", "pm_liq", "pm_dem_slug"]] if not dem.empty \
-        else pd.DataFrame(columns=["race_id", "pm_dem", "pm_liq", "pm_dem_slug"])
+    result = dem[["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug"]] if not dem.empty \
+        else pd.DataFrame(columns=["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug"])
     if not rep.empty:
         result = result.merge(rep[["race_id", "pm_rep", "pm_rep_slug"]], on="race_id", how="outer")
 
@@ -351,7 +352,11 @@ def run():
             "kalshi", "predictit",
             prob_a_rep=r.get("kalshi_rep"), prob_b_rep=r.get("pi_rep"),
             url_a=r.get("kalshi_url"), url_b=r.get("pi_url"),
-            extra={"pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell"), "kalshi_oi": r.get("kalshi_oi")},
+            extra={
+                "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell"),
+                "kalshi_oi": r.get("kalshi_oi"),
+                "volume_a": r.get("kalshi_volume"), "volume_b": None,  # PredictIt: no volume API
+            },
         )
         if row:
             rows.append(row)
@@ -366,7 +371,10 @@ def run():
                 "kalshi", "polymarket",
                 prob_a_rep=r.get("kalshi_rep"), prob_b_rep=r.get("pm_rep"),
                 url_a=r.get("kalshi_url"), url_b=r.get("pm_url"),
-                extra={"pm_liq": r.get("pm_liq"), "kalshi_oi": r.get("kalshi_oi")},
+                extra={
+                    "pm_liq": r.get("pm_liq"), "kalshi_oi": r.get("kalshi_oi"),
+                    "volume_a": r.get("kalshi_volume"), "volume_b": r.get("pm_volume"),
+                },
             )
             if row:
                 rows.append(row)
@@ -381,12 +389,33 @@ def run():
                 "predictit", "polymarket",
                 prob_a_rep=r.get("pi_rep"), prob_b_rep=r.get("pm_rep"),
                 url_a=r.get("pi_url"), url_b=r.get("pm_url"),
-                extra={"pm_liq": r.get("pm_liq"), "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell")},
+                extra={
+                    "pm_liq": r.get("pm_liq"),
+                    "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell"),
+                    "volume_a": None, "volume_b": r.get("pm_volume"),
+                },
             )
             if row:
                 rows.append(row)
 
     arb = pd.DataFrame(rows).sort_values(["arb_type", "raw_gap_pp"], ascending=[True, False])
+
+    # Volume floor: drop pairs where any side that reports volume has < $500.
+    # PredictIt is exempt (no public volume).
+    MIN_VOLUME = 500.0
+    before = len(arb)
+    arb["volume_a"] = pd.to_numeric(arb.get("volume_a"), errors="coerce")
+    arb["volume_b"] = pd.to_numeric(arb.get("volume_b"), errors="coerce")
+
+    def passes_volume(row):
+        va, vb = row.get("volume_a"), row.get("volume_b")
+        pa, pb = row["platform_a"], row["platform_b"]
+        ok_a = (pa == "predictit") or (pd.notna(va) and va >= MIN_VOLUME)
+        ok_b = (pb == "predictit") or (pd.notna(vb) and vb >= MIN_VOLUME)
+        return ok_a and ok_b
+
+    arb = arb[arb.apply(passes_volume, axis=1)].copy()
+    print(f"After ${int(MIN_VOLUME)} volume floor: {len(arb)} pairs (dropped {before - len(arb)})")
 
     guaranteed = arb[arb["arb_type"] == "guaranteed"]
     profitable = arb[arb["profitable"]]
