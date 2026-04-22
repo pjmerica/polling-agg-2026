@@ -153,6 +153,27 @@ tr:hover td { background: #1a2035; }
 }
 
 /* ════════════════════════════════════════
+   RAW POLLS TAB
+   ════════════════════════════════════════ */
+.raw-controls { display: flex; gap: 12px; padding: 14px 28px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
+.raw-controls label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+.raw-controls select, .raw-controls input { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.84rem; }
+.raw-controls input::placeholder { color: #4a5568; }
+#raw-table-wrap { padding: 10px 28px 40px; }
+#raw-count { font-size: 0.76rem; color: #64748b; padding: 10px 28px 0; }
+.raw-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.raw-table th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e2433; cursor: pointer; user-select: none; white-space: nowrap; }
+.raw-table th:hover { color: #94a3b8; }
+.raw-table th.sorted { color: #a78bfa; }
+.raw-table td { padding: 7px 12px; border-bottom: 1px solid #161b27; vertical-align: top; }
+.raw-table tr:hover td { background: #1a2035; }
+.raw-cands { display: flex; flex-direction: column; gap: 3px; }
+.raw-cand-row { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; }
+.raw-cand-name { color: #e2e8f0; min-width: 140px; }
+.raw-cand-pct { font-weight: 600; color: #94a3b8; min-width: 46px; }
+.raw-new-flag { display: inline-block; background: rgba(52,211,153,0.18); color: #34d399; border-radius: 4px; padding: 1px 6px; font-size: 0.64rem; font-weight: 700; margin-left: 5px; }
+
+/* ════════════════════════════════════════
    MISMATCH TAB
    ════════════════════════════════════════ */
 .mismatch-controls { display: flex; gap: 12px; padding: 14px 28px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
@@ -194,6 +215,7 @@ tr:hover td { background: #1a2035; }
   <div class="tabs">
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="polls">Poll Explorer</button>
+    <button class="tab-btn" data-tab="raw">Raw Polls</button>
     <button class="tab-btn" data-tab="mismatch">Polling vs Markets</button>
     <button class="tab-btn" data-tab="arb">Arb Scanner</button>
   </div>
@@ -451,6 +473,61 @@ tr:hover td { background: #1a2035; }
       <div class="poll-detail-placeholder">Select a race to see polls</div>
     </div>
 
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB: RAW POLLS (all polls, newest first)
+     ══════════════════════════════════════════════ -->
+<div id="tab-raw" class="tab-panel">
+  <div class="raw-controls">
+    <div class="filter-group">
+      <label>Search</label>
+      <input type="text" id="raw-search" placeholder="race, state, pollster, candidate…" style="width:260px">
+    </div>
+    <div class="filter-group">
+      <label>Office</label>
+      <select id="raw-office">
+        <option value="ALL">All</option>
+        <option value="SEN">Senate</option>
+        <option value="GOV">Governor</option>
+        <option value="H">House</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Stage</label>
+      <select id="raw-stage">
+        <option value="ALL">All</option>
+        <option value="general">General</option>
+        <option value="primary">Primary</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Since</label>
+      <select id="raw-since">
+        <option value="7">Last 7 days</option>
+        <option value="14">Last 14 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="0">All time</option>
+      </select>
+    </div>
+  </div>
+  <div id="raw-count"></div>
+  <div id="raw-table-wrap">
+    <table class="raw-table">
+      <thead>
+        <tr>
+          <th data-rcol="end_date_iso">Date</th>
+          <th data-rcol="race_label">Race</th>
+          <th data-rcol="stage">Stage</th>
+          <th data-rcol="pollster">Pollster</th>
+          <th data-rcol="sample_size">N</th>
+          <th>Candidates</th>
+        </tr>
+      </thead>
+      <tbody id="raw-tbody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -1029,12 +1106,122 @@ document.getElementById('arb-maxgap').addEventListener('input', e => {
 document.getElementById('arb-suspicious').addEventListener('change', e => { arbSuspicious = e.target.value; renderArbTable(); });
 document.getElementById('arb-profitable').addEventListener('change', e => { arbProfitable = e.target.value; renderArbTable(); });
 
+// ════════════════════════════════════════════════
+// RAW POLLS TAB
+// ════════════════════════════════════════════════
+let RAW_POLLS = [];
+(function buildRawPolls() {
+  POLLS.forEach(race => {
+    (race.polls || []).forEach(p => {
+      RAW_POLLS.push({
+        ...p,
+        race_id: race.race_id,
+        race_label: race.label,
+        office: race.office,
+        state: race.state,
+        state_abbrev: race.state_abbrev,
+      });
+    });
+  });
+})();
+
+let rawSortCol = 'end_date_iso', rawSortDir = -1;
+let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 30;
+
+function rawFilter() {
+  const q = rawSearch.trim().toLowerCase();
+  let cutoff = null;
+  if (rawSinceDays > 0) {
+    const d = new Date();
+    d.setDate(d.getDate() - rawSinceDays);
+    cutoff = d.toISOString().slice(0, 10);
+  }
+  return RAW_POLLS.filter(p => {
+    if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
+    if (rawStage !== 'ALL' && p.stage !== rawStage) return false;
+    if (cutoff && (!p.end_date_iso || p.end_date_iso < cutoff)) return false;
+    if (q) {
+      const hay = [
+        p.race_label, p.state, p.state_abbrev, p.pollster,
+        ...(p.candidates || []).map(c => c.name)
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderRawPolls() {
+  const rows = rawFilter();
+  rows.sort((a, b) => {
+    let va = a[rawSortCol], vb = b[rawSortCol];
+    if (va == null) va = '';
+    if (vb == null) vb = '';
+    if (typeof va === 'string') return va < vb ? -rawSortDir : va > vb ? rawSortDir : 0;
+    return (va - vb) * rawSortDir;
+  });
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const yesterdayIso = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+  document.getElementById('raw-count').textContent =
+    `${rows.length.toLocaleString()} poll${rows.length === 1 ? '' : 's'}` +
+    (rawSinceDays > 0 ? ` in last ${rawSinceDays} days` : '') +
+    ` · newest: ${rows[0]?.end_date || '—'}`;
+
+  const tbody = document.getElementById('raw-tbody');
+  tbody.innerHTML = rows.map(p => {
+    const isNew = p.end_date_iso === todayIso || p.end_date_iso === yesterdayIso;
+    const flag = isNew ? `<span class="raw-new-flag">NEW</span>` : '';
+    const cands = (p.candidates || []).map(c => `
+      <div class="raw-cand-row">
+        <span class="cand-party ${c.party === 'DEM' ? 'D' : c.party === 'REP' ? 'R' : c.party === 'IND' ? 'I' : 'NONE'}">${c.party ? c.party[0] : '·'}</span>
+        <span class="raw-cand-name">${c.name}</span>
+        <span class="raw-cand-pct">${c.pct != null ? c.pct.toFixed(1) + '%' : '—'}</span>
+        ${c.over50 ? '<span class="over50-mark">✓50</span>' : ''}
+      </div>
+    `).join('');
+    return `
+      <tr>
+        <td style="white-space:nowrap;color:#cbd5e1">${p.end_date || '—'}${flag}</td>
+        <td><span class="badge ${p.office}">${p.office}</span> ${p.race_label}</td>
+        <td><span class="mini-badge stage">${p.stage || '—'}</span>${p.partisan ? ` <span class="mini-badge partisan">${p.partisan}</span>` : ''}</td>
+        <td style="color:#e2e8f0">${p.pollster || '—'}</td>
+        <td style="color:#94a3b8">${p.sample_size ? p.sample_size.toLocaleString() : '—'}</td>
+        <td><div class="raw-cands">${cands}</div></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.querySelectorAll('.raw-table th[data-rcol]').forEach(th => {
+    if (!th.dataset.label) th.dataset.label = th.textContent.trim();
+    const isActive = th.dataset.rcol === rawSortCol;
+    const arrow = isActive ? (rawSortDir === -1 ? ' ▼' : ' ▲') : '';
+    th.textContent = th.dataset.label + arrow;
+    th.classList.toggle('sorted', isActive);
+    if (!th.dataset.wired) {
+      th.dataset.wired = '1';
+      th.addEventListener('click', () => {
+        if (rawSortCol === th.dataset.rcol) rawSortDir *= -1;
+        else { rawSortCol = th.dataset.rcol; rawSortDir = -1; }
+        renderRawPolls();
+      });
+    }
+  });
+}
+
+document.getElementById('raw-search').addEventListener('input', e => { rawSearch = e.target.value; renderRawPolls(); });
+document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
+document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
+document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });
+
 // ── init ──
 renderAll();
 renderSidebar();
 if (POLLS.length > 0) { activeRaceId = POLLS[0].race_id; renderSidebar(); renderPollDetail(); }
 renderMismatch();
 renderArbTable();
+renderRawPolls();
 </script>
 </body>
 </html>
