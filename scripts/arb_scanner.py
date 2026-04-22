@@ -32,9 +32,9 @@ ROOT = Path(__file__).parent.parent
 RAW = ROOT / "data" / "raw"
 
 FEES = {
-    "kalshi":    0.07,
-    "predictit": 0.15,
-    "polymarket": 0.02,
+    "kalshi":    0.03,
+    "predictit": 0.12,
+    "polymarket": 0.03,
 }
 
 # URL templates
