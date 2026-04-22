@@ -321,6 +321,243 @@ def make_pair(race_id, label, state, office,
     return row
 
 
+# ── primary candidate matching ────────────────────────────────────────────────
+
+import re
+
+_STATES = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",
+    "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE",
+    "florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID",
+    "illinois": "IL", "indiana": "IN", "iowa": "IA", "kansas": "KS",
+    "kentucky": "KY", "louisiana": "LA", "maine": "ME", "maryland": "MD",
+    "massachusetts": "MA", "michigan": "MI", "minnesota": "MN", "mississippi": "MS",
+    "missouri": "MO", "montana": "MT", "nebraska": "NE", "nevada": "NV",
+    "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY",
+    "north carolina": "NC", "north dakota": "ND", "ohio": "OH", "oklahoma": "OK",
+    "oregon": "OR", "pennsylvania": "PA", "rhode island": "RI", "south carolina": "SC",
+    "south dakota": "SD", "tennessee": "TN", "texas": "TX", "utah": "UT",
+    "vermont": "VT", "virginia": "VA", "washington": "WA", "west virginia": "WV",
+    "wisconsin": "WI", "wyoming": "WY",
+}
+
+
+def _infer_race_id(title: str) -> str | None:
+    """Back-fill race_id for nominee-style titles that arrived without one."""
+    if not isinstance(title, str):
+        return None
+    t = title.lower()
+    # House: "FL-6", "NY-16"
+    m = re.search(r"\b([A-Z]{2})[-\s](\d{1,2})\b", title)
+    if m and m.group(1) in _STATES.values():
+        return f"2026-H-{m.group(1)}-{str(int(m.group(2))).zfill(2)}"
+    for name, abbrev in sorted(_STATES.items(), key=lambda x: -len(x[0])):
+        if name in t:
+            if "senate" in t or "senator" in t:
+                return f"2026-SEN-{abbrev}"
+            if "governor" in t:
+                return f"2026-GOV-{abbrev}"
+    return None
+
+
+def _canonical_last_name(name: str) -> str | None:
+    if not isinstance(name, str):
+        return None
+    n = re.sub(r"[^\w\s'\-]", " ", name).strip()
+    # Drop trailing Jr/Sr/III etc.
+    parts = [p for p in n.split() if p.lower() not in ("jr", "sr", "jr.", "sr.", "ii", "iii", "iv")]
+    if not parts:
+        return None
+    return parts[-1].lower()
+
+
+def load_primary_candidates():
+    """
+    Build a tidy frame of (race_id, party, candidate_last, candidate_name,
+    platform, prob, url, volume/oi) rows across all three platforms.
+    """
+    rows = []
+
+    # Kalshi: "Will <Name> be the <Party> nominee for the Senate in <State>?" / "... for <ST>-<NN>?"
+    try:
+        k = pd.read_csv(RAW / "kalshi_markets.csv")
+    except FileNotFoundError:
+        k = pd.DataFrame()
+    if not k.empty:
+        k = k[k["implied_prob"].notna() & k["market_title"].notna()].copy()
+        pat = re.compile(
+            r"^Will\s+(.+?)\s+be\s+the\s+(Democratic|Republican)\s+nominee",
+            re.IGNORECASE,
+        )
+        for _, r in k.iterrows():
+            m = pat.match(str(r["market_title"]))
+            if not m:
+                continue
+            name = m.group(1).strip()
+            party = "DEM" if m.group(2).lower().startswith("d") else "REP"
+            rid = r["race_id"] if isinstance(r["race_id"], str) and r["race_id"] else _infer_race_id(r["market_title"])
+            if not rid:
+                continue
+            last = _canonical_last_name(name)
+            if not last:
+                continue
+            rows.append({
+                "race_id": rid, "party": party, "candidate_last": last,
+                "candidate_name": name, "platform": "kalshi",
+                "prob": float(r["implied_prob"]),
+                "url": kalshi_url(r.get("series_ticker")),
+                "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
+                "oi": pd.to_numeric(r.get("open_interest"), errors="coerce"),
+                "raw_title": r["market_title"],
+            })
+
+    # PredictIt: market_name = "Who will win the 2026 <State> <Party> Senate nomination?"
+    try:
+        pi = pd.read_csv(RAW / "predictit_markets.csv")
+    except FileNotFoundError:
+        pi = pd.DataFrame()
+    if not pi.empty:
+        pi = pi[pi["implied_prob"].notna() & pi["race_id"].notna()].copy()
+        mn_pat = re.compile(
+            r"(Democratic|Republican|Democrat|Republicans?)\s+(Senate|Senator|Gubernatorial|Governor|House)\s+(?:primary|nomination)",
+            re.IGNORECASE,
+        )
+        mn_pat2 = re.compile(
+            r"Who\s+will\s+win\s+the\s+\d{4}\s+[\w\s]+(Democratic|Republican)\s+(?:Senate|Governor|House|Gubernatorial)",
+            re.IGNORECASE,
+        )
+        for _, r in pi.iterrows():
+            mn = str(r.get("market_name", ""))
+            cn = str(r.get("contract_name", ""))
+            if not ("nomination" in mn.lower() or "primary" in mn.lower()):
+                continue
+            m = mn_pat.search(mn) or mn_pat2.search(mn)
+            if not m:
+                continue
+            p = m.group(1).lower()
+            party = "DEM" if p.startswith("d") else "REP"
+            last = _canonical_last_name(cn)
+            if not last:
+                continue
+            rows.append({
+                "race_id": r["race_id"], "party": party, "candidate_last": last,
+                "candidate_name": cn, "platform": "predictit",
+                "prob": float(r["implied_prob"]),
+                "url": predictit_url(r.get("market_id")),
+                "volume": None, "oi": None,
+                "raw_title": f"{mn} — {cn}",
+            })
+
+    # Polymarket: "Will <Name> be the <Party> nominee for Senate in <State>?"
+    try:
+        pm = pd.read_csv(RAW / "polymarket_markets.csv")
+    except FileNotFoundError:
+        pm = pd.DataFrame()
+    if not pm.empty and "race_id" in pm.columns:
+        pm = pm[pm["implied_prob"].notna() & pm["race_id"].notna()].copy()
+        pat = re.compile(
+            r"^Will\s+(.+?)\s+be\s+the\s+(Democratic|Republican)\s+nominee",
+            re.IGNORECASE,
+        )
+        slug_col = "event_slug" if "event_slug" in pm.columns else ("market_slug" if "market_slug" in pm.columns else None)
+        for _, r in pm.iterrows():
+            m = pat.match(str(r.get("question", "")))
+            if not m:
+                continue
+            name = m.group(1).strip()
+            if name.lower().startswith(("any other", "another person", "a candidate not")):
+                continue
+            party = "DEM" if m.group(2).lower().startswith("d") else "REP"
+            last = _canonical_last_name(name)
+            if not last:
+                continue
+            slug = r.get(slug_col) if slug_col else None
+            rows.append({
+                "race_id": r["race_id"], "party": party, "candidate_last": last,
+                "candidate_name": name, "platform": "polymarket",
+                "prob": float(r["implied_prob"]),
+                "url": polymarket_url(slug),
+                "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
+                "oi": pd.to_numeric(r.get("liquidity"), errors="coerce"),
+                "raw_title": r.get("question", ""),
+            })
+
+    return pd.DataFrame(rows)
+
+
+def primary_pairs(meta_df):
+    """Cross-platform primary candidate pairs (race_id+party+last name)."""
+    cands = load_primary_candidates()
+    if cands.empty:
+        return []
+
+    # If the same platform lists a candidate in >1 market for the same race/party
+    # (e.g. duplicated tickers), keep the one with highest volume/OI then highest prob.
+    cands["_rank"] = cands[["volume", "oi"]].fillna(0).max(axis=1)
+    cands = cands.sort_values(["race_id", "party", "candidate_last", "platform", "_rank", "prob"],
+                              ascending=[True, True, True, True, False, False])
+    cands = cands.drop_duplicates(subset=["race_id", "party", "candidate_last", "platform"])
+
+    meta_map = {r["race_id"]: r for _, r in meta_df.iterrows()} if not meta_df.empty else {}
+
+    out = []
+    key_cols = ["race_id", "party", "candidate_last"]
+    for key, grp in cands.groupby(key_cols):
+        if len(grp) < 2:
+            continue
+        platforms = grp.set_index("platform")
+        available = list(platforms.index)
+        for i, pa in enumerate(available):
+            for pb in available[i + 1:]:
+                ra = platforms.loc[pa]
+                rb = platforms.loc[pb]
+                prob_a = float(ra["prob"])
+                prob_b = float(rb["prob"])
+                raw_gap = abs(prob_a - prob_b)
+                net_gap = raw_gap - FEES.get(pa, 0.03) - FEES.get(pb, 0.03)
+                cheaper = pa if prob_a < prob_b else pb
+                expensive = pb if prob_a < prob_b else pa
+                action = f"Buy {ra['candidate_name']} on {cheaper.title()} ({min(prob_a, prob_b)*100:.1f}%), fade on {expensive.title()} ({max(prob_a, prob_b)*100:.1f}%)"
+                rid, party, last = key
+                meta = meta_map.get(rid, {})
+                label = meta.get("label", rid) if isinstance(meta, dict) else getattr(meta, "label", rid)
+                state = meta.get("state", "") if isinstance(meta, dict) else getattr(meta, "state", "")
+                office = meta.get("office", "") if isinstance(meta, dict) else getattr(meta, "office", "")
+                out.append({
+                    "match_type": "primary_candidate",
+                    "race_id": rid,
+                    "label": label,
+                    "state": state,
+                    "office": office,
+                    "party": party,
+                    "candidate": ra["candidate_name"],
+                    "pair": f"{pa}/{pb}",
+                    "platform_a": pa,
+                    "platform_b": pb,
+                    f"{pa}_dem": round(prob_a, 4),
+                    f"{pb}_dem": round(prob_b, 4),
+                    "prob_a": round(prob_a, 4),
+                    "prob_b": round(prob_b, 4),
+                    "raw_gap_pp": round(raw_gap * 100, 2),
+                    "net_gap_pp": round(net_gap * 100, 2),
+                    "profitable": bool(net_gap > 0),
+                    "suspicious": bool(raw_gap * 100 > 40),
+                    "higher_platform": expensive,
+                    "action": action,
+                    "arb_type": "one-sided",
+                    "guaranteed_return_pct": None,
+                    "stake_a_pct": None, "stake_b_pct": None,
+                    "stake_a_dollars": None, "stake_b_dollars": None,
+                    "profit_dollars": None, "stake_note": None,
+                    "url_a": ra.get("url"), "url_b": rb.get("url"),
+                    "volume_a": None if pd.isna(ra.get("volume")) else float(ra.get("volume")),
+                    "volume_b": None if pd.isna(rb.get("volume")) else float(rb.get("volume")),
+                    "question_a": ra.get("raw_title", ""),
+                    "question_b": rb.get("raw_title", ""),
+                })
+    return out
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def run():
@@ -397,6 +634,21 @@ def run():
             )
             if row:
                 rows.append(row)
+
+    # Tag general-election pairs, then append primary-candidate pairs.
+    for row in rows:
+        row.setdefault("match_type", "general")
+
+    prim = primary_pairs(meta)
+    print(f"\nPrimary candidate cross-platform pairs: {len(prim)}")
+    if prim:
+        top = sorted(prim, key=lambda r: -r["raw_gap_pp"])[:10]
+        print("Top primary candidate gaps:")
+        for r in top:
+            print(f"  {r['pair']:>22}  {r['candidate']:20} {r['label']:14} "
+                  f"gap={r['raw_gap_pp']:5.1f}pp  "
+                  f"{r['platform_a']}={r['prob_a']*100:5.1f}%  {r['platform_b']}={r['prob_b']*100:5.1f}%")
+    rows.extend(prim)
 
     arb = pd.DataFrame(rows).sort_values(["arb_type", "raw_gap_pp"], ascending=[True, False])
 
