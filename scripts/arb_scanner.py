@@ -401,6 +401,24 @@ def _canonical_last_name(name: str) -> str | None:
     return parts[-1].lower()
 
 
+def _first_initial(name: str) -> str | None:
+    """
+    First initial of the given name, stripping common prefixes like 'Dr.', 'Mr.',
+    and parsing out middle-initial-only forms ('John E. Sununu' -> 'j').
+    Used together with last name to disambiguate candidates who share a surname
+    (e.g. Chris Sununu vs John E. Sununu).
+    """
+    if not isinstance(name, str):
+        return None
+    n = re.sub(r"[^\w\s'\-]", " ", name).strip()
+    parts = [p for p in n.split()
+             if p.lower() not in ("jr", "sr", "jr.", "sr.", "ii", "iii", "iv",
+                                   "dr", "mr", "mrs", "ms", "the", "rep", "sen", "gov")]
+    if not parts:
+        return None
+    return parts[0][0].lower() if parts[0] else None
+
+
 def load_primary_candidates():
     """
     Build a tidy frame of primary-nominee rows across all three platforms,
@@ -439,7 +457,9 @@ def load_primary_candidates():
                 continue
             rows.append({
                 "state": state, "office": office, "district": district,
-                "party": party, "candidate_last": last, "candidate_name": name,
+                "party": party, "candidate_last": last,
+                "candidate_first": _first_initial(name),
+                "candidate_name": name,
                 "platform": "kalshi",
                 "prob": float(r["implied_prob"]),
                 "url": kalshi_url(r.get("series_ticker")),
@@ -479,7 +499,9 @@ def load_primary_candidates():
                 continue
             rows.append({
                 "state": state, "office": office, "district": district,
-                "party": party, "candidate_last": last, "candidate_name": cn.strip(),
+                "party": party, "candidate_last": last,
+                "candidate_first": _first_initial(cn),
+                "candidate_name": cn.strip(),
                 "platform": "predictit",
                 "prob": float(r["implied_prob"]),
                 "url": predictit_url(r.get("market_id")),
@@ -518,7 +540,9 @@ def load_primary_candidates():
             slug = r.get(slug_col) if slug_col else None
             rows.append({
                 "state": state, "office": office, "district": district,
-                "party": party, "candidate_last": last, "candidate_name": name,
+                "party": party, "candidate_last": last,
+                "candidate_first": _first_initial(name),
+                "candidate_name": name,
                 "platform": "polymarket",
                 "prob": float(r["implied_prob"]),
                 "url": polymarket_url(slug),
@@ -554,15 +578,18 @@ def primary_pairs(meta_df):
     # then highest prob.
     cands["_rank"] = cands[["volume", "oi"]].fillna(0).max(axis=1)
     cands["district"] = cands["district"].fillna("")
-    sort_cols = ["state", "office", "district", "party", "candidate_last", "platform", "_rank", "prob"]
-    cands = cands.sort_values(sort_cols, ascending=[True, True, True, True, True, True, False, False])
-    dedup_key = ["state", "office", "district", "party", "candidate_last", "platform"]
+    cands["candidate_first"] = cands["candidate_first"].fillna("")
+    sort_cols = ["state", "office", "district", "party", "candidate_last", "candidate_first", "platform", "_rank", "prob"]
+    cands = cands.sort_values(sort_cols, ascending=[True, True, True, True, True, True, True, False, False])
+    dedup_key = ["state", "office", "district", "party", "candidate_last", "candidate_first", "platform"]
     cands = cands.drop_duplicates(subset=dedup_key)
 
     meta_map = {r["race_id"]: r for _, r in meta_df.iterrows()} if not meta_df.empty else {}
 
     out = []
-    key_cols = ["state", "office", "district", "party", "candidate_last"]
+    # Match on first initial + last name to disambiguate same-surname candidates
+    # like Chris Sununu vs John E. Sununu.
+    key_cols = ["state", "office", "district", "party", "candidate_last", "candidate_first"]
     for key, grp in cands.groupby(key_cols):
         if len(grp) < 2:
             continue
@@ -579,7 +606,7 @@ def primary_pairs(meta_df):
                 cheaper = pa if prob_a < prob_b else pb
                 expensive = pb if prob_a < prob_b else pa
                 action = f"Buy {ra['candidate_name']} on {cheaper.title()} ({min(prob_a, prob_b)*100:.1f}%), fade on {expensive.title()} ({max(prob_a, prob_b)*100:.1f}%)"
-                state, office, district, party, last = key
+                state, office, district, party, last, first = key
                 rid = _race_id_from(state, office, district or None)
                 meta = meta_map.get(rid, {}) if rid else {}
                 if isinstance(meta, dict):
