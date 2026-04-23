@@ -203,6 +203,23 @@ def parse_market(m: dict) -> dict:
     market_slug = m.get("slug", "") or ""
     url_slug = event_slug or market_slug
 
+    # clobTokenIds: comes back as a JSON-encoded string like '["yes_id","no_id"]'
+    # or a real list. Outcome order in `outcomes` aligns with token order.
+    raw_tokens = m.get("clobTokenIds")
+    yes_token = no_token = None
+    try:
+        tokens = json.loads(raw_tokens) if isinstance(raw_tokens, str) else raw_tokens
+        if isinstance(tokens, list) and len(tokens) >= 2 and outcomes and len(outcomes) >= 2:
+            for o, tid in zip(outcomes, tokens):
+                if str(o).lower() == "yes":
+                    yes_token = tid
+                elif str(o).lower() == "no":
+                    no_token = tid
+            if yes_token is None and no_token is None:
+                yes_token, no_token = tokens[0], tokens[1]
+    except (ValueError, TypeError):
+        pass
+
     return {
         "source": "polymarket",
         "condition_id": m.get("conditionId"),
@@ -218,6 +235,8 @@ def parse_market(m: dict) -> dict:
         "best_ask": m.get("bestAsk"),
         "best_bid": m.get("bestBid"),
         "implied_prob": implied_prob,
+        "yes_token_id": yes_token,
+        "no_token_id": no_token,
         "event_slug": event_slug,
         "market_slug": market_slug,
         "url_slug": url_slug,

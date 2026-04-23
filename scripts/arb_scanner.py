@@ -71,10 +71,14 @@ def load_kalshi_general():
         r"Republican(?:s)?\s+win|Will Republican(?:s)?\s+win", case=False, na=False
     ) & ~df["market_title"].str.contains("nominee|primary|nominate", case=False, na=False)
 
+    cols = ["implied_prob", "open_interest", "volume", "series_ticker", "market_ticker", "market_title"]
+    if "market_ticker" not in df.columns:
+        df["market_ticker"] = None
+
     def best(g):
         oi = pd.to_numeric(g["open_interest"], errors="coerce").fillna(0)
         idx = oi.idxmax()
-        return g.loc[idx, ["implied_prob", "open_interest", "volume", "series_ticker", "market_title"]]
+        return g.loc[idx, cols]
 
     dem = df[dem_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
     dem = dem.rename(columns={
@@ -82,12 +86,17 @@ def load_kalshi_general():
         "open_interest": "kalshi_oi",
         "volume": "kalshi_volume",
         "series_ticker": "kalshi_series_ticker",
+        "market_ticker": "kalshi_dem_ticker",
     })
 
     rep = df[rep_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
-    rep = rep.rename(columns={"implied_prob": "kalshi_rep", "series_ticker": "kalshi_rep_ticker"})
+    rep = rep.rename(columns={
+        "implied_prob": "kalshi_rep",
+        "series_ticker": "kalshi_rep_series",
+        "market_ticker": "kalshi_rep_ticker",
+    })
 
-    merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_volume", "kalshi_series_ticker"]].merge(
+    merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_volume", "kalshi_series_ticker", "kalshi_dem_ticker"]].merge(
         rep[["race_id", "kalshi_rep", "kalshi_rep_ticker"]], on="race_id", how="outer"
     )
     merged["kalshi_url"] = merged["kalshi_series_ticker"].apply(kalshi_url)
@@ -121,7 +130,7 @@ def load_polymarket_general():
     path = RAW / "polymarket_markets.csv"
     if not path.exists():
         return pd.DataFrame()
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, dtype={"yes_token_id": str, "no_token_id": str})
 
     if "race_id" not in df.columns:
         return pd.DataFrame()
@@ -146,8 +155,11 @@ def load_polymarket_general():
             mask = df["_slug"].eq("")
             df.loc[mask, "_slug"] = df.loc[mask, "market_slug"].fillna("").astype(str)
 
-    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity", "volume", "_slug"]].copy()
-    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity", "volume", "_slug"]].copy()
+    if "yes_token_id" not in df.columns:
+        df["yes_token_id"] = None
+
+    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity", "volume", "_slug", "yes_token_id"]].copy()
+    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity", "volume", "_slug", "yes_token_id"]].copy()
 
     def best_liq(g):
         liq = pd.to_numeric(g["liquidity"], errors="coerce").fillna(0)
@@ -155,19 +167,26 @@ def load_polymarket_general():
 
     if not dem.empty:
         dem = dem.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
-        dem = dem.rename(columns={"implied_prob": "pm_dem", "liquidity": "pm_liq", "volume": "pm_volume", "_slug": "pm_dem_slug"})
+        dem = dem.rename(columns={
+            "implied_prob": "pm_dem", "liquidity": "pm_liq",
+            "volume": "pm_volume", "_slug": "pm_dem_slug",
+            "yes_token_id": "pm_dem_token",
+        })
 
     if not rep.empty:
         rep = rep.groupby("race_id").apply(best_liq, include_groups=False).reset_index()
-        rep = rep.rename(columns={"implied_prob": "pm_rep", "liquidity": "pm_rep_liq", "_slug": "pm_rep_slug"})
+        rep = rep.rename(columns={
+            "implied_prob": "pm_rep", "liquidity": "pm_rep_liq",
+            "_slug": "pm_rep_slug", "yes_token_id": "pm_rep_token",
+        })
 
     if dem.empty and rep.empty:
         return pd.DataFrame()
 
-    result = dem[["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug"]] if not dem.empty \
-        else pd.DataFrame(columns=["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug"])
+    dem_cols = ["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug", "pm_dem_token"]
+    result = dem[dem_cols] if not dem.empty else pd.DataFrame(columns=dem_cols)
     if not rep.empty:
-        result = result.merge(rep[["race_id", "pm_rep", "pm_rep_slug"]], on="race_id", how="outer")
+        result = result.merge(rep[["race_id", "pm_rep", "pm_rep_slug", "pm_rep_token"]], on="race_id", how="outer")
 
     # Prefer dem slug for the URL; fall back to rep slug.
     if "pm_rep_slug" in result.columns:
@@ -465,6 +484,7 @@ def load_primary_candidates():
                 "url": kalshi_url(r.get("series_ticker")),
                 "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
                 "oi": pd.to_numeric(r.get("open_interest"), errors="coerce"),
+                "market_id": r.get("market_ticker"),
                 "raw_title": title,
             })
 
@@ -506,13 +526,14 @@ def load_primary_candidates():
                 "prob": float(r["implied_prob"]),
                 "url": predictit_url(r.get("market_id")),
                 "volume": None, "oi": None,
+                "market_id": None,
                 "raw_title": f"{mn} — {cn}",
             })
 
     # ── Polymarket ──
     # "Will <Name> be the <Party> nominee for Senate in <State>?"
     try:
-        pm = pd.read_csv(RAW / "polymarket_markets.csv")
+        pm = pd.read_csv(RAW / "polymarket_markets.csv", dtype={"yes_token_id": str, "no_token_id": str})
     except FileNotFoundError:
         pm = pd.DataFrame()
     if not pm.empty:
@@ -548,6 +569,7 @@ def load_primary_candidates():
                 "url": polymarket_url(slug),
                 "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
                 "oi": pd.to_numeric(r.get("liquidity"), errors="coerce"),
+                "market_id": r.get("yes_token_id"),
                 "raw_title": title,
             })
 
@@ -644,6 +666,8 @@ def primary_pairs(meta_df):
                     "url_a": ra.get("url"), "url_b": rb.get("url"),
                     "volume_a": None if pd.isna(ra.get("volume")) else float(ra.get("volume")),
                     "volume_b": None if pd.isna(rb.get("volume")) else float(rb.get("volume")),
+                    "market_id_a": ra.get("market_id"),
+                    "market_id_b": rb.get("market_id"),
                     "question_a": ra.get("raw_title", ""),
                     "question_b": rb.get("raw_title", ""),
                 })
@@ -684,7 +708,9 @@ def run():
             extra={
                 "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell"),
                 "kalshi_oi": r.get("kalshi_oi"),
-                "volume_a": r.get("kalshi_volume"), "volume_b": None,  # PredictIt: no volume API
+                "volume_a": r.get("kalshi_volume"), "volume_b": None,
+                "market_id_a": r.get("kalshi_dem_ticker"),
+                "market_id_b": None,
             },
         )
         if row:
@@ -703,6 +729,8 @@ def run():
                 extra={
                     "pm_liq": r.get("pm_liq"), "kalshi_oi": r.get("kalshi_oi"),
                     "volume_a": r.get("kalshi_volume"), "volume_b": r.get("pm_volume"),
+                    "market_id_a": r.get("kalshi_dem_ticker"),
+                    "market_id_b": r.get("pm_dem_token"),
                 },
             )
             if row:
@@ -722,6 +750,8 @@ def run():
                     "pm_liq": r.get("pm_liq"),
                     "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell"),
                     "volume_a": None, "volume_b": r.get("pm_volume"),
+                    "market_id_a": None,
+                    "market_id_b": r.get("pm_dem_token"),
                 },
             )
             if row:
@@ -747,6 +777,52 @@ def run():
     # Volume is exposed in JSON so the dashboard can filter live.
     arb["volume_a"] = pd.to_numeric(arb.get("volume_a"), errors="coerce")
     arb["volume_b"] = pd.to_numeric(arb.get("volume_b"), errors="coerce")
+
+    # ── emit depth_targets.csv (consumed by scripts/fetch_depth.py) ──
+    targets = []
+    for _, r in arb.iterrows():
+        for side in ("a", "b"):
+            mid = r.get(f"market_id_{side}")
+            plat = r.get(f"platform_{side}")
+            if mid is not None and not (isinstance(mid, float) and pd.isna(mid)) and plat in ("kalshi", "polymarket"):
+                targets.append({"platform": plat, "market_id": mid})
+    if targets:
+        td = pd.DataFrame(targets)
+        td["market_id"] = td["market_id"].astype(str)
+        td = td.drop_duplicates()
+        proc = ROOT / "data" / "processed"
+        proc.mkdir(parents=True, exist_ok=True)
+        td.to_csv(proc / "depth_targets.csv", index=False)
+        print(f"\nWrote {len(td)} unique depth targets to data/processed/depth_targets.csv")
+
+    # ── join orderbook depth if fetched ──
+    depth_path = RAW / "orderbook_depth.csv"
+    if depth_path.exists():
+        depth = pd.read_csv(depth_path, dtype={"market_id": str}).drop_duplicates(subset=["platform", "market_id"], keep="last")
+        for side in ("a", "b"):
+            arb[f"market_id_{side}"] = arb[f"market_id_{side}"].apply(
+                lambda v: None if v is None or (isinstance(v, float) and pd.isna(v)) else str(v)
+            )
+            d = depth.rename(columns={
+                "platform": f"platform_{side}",
+                "market_id": f"market_id_{side}",
+                "best_bid": f"depth_{side}_best_bid",
+                "best_ask": f"depth_{side}_best_ask",
+                "best_bid_size": f"depth_{side}_best_bid_size",
+                "best_ask_size": f"depth_{side}_best_ask_size",
+                "depth_bid_at_1pp": f"depth_{side}_bid_1pp",
+                "depth_ask_at_1pp": f"depth_{side}_ask_1pp",
+                "max_buy_size_at_3pp_edge": f"depth_{side}_max_at_3pp",
+            })[[f"platform_{side}", f"market_id_{side}",
+                f"depth_{side}_best_bid", f"depth_{side}_best_ask",
+                f"depth_{side}_best_bid_size", f"depth_{side}_best_ask_size",
+                f"depth_{side}_bid_1pp", f"depth_{side}_ask_1pp",
+                f"depth_{side}_max_at_3pp"]]
+            arb = arb.merge(d, on=[f"platform_{side}", f"market_id_{side}"], how="left")
+        joined = arb[["depth_a_best_ask", "depth_b_best_ask"]].notna().any(axis=1).sum()
+        print(f"Joined orderbook depth onto {joined}/{len(arb)} pairs")
+    else:
+        print("No depth file found yet — run scripts/fetch_depth.py to populate it.")
 
     guaranteed = arb[arb["arb_type"] == "guaranteed"]
     profitable = arb[arb["profitable"]]

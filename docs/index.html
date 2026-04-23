@@ -424,7 +424,8 @@ tr:hover td { background: #1a2035; }
   <div class="mismatch-body">
     <p class="mismatch-explainer">
       Same race, different prices across prediction markets. <strong>Raw gap</strong> = difference in implied probability between platforms (Dem win probability for general-election rows; nominee probability for the named candidate on primary-candidate rows).
-      <strong>Net gap</strong> subtracts estimated round-trip fees (Kalshi ~3%, Polymarket ~3%, PredictIt ~12%). Positive net gap = theoretical arb — but liquidity, timing risk, and withdrawal limits often make execution impractical.
+      <strong>Net gap</strong> subtracts estimated round-trip fees (Kalshi ~3%, Polymarket ~3%, PredictIt ~12%). Positive net gap = theoretical arb.
+      <strong>Tradeable</strong> shows max contracts you could buy on each side (A / B) before paying ≥3pp worse than best ask — the smaller side caps the realistic trade. Red &lt;50, yellow &lt;500, green ≥500.
       <span id="arb-updated" style="color:#4a5568;font-size:0.75rem;display:block;margin-top:4px;"></span>
     </p>
     <table class="mm-table" id="arb-table">
@@ -438,6 +439,7 @@ tr:hover td { background: #1a2035; }
           <th data-arbcol="platform_b">Platform B</th>
           <th data-arbcol="raw_gap_pp">Raw Gap</th>
           <th data-arbcol="net_gap_pp">Net Gap</th>
+          <th data-arbcol="depth_a_max_at_3pp" title="Max contracts you could buy on each side before paying >=3pp worse than best ask. Lower side caps the trade.">Tradeable</th>
           <th data-arbcol="guaranteed_return_pct">Guaranteed Return</th>
           <th>Bet ($100 total)</th>
           <th>Action / Links</th>
@@ -1073,6 +1075,15 @@ function renderArbTable() {
          <div style="font-size:0.72rem;color:#e2e8f0;margin-top:2px">${r.candidate || ''}${r.party ? ` <span style="color:${r.party==='DEM'?'#60a5fa':'#f87171'};font-size:0.64rem">(${r.party})</span>` : ''}</div>`
       : `<span style="background:rgba(96,165,250,0.12);color:#60a5fa;border-radius:4px;padding:2px 6px;font-size:0.66rem;font-weight:700">GENERAL</span>`;
 
+    // Tradeable size — show max contracts within 3pp of best ask per side.
+    // The min of the two caps the realistic trade size.
+    const da = r.depth_a_max_at_3pp, db = r.depth_b_max_at_3pp;
+    const fmtSize = v => v == null ? '—' : (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v.toFixed(0));
+    const sizeCls = v => v == null ? 'color:#4a5568' : (v < 50 ? 'color:#f87171' : v < 500 ? 'color:#facc15' : 'color:#34d399');
+    const tradeableCell = (da == null && db == null)
+      ? '<span style="color:#4a5568;font-size:0.7rem">—</span>'
+      : `<span style="font-size:0.7rem"><span style="${sizeCls(da)}">${fmtSize(da)}</span> <span style="color:#4a5568">/</span> <span style="${sizeCls(db)}">${fmtSize(db)}</span></span>`;
+
     return `<tr style="${isGuaranteed ? 'background:rgba(52,211,153,0.03);' : ''}">
       <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state||''}</span></td>
       <td>${marketCell}</td>
@@ -1082,11 +1093,12 @@ function renderArbTable() {
       <td style="color:#94a3b8">${platLabel(pb)}${linkB} ${probBHtml}</td>
       <td style="color:#e2e8f0;font-weight:600">${rawStr}</td>
       <td class="${netCls}">${netStr}</td>
+      <td>${tradeableCell}</td>
       <td>${retCell}</td>
       <td>${stakeCell}</td>
       <td class="arb-action" style="font-size:0.72rem">${r.action}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="11" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
+  }).join('') || '<tr><td colspan="12" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
 
   // Wire sort headers + draw arrow on the active column
   document.querySelectorAll('#arb-table th[data-arbcol]').forEach(th => {
