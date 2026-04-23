@@ -1,31 +1,28 @@
 """
 Kalshi prediction market scraper.
 
-Kalshi has a public REST API for their elections domain — no auth required for reads.
+Public REST API for elections, no auth required for reads.
 
-Base URL: https://api.elections.kalshi.com/v1/
+Base URL: https://api.elections.kalshi.com/trade-api/v2/
 
 Key endpoints:
-  GET /v1/series/?limit=100&cursor=...
-    All market series (9500+ total, ~565 election-related)
+  GET /series?category=Politics
+    All Politics-category series in one response (no pagination).
 
-  GET /v1/series/{ticker}
-    Detail for a single series
+  GET /events?series_ticker={ticker}&with_nested_markets=true
+    Events under a series, with markets nested inside each event.
+    Market fields used here: ticker, title, yes_bid_dollars, yes_ask_dollars,
+    last_price_dollars, yes_bid_size_fp, yes_ask_size_fp, liquidity_dollars,
+    open_interest_fp, volume_fp, status
 
-  GET /v1/events/?series_ticker={ticker}&limit=100
-    Events (elections) under a series. Markets are nested inside event objects.
-    Market fields include: ticker, title, yes_ask, yes_bid, last_price,
-    open_interest, volume, status
+  GET /markets/{ticker}/orderbook?depth=N
+    Full orderbook ladder. Used by scripts/fetch_depth.py for matched markets.
 
-Market price scale: 0-100 (cents), so 87 = 87% implied probability.
+Prices on v2 are decimals 0.0000-1.0000 (string-encoded). Sizes are in
+contracts ($1 max payout each).
 
-Race identification strategy:
-  Series tickers follow patterns:
-    SENATEPARTY{STATE}   — e.g. SENATEPARTYCA, SENATEPARTYGA
-    GOVPARTY{STATE}      — e.g. GOVPARTYCA, GOVPARTYTX
-    HOUSE{STATE}{DIST}   — e.g. HOUSECA47, HOUSETX28
-    SENATE{STATE}        — alternate form, e.g. SENATEPA, SENATENH
-  We match these to canonical race_ids from utils/races.py.
+Race identification: see infer_race_id() — pattern-matches series tickers
+to canonical race_ids defined in utils/races.py.
 """
 
 import time
@@ -37,18 +34,18 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 RAW_DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
-KALSHI_BASE = "https://api.elections.kalshi.com/v1"
+KALSHI_BASE = "https://api.elections.kalshi.com/trade-api/v2"
 HEADERS = {"User-Agent": "Mozilla/5.0 (research/polling-aggregator)", "Accept": "application/json"}
 
-# Keywords to identify 2026 election series
+# Keywords to identify 2026 election series (filter against 1800+ Politics series)
 ELECTION_KEYWORDS = [
     "senate", "governor", "house", "midterm", "2026",
     "senateparty", "govparty", "houseaz", "housenc", "housega",
     "housetx", "housemi", "houseca", "houseny", "housepa",
     "houseva", "housefl", "housewi", "houseoh", "housemo",
+    "primary", "nominee", "nomination",
 ]
 
-# Map state abbreviations to full names for matching
 STATE_ABBREV_MAP = {
     "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
     "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
@@ -72,124 +69,113 @@ def _get(path: str, params: dict = None) -> dict:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{url}?{qs}"
     req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=15) as r:
+    with urllib.request.urlopen(req, timeout=20) as r:
         return json.loads(r.read())
 
 
 def fetch_all_series() -> list[dict]:
-    """Paginate through all Kalshi series and return election-related ones."""
-    all_series = []
-    cursor = None
-    page = 0
-    while True:
-        params = {"limit": "100"}
-        if cursor:
-            params["cursor"] = cursor
-        data = _get("/series/", params)
-        batch = data.get("series", [])
-        if not batch:
-            break
-        for s in batch:
-            ticker = s.get("ticker", "").lower()
-            title = s.get("title", "").lower()
-            if any(k in ticker or k in title for k in ELECTION_KEYWORDS):
-                all_series.append(s)
-        cursor = data.get("cursor")
-        page += 1
-        if not cursor or len(batch) < 100:
-            break
-    return all_series
+    """Fetch all Elections + Politics series, filtered to election-related."""
+    out = []
+    seen = set()
+    for category in ("Elections", "Politics"):
+        data = _get("/series", {"category": category, "limit": "2000"})
+        for s in data.get("series", []):
+            ticker = (s.get("ticker") or "")
+            if ticker in seen:
+                continue
+            t_lower = ticker.lower()
+            title_lower = (s.get("title") or "").lower()
+            if category == "Elections" or any(k in t_lower or k in title_lower for k in ELECTION_KEYWORDS):
+                out.append(s)
+                seen.add(ticker)
+    return out
 
 
 def fetch_events_for_series(series_ticker: str) -> list[dict]:
-    """Fetch all events (and their nested markets) for a series."""
-    data = _get("/events/", {"series_ticker": series_ticker, "limit": "100"})
+    """Fetch events with nested markets for a series."""
+    data = _get("/events", {
+        "series_ticker": series_ticker,
+        "with_nested_markets": "true",
+        "limit": "200",
+    })
     return data.get("events", [])
 
 
 def infer_race_id(series_ticker: str, series_title: str) -> str | None:
     """
-    Attempt to infer a canonical race_id from the Kalshi series ticker/title.
-
-    Returns a string like "2026-SEN-PA" or None if can't determine.
-
-    Handles Kalshi ticker patterns:
-      SENATEPARTY{ST}    -> 2026-SEN-{ST}   e.g. SENATEPARTYCA
-      SENATE{ST}         -> 2026-SEN-{ST}   e.g. SENATEPA, SENATENH
-      SENATE-{ST}        -> 2026-SEN-{ST}   e.g. SENATE-MI
-      KXSENATE{ST}...    -> 2026-SEN-{ST}   e.g. KXSENATEMSR (MS primary)
-      GOVPARTY{ST}       -> 2026-GOV-{ST}   e.g. GOVPARTYCA
-      GOVPARTY{ST}...    -> 2026-GOV-{ST}   e.g. GOVPARTYNE
-      HOUSE{ST}{DIST}    -> 2026-H-{ST}-{D} e.g. HOUSECA47
-      Title fallback: "X Senate race" or "X Governor" -> extract state name
+    Map a Kalshi series ticker/title to a canonical race_id like "2026-SEN-PA".
+    Returns None if no pattern matches.
     """
-    ticker = series_ticker.upper()
+    ticker = (series_ticker or "").upper()
 
-    # SENATEPARTY{STATE} or SENATEPARTY-{STATE}
     m = re.match(r"SENATEPARTY[-_]?([A-Z]{2})(?:[A-Z0-9]*)?$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
         return f"2026-SEN-{m.group(1)}"
 
-    # SENATE{STATE} or SENATE-{STATE} (bare, no prefix)
     m = re.match(r"SENATE[-_]?([A-Z]{2})(?:[A-Z0-9]*)?$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
         return f"2026-SEN-{m.group(1)}"
 
-    # KXSENATE{STATE}{SUFFIX} — e.g. KXSENATEMSR (Mississippi), KXSENATEMTD, KXSENATESCR
-    # State abbrev is 2 chars, sometimes followed by 1 char suffix
     m = re.match(r"KXSENATE([A-Z]{2})([A-Z]?)$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
         return f"2026-SEN-{m.group(1)}"
 
-    # KXSENATE{STATE} with no suffix
     m = re.match(r"KXSENATE([A-Z]{2})$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
         return f"2026-SEN-{m.group(1)}"
 
-    # GOVPARTY{STATE}...
     m = re.match(r"GOVPARTY([A-Z]{2})(?:[A-Z0-9]*)?$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
         return f"2026-GOV-{m.group(1)}"
 
-    # KXGOV{STATE}... e.g. KXGOVOHNOMD, KXGOVMNOMR
     m = re.match(r"KXGOV([A-Z]{2})[A-Z0-9]+$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
         return f"2026-GOV-{m.group(1)}"
 
-    # HOUSE{STATE}{DIST} (e.g. HOUSECA47, HOUSETX28)
     m = re.match(r"HOUSE([A-Z]{2})(\d+)$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
         state = m.group(1)
         dist = m.group(2).zfill(2)
         return f"2026-H-{state}-{dist}"
 
-    # Title fallback: "{State} Senate race", "{State} Governor", etc.
-    title_lower = series_title.lower()
+    m = re.match(r"KXHOUSE([A-Z]{2})(\d+)$", ticker)
+    if m and m.group(1) in STATE_ABBREV_MAP:
+        state = m.group(1)
+        dist = m.group(2).zfill(2)
+        return f"2026-H-{state}-{dist}"
+
+    title_lower = (series_title or "").lower()
     for abbrev, full in STATE_ABBREV_MAP.items():
         if full.lower() in title_lower:
             if "senate" in title_lower:
                 return f"2026-SEN-{abbrev}"
             if "governor" in title_lower or "gubernat" in title_lower:
                 return f"2026-GOV-{abbrev}"
-            if "house" in title_lower or "congressional" in title_lower:
-                # Can't determine district from title alone
-                pass
 
     return None
 
 
-def parse_market_row(event: dict, market: dict, series_ticker: str, series_title: str) -> dict:
-    """Flatten a Kalshi market into a standard row."""
-    race_id = infer_race_id(series_ticker, series_title)
-    yes_ask = market.get("yes_ask")
-    yes_bid = market.get("yes_bid")
-    last_price = market.get("last_price")
+def _to_float(v) -> float | None:
+    if v is None or v == "":
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
 
-    # Implied probability: midpoint of bid/ask, fallback to last_price (scale: 0-100)
-    if yes_ask is not None and yes_bid is not None:
-        implied_prob = (yes_ask + yes_bid) / 2 / 100
+
+def parse_market_row(event: dict, market: dict, series_ticker: str, series_title: str) -> dict:
+    """Flatten a v2 Kalshi market into a standard row."""
+    race_id = infer_race_id(series_ticker, series_title)
+
+    yes_bid = _to_float(market.get("yes_bid_dollars"))
+    yes_ask = _to_float(market.get("yes_ask_dollars"))
+    last_price = _to_float(market.get("last_price_dollars"))
+
+    if yes_bid is not None and yes_ask is not None:
+        implied_prob = (yes_bid + yes_ask) / 2
     elif last_price is not None:
-        implied_prob = last_price / 100
+        implied_prob = last_price
     else:
         implied_prob = None
 
@@ -198,6 +184,7 @@ def parse_market_row(event: dict, market: dict, series_ticker: str, series_title
         "source": "kalshi",
         "series_ticker": series_ticker,
         "series_title": series_title,
+        "event_ticker": event.get("event_ticker"),
         "event_title": event.get("title"),
         "market_ticker": market.get("ticker"),
         "market_title": market.get("title"),
@@ -205,22 +192,22 @@ def parse_market_row(event: dict, market: dict, series_ticker: str, series_title
         "yes_ask": yes_ask,
         "last_price": last_price,
         "implied_prob": implied_prob,
-        "open_interest": market.get("open_interest"),
-        "volume": market.get("volume"),
+        "yes_bid_size": _to_float(market.get("yes_bid_size_fp")),
+        "yes_ask_size": _to_float(market.get("yes_ask_size_fp")),
+        "liquidity_dollars": _to_float(market.get("liquidity_dollars")),
+        "open_interest": _to_float(market.get("open_interest_fp")),
+        "volume": _to_float(market.get("volume_fp")),
+        "volume_24h": _to_float(market.get("volume_24h_fp")),
         "status": market.get("status"),
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
-def run(delay: float = 0.3):
-    """
-    Fetch all Kalshi election markets and save to data/raw/kalshi_markets.csv.
-
-    delay: seconds to sleep between series fetches (be polite).
-    """
+def run(delay: float = 0.2):
+    """Fetch all Kalshi election markets and save to data/raw/kalshi_markets.csv."""
     RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("Fetching Kalshi election series list...")
+    print("Fetching Kalshi election series list (v2)...")
     series_list = fetch_all_series()
     print(f"  Found {len(series_list)} election-related series")
 
@@ -247,12 +234,13 @@ def run(delay: float = 0.3):
     df.to_csv(out_path, index=False)
     print(f"\nSaved {len(df)} market rows to {out_path}")
 
-    # Print summary
     if "race_id" in df.columns:
         matched = df["race_id"].notna().sum()
         print(f"Matched to canonical race_id: {matched}/{len(df)}")
+        with_ticker = df["market_ticker"].notna().sum()
+        print(f"With market_ticker populated: {with_ticker}/{len(df)}")
         print("\nSample of matched markets:")
-        print(df[df["race_id"].notna()][["race_id", "market_title", "implied_prob"]].head(20).to_string(index=False))
+        print(df[df["race_id"].notna()][["race_id", "market_ticker", "market_title", "implied_prob"]].head(10).to_string(index=False))
 
 
 if __name__ == "__main__":
