@@ -77,9 +77,10 @@ def infer_race_id(name: str) -> str | None:
     """
     name_lower = name.lower()
 
-    # Find state
+    # Find state. Sort longest-first so multi-word names ("west virginia",
+    # "new hampshire", "north carolina") match before their substrings.
     state_abbrev = None
-    for state_name, abbrev in STATE_NAME_TO_ABBREV.items():
+    for state_name, abbrev in sorted(STATE_NAME_TO_ABBREV.items(), key=lambda kv: -len(kv[0])):
         if state_name in name_lower:
             state_abbrev = abbrev
             break

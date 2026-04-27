@@ -199,11 +199,42 @@ def parse_market(m: dict) -> dict:
             except (ValueError, TypeError):
                 outcome_price_pairs[o] = None
 
-    # For Yes/No markets, extract the "Yes" price as implied_prob
+    # Pick implied_prob with this priority:
+    #   1. midpoint of bestBid + bestAsk           (live orderbook, freshest)
+    #   2. bestAsk alone                            (only ask side)
+    #   3. bestBid alone                            (only bid side)
+    #   4. outcomePrices "Yes"                      (gamma snapshot, can be stale)
+    #   5. lastTradePrice                           (worst — can be days stale)
+    # The earlier code went straight to outcomePrices then lastTradePrice. For
+    # low-volume markets that's wildly stale: gamma reported outcomePrices
+    # ["0.43","0.57"] for a market whose live ask was $0.86, producing fake
+    # 40pp arbs against Kalshi.
     implied_prob = None
-    if "Yes" in outcome_price_pairs:
+    bb = m.get("bestBid")
+    ba = m.get("bestAsk")
+    try:
+        bb = float(bb) if bb is not None else None
+    except (TypeError, ValueError):
+        bb = None
+    try:
+        ba = float(ba) if ba is not None else None
+    except (TypeError, ValueError):
+        ba = None
+    # Require BOTH a bid AND an ask. A one-sided quote is a stale standing
+    # order, not a real market — using it pairs against other platforms'
+    # tight quotes and produces fake arbs (e.g. a lone $0.86 sell order
+    # sitting on a dead market).
+    if bb is not None and ba is not None and 0 < bb <= ba < 1:
+        # Wide spread (>10pp) means the midpoint is fictional; only the ask
+        # is actually fillable. Use ask to be conservative.
+        if (ba - bb) > 0.10:
+            implied_prob = ba
+        else:
+            implied_prob = round((bb + ba) / 2, 4)
+
+    if implied_prob is None and "Yes" in outcome_price_pairs:
         implied_prob = outcome_price_pairs["Yes"]
-    elif len(outcome_price_pairs) == 2:
+    elif implied_prob is None and len(outcome_price_pairs) == 2:
         for k, v in outcome_price_pairs.items():
             if k.lower() != "no":
                 implied_prob = v
@@ -212,7 +243,7 @@ def parse_market(m: dict) -> dict:
     question = m.get("question", "")
     race_id = infer_race_id(question)
 
-    # Fallback: use lastTradePrice if outcome parsing failed
+    # Last resort: lastTradePrice (often days stale on low-volume markets)
     if implied_prob is None:
         implied_prob = m.get("lastTradePrice")
 
