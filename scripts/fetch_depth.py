@@ -11,10 +11,15 @@ platform's orderbook endpoint and compute:
 Endpoints:
   Kalshi:     GET /trade-api/v2/markets/{ticker}/orderbook?depth=50
               orderbook_fp.yes_dollars / no_dollars: list of [price_str, size_str]
-              Note: yes_dollars is sorted ascending (cheapest yes first),
-              no_dollars same. Best yes ASK = lowest price in yes_dollars.
-              Best yes BID = (1 - lowest no_dollars price), since a no@p
-              is equivalent to a yes-bid@(1-p).
+              Both stacks are RESTING BUY ORDERS, not asks:
+                yes_dollars[k] = someone wants to BUY YES at $price (size contracts)
+                no_dollars[k]  = someone wants to BUY NO  at $price (size contracts)
+              => best YES bid  = MAX price in yes_dollars
+                 best YES ask  = 1 - MAX price in no_dollars   (since buying NO@p
+                                                                 = selling YES@(1-p))
+              The earlier interpretation (yes_dollars = YES asks) inverted both
+              sides and produced fake $0.001/$0.999 prices, which made every
+              market look like a guaranteed arb.
 
   Polymarket: GET https://clob.polymarket.com/book?token_id={tid}
               bids: ascending price (best bid = last entry, highest price)
@@ -73,32 +78,37 @@ def _kalshi_yes_book(ticker: str) -> dict:
     if not data:
         return out
     ob = data.get("orderbook_fp") or data.get("orderbook") or {}
-    yes = ob.get("yes_dollars") or ob.get("yes") or []
-    no = ob.get("no_dollars") or ob.get("no") or []
+    yes_bids_raw = ob.get("yes_dollars") or ob.get("yes") or []   # YES BUY orders
+    no_bids_raw  = ob.get("no_dollars")  or ob.get("no")  or []   # NO BUY orders
 
-    # Each level: [price_str, size_str]
-    yes_levels = sorted([(float(p), float(s)) for p, s in yes], key=lambda x: x[0])
-    no_levels = sorted([(float(p), float(s)) for p, s in no], key=lambda x: x[0])
+    # Each level: [price_str, size_str]. Sort ascending; best bid = max price.
+    yes_bids = sorted([(float(p), float(s)) for p, s in yes_bids_raw], key=lambda x: x[0])
+    no_bids  = sorted([(float(p), float(s)) for p, s in no_bids_raw],  key=lambda x: x[0])
 
-    if yes_levels:
-        out["best_ask"] = yes_levels[0][0]
-        out["best_ask_size"] = yes_levels[0][1]
-    # Best YES bid = 1 - cheapest NO ask
-    if no_levels:
-        best_no_ask = no_levels[0][0]
-        out["best_bid"] = round(1.0 - best_no_ask, 4)
-        out["best_bid_size"] = no_levels[0][1]
+    # Best YES bid = highest YES buy order
+    if yes_bids:
+        out["best_bid"] = yes_bids[-1][0]
+        out["best_bid_size"] = yes_bids[-1][1]
+    # Best YES ask = 1 - (highest NO buy order); a NO buy@p is a YES sell@(1-p)
+    if no_bids:
+        best_no_bid = no_bids[-1][0]
+        out["best_ask"] = round(1.0 - best_no_bid, 4)
+        out["best_ask_size"] = no_bids[-1][1]
 
-    if out["best_ask"] is not None:
-        cap_ask = out["best_ask"] + NEAR_PP
-        out["depth_ask_at_1pp"] = round(sum(s for p, s in yes_levels if p <= cap_ask + 1e-9), 2)
-        cap_edge = out["best_ask"] + EDGE_PP
-        out["max_buy_size_at_3pp_edge"] = round(sum(s for p, s in yes_levels if p <= cap_edge + 1e-9), 2)
-
+    # Depth on the YES-bid side: count contracts within NEAR_PP of best YES bid
     if out["best_bid"] is not None:
-        # YES bids near best mean NO asks near (1-best_bid).
-        floor_no = (1 - out["best_bid"]) + NEAR_PP
-        out["depth_bid_at_1pp"] = round(sum(s for p, s in no_levels if p <= floor_no + 1e-9), 2)
+        floor = out["best_bid"] - NEAR_PP
+        out["depth_bid_at_1pp"] = round(sum(s for p, s in yes_bids if p >= floor - 1e-9), 2)
+
+    # Depth on the YES-ask side comes from NO bids near the best NO bid.
+    # "max size you could BUY YES for at price <= best_ask + EDGE_PP" =
+    # "max size you could SELL NO  at price >= (1-best_ask) - EDGE_PP" =
+    # "sum of NO bids at price >= (1-best_ask) - EDGE_PP"
+    if out["best_ask"] is not None:
+        no_bid_floor_near = (1 - out["best_ask"]) - NEAR_PP
+        out["depth_ask_at_1pp"] = round(sum(s for p, s in no_bids if p >= no_bid_floor_near - 1e-9), 2)
+        no_bid_floor_edge = (1 - out["best_ask"]) - EDGE_PP
+        out["max_buy_size_at_3pp_edge"] = round(sum(s for p, s in no_bids if p >= no_bid_floor_edge - 1e-9), 2)
 
     return out
 

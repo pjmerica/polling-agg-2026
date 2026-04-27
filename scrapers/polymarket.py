@@ -86,9 +86,11 @@ def infer_race_id(question: str) -> str | None:
         if sa in STATE_ABBREVS:
             return f"2026-H-{sa}-{dist}"
 
-    # Find state by full name
+    # Find state by full name. Sort longest-first so multi-word names like
+    # "west virginia" / "new hampshire" / "north carolina" match before
+    # their substrings ("virginia", "hampshire", "carolina") trigger first.
     state_abbrev = None
-    for name, abbrev in STATE_NAME_TO_ABBREV.items():
+    for name, abbrev in sorted(STATE_NAME_TO_ABBREV.items(), key=lambda kv: -len(kv[0])):
         if name in q:
             state_abbrev = abbrev
             break
@@ -172,6 +174,21 @@ def parse_market(m: dict) -> dict:
     """Flatten a Polymarket market into a standard row."""
     outcomes = m.get("outcomes", [])
     prices = m.get("outcomePrices", [])
+
+    # Gamma returns these as JSON-encoded strings ('["Yes","No"]'), not lists.
+    # Without this parse, zip(outcomes, prices) iterates characters of the
+    # string and produces garbage, leaving implied_prob=None and falling back
+    # to lastTradePrice — which can be days stale, producing fake arbs.
+    if isinstance(outcomes, str):
+        try:
+            outcomes = json.loads(outcomes)
+        except (ValueError, TypeError):
+            outcomes = []
+    if isinstance(prices, str):
+        try:
+            prices = json.loads(prices)
+        except (ValueError, TypeError):
+            prices = []
 
     # Build outcome->price pairs
     outcome_price_pairs = {}
