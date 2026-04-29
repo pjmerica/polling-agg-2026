@@ -573,14 +573,41 @@ function partyBadge(party) {
 // ════════════════════════════════════════════════
 // TAB SWITCHING
 // ════════════════════════════════════════════════
+function activateTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'dashboard') renderAll();
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'dashboard') renderAll();
-  });
+  btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+});
+
+// Click any cell with data-race-id (in any table) to filter Raw Polls
+// to just that race and switch tabs. Delegated so it works after re-renders.
+function filterToRace(raceId) {
+  if (!raceId) return;
+  rawSearch = raceId;
+  const input = document.getElementById('raw-search');
+  if (input) input.value = raceId;
+  // Don't constrain by office or recency window when jumping in via click —
+  // the user wants ALL polls for the race they clicked.
+  rawOffice = 'ALL';
+  rawSinceDays = 0;
+  const offSel = document.getElementById('raw-office');
+  if (offSel) offSel.value = 'ALL';
+  const sinceSel = document.getElementById('raw-since');
+  if (sinceSel) sinceSel.value = '0';
+  activateTab('raw');
+  renderRawPolls();
+}
+document.addEventListener('click', e => {
+  const cell = e.target.closest('[data-race-id]');
+  if (cell) {
+    e.preventDefault();
+    filterToRace(cell.dataset.raceId);
+  }
 });
 
 // ════════════════════════════════════════════════
@@ -681,7 +708,7 @@ function renderTable(data) {
     const src = (r.sources||'').split('|').map(s => `<span class="src-badge">${s}</span>`).join('');
     const barW = p !== null ? Math.round(p*100) : 0;
     return `<tr>
-      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
+      <td data-race-id="${r.race_id}" style="cursor:pointer" title="Show all polls for this race"><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
       <td>${r.office}</td>
       <td>${partyBadge(r.incumbent_party)}</td>
       <td style="color:#94a3b8;font-size:0.79rem">${r.incumbent_name||'—'}</td>
@@ -929,7 +956,7 @@ function renderMismatchTable() {
       : '<span class="favor-badge mkt-rep">Poll higher</span>';
 
     const baseRow = `
-      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
+      <td data-race-id="${r.race_id}" style="cursor:pointer" title="Show all polls for this race"><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state}</span></td>
       <td>${r.office}</td>`;
     const primaryExtra = isGen ? '' : `
       <td style="color:${partyCol};font-weight:700">${r.prim_party}</td>
@@ -1085,7 +1112,7 @@ function renderArbTable() {
       : `<span style="font-size:0.7rem"><span style="${sizeCls(da)}">${fmtSize(da)}</span> <span style="color:#4a5568">/</span> <span style="${sizeCls(db)}">${fmtSize(db)}</span></span>`;
 
     return `<tr style="${isGuaranteed ? 'background:rgba(52,211,153,0.03);' : ''}">
-      <td><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state||''}</span></td>
+      <td data-race-id="${r.race_id}" style="cursor:pointer" title="Show all polls for this race"><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state||''}</span></td>
       <td>${marketCell}</td>
       <td>${r.office||''}</td>
       <td>${typeBadge}</td>
@@ -1218,7 +1245,7 @@ function renderRawPolls() {
     return `
       <tr>
         <td style="white-space:nowrap;color:#cbd5e1">${p.end_date || '—'}${flag}</td>
-        <td><span class="badge ${p.office}">${p.office}</span> ${p.race_label}</td>
+        <td data-race-id="${p.race_id}" style="cursor:pointer" title="Show all polls for this race"><span class="badge ${p.office}">${p.office}</span> ${p.race_label}</td>
         <td><span class="mini-badge stage">${p.stage || '—'}</span>${p.partisan ? ` <span class="mini-badge partisan">${p.partisan}</span>` : ''}</td>
         <td style="color:#e2e8f0">${p.pollster || '—'}</td>
         <td style="color:#94a3b8">${p.sample_size ? p.sample_size.toLocaleString() : '—'}</td>
