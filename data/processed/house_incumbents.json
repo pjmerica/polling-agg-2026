@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-04-08T02:14:31.053497+00:00",
+  "fetched_at": "2026-04-30T20:36:09.197715+00:00",
   "members": [
     {
       "race_id": "2026-H-AK-01",
@@ -206,8 +206,8 @@
       "incumbent_name": "Tom McClintock",
       "incumbent_party": "R",
       "bioguide_id": "M001177",
-      "open_seat": true,
-      "open_reason": "retiring"
+      "open_seat": false,
+      "open_reason": ""
     },
     {
       "race_id": "2026-H-CA-06",
@@ -272,14 +272,6 @@
       "bioguide_id": "G000605",
       "open_seat": false,
       "open_reason": ""
-    },
-    {
-      "race_id": "2026-H-CA-14",
-      "incumbent_name": "Eric Swalwell",
-      "incumbent_party": "D",
-      "bioguide_id": "S001193",
-      "open_seat": true,
-      "open_reason": "retiring"
     },
     {
       "race_id": "2026-H-CA-15",
@@ -790,8 +782,8 @@
       "incumbent_name": "Daniel Webster",
       "incumbent_party": "R",
       "bioguide_id": "W000806",
-      "open_seat": true,
-      "open_reason": "retiring"
+      "open_seat": false,
+      "open_reason": ""
     },
     {
       "race_id": "2026-H-FL-12",
@@ -854,14 +846,6 @@
       "incumbent_name": "Byron Donalds",
       "incumbent_party": "R",
       "bioguide_id": "D000032",
-      "open_seat": true,
-      "open_reason": "retiring"
-    },
-    {
-      "race_id": "2026-H-FL-20",
-      "incumbent_name": "Sheila Cherfilus-McCormick",
-      "incumbent_party": "D",
-      "bioguide_id": "C001127",
       "open_seat": true,
       "open_reason": "retiring"
     },
@@ -1026,10 +1010,10 @@
       "open_reason": ""
     },
     {
-      "race_id": "2026-H-GA-13",
-      "incumbent_name": "David Scott",
-      "incumbent_party": "D",
-      "bioguide_id": "S001157",
+      "race_id": "2026-H-GA-14",
+      "incumbent_name": "Clay Fuller",
+      "incumbent_party": "R",
+      "bioguide_id": "F000485",
       "open_seat": false,
       "open_reason": ""
     },
@@ -1278,8 +1262,8 @@
       "incumbent_name": "Victoria Spartz",
       "incumbent_party": "R",
       "bioguide_id": "S000929",
-      "open_seat": true,
-      "open_reason": "retiring"
+      "open_seat": false,
+      "open_reason": ""
     },
     {
       "race_id": "2026-H-IN-06",
@@ -2118,6 +2102,14 @@
       "incumbent_name": "LaMonica McIver",
       "incumbent_party": "D",
       "bioguide_id": "M001229",
+      "open_seat": false,
+      "open_reason": ""
+    },
+    {
+      "race_id": "2026-H-NJ-11",
+      "incumbent_name": "Analilia Mejia",
+      "incumbent_party": "D",
+      "bioguide_id": "M001246",
       "open_seat": false,
       "open_reason": ""
     },
@@ -3070,14 +3062,6 @@
       "incumbent_name": "Troy E. Nehls",
       "incumbent_party": "R",
       "bioguide_id": "N000026",
-      "open_seat": true,
-      "open_reason": "retiring"
-    },
-    {
-      "race_id": "2026-H-TX-23",
-      "incumbent_name": "Tony Gonzales",
-      "incumbent_party": "R",
-      "bioguide_id": "G000594",
       "open_seat": true,
       "open_reason": "retiring"
     },
