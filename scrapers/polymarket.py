@@ -306,6 +306,22 @@ def run():
 
     rows = [parse_market(m) for m in markets]
     df = pd.DataFrame(rows).drop_duplicates(subset=["condition_id"])
+
+    # Drop unrealistic markets:
+    #   1. Liquidity < $200 — basically no real trading
+    #   2. Spread (best_ask - best_bid) > 30pp — only one-sided standing
+    #      orders, no two-sided market. Pairing these against active
+    #      Kalshi markets produces fake 80%+ "guaranteed" arbs against
+    #      a $0.97 sell order that nothing would actually fill.
+    if "liquidity" in df.columns:
+        liq = pd.to_numeric(df["liquidity"], errors="coerce").fillna(0)
+        bb = pd.to_numeric(df.get("best_bid"), errors="coerce")
+        ba = pd.to_numeric(df.get("best_ask"), errors="coerce")
+        has_two_sided = bb.notna() & ba.notna() & ((ba - bb) <= 0.20)
+        before = len(df)
+        df = df[(liq >= 200) & has_two_sided]
+        print(f"  Dropped {before - len(df)} markets (liquidity<$200 or spread>30pp)")
+
     out_path = RAW_DATA_DIR / "polymarket_markets.csv"
     df.to_csv(out_path, index=False)
     print(f"Saved {len(df)} markets to {out_path}")
