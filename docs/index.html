@@ -523,6 +523,18 @@ tr:hover td { background: #1a2035; }
         <option value="0">All time</option>
       </select>
     </div>
+    <div class="filter-group">
+      <label>
+        <input type="checkbox" id="raw-over-cut" style="vertical-align:middle">
+        Any candidate ≥
+      </label>
+      <select id="raw-over-thr">
+        <option value="47">47%</option>
+        <option value="48">48%</option>
+        <option value="49">49%</option>
+        <option value="50" selected>50%</option>
+      </select>
+    </div>
   </div>
   <div id="raw-count"></div>
   <div id="raw-table-wrap">
@@ -1188,6 +1200,7 @@ let RAW_POLLS = [];
 
 let rawSortCol = 'end_date_iso', rawSortDir = -1;
 let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 30;
+let rawOverCut = false, rawOverThr = 50;
 
 function rawFilter() {
   const q = rawSearch.trim().toLowerCase();
@@ -1201,6 +1214,10 @@ function rawFilter() {
     if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
     if (rawStage !== 'ALL' && p.stage !== rawStage) return false;
     if (cutoff && (!p.end_date_iso || p.end_date_iso < cutoff)) return false;
+    if (rawOverCut) {
+      const hit = (p.candidates || []).some(c => c.pct != null && c.pct >= rawOverThr);
+      if (!hit) return false;
+    }
     if (q) {
       const hay = [
         p.race_label, p.state, p.state_abbrev, p.pollster,
@@ -1275,6 +1292,8 @@ document.getElementById('raw-search').addEventListener('input', e => { rawSearch
 document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
 document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
 document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });
+document.getElementById('raw-over-cut').addEventListener('change', e => { rawOverCut = e.target.checked; renderRawPolls(); });
+document.getElementById('raw-over-thr').addEventListener('change', e => { rawOverThr = parseInt(e.target.value); if (rawOverCut) renderRawPolls(); });
 
 // ── init ──
 renderAll();
