@@ -248,9 +248,34 @@ def compute_arb_math(prob_a, prob_b, prob_a_rep, prob_b_rep, fee_a, fee_b):
 
     # Check if we can construct a guaranteed arb:
     # Case 1: buy Dem on A (cheaper), buy Rep on B
-    # We need Rep price on B = 1 - pm_dem (or pi_rep if available)
-    rep_b = prob_b_rep if prob_b_rep is not None and not pd.isna(prob_b_rep) else (1 - prob_b)
-    rep_a = prob_a_rep if prob_a_rep is not None and not pd.isna(prob_a_rep) else (1 - prob_a)
+    #
+    # CRITICAL: only treat (Dem, Rep) as a complete two-state partition when
+    # the SAME platform's prices for Dem and Rep sum to ~1. If a serious
+    # third-party / independent candidate is in the race (e.g. Osborn in
+    # Nebraska 2026, where Polymarket prices Indep at 30%), then "1 - prob_dem"
+    # is NOT the price of Rep — it's the price of "Dem doesn't win", which
+    # includes both Rep AND Indep wins. Buying YES Dem on one platform and
+    # NO Dem on another (or YES Rep on the other) would NOT form a guaranteed
+    # basket because of the independent third state.
+    #
+    # We allow the cross-flip implication only when same-platform Dem+Rep
+    # sum to >= 0.97 (covers the full outcome space within ~3pp).
+    PARTITION_TOL = 0.03
+
+    def safe_rep(prob_dem, prob_rep_explicit):
+        """Return the Rep price IFF same-platform Dem + Rep sum to ~1.
+        Otherwise return None — meaning we can't safely complete the basket."""
+        if prob_rep_explicit is not None and not pd.isna(prob_rep_explicit):
+            # Both sides explicit — check they actually partition the outcome
+            if abs(float(prob_dem) + float(prob_rep_explicit) - 1.0) <= PARTITION_TOL:
+                return float(prob_rep_explicit)
+            return None  # 3-way race — cross-flip unsafe
+        return None  # never use 1-prob_dem as a fallback for Rep
+
+    rep_b = safe_rep(prob_b, prob_b_rep)
+    rep_a = safe_rep(prob_a, prob_a_rep)
+    if rep_a is None or rep_b is None:
+        return result  # can't form a safe two-state basket
 
     # Try Dem on A + Rep on B
     cost1 = prob_a + rep_b
