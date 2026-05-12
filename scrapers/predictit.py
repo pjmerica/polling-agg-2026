@@ -113,16 +113,27 @@ def infer_race_id(name: str) -> str | None:
 
 def parse_contract(market: dict, contract: dict, race_id: str | None) -> dict:
     last = contract.get("lastTradePrice")
-    buy_yes = contract.get("bestBuyYesCost")
-    sell_yes = contract.get("bestSellYesCost")
+    buy_yes = contract.get("bestBuyYesCost")    # price to BUY YES (= ask)
+    sell_yes = contract.get("bestSellYesCost")  # price to SELL YES (= bid)
 
-    # Implied prob: midpoint of buy/sell if available, else last trade
-    if buy_yes is not None and sell_yes is not None:
+    # PredictIt reports the full price range ($0.01–$0.99) as bid/ask when
+    # a contract has no real two-sided market. Naively averaging gives a
+    # meaningless midpoint (~$0.50) that the scanner then "arbs" against
+    # another platform's tight quote (e.g. WA-03 Gluesenkamp Perez where
+    # PredictIt buy=$0.99 sell=$0.05 yields fake midpoint $0.52, paired
+    # against Polymarket's real $0.93 → bogus 26% guaranteed arb).
+    #
+    # Treat a spread > 30pp as a broken book and refuse to publish a price
+    # — the matcher will then drop the row.
+    implied_prob = None
+    if buy_yes is not None and sell_yes is not None and (buy_yes - sell_yes) <= 0.30:
         implied_prob = (buy_yes + sell_yes) / 2
-    elif last is not None:
+    elif buy_yes is not None and sell_yes is None:
+        implied_prob = buy_yes
+    elif sell_yes is not None and buy_yes is None:
+        implied_prob = sell_yes
+    elif last is not None and 0.01 < last < 0.99:
         implied_prob = last
-    else:
-        implied_prob = None
 
     return {
         "race_id": race_id,
