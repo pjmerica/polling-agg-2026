@@ -140,7 +140,14 @@ def fetch_all_active_markets(limit: int = 100) -> list[dict]:
     page = 0
 
     while True:
-        batch = _get("/events", {"limit": limit, "active": "true", "closed": "false", "offset": offset})
+        try:
+            batch = _get("/events", {"limit": limit, "active": "true", "closed": "false", "offset": offset})
+        except Exception as e:
+            # Polymarket gamma now returns HTTP 422 once `offset` exceeds an
+            # internal cap (~20–25k). Treat that (and any other transient
+            # API error) as end-of-stream rather than failing the run.
+            print(f"  Error at offset {offset}: {e} — stopping pagination")
+            break
         if not batch:
             break
 
