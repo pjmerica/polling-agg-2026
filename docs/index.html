@@ -765,12 +765,30 @@ document.querySelectorAll('th[data-col]').forEach(th => {
   });
 });
 
-const updated = RACES.length > 0 ? RACES[0].updated_at : '';
-if (updated) {
-  const d = new Date(updated);
-  document.getElementById('updated-lbl').textContent =
-    `Sources: Kalshi · NYT Polls  ·  Updated ${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
-}
+// Use the freshest timestamp across data sources. ARB.updated_at is
+// written by scripts/arb_scanner.py at the end of the daily refresh —
+// closest proxy for "when did the last GitHub Actions run finish".
+(function () {
+  const candidates = [
+    typeof ARB     !== 'undefined' ? ARB.updated_at     : null,
+    typeof POLLS   !== 'undefined' && POLLS[0]   ? POLLS[0].fetched_at   : null,
+    typeof RACES   !== 'undefined' && RACES[0]   ? RACES[0].updated_at   : null,
+  ].filter(Boolean);
+  if (!candidates.length) return;
+  const latest = new Date(Math.max(...candidates.map(s => new Date(s).getTime())));
+  const ageDays = (Date.now() - latest.getTime()) / 86400000;
+  const color = ageDays < 2 ? '#34d399' : ageDays < 7 ? '#facc15' : '#f87171';
+  const rel = ageDays < 1
+    ? `${Math.round(ageDays * 24)}h ago`
+    : `${Math.round(ageDays)}d ago`;
+  const abs = latest.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+  });
+  document.getElementById('updated-lbl').innerHTML =
+    `Sources: Kalshi · NYT Polls  ·  ` +
+    `<span style="color:${color};font-weight:600">● Updated ${rel}</span>` +
+    `<span style="color:#64748b"> (${abs})</span>`;
+})();
 
 // ════════════════════════════════════════════════
 // POLL EXPLORER TAB
