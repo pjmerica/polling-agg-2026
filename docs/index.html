@@ -203,6 +203,9 @@ tr:hover td { background: #1a2035; }
 .arb-gap-pos { color: #34d399; font-weight: 700; }
 .arb-gap-neg { color: #64748b; }
 .arb-action { font-size: 0.72rem; color: #94a3b8; max-width: 260px; line-height: 1.4; }
+.match-race  { display: inline-block; background: rgba(167,139,250,0.12); color: #a78bfa; border-radius: 4px; padding: 2px 6px; font-size: 0.66rem; font-weight: 700; }
+.match-prim  { display: inline-block; background: rgba(250,204,21,0.14);  color: #facc15; border-radius: 4px; padding: 2px 6px; font-size: 0.66rem; font-weight: 700; }
+.match-fuzz  { display: inline-block; background: rgba(96,165,250,0.10);  color: #60a5fa; border-radius: 4px; padding: 2px 6px; font-size: 0.66rem; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -442,6 +445,7 @@ tr:hover td { background: #1a2035; }
           <th data-arbcol="depth_a_max_at_3pp" title="Max contracts you could buy on each side before paying >=3pp worse than best ask. Lower side caps the trade.">Tradeable</th>
           <th data-arbcol="guaranteed_return_pct">Guaranteed Return</th>
           <th>Bet ($100 total)</th>
+          <th data-arbcol="match_type" title="How the two markets were paired">Match</th>
           <th>Action / Links</th>
         </tr>
       </thead>
@@ -1153,6 +1157,20 @@ function renderArbTable() {
       ? `<span title="${reasons.join(' · ').replace(/"/g,'&quot;')}" style="background:rgba(251,191,36,0.15);color:#fbbf24;border-radius:4px;padding:1px 5px;font-size:0.62rem;margin-left:5px;cursor:help">⚠ verify</span>`
       : '';
 
+    // How the two markets were paired. Same convention as pred-arbitrage's
+    // Match column: RACE ID for race_id-based pairs, PRIMARY for
+    // primary-candidate (last-name) pairs, FUZZY% if a fuzzy score exists.
+    let matchBadge;
+    if (r.fuzzy_score != null && r.fuzzy_score < 100) {
+      matchBadge = `<span class="match-fuzz" title="Text-similarity match score">FUZZY ${Math.round(r.fuzzy_score)}%</span>`;
+    } else if (r.match_type === 'primary_candidate') {
+      const tip = `Primary-candidate match · ${r.race_id||''}${r.candidate ? ' · ' + r.candidate : ''}${r.party ? ' (' + r.party + ')' : ''}`;
+      matchBadge = `<span class="match-prim" title="${tip.replace(/"/g,'&quot;')}">PRIMARY</span>`;
+    } else {
+      const tip = `Race ID match · ${r.race_id||''}`;
+      matchBadge = `<span class="match-race" title="${tip.replace(/"/g,'&quot;')}">RACE ID</span>`;
+    }
+
     return `<tr style="${isGuaranteed ? 'background:rgba(52,211,153,0.03);' : ''}${r.suspicious ? 'opacity:0.85;' : ''}">
       <td data-race-id="${r.race_id}" style="cursor:pointer" title="Show all polls for this race"><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state||''}</span>${suspBadge}</td>
       <td>${marketCell}</td>
@@ -1165,9 +1183,10 @@ function renderArbTable() {
       <td>${tradeableCell}</td>
       <td>${retCell}</td>
       <td>${stakeCell}</td>
+      <td>${matchBadge}</td>
       <td class="arb-action" style="font-size:0.72rem">${r.action}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="12" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
+  }).join('') || '<tr><td colspan="13" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
 
   // Wire sort headers + draw arrow on the active column
   document.querySelectorAll('#arb-table th[data-arbcol]').forEach(th => {
