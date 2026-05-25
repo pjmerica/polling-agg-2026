@@ -100,10 +100,12 @@ def infer_race_id(question: str) -> str | None:
 
     # Senate
     if "senate" in q or "senator" in q:
-        if state_abbrev == "FL" and "special" in q:
-            return f"2026-SEN-FL-S"
-        if state_abbrev == "OH" and "special" in q:
-            return f"2026-SEN-OH-S"
+        # FL and OH only have SPECIAL Senate elections in 2026 (Rubio
+        # appointee and Vance appointee). Their regular cycle is 2028.
+        # Polymarket's "Ohio/Florida Senate 2026" event = the special
+        # even when the question text doesn't include the word.
+        if state_abbrev in ("FL", "OH"):
+            return f"2026-SEN-{state_abbrev}-S"
         return f"2026-SEN-{state_abbrev}"
 
     # Governor

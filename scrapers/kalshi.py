@@ -101,36 +101,58 @@ def fetch_events_for_series(series_ticker: str) -> list[dict]:
     return data.get("events", [])
 
 
-def infer_race_id(series_ticker: str, series_title: str) -> str | None:
+def infer_race_id(series_ticker: str, series_title: str, event_ticker: str = "") -> str | None:
     """
     Map a Kalshi series ticker/title to a canonical race_id like "2026-SEN-PA".
     Returns None if no pattern matches.
+
+    Critical: Kalshi has overlapping series tickers that resolve in different
+    election cycles, e.g.:
+      - SENATEOHS-26 = 2026 Ohio Senate SPECIAL (Vance seat)
+      - SENATEOH-28  = 2028 Ohio Senate regular (Brown seat)
+    A naive 'SENATEOH' match swallows the trailing S of SENATEOHS and the
+    -28 suffix isn't checked. We extract the year from event_ticker
+    (e.g. 'SENATEOH-28' -> '28') to reject non-2026 events. Specials are
+    distinguished by the 'S' suffix on the series ticker stem.
     """
     ticker = (series_ticker or "").upper()
+    evt = (event_ticker or "").upper()
 
-    m = re.match(r"SENATEPARTY[-_]?([A-Z]{2})(?:[A-Z0-9]*)?$", ticker)
-    if m and m.group(1) in STATE_ABBREV_MAP:
-        return f"2026-SEN-{m.group(1)}"
+    # Extract election year from event_ticker suffix (e.g. SENATEOH-28 -> 28).
+    # Only treat as 2026 if year is 26 or absent. Drop everything else.
+    year_match = re.search(r"-(\d{2})$", evt) or re.search(r"-(\d{2})-", evt)
+    if year_match and year_match.group(1) != "26":
+        return None
 
-    m = re.match(r"SENATE[-_]?([A-Z]{2})(?:[A-Z0-9]*)?$", ticker)
-    if m and m.group(1) in STATE_ABBREV_MAP:
-        return f"2026-SEN-{m.group(1)}"
+    # Detect special-election variants (SENATEOHS, SENATEFLS) — they end
+    # in 'S' before any year suffix and the title usually says "special".
+    # Map them to a separate race_id so they don't collide with the regular.
+    def special_suffix(title):
+        return "-S" if "special" in (title or "").lower() else ""
 
-    m = re.match(r"KXSENATE([A-Z]{2})([A-Z]?)$", ticker)
+    m = re.match(r"SENATEPARTY[-_]?([A-Z]{2})S?$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
-        return f"2026-SEN-{m.group(1)}"
+        return f"2026-SEN-{m.group(1)}{special_suffix(series_title)}"
 
-    m = re.match(r"KXSENATE([A-Z]{2})$", ticker)
+    # Match SENATE<XX> or SENATE<XX>S (special). Anchor end so SENATEOHS
+    # doesn't get swallowed by the SENATEOH branch.
+    m = re.match(r"SENATE[-_]?([A-Z]{2})(S?)$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
-        return f"2026-SEN-{m.group(1)}"
+        suffix = "-S" if m.group(2) == "S" else special_suffix(series_title)
+        return f"2026-SEN-{m.group(1)}{suffix}"
 
-    m = re.match(r"GOVPARTY([A-Z]{2})(?:[A-Z0-9]*)?$", ticker)
+    m = re.match(r"KXSENATE([A-Z]{2})(S?)$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
-        return f"2026-GOV-{m.group(1)}"
+        suffix = "-S" if m.group(2) == "S" else special_suffix(series_title)
+        return f"2026-SEN-{m.group(1)}{suffix}"
 
-    m = re.match(r"KXGOV([A-Z]{2})[A-Z0-9]+$", ticker)
+    m = re.match(r"GOVPARTY([A-Z]{2})S?$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
-        return f"2026-GOV-{m.group(1)}"
+        return f"2026-GOV-{m.group(1)}{special_suffix(series_title)}"
+
+    m = re.match(r"KXGOV([A-Z]{2})[A-Z0-9]*$", ticker)
+    if m and m.group(1) in STATE_ABBREV_MAP:
+        return f"2026-GOV-{m.group(1)}{special_suffix(series_title)}"
 
     m = re.match(r"HOUSE([A-Z]{2})(\d+)$", ticker)
     if m and m.group(1) in STATE_ABBREV_MAP:
@@ -148,9 +170,9 @@ def infer_race_id(series_ticker: str, series_title: str) -> str | None:
     for abbrev, full in STATE_ABBREV_MAP.items():
         if full.lower() in title_lower:
             if "senate" in title_lower:
-                return f"2026-SEN-{abbrev}"
+                return f"2026-SEN-{abbrev}{special_suffix(series_title)}"
             if "governor" in title_lower or "gubernat" in title_lower:
-                return f"2026-GOV-{abbrev}"
+                return f"2026-GOV-{abbrev}{special_suffix(series_title)}"
 
     return None
 
@@ -166,7 +188,7 @@ def _to_float(v) -> float | None:
 
 def parse_market_row(event: dict, market: dict, series_ticker: str, series_title: str) -> dict:
     """Flatten a v2 Kalshi market into a standard row."""
-    race_id = infer_race_id(series_ticker, series_title)
+    race_id = infer_race_id(series_ticker, series_title, event.get("event_ticker", ""))
 
     yes_bid = _to_float(market.get("yes_bid_dollars"))
     yes_ask = _to_float(market.get("yes_ask_dollars"))
