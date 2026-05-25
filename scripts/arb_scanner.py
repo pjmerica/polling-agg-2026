@@ -846,6 +846,21 @@ def run():
             arb = arb.merge(d, on=[f"platform_{side}", f"market_id_{side}"], how="left")
         joined = arb[["depth_a_best_ask", "depth_b_best_ask"]].notna().any(axis=1).sum()
         print(f"Joined orderbook depth onto {joined}/{len(arb)} pairs")
+
+        # Defense in depth: even if a scraper missed a wide-spread market at
+        # scrape time (gamma snapshots lag the live CLOB book), the
+        # fetch_depth pull is fresh. Drop any pair where the depth-derived
+        # spread on EITHER side exceeds 25pp — those quotes can't be filled.
+        def wide_spread(row, side):
+            bb = row.get(f"depth_{side}_best_bid")
+            ba = row.get(f"depth_{side}_best_ask")
+            if pd.isna(bb) or pd.isna(ba) or bb is None or ba is None:
+                return False  # no depth data; trust the scraper-level filter
+            return (ba - bb) > 0.25
+        before = len(arb)
+        arb = arb[~arb.apply(lambda r: wide_spread(r, "a") or wide_spread(r, "b"), axis=1)]
+        if before != len(arb):
+            print(f"Dropped {before - len(arb)} pairs with wide depth-derived spread (>25pp)")
     else:
         print("No depth file found yet — run scripts/fetch_depth.py to populate it.")
 
