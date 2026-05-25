@@ -172,12 +172,24 @@ def parse_market_row(event: dict, market: dict, series_ticker: str, series_title
     yes_ask = _to_float(market.get("yes_ask_dollars"))
     last_price = _to_float(market.get("last_price_dollars"))
 
-    if yes_bid is not None and yes_ask is not None:
+    # Use the bid/ask midpoint when the book has a tight spread (a real
+    # two-sided market). If the spread is wide (>30pp) there's no active
+    # quoting — only stale limit orders at price-range endpoints — and the
+    # midpoint is meaningless. Example: IN-07 Dem had yes_bid=$0.10 and
+    # yes_ask=$0.97 (87pp spread); the midpoint $0.535 was paired against
+    # Polymarket's real $0.92 and produced a fake 40pp arb.
+    #
+    # When the book is broken, fall back to last_price if it's recent;
+    # otherwise drop the prob so the matcher won't pair this market.
+    implied_prob = None
+    if yes_bid is not None and yes_ask is not None and (yes_ask - yes_bid) <= 0.30:
         implied_prob = (yes_bid + yes_ask) / 2
-    elif last_price is not None:
+    elif yes_ask is not None and yes_bid is None:
+        implied_prob = yes_ask  # one-sided ask available
+    elif yes_bid is not None and yes_ask is None:
+        implied_prob = yes_bid
+    elif last_price is not None and 0.01 < last_price < 0.99:
         implied_prob = last_price
-    else:
-        implied_prob = None
 
     return {
         "race_id": race_id,
