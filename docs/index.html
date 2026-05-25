@@ -405,7 +405,7 @@ tr:hover td { background: #1a2035; }
       <input type="range" id="arb-minvol" min="0" max="9" step="1" value="3" style="min-width:130px;cursor:pointer;accent-color:#34d399">
     </div>
     <div class="filter-group">
-      <label>Suspicious (&gt;40pp)</label>
+      <label>Suspicious (&gt;20pp / wide spread)</label>
       <select id="arb-suspicious">
         <option value="hide">Hide suspicious</option>
         <option value="all">Show all</option>
@@ -1141,8 +1141,20 @@ function renderArbTable() {
       ? '<span style="color:#4a5568;font-size:0.7rem">—</span>'
       : `<span style="font-size:0.7rem"><span style="${sizeCls(da)}">${fmtSize(da)}</span> <span style="color:#4a5568">/</span> <span style="${sizeCls(db)}">${fmtSize(db)}</span></span>`;
 
-    return `<tr style="${isGuaranteed ? 'background:rgba(52,211,153,0.03);' : ''}">
-      <td data-race-id="${r.race_id}" style="cursor:pointer" title="Show all polls for this race"><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state||''}</span></td>
+    // Suspicious badge with hover-tooltip listing each reason. Shown
+    // alongside the race label so the user knows to verify before staking.
+    const reasonText = {
+      wide_gap: '>20pp raw gap', wide_spread_a: 'wide spread on A', wide_spread_b: 'wide spread on B',
+      one_sided_a: 'one-sided book on A', one_sided_b: 'one-sided book on B',
+      thin_depth_a: '<20 contracts tradeable on A', thin_depth_b: '<20 contracts tradeable on B',
+    };
+    const reasons = (r.suspicion_reasons || []).map(k => reasonText[k] || k);
+    const suspBadge = r.suspicious
+      ? `<span title="${reasons.join(' · ').replace(/"/g,'&quot;')}" style="background:rgba(251,191,36,0.15);color:#fbbf24;border-radius:4px;padding:1px 5px;font-size:0.62rem;margin-left:5px;cursor:help">⚠ verify</span>`
+      : '';
+
+    return `<tr style="${isGuaranteed ? 'background:rgba(52,211,153,0.03);' : ''}${r.suspicious ? 'opacity:0.85;' : ''}">
+      <td data-race-id="${r.race_id}" style="cursor:pointer" title="Show all polls for this race"><strong>${r.label}</strong> <span style="color:#4a5568;font-size:0.74rem">${r.state||''}</span>${suspBadge}</td>
       <td>${marketCell}</td>
       <td>${r.office||''}</td>
       <td>${typeBadge}</td>

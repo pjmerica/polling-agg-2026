@@ -353,7 +353,10 @@ def make_pair(race_id, label, state, office,
         "raw_gap_pp": round(raw_gap * 100, 2),
         "net_gap_pp": round(net_gap * 100, 2),
         "profitable": bool(net_gap > 0),
-        "suspicious": bool(raw_gap * 100 > 40),
+        # Anything > 20pp is large enough to be worth a second look. Most
+        # legit cross-platform gaps are <10pp; >20pp usually indicates a
+        # scrape staleness, mismatched outcome, or broken book somewhere.
+        "suspicious": bool(raw_gap * 100 > 20),
         "higher_platform": higher,
         "action": action,
         "url_a": url_a,
@@ -680,7 +683,7 @@ def primary_pairs(meta_df):
                     "raw_gap_pp": round(raw_gap * 100, 2),
                     "net_gap_pp": round(net_gap * 100, 2),
                     "profitable": bool(net_gap > 0),
-                    "suspicious": bool(raw_gap * 100 > 40),
+                    "suspicious": bool(raw_gap * 100 > 20),
                     "higher_platform": expensive,
                     "action": action,
                     "arb_type": "one-sided",
@@ -861,6 +864,27 @@ def run():
         arb = arb[~arb.apply(lambda r: wide_spread(r, "a") or wide_spread(r, "b"), axis=1)]
         if before != len(arb):
             print(f"Dropped {before - len(arb)} pairs with wide depth-derived spread (>25pp)")
+
+        # Build suspicion_reasons array per pair. Anything > 20pp gap gets
+        # flagged, AND we tag additional warning signs based on depth so the
+        # dashboard can show WHY a pair is suspicious.
+        def reasons(row):
+            rs = []
+            if (row.get("raw_gap_pp") or 0) > 20:
+                rs.append("wide_gap")
+            for side in ("a", "b"):
+                bb = row.get(f"depth_{side}_best_bid")
+                ba = row.get(f"depth_{side}_best_ask")
+                if pd.notna(bb) and pd.notna(ba) and (ba - bb) > 0.15:
+                    rs.append(f"wide_spread_{side}")
+                if pd.notna(ba) and pd.isna(bb):
+                    rs.append(f"one_sided_{side}")
+                m3 = row.get(f"depth_{side}_max_at_3pp")
+                if pd.notna(m3) and m3 < 20:
+                    rs.append(f"thin_depth_{side}")
+            return rs
+        arb["suspicion_reasons"] = arb.apply(reasons, axis=1)
+        arb["suspicious"] = arb["suspicion_reasons"].apply(lambda rs: len(rs) > 0)
     else:
         print("No depth file found yet — run scripts/fetch_depth.py to populate it.")
 
