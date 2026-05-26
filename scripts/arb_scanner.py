@@ -100,6 +100,18 @@ def load_kalshi_general():
         rep[["race_id", "kalshi_rep", "kalshi_rep_ticker"]], on="race_id", how="outer"
     )
     merged["kalshi_url"] = merged["kalshi_series_ticker"].apply(kalshi_url)
+
+    # Same inferred-complement fallback as polymarket: if Kalshi has only
+    # one side priced (e.g. Dem market got broken-book filtered but Rep
+    # survived), fill the other side with 1 - X so the race still pairs.
+    # Inferred values don't satisfy the safe_rep partition check, so
+    # guaranteed-arb math stays gated on both sides being explicit.
+    miss_dem = merged["kalshi_dem"].isna() & merged["kalshi_rep"].notna()
+    merged.loc[miss_dem, "kalshi_dem"] = 1 - merged.loc[miss_dem, "kalshi_rep"].astype(float)
+    merged.loc[miss_dem, "kalshi_dem_inferred"] = True
+    miss_rep = merged["kalshi_rep"].isna() & merged["kalshi_dem"].notna()
+    merged.loc[miss_rep, "kalshi_rep"] = 1 - merged.loc[miss_rep, "kalshi_dem"].astype(float)
+    merged.loc[miss_rep, "kalshi_rep_inferred"] = True
     return merged
 
 
@@ -196,6 +208,20 @@ def load_polymarket_general():
         ).apply(polymarket_url)
     else:
         result["pm_url"] = result["pm_dem_slug"].apply(polymarket_url)
+
+    # If one side is missing (e.g. Dem market got spread-filtered but Rep
+    # survived), fall back to 1 - other_side so the race still appears in
+    # arb_data. Tag with pm_inferred so the dashboard can warn. We do NOT
+    # use this for the safe_rep partition check, so guaranteed-arb math is
+    # still gated by both sides being explicit. This just gets the race
+    # onto the dashboard as a one-sided comparison instead of dropping it.
+    if "pm_rep" in result.columns:
+        miss_dem = result["pm_dem"].isna() & result["pm_rep"].notna()
+        result.loc[miss_dem, "pm_dem"] = 1 - result.loc[miss_dem, "pm_rep"].astype(float)
+        result.loc[miss_dem, "pm_dem_inferred"] = True
+        miss_rep = result["pm_rep"].isna() & result["pm_dem"].notna()
+        result.loc[miss_rep, "pm_rep"] = 1 - result.loc[miss_rep, "pm_dem"].astype(float)
+        result.loc[miss_rep, "pm_rep_inferred"] = True
     return result
 
 
@@ -397,8 +423,16 @@ def _extract_state_office(title: str) -> tuple[str | None, str | None, str | Non
     Parse (state_abbrev, office, district) from a primary market title.
 
     office ∈ {'SEN', 'GOV', 'H'} or None. district is the zero-padded district
-    string for House races, else None. The match is purely textual so it works
-    whether or not the scraper tagged a race_id.
+    string for House races, else None.
+
+    Critical: state names that ALSO occur as candidate surnames (Washington,
+    Carolina, Jackson) cause false matches when we scan the whole title.
+    Example: "Will Wayne Lonny Washington be the Republican nominee for the
+    Senate in Oklahoma?" was matching state=WA on the surname "Washington"
+    and never reaching "oklahoma". So we restrict the state search to the
+    region AFTER the office anchor word ("for the Senate in <STATE>?",
+    "for governor of <STATE>?", "for <STATE>-NN?"), which is where the
+    actual state name lives in every template we scrape.
     """
     if not isinstance(title, str):
         return (None, None, None)
@@ -409,21 +443,41 @@ def _extract_state_office(title: str) -> tuple[str | None, str | None, str | Non
     if m and m.group(1) in _STATE_ABBREVS:
         return (m.group(1), "H", str(int(m.group(2))).zfill(2))
 
-    state_ab = None
-    for name, abbrev in sorted(_STATES.items(), key=lambda x: -len(x[0])):
-        if name in t:
-            state_ab = abbrev
-            break
+    def find_state(text):
+        # Match longest-first so "west virginia" beats "virginia".
+        for name, abbrev in sorted(_STATES.items(), key=lambda x: -len(x[0])):
+            if name in text:
+                return abbrev
+        return None
+
+    # Office anchor — substring after this is where the state name appears.
+    office_word = None
+    if "senate" in t or "senator" in t:
+        office_word = "SEN"
+        anchor_idx = max(t.rfind("senate"), t.rfind("senator"))
+        suffix = t[anchor_idx:]
+    elif "governor" in t or "gubernatorial" in t:
+        office_word = "GOV"
+        anchor_idx = max(t.rfind("governor"), t.rfind("gubernatorial"))
+        suffix = t[anchor_idx:]
+    elif "house" in t or "congress" in t:
+        office_word = "H"
+        anchor_idx = max(t.rfind("house"), t.rfind("congress"))
+        suffix = t[anchor_idx:]
+    else:
+        office_word = None
+        suffix = t  # no anchor → search whole title
+
+    state_ab = find_state(suffix)
+    # Fallback: if the anchored search found nothing, search the whole title
+    # (covers edge templates we haven't seen yet).
+    if not state_ab:
+        state_ab = find_state(t)
     if not state_ab:
         return (None, None, None)
 
-    if "senate" in t or "senator" in t:
-        return (state_ab, "SEN", None)
-    if "governor" in t or "gubernatorial" in t:
-        return (state_ab, "GOV", None)
-    # House-without-district fallback
-    if "house" in t or "congress" in t:
-        return (state_ab, "H", None)
+    if office_word in ("SEN", "GOV", "H"):
+        return (state_ab, office_word, None)
     return (state_ab, None, None)
 
 
@@ -739,6 +793,7 @@ def run():
                 "volume_a": r.get("kalshi_volume"), "volume_b": None,
                 "market_id_a": r.get("kalshi_dem_ticker"),
                 "market_id_b": None,
+                "a_inferred": bool(r.get("kalshi_dem_inferred")),
             },
         )
         if row:
@@ -759,6 +814,8 @@ def run():
                     "volume_a": r.get("kalshi_volume"), "volume_b": r.get("pm_volume"),
                     "market_id_a": r.get("kalshi_dem_ticker"),
                     "market_id_b": r.get("pm_dem_token"),
+                    "a_inferred": bool(r.get("kalshi_dem_inferred")),
+                    "b_inferred": bool(r.get("pm_dem_inferred")),
                 },
             )
             if row:
@@ -780,6 +837,7 @@ def run():
                     "volume_a": None, "volume_b": r.get("pm_volume"),
                     "market_id_a": None,
                     "market_id_b": r.get("pm_dem_token"),
+                    "b_inferred": bool(r.get("pm_dem_inferred")),
                 },
             )
             if row:
@@ -873,6 +931,8 @@ def run():
             if (row.get("raw_gap_pp") or 0) > 20:
                 rs.append("wide_gap")
             for side in ("a", "b"):
+                if row.get(f"{side}_inferred"):
+                    rs.append(f"inferred_{side}")
                 bb = row.get(f"depth_{side}_best_bid")
                 ba = row.get(f"depth_{side}_best_ask")
                 if pd.notna(bb) and pd.notna(ba) and (ba - bb) > 0.15:
