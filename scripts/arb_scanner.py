@@ -945,6 +945,40 @@ def run():
             return rs
         arb["suspicion_reasons"] = arb.apply(reasons, axis=1)
         arb["suspicious"] = arb["suspicion_reasons"].apply(lambda rs: len(rs) > 0)
+
+        # Scrutinize >30pp pairs against each market's official rules.
+        # Pairs whose resolution criteria differ are dropped; borderline
+        # ones get tagged criteria_warn.
+        try:
+            from scripts.scrutiny import scrutinize as _scrutinize
+        except ImportError:
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(ROOT))
+                from scripts.scrutiny import scrutinize as _scrutinize
+            except Exception:
+                _scrutinize = None
+        if _scrutinize is not None:
+            scrut = _scrutinize(arb.to_dict(orient="records"), threshold_pp=30)
+            def apply_scrut(row):
+                k = (str(row.get("market_id_a")), str(row.get("market_id_b")))
+                return scrut.get(k)
+            arb["_scrut"] = arb.apply(apply_scrut, axis=1)
+            drop_mask = arb["_scrut"].apply(lambda s: bool(s) and s.get("action") == "drop")
+            n_drop = int(drop_mask.sum())
+            if n_drop:
+                print(f"Dropped {n_drop} pairs after rules-text scrutiny (criteria mismatch)")
+            arb = arb[~drop_mask].copy()
+            def merge_scrut(row):
+                s = row.get("_scrut")
+                rs = list(row.get("suspicion_reasons") or [])
+                if s and s.get("action") == "warn":
+                    rs.append(f"criteria_warn:{s.get('reason')}")
+                return rs
+            arb["suspicion_reasons"] = arb.apply(merge_scrut, axis=1)
+            arb["criteria_score"] = arb["_scrut"].apply(lambda s: s.get("criteria_score") if s else None)
+            arb["suspicious"] = arb["suspicion_reasons"].apply(lambda rs: len(rs) > 0)
+            arb = arb.drop(columns=["_scrut"])
     else:
         print("No depth file found yet — run scripts/fetch_depth.py to populate it.")
 
