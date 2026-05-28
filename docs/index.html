@@ -1057,10 +1057,12 @@ function arbFiltered() {
     if (arbMinGap > 0 && r.raw_gap_pp < arbMinGap) return false;
     if (arbMaxGap < 100 && r.raw_gap_pp > arbMaxGap) return false;
     if (arbMinVol > 0) {
+      // Keep a pair if EITHER side clears the volume floor (one liquid
+      // side is enough to act on). Only hide when BOTH are below.
       const va = r.volume_a, vb = r.volume_b;
       const okA = r.platform_a === 'predictit' || (va != null && va >= arbMinVol);
       const okB = r.platform_b === 'predictit' || (vb != null && vb >= arbMinVol);
-      if (!okA || !okB) return false;
+      if (!okA && !okB) return false;
     }
     if (arbSuspicious === 'hide' && r.suspicious) return false;
     if (arbSuspicious === 'only' && !r.suspicious) return false;
