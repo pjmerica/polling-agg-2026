@@ -20,6 +20,9 @@ data/raw/*.csv
 data/raw/*.json
 data/raw/*.parquet
 
+# Transient scrutiny cache (rebuilt each run; not source of truth)
+data/processed/scrutiny_cache.json
+
 # Environment
 .env
 .env.*
