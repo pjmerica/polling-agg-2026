@@ -265,6 +265,18 @@ def run(delay: float = 0.2):
 
     df = pd.DataFrame(rows)
     out_path = RAW_DATA_DIR / "kalshi_markets.csv"
+
+    # If the Kalshi API returned nothing (transient outage), don't
+    # clobber the previous good CSV — downstream steps can still run
+    # on the older snapshot. Only write an empty file if no prior exists.
+    if df.empty:
+        print(f"\nWARNING: Kalshi API returned no rows.")
+        if out_path.exists():
+            print(f"  Keeping previous {out_path.name} so downstream can still run.")
+            return
+        df.to_csv(out_path, index=False)
+        return
+
     df.to_csv(out_path, index=False)
     print(f"\nSaved {len(df)} market rows to {out_path}")
 
