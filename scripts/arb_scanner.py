@@ -31,6 +31,20 @@ from datetime import datetime, timezone
 ROOT = Path(__file__).parent.parent
 RAW = ROOT / "data" / "raw"
 
+
+def _safe_read_csv(path, **kw):
+    """Read a CSV defensively. Returns an empty DataFrame if the file is
+    missing, zero-byte, or has no columns. Lets the pipeline survive
+    transient scraper outages (Kalshi/Polymarket APIs occasionally return
+    nothing) without crashing the whole scanner."""
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path, **kw)
+    except pd.errors.EmptyDataError:
+        print(f"  WARNING: {path.name} is empty — treating as no data")
+        return pd.DataFrame()
+
 FEES = {
     "kalshi":    0.03,
     "predictit": 0.12,
@@ -58,10 +72,9 @@ def polymarket_url(slug):
 
 def load_kalshi_general():
     """Dem/Rep win prob per race — pick highest open_interest market per race+party."""
-    path = RAW / "kalshi_markets.csv"
-    if not path.exists():
+    df = _safe_read_csv(RAW / "kalshi_markets.csv")
+    if df.empty or "race_id" not in df.columns or "implied_prob" not in df.columns:
         return pd.DataFrame()
-    df = pd.read_csv(path)
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
 
     dem_mask = df["market_title"].str.contains(
@@ -117,10 +130,9 @@ def load_kalshi_general():
 
 def load_predictit_general():
     """Democratic/Republican party contracts per race."""
-    path = RAW / "predictit_markets.csv"
-    if not path.exists():
+    df = _safe_read_csv(RAW / "predictit_markets.csv")
+    if df.empty or "race_id" not in df.columns or "implied_prob" not in df.columns:
         return pd.DataFrame()
-    df = pd.read_csv(path)
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
     df = df[df["contract_name"].str.strip().isin(["Democratic", "Republican"])].copy()
 
@@ -139,12 +151,8 @@ def load_predictit_general():
 
 def load_polymarket_general():
     """Polymarket Yes prices for Democrat/Republican win questions."""
-    path = RAW / "polymarket_markets.csv"
-    if not path.exists():
-        return pd.DataFrame()
-    df = pd.read_csv(path, dtype={"yes_token_id": str, "no_token_id": str})
-
-    if "race_id" not in df.columns:
+    df = _safe_read_csv(RAW / "polymarket_markets.csv", dtype={"yes_token_id": str, "no_token_id": str})
+    if df.empty or "race_id" not in df.columns:
         return pd.DataFrame()
 
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
@@ -533,11 +541,8 @@ def load_primary_candidates():
     # ── Kalshi ──
     # "Will <Name> be the <Party> nominee for the Senate in <State>?"
     # "Will <Name> be the <Party> nominee for FL-6?"
-    try:
-        k = pd.read_csv(RAW / "kalshi_markets.csv")
-    except FileNotFoundError:
-        k = pd.DataFrame()
-    if not k.empty:
+    k = _safe_read_csv(RAW / "kalshi_markets.csv")
+    if not k.empty and "implied_prob" in k.columns and "market_title" in k.columns:
         k = k[k["implied_prob"].notna() & k["market_title"].notna()].copy()
         pat = re.compile(
             r"^Wil[l]?\s+(.+?)\s+be\s+the\s+(Democratic|Republican)\s+nominee",
@@ -573,11 +578,8 @@ def load_primary_candidates():
     # ── PredictIt ──
     # market_name = "Who will win the 2026 <State> <Party> Senate nomination?"
     # contract_name = candidate name
-    try:
-        pi = pd.read_csv(RAW / "predictit_markets.csv")
-    except FileNotFoundError:
-        pi = pd.DataFrame()
-    if not pi.empty:
+    pi = _safe_read_csv(RAW / "predictit_markets.csv")
+    if not pi.empty and "implied_prob" in pi.columns:
         pi = pi[pi["implied_prob"].notna()].copy()
         party_pat = re.compile(r"\b(Democratic|Republican|Democrat|Republicans?)\b", re.IGNORECASE)
         for _, r in pi.iterrows():
@@ -614,11 +616,8 @@ def load_primary_candidates():
 
     # ── Polymarket ──
     # "Will <Name> be the <Party> nominee for Senate in <State>?"
-    try:
-        pm = pd.read_csv(RAW / "polymarket_markets.csv", dtype={"yes_token_id": str, "no_token_id": str})
-    except FileNotFoundError:
-        pm = pd.DataFrame()
-    if not pm.empty:
+    pm = _safe_read_csv(RAW / "polymarket_markets.csv", dtype={"yes_token_id": str, "no_token_id": str})
+    if not pm.empty and "implied_prob" in pm.columns:
         pm = pm[pm["implied_prob"].notna()].copy()
         pat = re.compile(
             r"^Will\s+(.+?)\s+be\s+the\s+(Democratic|Republican)\s+nominee",

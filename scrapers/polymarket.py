@@ -314,7 +314,16 @@ def run():
         return
 
     rows = [parse_market(m) for m in markets]
-    df = pd.DataFrame(rows).drop_duplicates(subset=["condition_id"])
+    df = pd.DataFrame(rows)
+    out_path = RAW_DATA_DIR / "polymarket_markets.csv"
+
+    # Don't clobber a good prior CSV on an empty scrape — the scanner's
+    # _safe_read_csv treats missing/empty as no Polymarket data.
+    if df.empty or "condition_id" not in df.columns:
+        print(f"\nWARNING: Polymarket returned no usable rows. Keeping previous {out_path.name} if it exists.")
+        return
+
+    df = df.drop_duplicates(subset=["condition_id"])
 
     # Drop unrealistic markets:
     #   1. Liquidity < $200 — basically no real trading
@@ -331,7 +340,6 @@ def run():
         df = df[(liq >= 200) & has_two_sided]
         print(f"  Dropped {before - len(df)} markets (liquidity<$200 or spread>30pp)")
 
-    out_path = RAW_DATA_DIR / "polymarket_markets.csv"
     df.to_csv(out_path, index=False)
     print(f"Saved {len(df)} markets to {out_path}")
     print("\nMarket questions found:")

@@ -178,6 +178,11 @@ def run():
 
     df = pd.DataFrame(rows)
     out_path = RAW_DATA_DIR / "predictit_markets.csv"
+
+    if df.empty or "race_id" not in df.columns:
+        print(f"\nWARNING: PredictIt returned no usable rows. Keeping previous {out_path.name} if it exists.")
+        return
+
     df.to_csv(out_path, index=False)
     print(f"Saved {len(df)} contract rows to {out_path}")
 
