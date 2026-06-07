@@ -12,13 +12,13 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-AR-03,Steve Womack,R,W000809,False,
 2026-H-AR-04,Bruce Westerman,R,W000821,False,
 2026-H-AS-01,Aumua Amata Coleman Radewagen,R,R000600,False,
-2026-H-AZ-01,David Schweikert,R,S001183,True,retiring
+2026-H-AZ-01,David Schweikert,R,S001183,False,
 2026-H-AZ-02,Elijah Crane,R,C001132,False,
 2026-H-AZ-03,Yassamin Ansari,D,A000381,False,
 2026-H-AZ-04,Greg Stanton,D,S001211,False,
-2026-H-AZ-05,Andy Biggs,R,B001302,True,retiring
+2026-H-AZ-05,Andy Biggs,R,B001302,False,
 2026-H-AZ-06,Juan Ciscomani,R,C001133,False,
-2026-H-AZ-07,Adelita S. Grijalva,D,G000606,True,retiring
+2026-H-AZ-07,Adelita S. Grijalva,D,G000606,False,
 2026-H-AZ-08,Abraham J. Hamadeh,R,H001098,False,
 2026-H-AZ-09,Paul A. Gosar,R,G000565,False,
 2026-H-CA-02,Jared Huffman,D,H001068,False,
@@ -30,7 +30,7 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-CA-08,John Garamendi,D,G000559,False,
 2026-H-CA-09,Josh Harder,D,H001090,False,
 2026-H-CA-10,Mark DeSaulnier,D,D000623,False,
-2026-H-CA-11,Nancy Pelosi,D,P000197,True,retiring
+2026-H-CA-11,Nancy Pelosi,D,P000197,False,
 2026-H-CA-12,Lateefah Simon,D,S001231,False,
 2026-H-CA-13,Adam Gray,D,G000605,False,
 2026-H-CA-15,Kevin Mullin,D,M001225,False,
@@ -44,7 +44,7 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-CA-23,Jay Obernolte,R,O000019,False,
 2026-H-CA-24,Salud O. Carbajal,D,C001112,False,
 2026-H-CA-25,Raul Ruiz,D,R000599,False,
-2026-H-CA-26,Julia Brownley,D,B001285,True,retiring
+2026-H-CA-26,Julia Brownley,D,B001285,False,
 2026-H-CA-27,George Whitesides,D,W000830,False,
 2026-H-CA-28,Judy Chu,D,C001080,False,
 2026-H-CA-29,Luz M. Rivas,D,R000620,False,
@@ -60,13 +60,13 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-CA-39,Mark Takano,D,T000472,False,
 2026-H-CA-40,Young Kim,R,K000397,False,
 2026-H-CA-41,Ken Calvert,R,C000059,False,
-2026-H-CA-42,Robert Garcia,D,G000598,True,retiring
+2026-H-CA-42,Robert Garcia,D,G000598,False,
 2026-H-CA-43,Maxine Waters,D,W000187,False,
 2026-H-CA-44,Nanette Diaz Barragán,D,B001300,False,
 2026-H-CA-45,Derek Tran,D,T000491,False,
 2026-H-CA-46,J. Luis Correa,D,C001110,False,
 2026-H-CA-47,Dave Min,D,M001241,False,
-2026-H-CA-48,Darrell Issa,R,I000056,True,retiring
+2026-H-CA-48,Darrell Issa,R,I000056,False,
 2026-H-CA-49,Mike Levin,D,L000593,False,
 2026-H-CA-50,Scott H. Peters,D,P000608,False,
 2026-H-CA-51,Sara Jacobs,D,J000305,False,
@@ -87,7 +87,7 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-DC-01,Eleanor Holmes Norton,D,N000147,False,
 2026-H-DE-01,Sarah McBride,D,M001238,False,
 2026-H-FL-01,Jimmy Patronis,R,P000622,False,
-2026-H-FL-02,Neal P. Dunn,R,D000628,True,retiring
+2026-H-FL-02,Neal P. Dunn,R,D000628,False,
 2026-H-FL-03,Kat Cammack,R,C001039,False,
 2026-H-FL-04,Aaron Bean,R,B001314,False,
 2026-H-FL-05,John H. Rutherford,R,R000609,False,
@@ -101,14 +101,14 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-FL-13,Anna Paulina Luna,R,L000596,False,
 2026-H-FL-14,Kathy Castor,D,C001066,False,
 2026-H-FL-15,Laurel M. Lee,R,L000597,False,
-2026-H-FL-16,Vern Buchanan,R,B001260,True,retiring
+2026-H-FL-16,Vern Buchanan,R,B001260,False,
 2026-H-FL-17,W. Gregory Steube,R,S001214,False,
 2026-H-FL-18,Scott Franklin,R,F000472,False,
-2026-H-FL-19,Byron Donalds,R,D000032,True,retiring
+2026-H-FL-19,Byron Donalds,R,D000032,False,
 2026-H-FL-21,Brian J. Mast,R,M001199,False,
 2026-H-FL-22,Lois Frankel,D,F000462,False,
 2026-H-FL-23,Jared Moskowitz,D,M001217,False,
-2026-H-FL-24,Frederica S. Wilson,D,W000808,True,retiring
+2026-H-FL-24,Frederica S. Wilson,D,W000808,False,
 2026-H-FL-25,Debbie Wasserman Schultz,D,W000797,False,
 2026-H-FL-26,Mario Diaz-Balart,R,D000600,False,
 2026-H-FL-27,Maria Elvira Salazar,R,S000168,False,
@@ -123,16 +123,16 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-GA-08,Austin Scott,R,S001189,False,
 2026-H-GA-09,Andrew S. Clyde,R,C001116,False,
 2026-H-GA-10,Mike Collins,R,C001129,False,
-2026-H-GA-11,Barry Loudermilk,R,L000583,True,retiring
+2026-H-GA-11,Barry Loudermilk,R,L000583,False,
 2026-H-GA-12,Rick W. Allen,R,A000372,False,
 2026-H-GA-14,Clay Fuller,R,F000485,False,
 2026-H-GU-01,James C. Moylan,R,M001219,False,
 2026-H-HI-01,Ed Case,D,C001055,False,
 2026-H-HI-02,Jill N. Tokuda,D,T000487,False,
 2026-H-IA-01,Mariannette Miller-Meeks,R,M001215,False,
-2026-H-IA-02,Ashley Hinson,R,H001091,True,retiring
+2026-H-IA-02,Ashley Hinson,R,H001091,False,
 2026-H-IA-03,Zachary Nunn,R,N000193,False,
-2026-H-IA-04,Randy Feenstra,R,F000446,True,retiring
+2026-H-IA-04,Randy Feenstra,R,F000446,False,
 2026-H-ID-01,Russ Fulcher,R,F000469,False,
 2026-H-ID-02,Michael K. Simpson,R,S001148,False,
 2026-H-IL-01,Jonathan L. Jackson,D,J000309,False,
@@ -141,9 +141,9 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-IL-04,"Jesús G. ""Chuy"" García",D,G000586,False,
 2026-H-IL-05,Mike Quigley,D,Q000023,False,
 2026-H-IL-06,Sean Casten,D,C001117,False,
-2026-H-IL-07,Danny K. Davis,D,D000096,True,retiring
-2026-H-IL-08,Raja Krishnamoorthi,D,K000391,True,retiring
-2026-H-IL-09,Janice D. Schakowsky,D,S001145,True,retiring
+2026-H-IL-07,Danny K. Davis,D,D000096,False,
+2026-H-IL-08,Raja Krishnamoorthi,D,K000391,False,
+2026-H-IL-09,Janice D. Schakowsky,D,S001145,False,
 2026-H-IL-10,Bradley Scott Schneider,D,S001190,False,
 2026-H-IL-11,Bill Foster,D,F000454,False,
 2026-H-IL-12,Mike Bost,R,B001295,False,
@@ -170,19 +170,19 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-KY-03,Morgan McGarvey,D,M001220,False,
 2026-H-KY-04,Thomas Massie,R,M001184,False,
 2026-H-KY-05,Harold Rogers,R,R000395,False,
-2026-H-KY-06,Andy Barr,R,B001282,True,retiring
+2026-H-KY-06,Andy Barr,R,B001282,False,
 2026-H-LA-01,Steve Scalise,R,S001176,False,
-2026-H-LA-02,Troy A. Carter,D,C001125,True,retiring
+2026-H-LA-02,Troy A. Carter,D,C001125,False,
 2026-H-LA-03,Clay Higgins,R,H001077,False,
 2026-H-LA-04,Mike Johnson,R,J000299,False,
-2026-H-LA-05,Julia Letlow,R,L000595,True,retiring
+2026-H-LA-05,Julia Letlow,R,L000595,False,
 2026-H-LA-06,Cleo Fields,D,F000110,False,
 2026-H-MA-01,Richard E. Neal,D,N000015,False,
 2026-H-MA-02,James P. McGovern,D,M000312,False,
 2026-H-MA-03,Lori Trahan,D,T000482,False,
 2026-H-MA-04,Jake Auchincloss,D,A000148,False,
 2026-H-MA-05,Katherine M. Clark,D,C001101,False,
-2026-H-MA-06,Seth Moulton,D,M001196,True,retiring
+2026-H-MA-06,Seth Moulton,D,M001196,False,
 2026-H-MA-07,Ayanna Pressley,D,P000617,False,
 2026-H-MA-08,Stephen F. Lynch,D,L000562,False,
 2026-H-MA-09,William R. Keating,D,K000375,False,
@@ -190,12 +190,12 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-MD-02,"Johnny Olszewski, Jr.",D,O000176,False,
 2026-H-MD-03,Sarah Elfreth,D,E000301,False,
 2026-H-MD-04,Glenn Ivey,D,I000058,False,
-2026-H-MD-05,Steny H. Hoyer,D,H000874,True,retiring
+2026-H-MD-05,Steny H. Hoyer,D,H000874,False,
 2026-H-MD-06,April McClain Delaney,D,M001232,False,
 2026-H-MD-07,Kweisi Mfume,D,M000687,False,
 2026-H-MD-08,Jamie Raskin,D,R000606,False,
 2026-H-ME-01,Chellie Pingree,D,P000597,False,
-2026-H-ME-02,Jared F. Golden,D,G000592,True,retiring
+2026-H-ME-02,Jared F. Golden,D,G000592,False,
 2026-H-MI-01,Jack Bergman,R,B001301,False,
 2026-H-MI-02,John R. Moolenaar,R,M001194,False,
 2026-H-MI-03,Hillary J. Scholten,D,S001221,False,
@@ -206,11 +206,11 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-MI-08,Kristen McDonald Rivet,D,M001237,False,
 2026-H-MI-09,Lisa C. McClain,R,M001136,False,
 2026-H-MI-10,John James,R,J000307,False,
-2026-H-MI-11,Haley M. Stevens,D,S001215,True,retiring
+2026-H-MI-11,Haley M. Stevens,D,S001215,False,
 2026-H-MI-12,Rashida Tlaib,D,T000481,False,
 2026-H-MI-13,Shri Thanedar,D,T000488,False,
 2026-H-MN-01,Brad Finstad,R,F000475,False,
-2026-H-MN-02,Angie Craig,D,C001119,True,retiring
+2026-H-MN-02,Angie Craig,D,C001119,False,
 2026-H-MN-03,Kelly Morrison,D,M001234,False,
 2026-H-MN-04,Betty McCollum,D,M001143,False,
 2026-H-MN-05,Ilhan Omar,D,O000173,False,
@@ -222,15 +222,15 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-MO-03,"Robert F. Onder, Jr.",R,O000177,False,
 2026-H-MO-04,Mark Alford,R,A000379,False,
 2026-H-MO-05,Emanuel Cleaver,D,C001061,False,
-2026-H-MO-06,Sam Graves,R,G000546,True,retiring
+2026-H-MO-06,Sam Graves,R,G000546,False,
 2026-H-MO-07,Eric Burlison,R,B001316,False,
 2026-H-MO-08,Jason Smith,R,S001195,False,
 2026-H-MP-01,Kimberlyn King-Hinds,R,K000404,False,
-2026-H-MS-01,Trent Kelly,R,K000388,True,retiring
+2026-H-MS-01,Trent Kelly,R,K000388,False,
 2026-H-MS-02,Bennie G. Thompson,D,T000193,False,
 2026-H-MS-03,Michael Guest,R,G000591,False,
 2026-H-MS-04,Mike Ezell,R,E000235,False,
-2026-H-MT-01,Ryan K. Zinke,R,Z000018,True,retiring
+2026-H-MT-01,Ryan K. Zinke,R,Z000018,False,
 2026-H-MT-02,Troy Downing,R,D000634,False,
 2026-H-NC-01,Donald G. Davis,D,D000230,False,
 2026-H-NC-02,Deborah K. Ross,D,R000305,False,
@@ -248,9 +248,9 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-NC-14,Tim Moore,R,M001236,False,
 2026-H-ND-01,Julie Fedorchak,R,F000482,False,
 2026-H-NE-01,Mike Flood,R,F000474,False,
-2026-H-NE-02,Don Bacon,R,B001298,True,retiring
+2026-H-NE-02,Don Bacon,R,B001298,False,
 2026-H-NE-03,Adrian Smith,R,S001172,False,
-2026-H-NH-01,Chris Pappas,D,P000614,True,retiring
+2026-H-NH-01,Chris Pappas,D,P000614,False,
 2026-H-NH-02,Maggie Goodlander,D,G000604,False,
 2026-H-NJ-01,Donald Norcross,D,N000188,False,
 2026-H-NJ-02,Jefferson Van Drew,R,V000133,False,
@@ -263,12 +263,12 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-NJ-09,Nellie Pou,D,P000621,False,
 2026-H-NJ-10,LaMonica McIver,D,M001229,False,
 2026-H-NJ-11,Analilia Mejia,D,M001246,False,
-2026-H-NJ-12,Bonnie Watson Coleman,D,W000822,True,retiring
+2026-H-NJ-12,Bonnie Watson Coleman,D,W000822,False,
 2026-H-NM-01,Melanie A. Stansbury,D,S001218,False,
 2026-H-NM-02,Gabe Vasquez,D,V000136,False,
 2026-H-NM-03,Teresa Leger Fernandez,D,L000273,False,
 2026-H-NV-01,Dina Titus,D,T000468,False,
-2026-H-NV-02,Mark E. Amodei,R,A000369,True,retiring
+2026-H-NV-02,Mark E. Amodei,R,A000369,False,
 2026-H-NV-03,Susie Lee,D,L000590,False,
 2026-H-NV-04,Steven Horsford,D,H001066,False,
 2026-H-NY-01,Nick LaLota,R,L000598,False,
@@ -282,7 +282,7 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-NY-09,Yvette D. Clarke,D,C001067,False,
 2026-H-NY-10,Daniel S. Goldman,D,G000599,False,
 2026-H-NY-11,Nicole Malliotakis,R,M000317,False,
-2026-H-NY-12,Jerrold Nadler,D,N000002,True,retiring
+2026-H-NY-12,Jerrold Nadler,D,N000002,False,
 2026-H-NY-13,Adriano Espaillat,D,E000297,False,
 2026-H-NY-14,Alexandria Ocasio-Cortez,D,O000172,False,
 2026-H-NY-15,Ritchie Torres,D,T000486,False,
@@ -291,7 +291,7 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-NY-18,Patrick Ryan,D,R000579,False,
 2026-H-NY-19,Josh Riley,D,R000622,False,
 2026-H-NY-20,Paul Tonko,D,T000469,False,
-2026-H-NY-21,Elise M. Stefanik,R,S001196,True,retiring
+2026-H-NY-21,Elise M. Stefanik,R,S001196,False,
 2026-H-NY-22,John W. Mannion,D,M001231,False,
 2026-H-NY-23,Nicholas A. Langworthy,R,L000600,False,
 2026-H-NY-24,Claudia Tenney,R,T000478,False,
@@ -306,13 +306,13 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-OH-07,Max L. Miller,R,M001222,False,
 2026-H-OH-08,Warren Davidson,R,D000626,False,
 2026-H-OH-09,Marcy Kaptur,D,K000009,False,
-2026-H-OH-10,Michael R. Turner,R,T000463,True,retiring
+2026-H-OH-10,Michael R. Turner,R,T000463,False,
 2026-H-OH-11,Shontel M. Brown,D,B001313,False,
 2026-H-OH-12,Troy Balderson,R,B001306,False,
 2026-H-OH-13,Emilia Strong Sykes,D,S001223,False,
 2026-H-OH-14,David P. Joyce,R,J000295,False,
 2026-H-OH-15,Mike Carey,R,C001126,False,
-2026-H-OK-01,Kevin Hern,R,H001082,True,retiring
+2026-H-OK-01,Kevin Hern,R,H001082,False,
 2026-H-OK-02,Josh Brecheen,R,B001317,False,
 2026-H-OK-03,Frank D. Lucas,R,L000491,False,
 2026-H-OK-04,Tom Cole,R,C001053,False,
@@ -325,7 +325,7 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-OR-06,Andrea Salinas,D,S001226,False,
 2026-H-PA-01,Brian K. Fitzpatrick,R,F000466,False,
 2026-H-PA-02,Brendan F. Boyle,D,B001296,False,
-2026-H-PA-03,Dwight Evans,D,E000296,True,retiring
+2026-H-PA-03,Dwight Evans,D,E000296,False,
 2026-H-PA-04,Madeleine Dean,D,D000631,False,
 2026-H-PA-05,Mary Gay Scanlon,D,S001205,False,
 2026-H-PA-06,Chrissy Houlahan,D,H001085,False,
@@ -343,20 +343,20 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-PR-01,Pablo José Hernández,D,H001103,False,
 2026-H-RI-01,Gabe Amo,D,A000380,False,
 2026-H-RI-02,Seth Magaziner,D,M001223,False,
-2026-H-SC-01,Nancy Mace,R,M000194,True,retiring
+2026-H-SC-01,Nancy Mace,R,M000194,False,
 2026-H-SC-02,Joe Wilson,R,W000795,False,
 2026-H-SC-03,Sheri Biggs,R,B001325,False,
 2026-H-SC-04,William R. Timmons IV,R,T000480,False,
-2026-H-SC-05,Ralph Norman,R,N000190,True,retiring
+2026-H-SC-05,Ralph Norman,R,N000190,False,
 2026-H-SC-06,James E. Clyburn,D,C000537,False,
 2026-H-SC-07,Russell Fry,R,F000478,False,
-2026-H-SD-01,Dusty Johnson,R,J000301,True,retiring
+2026-H-SD-01,Dusty Johnson,R,J000301,False,
 2026-H-TN-01,Diana Harshbarger,R,H001086,False,
 2026-H-TN-02,Tim Burchett,R,B001309,False,
 2026-H-TN-03,"Charles J. ""Chuck"" Fleischmann",R,F000459,False,
 2026-H-TN-04,Scott DesJarlais,R,D000616,False,
 2026-H-TN-05,Andrew Ogles,R,O000175,False,
-2026-H-TN-06,John W. Rose,R,R000612,True,retiring
+2026-H-TN-06,John W. Rose,R,R000612,False,
 2026-H-TN-07,Matt Van Epps,R,V000139,False,
 2026-H-TN-08,David Kustoff,R,K000392,False,
 2026-H-TN-09,Steve Cohen,D,C001068,False,
@@ -367,9 +367,9 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-TX-05,Lance Gooden,R,G000589,False,
 2026-H-TX-06,Jake Ellzey,R,E000071,False,
 2026-H-TX-07,Lizzie Fletcher,D,F000468,False,
-2026-H-TX-08,Morgan Luttrell,R,L000603,True,retiring
+2026-H-TX-08,Morgan Luttrell,R,L000603,False,
 2026-H-TX-09,Al Green,D,G000553,False,
-2026-H-TX-10,Michael T. McCaul,R,M001157,True,retiring
+2026-H-TX-10,Michael T. McCaul,R,M001157,False,
 2026-H-TX-11,August Pfluger,R,P000048,False,
 2026-H-TX-12,Craig A. Goldman,R,G000601,False,
 2026-H-TX-13,Ronny Jackson,R,J000304,False,
@@ -378,29 +378,29 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-TX-16,Veronica Escobar,D,E000299,False,
 2026-H-TX-17,Pete Sessions,R,S000250,False,
 2026-H-TX-18,Christian D. Menefee,D,M001245,False,
-2026-H-TX-19,Jodey C. Arrington,R,A000375,True,retiring
+2026-H-TX-19,Jodey C. Arrington,R,A000375,False,
 2026-H-TX-20,Joaquin Castro,D,C001091,False,
-2026-H-TX-21,Chip Roy,R,R000614,True,retiring
-2026-H-TX-22,Troy E. Nehls,R,N000026,True,retiring
+2026-H-TX-21,Chip Roy,R,R000614,False,
+2026-H-TX-22,Troy E. Nehls,R,N000026,False,
 2026-H-TX-24,Beth Van Duyne,R,V000134,False,
 2026-H-TX-25,Roger Williams,R,W000816,False,
 2026-H-TX-26,Brandon Gill,R,G000603,False,
 2026-H-TX-27,Michael Cloud,R,C001115,False,
 2026-H-TX-28,Henry Cuellar,D,C001063,False,
 2026-H-TX-29,Sylvia R. Garcia,D,G000587,False,
-2026-H-TX-30,Jasmine Crockett,D,C001130,True,retiring
+2026-H-TX-30,Jasmine Crockett,D,C001130,False,
 2026-H-TX-31,John R. Carter,R,C001051,False,
 2026-H-TX-32,Julie Johnson,D,J000310,False,
-2026-H-TX-33,Marc A. Veasey,D,V000131,True,retiring
+2026-H-TX-33,Marc A. Veasey,D,V000131,False,
 2026-H-TX-34,Vicente Gonzalez,D,G000581,False,
 2026-H-TX-35,Greg Casar,D,C001131,False,
 2026-H-TX-36,Brian Babin,R,B001291,False,
-2026-H-TX-37,Lloyd Doggett,D,D000399,True,retiring
+2026-H-TX-37,Lloyd Doggett,D,D000399,False,
 2026-H-TX-38,Wesley Hunt,R,H001095,False,
 2026-H-UT-01,Blake D. Moore,R,M001213,False,
 2026-H-UT-02,Celeste Maloy,R,M001228,False,
 2026-H-UT-03,Mike Kennedy,R,K000403,False,
-2026-H-UT-04,Burgess Owens,R,O000086,True,retiring
+2026-H-UT-04,Burgess Owens,R,O000086,False,
 2026-H-VA-01,Robert J. Wittman,R,W000804,False,
 2026-H-VA-02,Jennifer A. Kiggans,R,K000399,False,
 2026-H-VA-03,"Robert C. ""Bobby"" Scott",D,S000185,False,
@@ -417,7 +417,7 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-WA-01,Suzan K. DelBene,D,D000617,False,
 2026-H-WA-02,Rick Larsen,D,L000560,False,
 2026-H-WA-03,Marie Gluesenkamp Perez,D,G000600,False,
-2026-H-WA-04,Dan Newhouse,R,N000189,True,retiring
+2026-H-WA-04,Dan Newhouse,R,N000189,False,
 2026-H-WA-05,Michael Baumgartner,R,B001322,False,
 2026-H-WA-06,Emily Randall,D,R000621,False,
 2026-H-WA-07,Pramila Jayapal,D,J000298,False,
@@ -430,8 +430,8 @@ race_id,incumbent_name,incumbent_party,bioguide_id,open_seat,open_reason
 2026-H-WI-04,Gwen Moore,D,M001160,False,
 2026-H-WI-05,Scott Fitzgerald,R,F000471,False,
 2026-H-WI-06,Glenn Grothman,R,G000576,False,
-2026-H-WI-07,Thomas P. Tiffany,R,T000165,True,retiring
+2026-H-WI-07,Thomas P. Tiffany,R,T000165,False,
 2026-H-WI-08,Tony Wied,R,W000829,False,
 2026-H-WV-01,Carol D. Miller,R,M001205,False,
 2026-H-WV-02,Riley M. Moore,R,M001235,False,
-2026-H-WY-01,Harriet M. Hageman,R,H001096,True,retiring
+2026-H-WY-01,Harriet M. Hageman,R,H001096,False,
