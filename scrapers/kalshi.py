@@ -266,16 +266,14 @@ def run(delay: float = 0.2):
     df = pd.DataFrame(rows)
     out_path = RAW_DATA_DIR / "kalshi_markets.csv"
 
-    # If the Kalshi API returned nothing (transient outage), don't
-    # clobber the previous good CSV — downstream steps can still run
-    # on the older snapshot. Only write an empty file if no prior exists.
+    # If the Kalshi API returned nothing, FAIL THE RUN so the workflow's
+    # commit step never fires and the live dashboard keeps showing the
+    # last good data. Better to skip a day than push partial/empty data.
     if df.empty:
-        print(f"\nWARNING: Kalshi API returned no rows.")
-        if out_path.exists():
-            print(f"  Keeping previous {out_path.name} so downstream can still run.")
-            return
-        df.to_csv(out_path, index=False)
-        return
+        raise SystemExit(
+            "Kalshi API returned no rows. Aborting so the workflow doesn't "
+            "overwrite docs/ with partial data."
+        )
 
     df.to_csv(out_path, index=False)
     print(f"\nSaved {len(df)} market rows to {out_path}")

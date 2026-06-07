@@ -317,11 +317,10 @@ def run():
     df = pd.DataFrame(rows)
     out_path = RAW_DATA_DIR / "polymarket_markets.csv"
 
-    # Don't clobber a good prior CSV on an empty scrape — the scanner's
-    # _safe_read_csv treats missing/empty as no Polymarket data.
+    # If Polymarket returned nothing, FAIL THE RUN so the workflow doesn't
+    # push partial docs/ over yesterday's good dashboard.
     if df.empty or "condition_id" not in df.columns:
-        print(f"\nWARNING: Polymarket returned no usable rows. Keeping previous {out_path.name} if it exists.")
-        return
+        raise SystemExit("Polymarket returned no usable rows. Aborting to keep the last good dashboard.")
 
     df = df.drop_duplicates(subset=["condition_id"])
 
