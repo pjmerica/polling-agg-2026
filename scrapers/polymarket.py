@@ -24,6 +24,7 @@ import time
 import re
 import urllib.request
 import urllib.parse
+import urllib.error
 import json
 import pandas as pd
 from pathlib import Path
@@ -121,13 +122,32 @@ def infer_race_id(question: str) -> str | None:
     return None
 
 
-def _get(path: str, params: dict = None) -> list | dict:
+RETRY_CODES = {403, 408, 429, 500, 502, 503, 504}
+
+def _get(path: str, params: dict = None, max_retries: int = 4) -> list | dict:
     url = f"{GAMMA_BASE}{path}"
     if params:
         url += "?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=15) as r:
-        return json.loads(r.read())
+    for attempt in range(max_retries):
+        req = urllib.request.Request(url, headers=HEADERS)
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code in RETRY_CODES and attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  Polymarket HTTP {e.code} on {path}, retry {attempt+1}/{max_retries-1} in {wait}s...")
+                time.sleep(wait)
+                continue
+            raise
+        except urllib.error.URLError as e:
+            if attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  Polymarket network error on {path}: {e}, retry {attempt+1}/{max_retries-1} in {wait}s...")
+                time.sleep(wait)
+                continue
+            raise
+    raise RuntimeError(f"Polymarket {path} failed after {max_retries} retries")
 
 
 def fetch_all_active_markets(limit: int = 100) -> list[dict]:

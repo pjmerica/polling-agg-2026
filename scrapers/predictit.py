@@ -23,8 +23,10 @@ Output: data/raw/predictit_markets.csv
 """
 
 import urllib.request
+import urllib.error
 import json
 import re
+import time
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone
@@ -59,10 +61,29 @@ EXCLUDE_KEYWORDS = [
 ]
 
 
-def fetch_all_markets() -> list[dict]:
-    req = urllib.request.Request(PREDICTIT_URL, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=15) as r:
-        return json.loads(r.read()).get("markets", [])
+RETRY_CODES = {403, 408, 429, 500, 502, 503, 504}
+
+def fetch_all_markets(max_retries: int = 4) -> list[dict]:
+    for attempt in range(max_retries):
+        req = urllib.request.Request(PREDICTIT_URL, headers=HEADERS)
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                return json.loads(r.read()).get("markets", [])
+        except urllib.error.HTTPError as e:
+            if e.code in RETRY_CODES and attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  PredictIt HTTP {e.code}, retry {attempt+1}/{max_retries-1} in {wait}s...")
+                time.sleep(wait)
+                continue
+            raise
+        except urllib.error.URLError as e:
+            if attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  PredictIt network error: {e}, retry {attempt+1}/{max_retries-1} in {wait}s...")
+                time.sleep(wait)
+                continue
+            raise
+    raise RuntimeError(f"PredictIt failed after {max_retries} retries")
 
 
 def infer_race_id(name: str) -> str | None:

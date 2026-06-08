@@ -27,6 +27,7 @@ to canonical race_ids defined in utils/races.py.
 
 import time
 import urllib.request
+import urllib.error
 import json
 import re
 import pandas as pd
@@ -63,14 +64,33 @@ STATE_ABBREV_MAP = {
 }
 
 
-def _get(path: str, params: dict = None) -> dict:
+RETRY_CODES = {403, 408, 429, 500, 502, 503, 504}
+
+def _get(path: str, params: dict = None, max_retries: int = 4) -> dict:
     url = f"{KALSHI_BASE}{path}"
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{url}?{qs}"
-    req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return json.loads(r.read())
+    for attempt in range(max_retries):
+        req = urllib.request.Request(url, headers=HEADERS)
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code in RETRY_CODES and attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)  # 2s, 4s, 8s, 16s
+                print(f"  Kalshi HTTP {e.code} on {path}, retry {attempt+1}/{max_retries-1} in {wait}s...")
+                time.sleep(wait)
+                continue
+            raise
+        except urllib.error.URLError as e:
+            if attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  Kalshi network error on {path}: {e}, retry {attempt+1}/{max_retries-1} in {wait}s...")
+                time.sleep(wait)
+                continue
+            raise
+    raise RuntimeError(f"Kalshi {path} failed after {max_retries} retries")
 
 
 def fetch_all_series() -> list[dict]:
