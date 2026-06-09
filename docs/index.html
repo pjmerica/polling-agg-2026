@@ -567,7 +567,9 @@ tr:hover td { background: #1a2035; }
   <div style="padding:14px 28px 6px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
       <div>
-        <h2 style="font-size:1.1rem;margin:0 0 4px;color:#e2e8f0">2026 Primaries</h2>
+        <h2 style="font-size:1.1rem;margin:0 0 4px;color:#e2e8f0">2026 Primaries
+          <button id="primaries-glossary-btn" type="button" title="Open glossary" style="margin-left:8px;width:22px;height:22px;border-radius:50%;border:1px solid #4a5568;background:transparent;color:#94a3b8;font-size:0.78rem;font-weight:700;cursor:pointer;vertical-align:middle">?</button>
+        </h2>
         <div style="font-size:0.78rem;color:#64748b">
           Source: <a href="https://ballotpedia.org/Election_calendar" target="_blank" rel="noopener" style="color:#60a5fa">Ballotpedia</a>
           · <span id="primaries-updated"></span>
@@ -611,6 +613,7 @@ tr:hover td { background: #1a2035; }
           <th>State</th>
           <th>Primary type</th>
           <th>Method</th>
+          <th>Races on ballot</th>
           <th>Description</th>
           <th>Polls</th>
           <th>Reference</th>
@@ -618,6 +621,33 @@ tr:hover td { background: #1a2035; }
       </thead>
       <tbody id="primaries-tbody"></tbody>
     </table>
+  </div>
+
+  <!-- Glossary modal -->
+  <div id="primaries-glossary-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+    <div style="background:#0f1422;border:1px solid #2d3748;border-radius:10px;max-width:680px;width:100%;max-height:80vh;overflow-y:auto;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+        <h2 style="margin:0;color:#e2e8f0;font-size:1.1rem">Glossary</h2>
+        <button id="primaries-glossary-close" type="button" style="background:transparent;border:none;color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1">×</button>
+      </div>
+      <div style="color:#cbd5e1;font-size:0.86rem;line-height:1.55">
+        <h3 style="color:#a78bfa;font-size:0.84rem;text-transform:uppercase;letter-spacing:0.05em;margin:18px 0 8px">Who can vote (Primary type)</h3>
+        <p><strong style="color:#fbbf24">Closed.</strong> Only voters registered with that party can vote in its primary. Independents and other-party voters are locked out.</p>
+        <p><strong style="color:#facc15">Semi-closed.</strong> Registered party members vote in their party's primary, but unaffiliated/independent voters can also choose one. Members of the opposing party are still locked out.</p>
+        <p><strong style="color:#34d399">Open.</strong> Anyone can vote in either party's primary regardless of registration. You typically pick on the day.</p>
+        <p><strong style="color:#a78bfa">Top-two (jungle).</strong> No separate party primaries. All candidates from all parties run on the same ballot, and the top two vote-getters advance to the general regardless of party (CA, LA, WA).</p>
+        <p><strong style="color:#f87171">Majority runoff.</strong> Standard partisan primary, but if no candidate hits >50% the top two go to a runoff election a few weeks later (GA, AL, AR, MS, OK, SC, TX, some NC races).</p>
+        <p><strong style="color:#60a5fa">Top-4 + RCV (AK).</strong> Top-four nonpartisan jungle primary, then the November general uses ranked-choice voting.</p>
+
+        <h3 style="color:#a78bfa;font-size:0.84rem;text-transform:uppercase;letter-spacing:0.05em;margin:22px 0 8px">How votes are counted (Method)</h3>
+        <p><strong style="color:#94a3b8">FPTP — First-Past-The-Post.</strong> Plurality wins. One round of voting, the candidate with the most votes wins, no majority required. Default in most states.</p>
+        <p><strong style="color:#f59e0b">Runoff.</strong> Counts can go to a second round. Either a true majority runoff (must hit >50%) or a top-two jungle that proceeds to a head-to-head.</p>
+        <p><strong style="color:#60a5fa">RCV — Ranked-Choice Voting.</strong> Voters rank candidates. Lowest-ranked are eliminated and their votes redistributed by next preference until someone has a majority. Used at the federal level in Alaska.</p>
+
+        <h3 style="color:#a78bfa;font-size:0.84rem;text-transform:uppercase;letter-spacing:0.05em;margin:22px 0 8px">Races on ballot</h3>
+        <p>Counts of federal/gubernatorial offices that have a contest on that primary day: <strong>SEN</strong>, <strong>GOV</strong>, and <strong>House</strong> seat count.</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1471,6 +1501,44 @@ let primariesFilter = 'upcoming', primariesType = 'ALL', primariesSystem = 'ALL'
 const SYS_COLOR = { 'FPTP': '#94a3b8', 'Runoff': '#f59e0b', 'RCV': '#60a5fa' };
 const SYS_LABEL = { 'FPTP': 'FPTP', 'Runoff': 'Runoff', 'RCV': 'RCV' };
 
+// One-liner tooltips for each pill — same wording as the glossary modal.
+const TYPE_TOOLTIP = {
+  'closed':           'Closed primary: only registered party members can vote in their party\'s primary.',
+  'open':             'Open primary: anyone can vote in either party\'s primary regardless of registration.',
+  'semi-closed':      'Semi-closed: party members vote in their primary; independents can pick one. Opposite party locked out.',
+  'semi-open':        'Semi-open: voters can pick either primary on the day but must publicly declare.',
+  'top-two':          'Top-two (jungle): all candidates run together; top 2 advance regardless of party.',
+  'majority-runoff':  'Majority runoff: if no one >50%, the top 2 face a runoff election.',
+  'top-four-rcv':     'Top-4 nonpartisan jungle primary; general election uses ranked-choice voting (AK).',
+};
+const SYS_TOOLTIP = {
+  'FPTP':   'First-past-the-post: plurality wins, one round.',
+  'Runoff': 'May go to a second round (majority runoff or top-two head-to-head).',
+  'RCV':    'Ranked-choice: voters rank candidates; lowest are eliminated until someone has a majority.',
+};
+
+// Build state -> {sen, gov, house_count} from RACES.
+const RACES_BY_STATE = (() => {
+  const m = {};
+  (typeof RACES !== 'undefined' ? RACES : []).forEach(r => {
+    if (!r.state_abbrev) return;
+    if (!m[r.state_abbrev]) m[r.state_abbrev] = { sen: false, gov: false, house: 0 };
+    if (r.office === 'SEN') m[r.state_abbrev].sen = true;
+    else if (r.office === 'GOV') m[r.state_abbrev].gov = true;
+    else if (r.office === 'H') m[r.state_abbrev].house += 1;
+  });
+  return m;
+})();
+function racesOnBallotHtml(stateAbbrev) {
+  const info = RACES_BY_STATE[stateAbbrev];
+  if (!info) return '<span style="color:#4a5568;font-size:0.78rem">—</span>';
+  const parts = [];
+  if (info.sen) parts.push('<span style="background:rgba(96,165,250,0.12);color:#60a5fa;border-radius:4px;padding:2px 6px;font-size:0.7rem;font-weight:600">SEN</span>');
+  if (info.gov) parts.push('<span style="background:rgba(167,139,250,0.12);color:#a78bfa;border-radius:4px;padding:2px 6px;font-size:0.7rem;font-weight:600">GOV</span>');
+  if (info.house > 0) parts.push(`<span style="background:rgba(52,211,153,0.10);color:#34d399;border-radius:4px;padding:2px 6px;font-size:0.7rem;font-weight:600">${info.house} House</span>`);
+  return parts.length ? parts.join(' ') : '<span style="color:#4a5568;font-size:0.78rem">—</span>';
+}
+
 const TYPE_LABEL = {
   'closed': 'Closed', 'open': 'Open', 'semi-closed': 'Semi-closed', 'semi-open': 'Semi-open',
   'top-two': 'Top-two (jungle)', 'majority-runoff': 'Majority runoff',
@@ -1508,11 +1576,15 @@ function renderPrimaries() {
     const detail = r.primary_type_detail || '—';
     const color = TYPE_COLOR[detail] || '#64748b';
     const label = TYPE_LABEL[detail] || detail;
-    const typePill = `<span style="background:${color}22;color:${color};border:1px solid ${color}55;border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600">${label}</span>`;
+    const typeTip = (TYPE_TOOLTIP[detail] || '').replace(/"/g, '&quot;');
+    const typePill = `<span title="${typeTip}" style="background:${color}22;color:${color};border:1px solid ${color}55;border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600;cursor:help">${label}</span>`;
 
     const sys = r.electoral_system || 'FPTP';
     const sysColor = SYS_COLOR[sys] || '#64748b';
-    const sysPill = `<span style="background:${sysColor}22;color:${sysColor};border:1px solid ${sysColor}55;border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600">${SYS_LABEL[sys] || sys}</span>`;
+    const sysTip = (SYS_TOOLTIP[sys] || '').replace(/"/g, '&quot;');
+    const sysPill = `<span title="${sysTip}" style="background:${sysColor}22;color:${sysColor};border:1px solid ${sysColor}55;border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600;cursor:help">${SYS_LABEL[sys] || sys}</span>`;
+
+    const racesCell = racesOnBallotHtml(r.state_abbrev);
 
     // Polls link: matches polls for the state. For statewide primaries we
     // can't pin a specific race_id (there are many that day), so we open
@@ -1524,11 +1596,12 @@ function renderPrimaries() {
       <td><strong>${r.state_abbrev}</strong> <span style="color:#64748b;font-size:0.76rem">${r.state}</span></td>
       <td>${typePill}</td>
       <td>${sysPill}</td>
+      <td>${racesCell}</td>
       <td style="color:#e2e8f0;font-size:0.82rem">${r.description}</td>
       <td>${pollsBtn}</td>
       <td><a href="${r.ballotpedia_url}" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:none;font-size:0.78rem">Ballotpedia ↗</a></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="7" style="text-align:center;color:#4a5568;padding:30px">No primaries match the current filters.</td></tr>`;
+  }).join('') || `<tr><td colspan="8" style="text-align:center;color:#4a5568;padding:30px">No primaries match the current filters.</td></tr>`;
 
   tbody.querySelectorAll('.primaries-polls-link').forEach(a => {
     a.addEventListener('click', e => {
@@ -1556,6 +1629,20 @@ function renderPrimaries() {
 document.getElementById('primaries-filter').addEventListener('change', e => { primariesFilter = e.target.value; renderPrimaries(); });
 document.getElementById('primaries-type-filter').addEventListener('change', e => { primariesType = e.target.value; renderPrimaries(); });
 document.getElementById('primaries-system-filter').addEventListener('change', e => { primariesSystem = e.target.value; renderPrimaries(); });
+
+// Glossary modal
+(function () {
+  const overlay = document.getElementById('primaries-glossary-overlay');
+  const openBtn = document.getElementById('primaries-glossary-btn');
+  const closeBtn = document.getElementById('primaries-glossary-close');
+  if (!overlay || !openBtn) return;
+  const show = () => { overlay.style.display = 'flex'; };
+  const hide = () => { overlay.style.display = 'none'; };
+  openBtn.addEventListener('click', show);
+  closeBtn.addEventListener('click', hide);
+  overlay.addEventListener('click', e => { if (e.target === overlay) hide(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.style.display === 'flex') hide(); });
+})();
 renderPrimaries();
 </script>
 </body>
