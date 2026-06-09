@@ -696,31 +696,49 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // Click any cell with data-race-id (in any table) to filter Raw Polls
 // to just that race and switch tabs. Delegated so it works after re-renders.
 //
-// rawPinnedRaceId: when set, rawFilter() shows ONLY polls with this race_id
-// (no text-search needed). Cleared when the user types in the search box.
+// Hard pins for Raw Polls. Exactly one is ever set at a time.
+//   rawPinnedRaceId       — exact race_id match (set when user clicks a race row)
+//   rawPinnedStateAbbrev  — show all polls for this state (set from Primaries tab)
+// Cleared when the user types in the search box or clicks "show all polls".
 let rawPinnedRaceId = null;
+let rawPinnedStateAbbrev = null;
 
 function filterToRace(raceId) {
   if (!raceId) return;
   rawPinnedRaceId = raceId;
+  rawPinnedStateAbbrev = null;
+  resetRawSearchUI();
+  showPinnedBanner(`race <strong>${raceId}</strong>`);
+  activateTab('raw');
+  renderRawPolls();
+}
+
+function filterToState(stateAbbrev, stateName) {
+  if (!stateAbbrev) return;
+  rawPinnedStateAbbrev = stateAbbrev;
+  rawPinnedRaceId = null;
+  resetRawSearchUI();
+  const label = stateName ? `${stateName} (${stateAbbrev})` : stateAbbrev;
+  showPinnedBanner(`<strong>${label}</strong> polls`);
+  activateTab('raw');
+  renderRawPolls();
+}
+
+function resetRawSearchUI() {
+  // Don't constrain by office or recency window when jumping in via click —
+  // the user wants every relevant poll, regardless of how stale.
   rawSearch = '';
   const input = document.getElementById('raw-search');
   if (input) input.value = '';
-  // Don't constrain by office or recency window when jumping in via click —
-  // the user wants ALL polls for the race they clicked.
   rawOffice = 'ALL';
   rawSinceDays = 0;
   const offSel = document.getElementById('raw-office');
   if (offSel) offSel.value = 'ALL';
   const sinceSel = document.getElementById('raw-since');
   if (sinceSel) sinceSel.value = '0';
-  // Surface what we're pinned to so the user knows why filters look "off".
-  showPinnedBanner(raceId);
-  activateTab('raw');
-  renderRawPolls();
 }
 
-function showPinnedBanner(raceId) {
+function showPinnedBanner(subjectHtml) {
   let b = document.getElementById('raw-pinned-banner');
   if (!b) {
     b = document.createElement('div');
@@ -729,10 +747,11 @@ function showPinnedBanner(raceId) {
     const host = document.getElementById('raw-count') || document.querySelector('#tab-raw');
     if (host) host.parentNode.insertBefore(b, host);
   }
-  b.innerHTML = `Showing only polls for <strong>${raceId}</strong> · <a href="#" id="raw-clear-pin" style="color:#60a5fa;text-decoration:none">show all polls</a>`;
+  b.innerHTML = `Showing only ${subjectHtml} · <a href="#" id="raw-clear-pin" style="color:#60a5fa;text-decoration:none">show all polls</a>`;
   document.getElementById('raw-clear-pin').addEventListener('click', e => {
     e.preventDefault();
     rawPinnedRaceId = null;
+    rawPinnedStateAbbrev = null;
     b.remove();
     renderRawPolls();
   });
@@ -1389,8 +1408,10 @@ function rawFilter() {
     cutoff = d.toISOString().slice(0, 10);
   }
   return RAW_POLLS.filter(p => {
-    // Hard pin: when set via filterToRace(), match race_id exactly.
+    // Hard pins (mutually exclusive). Exact-match — no haystack fuzzing
+    // that would let "WA" hit a pollster name or a candidate surname.
     if (rawPinnedRaceId && p.race_id !== rawPinnedRaceId) return false;
+    if (rawPinnedStateAbbrev && p.state_abbrev !== rawPinnedStateAbbrev) return false;
     if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
     if (rawStage !== 'ALL' && p.stage !== rawStage) return false;
     if (cutoff && (!p.end_date_iso || p.end_date_iso < cutoff)) return false;
@@ -1470,10 +1491,11 @@ function renderRawPolls() {
 
 document.getElementById('raw-search').addEventListener('input', e => {
   rawSearch = e.target.value;
-  // Typing in the search box clears any pinned race_id so the user can
+  // Typing in the search box clears any pinned filter so the user can
   // go back to free-text search without first hitting "show all polls".
-  if (rawPinnedRaceId) {
+  if (rawPinnedRaceId || rawPinnedStateAbbrev) {
     rawPinnedRaceId = null;
+    rawPinnedStateAbbrev = null;
     const b = document.getElementById('raw-pinned-banner');
     if (b) b.remove();
   }
@@ -1606,22 +1628,7 @@ function renderPrimaries() {
   tbody.querySelectorAll('.primaries-polls-link').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
-      const ab = a.dataset.stateAbbrev;
-      const name = a.dataset.stateName;
-      // Use the free-text Raw Polls search (rawSearch) — the haystack
-      // includes state + state_abbrev so the state name finds everything.
-      rawPinnedRaceId = null;  // clear any prior pin
-      rawSearch = ab;
-      const input = document.getElementById('raw-search');
-      if (input) input.value = ab;
-      rawOffice = 'ALL';
-      rawSinceDays = 0;
-      const offSel = document.getElementById('raw-office');
-      if (offSel) offSel.value = 'ALL';
-      const sinceSel = document.getElementById('raw-since');
-      if (sinceSel) sinceSel.value = '0';
-      activateTab('raw');
-      renderRawPolls();
+      filterToState(a.dataset.stateAbbrev, a.dataset.stateName);
     });
   });
 }
