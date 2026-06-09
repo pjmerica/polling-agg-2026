@@ -93,6 +93,30 @@ RUNOFF_STATES = {
     "NC": "majority-runoff",
 }
 
+# Electoral system used at the FEDERAL primary stage. Independent of the
+# closed/open/jungle partisan structure — this axis describes the
+# vote-counting METHOD itself.
+#   FPTP   — plurality wins, one round
+#   Runoff — top-1 must hit >50%, else top-2 runoff round (or top-two
+#            jungle systems that proceed to a head-to-head general)
+#   RCV    — ranked-choice ballots
+ELECTORAL_SYSTEM = {
+    "AK": "RCV",          # top-4 nonpartisan + RCV general
+    "AL": "Runoff",
+    "AR": "Runoff",
+    "CA": "Runoff",       # top-two jungle (one head-to-head round)
+    "GA": "Runoff",
+    "LA": "Runoff",       # top-two jungle
+    "MS": "Runoff",
+    "NC": "Runoff",
+    "OK": "Runoff",
+    "SC": "Runoff",
+    "TX": "Runoff",
+    "WA": "Runoff",       # top-two jungle
+    # Maine uses RCV for federal *general* but not primaries — primary is FPTP.
+    # All other states: plurality wins the primary.
+}
+
 RETRY_CODES = {403, 408, 429, 500, 502, 503, 504}
 
 
@@ -275,6 +299,9 @@ def parse_primary_types(html):
                 "closed" if detail == "majority-runoff" else "open"
             )
             out[ab] = {"type": kind, "type_detail": detail}
+    # Tag every state with its electoral system (FPTP / Runoff / RCV).
+    for ab, info in out.items():
+        info["electoral_system"] = ELECTORAL_SYSTEM.get(ab, "FPTP")
     return out
 
 
@@ -301,11 +328,12 @@ def run():
             "changed. Aborting so the dashboard keeps the last good data."
         )
 
-    # Annotate each race with its state's primary type
+    # Annotate each race with its state's primary type + electoral system
     for r in races:
         t = types.get(r["state_abbrev"], {})
         r["primary_type"] = t.get("type")
         r["primary_type_detail"] = t.get("type_detail")
+        r["electoral_system"] = t.get("electoral_system", "FPTP")
 
     data = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),

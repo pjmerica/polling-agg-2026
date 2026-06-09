@@ -592,6 +592,14 @@ tr:hover td { background: #1a2035; }
             <option value="top-four-rcv">Top-4 + RCV (AK)</option>
           </select>
         </label>
+        <label style="font-size:0.78rem;color:#94a3b8">Voting method
+          <select id="primaries-system-filter" style="margin-left:6px">
+            <option value="ALL">All methods</option>
+            <option value="FPTP">FPTP (plurality)</option>
+            <option value="Runoff">Runoff / top-two</option>
+            <option value="RCV">RCV (ranked-choice)</option>
+          </select>
+        </label>
       </div>
     </div>
   </div>
@@ -602,6 +610,7 @@ tr:hover td { background: #1a2035; }
           <th>Date</th>
           <th>State</th>
           <th>Primary type</th>
+          <th>Method</th>
           <th>Description</th>
           <th>Polls</th>
           <th>Reference</th>
@@ -1457,7 +1466,10 @@ renderRawPolls();
 // ════════════════════════════════════════════════
 // PRIMARIES TAB
 // ════════════════════════════════════════════════
-let primariesFilter = 'upcoming', primariesType = 'ALL';
+let primariesFilter = 'upcoming', primariesType = 'ALL', primariesSystem = 'ALL';
+
+const SYS_COLOR = { 'FPTP': '#94a3b8', 'Runoff': '#f59e0b', 'RCV': '#60a5fa' };
+const SYS_LABEL = { 'FPTP': 'FPTP', 'Runoff': 'Runoff', 'RCV': 'RCV' };
 
 const TYPE_LABEL = {
   'closed': 'Closed', 'open': 'Open', 'semi-closed': 'Semi-closed', 'semi-open': 'Semi-open',
@@ -1476,6 +1488,7 @@ function renderPrimaries() {
   if (primariesFilter === 'upcoming') rows = rows.filter(r => r.date_iso >= today);
   else if (primariesFilter === 'past') rows = rows.filter(r => r.date_iso < today);
   if (primariesType !== 'ALL') rows = rows.filter(r => r.primary_type_detail === primariesType);
+  if (primariesSystem !== 'ALL') rows = rows.filter(r => r.electoral_system === primariesSystem);
 
   const upd = document.getElementById('primaries-updated');
   if (upd && PRIMARIES.fetched_at) {
@@ -1497,6 +1510,10 @@ function renderPrimaries() {
     const label = TYPE_LABEL[detail] || detail;
     const typePill = `<span style="background:${color}22;color:${color};border:1px solid ${color}55;border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600">${label}</span>`;
 
+    const sys = r.electoral_system || 'FPTP';
+    const sysColor = SYS_COLOR[sys] || '#64748b';
+    const sysPill = `<span style="background:${sysColor}22;color:${sysColor};border:1px solid ${sysColor}55;border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600">${SYS_LABEL[sys] || sys}</span>`;
+
     // Polls link: matches polls for the state. For statewide primaries we
     // can't pin a specific race_id (there are many that day), so we open
     // the Raw Polls tab and free-text search the state name.
@@ -1506,11 +1523,12 @@ function renderPrimaries() {
       <td style="white-space:nowrap;color:#cbd5e1">${fmtDate(r.date_iso)}</td>
       <td><strong>${r.state_abbrev}</strong> <span style="color:#64748b;font-size:0.76rem">${r.state}</span></td>
       <td>${typePill}</td>
+      <td>${sysPill}</td>
       <td style="color:#e2e8f0;font-size:0.82rem">${r.description}</td>
       <td>${pollsBtn}</td>
       <td><a href="${r.ballotpedia_url}" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:none;font-size:0.78rem">Ballotpedia ↗</a></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="6" style="text-align:center;color:#4a5568;padding:30px">No primaries match the current filters.</td></tr>`;
+  }).join('') || `<tr><td colspan="7" style="text-align:center;color:#4a5568;padding:30px">No primaries match the current filters.</td></tr>`;
 
   tbody.querySelectorAll('.primaries-polls-link').forEach(a => {
     a.addEventListener('click', e => {
@@ -1537,6 +1555,7 @@ function renderPrimaries() {
 
 document.getElementById('primaries-filter').addEventListener('change', e => { primariesFilter = e.target.value; renderPrimaries(); });
 document.getElementById('primaries-type-filter').addEventListener('change', e => { primariesType = e.target.value; renderPrimaries(); });
+document.getElementById('primaries-system-filter').addEventListener('change', e => { primariesSystem = e.target.value; renderPrimaries(); });
 renderPrimaries();
 </script>
 </body>
