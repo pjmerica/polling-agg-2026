@@ -614,6 +614,7 @@ tr:hover td { background: #1a2035; }
           <th>Primary type</th>
           <th>Method</th>
           <th>Races on ballot</th>
+          <th title="Runoff date if no candidate clears the state's threshold. Top-two jungle states resolve in the November general.">Runoff if needed</th>
           <th>Description</th>
           <th>Polls</th>
           <th>Reference</th>
@@ -1608,6 +1609,19 @@ function renderPrimaries() {
 
     const racesCell = racesOnBallotHtml(r.state_abbrev);
 
+    // Runoff date if one would apply. Top-two jungle states (CA/WA) flag
+    // November 3 — same as the general — so we label it as such rather
+    // than as a discrete runoff event.
+    let runoffCell = '<span style="color:#4a5568;font-size:0.78rem">—</span>';
+    if (r.runoff_date_iso) {
+      const sameAsGeneral = (r.runoff_date_iso === '2026-11-03'
+        && (r.state_abbrev === 'CA' || r.state_abbrev === 'WA' || r.state_abbrev === 'AK'));
+      const tip = sameAsGeneral
+        ? 'Top-two jungle: head-to-head resolved in the November general.'
+        : `Runoff if no candidate clears the state threshold (${r.state_abbrev} statute).`;
+      runoffCell = `<span title="${tip.replace(/"/g,'&quot;')}" style="color:${sameAsGeneral?'#94a3b8':'#f59e0b'};font-size:0.78rem;cursor:help">${fmtDate(r.runoff_date_iso)}${sameAsGeneral?' <span style="color:#4a5568">(general)</span>':''}</span>`;
+    }
+
     // Polls link: matches polls for the state. For statewide primaries we
     // can't pin a specific race_id (there are many that day), so we open
     // the Raw Polls tab and free-text search the state name.
@@ -1619,11 +1633,12 @@ function renderPrimaries() {
       <td>${typePill}</td>
       <td>${sysPill}</td>
       <td>${racesCell}</td>
+      <td style="white-space:nowrap">${runoffCell}</td>
       <td style="color:#e2e8f0;font-size:0.82rem">${r.description}</td>
       <td>${pollsBtn}</td>
       <td><a href="${r.ballotpedia_url}" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:none;font-size:0.78rem">Ballotpedia ↗</a></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="8" style="text-align:center;color:#4a5568;padding:30px">No primaries match the current filters.</td></tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;color:#4a5568;padding:30px">No primaries match the current filters.</td></tr>`;
 
   tbody.querySelectorAll('.primaries-polls-link').forEach(a => {
     a.addEventListener('click', e => {

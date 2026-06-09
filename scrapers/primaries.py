@@ -41,7 +41,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from html import unescape
 from pathlib import Path
 
@@ -116,6 +116,62 @@ ELECTORAL_SYSTEM = {
     # Maine uses RCV for federal *general* but not primaries — primary is FPTP.
     # All other states: plurality wins the primary.
 }
+
+# Statutory offset (in DAYS) from a state's federal primary to its
+# runoff election, IF no candidate wins outright. Sources: each state's
+# election code, cross-checked with Ballotpedia per-cycle tables.
+#
+# States not in this map either don't have a runoff (FPTP plurality),
+# don't have a fixed offset (LA's "primary" is the November general; its
+# runoff is a December date set by law for that cycle), or use RCV (AK).
+RUNOFF_OFFSET_DAYS = {
+    "AL": 28,    # 4 weeks
+    "AR": 28,    # 4 weeks (changed from 5 weeks per Act 1101 of 2019)
+    "GA": 63,    # 9 weeks for federal runoffs (per SB 202, 2021)
+    "MS": 21,    # 3 weeks
+    "NC": 70,    # 10 weeks (only if no candidate >30%)
+    "OK": 70,    # late August, roughly 10 weeks after June primary
+    "SC": 14,    # 2 weeks
+    "TX": 63,    # 9 weeks
+}
+
+# States with a runoff but a fixed calendar date (not offset-based).
+# For 2026 only. LA primary is the November general; runoff date is set
+# by law. CA/WA's "runoff" is the November general — same date as the
+# general for everyone, so we don't list those here.
+RUNOFF_FIXED_DATE_2026 = {
+    "LA": "2026-12-05",  # Louisiana general runoff is first Saturday in December
+}
+
+# Note for CA/WA/AK: their "runoff" isn't a separate event — it's the
+# November general (CA/WA top-two jungle) or the November RCV count (AK).
+TOP_TWO_GENERAL_2026 = "2026-11-03"
+
+
+def compute_runoff_date(state_abbrev, primary_date_iso, description):
+    """Return ISO date for the runoff if applicable, else None.
+    A "runoff" only applies to primary contests — runoff or special-runoff
+    rows themselves should not generate a further runoff date.
+    """
+    if not primary_date_iso:
+        return None
+    desc_lower = (description or "").lower()
+    # Already a runoff row? Don't chain another runoff off it.
+    if "runoff" in desc_lower:
+        return None
+    if state_abbrev in RUNOFF_FIXED_DATE_2026:
+        return RUNOFF_FIXED_DATE_2026[state_abbrev]
+    if state_abbrev in ("CA", "WA"):
+        # Top-two jungle: the "runoff" is the general election.
+        return TOP_TWO_GENERAL_2026
+    offset = RUNOFF_OFFSET_DAYS.get(state_abbrev)
+    if not offset:
+        return None
+    try:
+        d = date.fromisoformat(primary_date_iso) + timedelta(days=offset)
+        return d.isoformat()
+    except ValueError:
+        return None
 
 RETRY_CODES = {403, 408, 429, 500, 502, 503, 504}
 
@@ -328,12 +384,16 @@ def run():
             "changed. Aborting so the dashboard keeps the last good data."
         )
 
-    # Annotate each race with its state's primary type + electoral system
+    # Annotate each race with its state's primary type + electoral system,
+    # plus the runoff date if one would apply.
     for r in races:
         t = types.get(r["state_abbrev"], {})
         r["primary_type"] = t.get("type")
         r["primary_type_detail"] = t.get("type_detail")
         r["electoral_system"] = t.get("electoral_system", "FPTP")
+        r["runoff_date_iso"] = compute_runoff_date(
+            r["state_abbrev"], r["date_iso"], r["description"]
+        )
 
     data = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
