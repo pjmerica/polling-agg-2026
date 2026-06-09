@@ -9,6 +9,7 @@
 <script src="polls_data.js"></script>
 <script src="mismatch_data.js"></script>
 <script src="arb_data.js"></script>
+<script src="primaries_data.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
@@ -221,6 +222,7 @@ tr:hover td { background: #1a2035; }
     <button class="tab-btn" data-tab="raw">Raw Polls</button>
     <button class="tab-btn" data-tab="mismatch">Polling vs Markets</button>
     <button class="tab-btn" data-tab="arb">Arb Scanner</button>
+    <button class="tab-btn" data-tab="primaries">Primaries</button>
   </div>
 </header>
 
@@ -558,6 +560,58 @@ tr:hover td { background: #1a2035; }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════
+     TAB: PRIMARIES (2026 calendar from Ballotpedia)
+     ══════════════════════════════════════════════ -->
+<div id="tab-primaries" class="tab-panel">
+  <div style="padding:14px 28px 6px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="font-size:1.1rem;margin:0 0 4px;color:#e2e8f0">2026 Primaries</h2>
+        <div style="font-size:0.78rem;color:#64748b">
+          Source: <a href="https://ballotpedia.org/Election_calendar" target="_blank" rel="noopener" style="color:#60a5fa">Ballotpedia</a>
+          · <span id="primaries-updated"></span>
+        </div>
+      </div>
+      <div class="filter-group" style="display:flex;gap:10px">
+        <label style="font-size:0.78rem;color:#94a3b8">Filter
+          <select id="primaries-filter" style="margin-left:6px">
+            <option value="upcoming">Upcoming only</option>
+            <option value="all">All 2026 primaries</option>
+            <option value="past">Already happened</option>
+          </select>
+        </label>
+        <label style="font-size:0.78rem;color:#94a3b8">Type
+          <select id="primaries-type-filter" style="margin-left:6px">
+            <option value="ALL">All types</option>
+            <option value="closed">Closed</option>
+            <option value="open">Open</option>
+            <option value="semi-closed">Semi-closed</option>
+            <option value="top-two">Top-two (jungle)</option>
+            <option value="majority-runoff">Majority runoff</option>
+            <option value="top-four-rcv">Top-4 + RCV (AK)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 28px 40px">
+    <table class="raw-table" id="primaries-table" style="width:100%">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>State</th>
+          <th>Primary type</th>
+          <th>Description</th>
+          <th>Polls</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody id="primaries-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
 <script>
 // ════════════════════════════════════════════════
 // SHARED HELPERS
@@ -602,11 +656,17 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 // Click any cell with data-race-id (in any table) to filter Raw Polls
 // to just that race and switch tabs. Delegated so it works after re-renders.
+//
+// rawPinnedRaceId: when set, rawFilter() shows ONLY polls with this race_id
+// (no text-search needed). Cleared when the user types in the search box.
+let rawPinnedRaceId = null;
+
 function filterToRace(raceId) {
   if (!raceId) return;
-  rawSearch = raceId;
+  rawPinnedRaceId = raceId;
+  rawSearch = '';
   const input = document.getElementById('raw-search');
-  if (input) input.value = raceId;
+  if (input) input.value = '';
   // Don't constrain by office or recency window when jumping in via click —
   // the user wants ALL polls for the race they clicked.
   rawOffice = 'ALL';
@@ -615,8 +675,28 @@ function filterToRace(raceId) {
   if (offSel) offSel.value = 'ALL';
   const sinceSel = document.getElementById('raw-since');
   if (sinceSel) sinceSel.value = '0';
+  // Surface what we're pinned to so the user knows why filters look "off".
+  showPinnedBanner(raceId);
   activateTab('raw');
   renderRawPolls();
+}
+
+function showPinnedBanner(raceId) {
+  let b = document.getElementById('raw-pinned-banner');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'raw-pinned-banner';
+    b.style.cssText = 'padding:8px 14px;margin:0 0 10px;background:rgba(96,165,250,0.10);border:1px solid #4f6ef7;border-radius:6px;color:#cbd5e1;font-size:0.82rem';
+    const host = document.getElementById('raw-count') || document.querySelector('#tab-raw');
+    if (host) host.parentNode.insertBefore(b, host);
+  }
+  b.innerHTML = `Showing only polls for <strong>${raceId}</strong> · <a href="#" id="raw-clear-pin" style="color:#60a5fa;text-decoration:none">show all polls</a>`;
+  document.getElementById('raw-clear-pin').addEventListener('click', e => {
+    e.preventDefault();
+    rawPinnedRaceId = null;
+    b.remove();
+    renderRawPolls();
+  });
 }
 document.addEventListener('click', e => {
   const cell = e.target.closest('[data-race-id]');
@@ -1270,6 +1350,8 @@ function rawFilter() {
     cutoff = d.toISOString().slice(0, 10);
   }
   return RAW_POLLS.filter(p => {
+    // Hard pin: when set via filterToRace(), match race_id exactly.
+    if (rawPinnedRaceId && p.race_id !== rawPinnedRaceId) return false;
     if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
     if (rawStage !== 'ALL' && p.stage !== rawStage) return false;
     if (cutoff && (!p.end_date_iso || p.end_date_iso < cutoff)) return false;
@@ -1347,7 +1429,17 @@ function renderRawPolls() {
   });
 }
 
-document.getElementById('raw-search').addEventListener('input', e => { rawSearch = e.target.value; renderRawPolls(); });
+document.getElementById('raw-search').addEventListener('input', e => {
+  rawSearch = e.target.value;
+  // Typing in the search box clears any pinned race_id so the user can
+  // go back to free-text search without first hitting "show all polls".
+  if (rawPinnedRaceId) {
+    rawPinnedRaceId = null;
+    const b = document.getElementById('raw-pinned-banner');
+    if (b) b.remove();
+  }
+  renderRawPolls();
+});
 document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
 document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
 document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });
@@ -1361,6 +1453,91 @@ if (POLLS.length > 0) { activeRaceId = POLLS[0].race_id; renderSidebar(); render
 renderMismatch();
 renderArbTable();
 renderRawPolls();
+
+// ════════════════════════════════════════════════
+// PRIMARIES TAB
+// ════════════════════════════════════════════════
+let primariesFilter = 'upcoming', primariesType = 'ALL';
+
+const TYPE_LABEL = {
+  'closed': 'Closed', 'open': 'Open', 'semi-closed': 'Semi-closed', 'semi-open': 'Semi-open',
+  'top-two': 'Top-two (jungle)', 'majority-runoff': 'Majority runoff',
+  'top-four-rcv': 'Top-4 + RCV',
+};
+const TYPE_COLOR = {
+  'closed': '#fbbf24', 'open': '#34d399', 'semi-closed': '#facc15', 'semi-open': '#a3e635',
+  'top-two': '#a78bfa', 'majority-runoff': '#f87171', 'top-four-rcv': '#60a5fa',
+};
+
+function renderPrimaries() {
+  if (typeof PRIMARIES === 'undefined' || !PRIMARIES.races) return;
+  const today = new Date().toISOString().slice(0, 10);
+  let rows = PRIMARIES.races.slice();
+  if (primariesFilter === 'upcoming') rows = rows.filter(r => r.date_iso >= today);
+  else if (primariesFilter === 'past') rows = rows.filter(r => r.date_iso < today);
+  if (primariesType !== 'ALL') rows = rows.filter(r => r.primary_type_detail === primariesType);
+
+  const upd = document.getElementById('primaries-updated');
+  if (upd && PRIMARIES.fetched_at) {
+    const d = new Date(PRIMARIES.fetched_at);
+    upd.textContent = `${rows.length} primaries · scraped ${d.toLocaleDateString()}`;
+  }
+
+  const fmtDate = iso => {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+  // Build "polls available" cell. We deep-link to the Raw Polls tab pinned
+  // to a race_id if the user picks one of the federal/gov races for that
+  // state. Otherwise we offer a state-level search.
+  const tbody = document.getElementById('primaries-tbody');
+  tbody.innerHTML = rows.map(r => {
+    const detail = r.primary_type_detail || '—';
+    const color = TYPE_COLOR[detail] || '#64748b';
+    const label = TYPE_LABEL[detail] || detail;
+    const typePill = `<span style="background:${color}22;color:${color};border:1px solid ${color}55;border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600">${label}</span>`;
+
+    // Polls link: matches polls for the state. For statewide primaries we
+    // can't pin a specific race_id (there are many that day), so we open
+    // the Raw Polls tab and free-text search the state name.
+    const pollsBtn = `<a href="#" class="primaries-polls-link" data-state-abbrev="${r.state_abbrev}" data-state-name="${r.state}" style="color:#60a5fa;text-decoration:none;font-size:0.78rem">View polls →</a>`;
+
+    return `<tr>
+      <td style="white-space:nowrap;color:#cbd5e1">${fmtDate(r.date_iso)}</td>
+      <td><strong>${r.state_abbrev}</strong> <span style="color:#64748b;font-size:0.76rem">${r.state}</span></td>
+      <td>${typePill}</td>
+      <td style="color:#e2e8f0;font-size:0.82rem">${r.description}</td>
+      <td>${pollsBtn}</td>
+      <td><a href="${r.ballotpedia_url}" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:none;font-size:0.78rem">Ballotpedia ↗</a></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" style="text-align:center;color:#4a5568;padding:30px">No primaries match the current filters.</td></tr>`;
+
+  tbody.querySelectorAll('.primaries-polls-link').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const ab = a.dataset.stateAbbrev;
+      const name = a.dataset.stateName;
+      // Use the free-text Raw Polls search (rawSearch) — the haystack
+      // includes state + state_abbrev so the state name finds everything.
+      rawPinnedRaceId = null;  // clear any prior pin
+      rawSearch = ab;
+      const input = document.getElementById('raw-search');
+      if (input) input.value = ab;
+      rawOffice = 'ALL';
+      rawSinceDays = 0;
+      const offSel = document.getElementById('raw-office');
+      if (offSel) offSel.value = 'ALL';
+      const sinceSel = document.getElementById('raw-since');
+      if (sinceSel) sinceSel.value = '0';
+      activateTab('raw');
+      renderRawPolls();
+    });
+  });
+}
+
+document.getElementById('primaries-filter').addEventListener('change', e => { primariesFilter = e.target.value; renderPrimaries(); });
+document.getElementById('primaries-type-filter').addEventListener('change', e => { primariesType = e.target.value; renderPrimaries(); });
+renderPrimaries();
 </script>
 </body>
 </html>

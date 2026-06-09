@@ -11,6 +11,7 @@ steps = [
     ("PredictIt scraper",    [sys.executable, "scrapers/predictit.py"]),
     ("NYT polls scraper",    [sys.executable, "scrapers/nytimes.py"]),
     ("House incumbents",     [sys.executable, "scrapers/house_incumbents.py"]),
+    ("Ballotpedia primaries",[sys.executable, "scrapers/primaries.py"]),
     ("Regen aggregated data",[sys.executable, "scripts/regen_data.py"]),
     ("Arb scanner (pass 1)", [sys.executable, "scripts/arb_scanner.py"]),
     ("Fetch orderbook depth",[sys.executable, "scripts/fetch_depth.py"]),
