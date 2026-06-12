@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-11T03:49:58.217204+00:00",
+  "fetched_at": "2026-06-12T03:47:56.800745+00:00",
   "members": [
     {
       "race_id": "2026-H-AK-01",
@@ -174,6 +174,14 @@
       "incumbent_name": "Paul A. Gosar",
       "incumbent_party": "R",
       "bioguide_id": "G000565",
+      "open_seat": false,
+      "open_reason": ""
+    },
+    {
+      "race_id": "2026-H-CA-01",
+      "incumbent_name": "James Gallagher",
+      "incumbent_party": "R",
+      "bioguide_id": "G000607",
       "open_seat": false,
       "open_reason": ""
     },
