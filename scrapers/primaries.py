@@ -379,9 +379,20 @@ def run():
     print(f"  found {len(races)} primary/runoff rows")
 
     if not races:
+        # Ballotpedia's calendar rolls past dates off as the year progresses,
+        # so by late summer most state primaries are gone and only specials/
+        # runoffs remain — those don't match our "statewide primary" filter.
+        # That's not a fetch failure, so don't kill the whole daily refresh.
+        # If a prior docs/primaries_data.js exists, leave it in place and
+        # exit 0 so downstream steps continue. Only fail if there's no
+        # prior data at all (first-ever run with no rows).
+        docs_path = Path(__file__).parent.parent / "docs" / "primaries_data.js"
+        if docs_path.exists() and docs_path.stat().st_size > 100:
+            print(f"  No matching rows today — keeping existing {docs_path.name}.")
+            return
         raise SystemExit(
-            "Ballotpedia returned no primary rows. Page structure may have "
-            "changed. Aborting so the dashboard keeps the last good data."
+            "Ballotpedia returned no primary rows AND no prior data to keep. "
+            "Page structure may have changed."
         )
 
     # Annotate each race with its state's primary type + electoral system,
