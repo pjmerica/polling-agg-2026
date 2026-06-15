@@ -36,7 +36,17 @@ from datetime import datetime, timezone
 
 RAW_DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
 KALSHI_BASE = "https://api.elections.kalshi.com/trade-api/v2"
-HEADERS = {"User-Agent": "Mozilla/5.0 (research/polling-aggregator)", "Accept": "application/json"}
+# Real browser UA. Kalshi's WAF started rejecting "Mozilla/5.0 (research/...)"
+# with 403 in mid-June 2026 — apparently flagging the identifying string.
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/126.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json,text/html;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 # Keywords to identify 2026 election series (filter against 1800+ Politics series)
 ELECTION_KEYWORDS = [
@@ -66,26 +76,29 @@ STATE_ABBREV_MAP = {
 
 RETRY_CODES = {403, 408, 429, 500, 502, 503, 504}
 
-def _get(path: str, params: dict = None, max_retries: int = 4) -> dict:
+def _get(path: str, params: dict = None, max_retries: int = 6) -> dict:
     url = f"{KALSHI_BASE}{path}"
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{url}?{qs}"
+    # Backoff schedule: 5, 10, 20, 40, 60, 60s. Kalshi's WAF sometimes
+    # blocks for 30-60s after a burst of 403s; shorter backoffs blew
+    # through the budget without ever waiting long enough to clear.
     for attempt in range(max_retries):
         req = urllib.request.Request(url, headers=HEADERS)
         try:
-            with urllib.request.urlopen(req, timeout=20) as r:
+            with urllib.request.urlopen(req, timeout=30) as r:
                 return json.loads(r.read())
         except urllib.error.HTTPError as e:
             if e.code in RETRY_CODES and attempt < max_retries - 1:
-                wait = 2 ** (attempt + 1)  # 2s, 4s, 8s, 16s
+                wait = min(60, 5 * (2 ** attempt))
                 print(f"  Kalshi HTTP {e.code} on {path}, retry {attempt+1}/{max_retries-1} in {wait}s...")
                 time.sleep(wait)
                 continue
             raise
         except urllib.error.URLError as e:
             if attempt < max_retries - 1:
-                wait = 2 ** (attempt + 1)
+                wait = min(60, 5 * (2 ** attempt))
                 print(f"  Kalshi network error on {path}: {e}, retry {attempt+1}/{max_retries-1} in {wait}s...")
                 time.sleep(wait)
                 continue
