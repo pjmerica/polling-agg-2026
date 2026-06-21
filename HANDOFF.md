@@ -96,12 +96,13 @@ This is the most complex part of the project and where most bugs hide.
 
 ### Pair construction (`scripts/arb_scanner.py`)
 
-Two parallel matching paths:
+Three parallel matching paths. Each emits rows with a different
+`match_type` so the dashboard can present them distinctly:
 
-**General-election path.** Joins Kalshi/PredictIt/Polymarket on canonical
-`race_id` (e.g. `2026-SEN-PA`). For each race, picks the highest-volume
-"Will Dems win X?" / "Will Reps win X?" market per platform, then crosses
-them. Computes:
+**1. General-election party path** (`match_type: "general"`). Joins
+Kalshi/PredictIt/Polymarket on canonical `race_id` (e.g. `2026-SEN-PA`).
+For each race, picks the highest-volume "Will Dems win X?" / "Will Reps
+win X?" market per platform, then crosses them. Computes:
 
 - `raw_gap_pp` — abs difference in implied Dem-win probability.
 - `net_gap_pp` — raw gap minus both platforms' fees.
@@ -111,12 +112,39 @@ them. Computes:
 - Stake sizing for guaranteed arbs (in `compute_arb_math` /
   `make_pair`).
 
-**Primary-candidate path.** Matches on `(state, office, district, party,
-candidate_last, candidate_first)` parsed from market titles —
-independent of `race_id`. Catches "Will Zach Wahls be the Democratic
-nominee for Senate in Iowa?" priced differently across platforms.
-First-initial disambiguation is essential (Chris Sununu vs John E.
-Sununu collapsed without it).
+Both Kalshi and Polymarket loaders inner-join Dem and Rep; only races
+with both sides explicitly priced reach the scanner. See the "Do not"
+list for why inferring a missing side from `1 - other_side` was ripped
+out.
+
+**2. General-election candidate path** (`match_type: "general_candidate"`,
+added 2026-06-18 — `load_general_candidates` + `general_candidate_pairs`).
+Catches per-candidate general markets like "Will Dan Sullivan win the
+2026 Alaska Senate race?" priced across Kalshi / Polymarket / PredictIt.
+Matching key is `(state, office, district, candidate_last,
+candidate_first)` — no party in the key because general-election
+candidate names are unambiguous (the surname carries identity).
+
+These rows are emitted as `arb_type: "one-sided"` even when the gap is
+large. Reason: the template gives you `P(candidate wins)` on each
+platform, but neither Kalshi nor Polymarket lists `P(candidate loses)`
+as a separately tradeable contract under this template. A real arb
+would need the no-leg or a competing-candidate-yes leg on the
+expensive side, which the scanner doesn't try to construct.
+
+`_GEN_CAND_EXCLUDE` and `_GEN_CAND_SUBJECT_SKIP` regexes drop noise
+templates ("Will X win Harris County?", "Will X finish 3rd?", "Will X
+endorse Y in the runoff?", "Will an independent win X?", "Will the
+Mike Duggan party win the governorship?"). Lt. Governor markets are
+also dropped because `_extract_state_office` only maps SEN/GOV/H.
+
+**3. Primary-candidate path** (`match_type: "primary_candidate"`,
+`load_primary_candidates` + `primary_pairs`). Matches on `(state,
+office, district, party, candidate_last, candidate_first)` parsed from
+market titles — independent of `race_id`. Catches "Will Zach Wahls be
+the Democratic nominee for Senate in Iowa?" priced differently across
+platforms. First-initial disambiguation is essential (Chris Sununu vs
+John E. Sununu collapsed without it).
 
 ### Suspicion + scrutiny pipeline
 
@@ -150,16 +178,26 @@ in order:
 
 ### Fees (round-trip)
 
-`scripts/arb_scanner.py` top:
+`scripts/arb_scanner.py` top (the `FEES` dict is the single source of
+truth — `compute_arb_math`, `make_pair`, `general_candidate_pairs`,
+and `primary_pairs` all read from it, and the dict is also exported
+into `docs/arb_data.js` so the frontend pulls the same numbers):
 
 | Platform | Fee |
 |---|---|
-| Kalshi | 3% |
-| Polymarket | 3% |
+| Kalshi | 2% |
+| Polymarket | 2% |
 | PredictIt | 12% |
 
-Conservative — Kalshi's actual taker fee is 1% each way but real fills
-include slippage.
+Bumped down from 3% / 3% on 2026-06-18 — Kalshi and Polymarket both
+cap around 1% each way in practice (Kalshi taker, Polymarket gas + fee).
+The 2% number is still conservative but stops burying real arbs under
+fake-fee math. PredictIt stays at 12% (5% on profits + 5% on
+withdrawals, applied per-leg).
+
+When changing this number: update the `FEES` dict, the dashboard
+explainer text in `docs/index.html` (search "Net gap subtracts"), and
+note the rationale in this file. Don't hard-code fees anywhere else.
 
 ---
 
@@ -358,6 +396,17 @@ docs/                  GitHub Pages site. Tracked.
 ## Recent work (post-2026-05-15)
 
 In rough order:
+- **General-election candidate matching path (2026-06-18)**: new
+  `match_type: general_candidate`. Joins per-candidate general-election
+  markets ("Will Dan Sullivan win the 2026 Alaska Senate race?")
+  across Kalshi / Polymarket / PredictIt on `(state, office, district,
+  last, first_initial)`. Emits one-sided rows (no Dem-yes vs Rep-yes
+  complement available). Initial run: 12 new pairs across AK Senate,
+  AK Governor, CA Governor. See "Pair construction" for the exclusion
+  regexes that drop noise templates.
+- **Lowered Kalshi / Polymarket fees from 3% to 2% (2026-06-18)**:
+  reflects actual fee caps better. Surfaced 6 guaranteed arbs vs 0
+  under the old rate. See the Fees section for change procedure.
 - **Ripped out inferred-complement fallback (2026-06-18)**: both general
   loaders used to fill a missing Dem/Rep side with `1 - other_side` and
   tag the row `*_inferred`. Two bugs piled on: `bool(NaN) is True` in

@@ -46,9 +46,15 @@ def _safe_read_csv(path, **kw):
         return pd.DataFrame()
 
 FEES = {
-    "kalshi":    0.03,
+    # Conservative round-trip fee approximation per platform.
+    # Kalshi taker fee tops out around 1% each way; Polymarket gas + fee
+    # tops out around 1% each way; using 2% per platform leaves a cushion
+    # against slippage without burying real arbs under fake-fee math.
+    # PredictIt charges 5% on profits + 5% on withdrawals = 12% effective
+    # round-trip on profitable trades; left as-is.
+    "kalshi":    0.02,
     "predictit": 0.12,
-    "polymarket": 0.03,
+    "polymarket": 0.02,
 }
 
 # URL templates
@@ -647,6 +653,292 @@ def load_primary_candidates():
     return df
 
 
+# Titles that include any of these phrases are NOT general-election
+# candidate-win markets even if they mention a name + an office. These all
+# come from real Kalshi/Polymarket titles we don't want to pair:
+#   - "Will Ken Paxton win Harris County?"  (county-level)
+#   - "Will X finish 3rd in Texas?"          (placement, not winning)
+#   - "Will X drop out of the Texas Senate race"
+#   - "Will X endorse Y in the runoff"
+#   - "Will X win Lieutenant Governor"       (no Senate/Gov/House mapping)
+_GEN_CAND_EXCLUDE = re.compile(
+    r"\b(county|finish\s+\d|drop\s+out|endorse|lieutenant|runoff\s+before|primary\s+runoff)\b",
+    re.IGNORECASE,
+)
+
+# "Will the Mike Duggan party win the governorship in Michigan" and
+# "Will an independent win the X Senate race" are aggregate party/independent
+# markets, not candidate-win — skip.
+_GEN_CAND_SUBJECT_SKIP = re.compile(
+    r"^(the\s+|an?\s+independent\b)",
+    re.IGNORECASE,
+)
+
+
+def load_general_candidates():
+    """
+    Tidy frame of candidate-level GENERAL-election win markets across
+    Kalshi / Polymarket / PredictIt. Mirrors load_primary_candidates() but
+    targets the "Will <Name> win the 2026 <State> Senate race?" template
+    family instead of the "be the nominee" family.
+
+    The matching key downstream is (state, office, district, last_name,
+    first_initial) — same as primaries, minus party (general-election
+    candidates are unambiguous across parties; the surname carries the
+    identity).
+    """
+    rows = []
+
+    # ── Kalshi ──
+    # Templates seen in production:
+    #   "Will Dan Sullivan win the 2026 Alaska Senate race?"
+    #   "Will Adam Crum win the 2026 Alaska governor election?"
+    #   "Will Mary Peltola win the 2026 Alaska Senate race?"
+    # _extract_state_office handles the "Alaska Senate" / "Alaska governor"
+    # suffix, including the same-surname-as-state guard.
+    k = _safe_read_csv(RAW / "kalshi_markets.csv")
+    if not k.empty and "implied_prob" in k.columns and "market_title" in k.columns:
+        k = k[k["implied_prob"].notna() & k["market_title"].notna()].copy()
+        pat = re.compile(
+            r"^Will\s+(.+?)\s+win\s+the\s+2026\s+(.+?)\??$",
+            re.IGNORECASE,
+        )
+        for _, r in k.iterrows():
+            title = str(r["market_title"])
+            if _GEN_CAND_EXCLUDE.search(title):
+                continue
+            m = pat.match(title.strip())
+            if not m:
+                continue
+            name = m.group(1).strip()
+            tail = m.group(2).strip()
+            if _GEN_CAND_SUBJECT_SKIP.match(name):
+                continue
+            # Tail must reference Senate / governor / House for office mapping.
+            if not re.search(r"\b(senate|senator|governor|gubernatorial|house|congress)\b", tail, re.IGNORECASE):
+                continue
+            state, office, district = _extract_state_office(title)
+            if not state or not office:
+                continue
+            last = _canonical_last_name(name)
+            if not last:
+                continue
+            rows.append({
+                "state": state, "office": office, "district": district,
+                "candidate_last": last,
+                "candidate_first": _first_initial(name),
+                "candidate_name": name,
+                "platform": "kalshi",
+                "prob": float(r["implied_prob"]),
+                "url": kalshi_url(r.get("series_ticker")),
+                "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
+                "oi": pd.to_numeric(r.get("open_interest"), errors="coerce"),
+                "market_id": r.get("market_ticker"),
+                "raw_title": title,
+            })
+
+    # ── Polymarket ──
+    # Templates seen in production:
+    #   "Will Rick Caruso win the California Governor Election in 2026?"
+    #   "Will Dan Sullivan win the Alaska Senate race in 2026?"
+    #   "Will Adam Crum win the 2026 Alaska governor election?"
+    # Two orderings of the year token — match both.
+    pm = _safe_read_csv(RAW / "polymarket_markets.csv", dtype={"yes_token_id": str, "no_token_id": str})
+    if not pm.empty and "implied_prob" in pm.columns:
+        pm = pm[pm["implied_prob"].notna()].copy()
+        pat = re.compile(
+            r"^Will\s+(.+?)\s+win\s+(?:the\s+)?(?:(?:2026\s+)?(.+?)(?:\s+in\s+2026)?)\??$",
+            re.IGNORECASE,
+        )
+        slug_col = "event_slug" if "event_slug" in pm.columns else ("market_slug" if "market_slug" in pm.columns else None)
+        for _, r in pm.iterrows():
+            title = str(r.get("question", ""))
+            if _GEN_CAND_EXCLUDE.search(title):
+                continue
+            m = pat.match(title.strip())
+            if not m:
+                continue
+            name = m.group(1).strip()
+            tail = m.group(2).strip()
+            if _GEN_CAND_SUBJECT_SKIP.match(name):
+                continue
+            # Reject nominee/primary just in case the upstream pre-filter ever
+            # changes shape.
+            if re.search(r"\b(nominee|primary|nominate|advance)\b", title, re.IGNORECASE):
+                continue
+            if not re.search(r"\b(senate|senator|governor|gubernatorial|house|congress)\b", tail, re.IGNORECASE):
+                continue
+            state, office, district = _extract_state_office(title)
+            if not state or not office:
+                continue
+            last = _canonical_last_name(name)
+            if not last:
+                continue
+            slug = r.get(slug_col) if slug_col else None
+            rows.append({
+                "state": state, "office": office, "district": district,
+                "candidate_last": last,
+                "candidate_first": _first_initial(name),
+                "candidate_name": name,
+                "platform": "polymarket",
+                "prob": float(r["implied_prob"]),
+                "url": polymarket_url(slug),
+                "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
+                "oi": pd.to_numeric(r.get("liquidity"), errors="coerce"),
+                "market_id": r.get("yes_token_id"),
+                "raw_title": title,
+            })
+
+    # ── PredictIt ──
+    # market_name templates seen:
+    #   "Who will win the 2026 election for governor of California?"
+    #   "Who will win the 2026 election for U.S. Senate in Iowa?"
+    # contract_name = candidate name. We exclude party-only markets
+    # ("Which party will win the 2026 US Senate election in X?") and
+    # nomination markets.
+    pi = _safe_read_csv(RAW / "predictit_markets.csv")
+    if not pi.empty and "implied_prob" in pi.columns:
+        pi = pi[pi["implied_prob"].notna()].copy()
+        for _, r in pi.iterrows():
+            mn = str(r.get("market_name", ""))
+            cn = str(r.get("contract_name", ""))
+            ml = mn.lower()
+            if "nomination" in ml or "primary" in ml:
+                continue
+            if ml.startswith("which party"):
+                continue
+            if "who will win" not in ml and "who wins" not in ml:
+                continue
+            # Skip catch-all contracts.
+            cn_norm = cn.lower().strip()
+            if cn_norm in ("any other", "any other candidate", "no nominee", "other"):
+                continue
+            state, office, district = _extract_state_office(mn)
+            if not state or not office:
+                continue
+            last = _canonical_last_name(cn)
+            if not last:
+                continue
+            rows.append({
+                "state": state, "office": office, "district": district,
+                "candidate_last": last,
+                "candidate_first": _first_initial(cn),
+                "candidate_name": cn.strip(),
+                "platform": "predictit",
+                "prob": float(r["implied_prob"]),
+                "url": predictit_url(r.get("market_id")),
+                "volume": None, "oi": None,
+                "market_id": None,
+                "raw_title": f"{mn} — {cn}",
+            })
+
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df["race_id"] = df.apply(
+            lambda r: _race_id_from(r["state"], r["office"], r["district"]),
+            axis=1,
+        )
+    return df
+
+
+def general_candidate_pairs(meta_df):
+    """
+    Cross-platform GENERAL-election candidate pairs.
+
+    Matching key: (state, office, district, candidate_last, candidate_first).
+    Same shape as primary_pairs but no party in the key — general-election
+    candidates are uniquely identified by name.
+
+    Emits "one-sided" rows: there's no Dem-yes vs Rep-yes complement to
+    compute a guaranteed-arb basket from. A real arb here would be Buy
+    candidate-yes on the cheap side + Buy candidate-no (or competing
+    candidate) on the expensive side, but Polymarket / Kalshi don't expose
+    candidate-no as a separately tradeable contract in this template — the
+    yes-vs-yes price gap is the actionable signal.
+    """
+    cands = load_general_candidates()
+    if cands.empty:
+        return []
+
+    # Dedup: keep highest-rank market per (race, candidate, platform).
+    cands["_rank"] = cands[["volume", "oi"]].fillna(0).max(axis=1)
+    cands["district"] = cands["district"].fillna("")
+    cands["candidate_first"] = cands["candidate_first"].fillna("")
+    sort_cols = ["state", "office", "district", "candidate_last",
+                 "candidate_first", "platform", "_rank", "prob"]
+    cands = cands.sort_values(sort_cols, ascending=[True, True, True, True, True, True, False, False])
+    dedup_key = ["state", "office", "district", "candidate_last", "candidate_first", "platform"]
+    cands = cands.drop_duplicates(subset=dedup_key)
+
+    meta_map = {r["race_id"]: r for _, r in meta_df.iterrows()} if not meta_df.empty else {}
+
+    out = []
+    key_cols = ["state", "office", "district", "candidate_last", "candidate_first"]
+    for key, grp in cands.groupby(key_cols):
+        if len(grp) < 2:
+            continue
+        platforms = grp.set_index("platform")
+        available = list(platforms.index)
+        for i, pa in enumerate(available):
+            for pb in available[i + 1:]:
+                ra = platforms.loc[pa]
+                rb = platforms.loc[pb]
+                prob_a = float(ra["prob"])
+                prob_b = float(rb["prob"])
+                raw_gap = abs(prob_a - prob_b)
+                net_gap = raw_gap - FEES.get(pa, 0.03) - FEES.get(pb, 0.03)
+                cheaper = pa if prob_a < prob_b else pb
+                expensive = pb if prob_a < prob_b else pa
+                action = (
+                    f"Buy {ra['candidate_name']} on {cheaper.title()} "
+                    f"({min(prob_a, prob_b)*100:.1f}%), fade on "
+                    f"{expensive.title()} ({max(prob_a, prob_b)*100:.1f}%)"
+                )
+                state, office, district = key[0], key[1], key[2] or None
+                rid = _race_id_from(state, office, district or None)
+                meta = meta_map.get(rid, {}) if rid else {}
+                if isinstance(meta, dict):
+                    label = meta.get("label") or (rid or f"{state} {office}")
+                    state_name = meta.get("state", state)
+                else:
+                    label = getattr(meta, "label", None) or (rid or f"{state} {office}")
+                    state_name = getattr(meta, "state", state)
+                out.append({
+                    "match_type": "general_candidate",
+                    "race_id": rid,
+                    "label": label,
+                    "state": state_name,
+                    "office": office,
+                    "candidate": ra["candidate_name"],
+                    "pair": f"{pa}/{pb}",
+                    "platform_a": pa,
+                    "platform_b": pb,
+                    f"{pa}_dem": round(prob_a, 4),
+                    f"{pb}_dem": round(prob_b, 4),
+                    "prob_a": round(prob_a, 4),
+                    "prob_b": round(prob_b, 4),
+                    "raw_gap_pp": round(raw_gap * 100, 2),
+                    "net_gap_pp": round(net_gap * 100, 2),
+                    "profitable": bool(net_gap > 0),
+                    "suspicious": bool(raw_gap * 100 > 20),
+                    "higher_platform": expensive,
+                    "action": action,
+                    "arb_type": "one-sided",
+                    "guaranteed_return_pct": None,
+                    "stake_a_pct": None, "stake_b_pct": None,
+                    "stake_a_dollars": None, "stake_b_dollars": None,
+                    "profit_dollars": None, "stake_note": None,
+                    "url_a": ra.get("url"), "url_b": rb.get("url"),
+                    "volume_a": None if pd.isna(ra.get("volume")) else float(ra.get("volume")),
+                    "volume_b": None if pd.isna(rb.get("volume")) else float(rb.get("volume")),
+                    "market_id_a": ra.get("market_id"),
+                    "market_id_b": rb.get("market_id"),
+                    "question_a": ra.get("raw_title", ""),
+                    "question_b": rb.get("raw_title", ""),
+                })
+    return out
+
+
 def primary_pairs(meta_df):
     """
     Cross-platform primary candidate pairs.
@@ -822,9 +1114,21 @@ def run():
             if row:
                 rows.append(row)
 
-    # Tag general-election pairs, then append primary-candidate pairs.
+    # Tag general-election (party-level) pairs, then append candidate-level
+    # general pairs and primary-candidate pairs.
     for row in rows:
         row.setdefault("match_type", "general")
+
+    gen_cand = general_candidate_pairs(meta)
+    print(f"\nGeneral-election candidate cross-platform pairs: {len(gen_cand)}")
+    if gen_cand:
+        top = sorted(gen_cand, key=lambda r: -r["raw_gap_pp"])[:10]
+        print("Top general-candidate gaps:")
+        for r in top:
+            print(f"  {r['pair']:>22}  {r['candidate']:20} {r['label']:14} "
+                  f"gap={r['raw_gap_pp']:5.1f}pp  "
+                  f"{r['platform_a']}={r['prob_a']*100:5.1f}%  {r['platform_b']}={r['prob_b']*100:5.1f}%")
+    rows.extend(gen_cand)
 
     prim = primary_pairs(meta)
     print(f"\nPrimary candidate cross-platform pairs: {len(prim)}")
