@@ -792,7 +792,7 @@ def run():
                 "volume_a": r.get("kalshi_volume"), "volume_b": None,
                 "market_id_a": r.get("kalshi_dem_ticker"),
                 "market_id_b": None,
-                "a_inferred": bool(r.get("kalshi_dem_inferred")),
+                "a_inferred": r.get("kalshi_dem_inferred") is True,
             },
         )
         if row:
@@ -813,8 +813,8 @@ def run():
                     "volume_a": r.get("kalshi_volume"), "volume_b": r.get("pm_volume"),
                     "market_id_a": r.get("kalshi_dem_ticker"),
                     "market_id_b": r.get("pm_dem_token"),
-                    "a_inferred": bool(r.get("kalshi_dem_inferred")),
-                    "b_inferred": bool(r.get("pm_dem_inferred")),
+                    "a_inferred": r.get("kalshi_dem_inferred") is True,
+                    "b_inferred": r.get("pm_dem_inferred") is True,
                 },
             )
             if row:
@@ -836,7 +836,7 @@ def run():
                     "volume_a": None, "volume_b": r.get("pm_volume"),
                     "market_id_a": None,
                     "market_id_b": r.get("pm_dem_token"),
-                    "b_inferred": bool(r.get("pm_dem_inferred")),
+                    "b_inferred": r.get("pm_dem_inferred") is True,
                 },
             )
             if row:
@@ -930,7 +930,9 @@ def run():
             if (row.get("raw_gap_pp") or 0) > 20:
                 rs.append("wide_gap")
             for side in ("a", "b"):
-                if row.get(f"{side}_inferred"):
+                # Plain truthiness fails here: row.get returns NaN (a float,
+                # which is truthy) for rows where this column wasn't set.
+                if row.get(f"{side}_inferred") is True:
                     rs.append(f"inferred_{side}")
                 bb = row.get(f"depth_{side}_best_bid")
                 ba = row.get(f"depth_{side}_best_ask")
