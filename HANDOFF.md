@@ -1,6 +1,6 @@
 # Handoff — Polling Aggregator & Prediction Markets
 
-**Last updated:** 2026-06-13
+**Last updated:** 2026-06-18
 **Status:** Live dashboard at https://pjmerica.github.io/polling-agg-2026/.
 GitHub Actions runs the full pipeline twice daily (12:00 + 00:00 UTC) and
 pushes refreshed `docs/*.js` back to master. Pages auto-redeploys.
@@ -145,8 +145,8 @@ in order:
    relief while Polymarket accepts any publicly announced agreement).
 5. **Suspicion reasons** — surfaces multiple warning codes
    (`wide_gap`, `wide_spread_a/b`, `one_sided_a/b`, `thin_depth_a/b`,
-   `inferred_a/b`, `criteria_warn`) on the dashboard's `⚠ verify`
-   badge so the user knows WHY a pair is flagged.
+   `criteria_warn`) on the dashboard's `⚠ verify` badge so the user
+   knows WHY a pair is flagged.
 
 ### Fees (round-trip)
 
@@ -227,6 +227,22 @@ docs/                  GitHub Pages site. Tracked.
   (`<<<<<<<`). That broke the Primaries tab once (commit `40ac159`).
   If you're pushing manually during a cron window, rebase and check
   the auto-gen files have no markers.
+
+**Python footguns**
+- **`bool(float('nan')) is True`.** NaN is a non-zero float in Python, so
+  `bool(NaN)` returns True. Anywhere we read an "optional flag" column
+  out of a pandas DataFrame (e.g. a column that's True for some rows
+  and NaN for the rest), `bool(row.get('flag'))` will fire on every
+  NaN row too. Use `row.get('flag') is True` (or `pd.notna(...) and
+  ...`). This bug caused 100% of arb pairs to flag as suspicious in
+  June 2026.
+- **`row.get('col_that_does_not_exist')` on a pandas Series returns
+  `None`, not the default**, even when you pass a default. Worse: if
+  the column EXISTS in the DataFrame but is NaN for this row,
+  `row.get(...)` returns NaN. Combine with the bool-NaN gotcha above
+  and any conditional on Series row data needs an explicit value check.
+- **`pd.read_csv` of a 0-byte file raises `EmptyDataError`.** Always go
+  through `_safe_read_csv`.
 
 **Data shapes**
 - **Polymarket `yes_token_id` / `no_token_id` are 78-digit ints.**
@@ -324,12 +340,37 @@ docs/                  GitHub Pages site. Tracked.
   suspect before staking.
 - **Replace `_safe_read_csv` with bare `pd.read_csv`.** Scraper outages
   will crash the matcher otherwise.
+- **Reintroduce the "inferred-complement" fallback** in
+  `load_kalshi_general` / `load_polymarket_general`. Earlier versions
+  filled a missing Dem (or Rep) side with `1 - other_side` and tagged
+  the row `kalshi_dem_inferred` / `pm_dem_inferred`. The intent was to
+  keep one-sided races on the dashboard. The problem: an inferred price
+  is the *implied no probability*, NOT a fillable yes ask on a real
+  market book. The arb scanner would then surface "guaranteed arbs"
+  against a leg that physically can't be traded — pure noise. The
+  loaders now inner-join Dem and Rep so only races with both sides
+  explicitly priced reach the scanner. If you want to surface
+  one-sided coverage somewhere, do it in the Polling vs Markets tab or
+  a separate "coverage" view — never feed it back into arb math.
 
 ---
 
 ## Recent work (post-2026-05-15)
 
 In rough order:
+- **Ripped out inferred-complement fallback (2026-06-18)**: both general
+  loaders used to fill a missing Dem/Rep side with `1 - other_side` and
+  tag the row `*_inferred`. Two bugs piled on: `bool(NaN) is True` in
+  Python, so the flag fired on every row; and the suspicion `reasons()`
+  function read `row.get('a_inferred')` returning NaN (also truthy) on
+  primary-candidate rows that never set the column. End result: 100% of
+  pairs flagged suspicious. Removed the inference entirely — inferred
+  prices aren't tradeable, so they don't belong in the arb scanner.
+  Both loaders now `inner`-join Dem and Rep. The `a_inferred` /
+  `b_inferred` fields are gone from `make_pair`, the `inferred_a/b`
+  branch is gone from `reasons()`, and the dashboard's `reasonText`
+  map no longer references them. ~11 pairs dropped, 2 fake guaranteed
+  arbs killed. See the "Do not" list for why this stays out.
 - **Scraper resilience pass**: `_safe_read_csv` everywhere, fail-fast on
   empty API responses, 4-attempt retry with exponential backoff on
   transient HTTP errors (403/408/429/5xx + network errors).

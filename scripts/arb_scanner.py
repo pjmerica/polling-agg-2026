@@ -110,21 +110,9 @@ def load_kalshi_general():
     })
 
     merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_volume", "kalshi_series_ticker", "kalshi_dem_ticker"]].merge(
-        rep[["race_id", "kalshi_rep", "kalshi_rep_ticker"]], on="race_id", how="outer"
+        rep[["race_id", "kalshi_rep", "kalshi_rep_ticker"]], on="race_id", how="inner"
     )
     merged["kalshi_url"] = merged["kalshi_series_ticker"].apply(kalshi_url)
-
-    # Same inferred-complement fallback as polymarket: if Kalshi has only
-    # one side priced (e.g. Dem market got broken-book filtered but Rep
-    # survived), fill the other side with 1 - X so the race still pairs.
-    # Inferred values don't satisfy the safe_rep partition check, so
-    # guaranteed-arb math stays gated on both sides being explicit.
-    miss_dem = merged["kalshi_dem"].isna() & merged["kalshi_rep"].notna()
-    merged.loc[miss_dem, "kalshi_dem"] = 1 - merged.loc[miss_dem, "kalshi_rep"].astype(float)
-    merged.loc[miss_dem, "kalshi_dem_inferred"] = True
-    miss_rep = merged["kalshi_rep"].isna() & merged["kalshi_dem"].notna()
-    merged.loc[miss_rep, "kalshi_rep"] = 1 - merged.loc[miss_rep, "kalshi_dem"].astype(float)
-    merged.loc[miss_rep, "kalshi_rep_inferred"] = True
     return merged
 
 
@@ -208,6 +196,16 @@ def load_polymarket_general():
     if not rep.empty:
         result = result.merge(rep[["race_id", "pm_rep", "pm_rep_slug", "pm_rep_token"]], on="race_id", how="outer")
 
+    # Require both Dem and Rep markets to be explicitly priced. Earlier
+    # versions filled missing sides with 1 - other_side, but those inferred
+    # prices aren't actually tradeable — they describe the implied no
+    # probability, not a fillable yes ask on a real Polymarket book. The
+    # arb scanner should only surface pairs where both legs are real.
+    if "pm_rep" in result.columns:
+        result = result[result["pm_dem"].notna() & result["pm_rep"].notna()].copy()
+    else:
+        result = result.iloc[0:0].copy()
+
     # Prefer dem slug for the URL; fall back to rep slug.
     if "pm_rep_slug" in result.columns:
         result["pm_url"] = result["pm_dem_slug"].where(
@@ -216,20 +214,6 @@ def load_polymarket_general():
         ).apply(polymarket_url)
     else:
         result["pm_url"] = result["pm_dem_slug"].apply(polymarket_url)
-
-    # If one side is missing (e.g. Dem market got spread-filtered but Rep
-    # survived), fall back to 1 - other_side so the race still appears in
-    # arb_data. Tag with pm_inferred so the dashboard can warn. We do NOT
-    # use this for the safe_rep partition check, so guaranteed-arb math is
-    # still gated by both sides being explicit. This just gets the race
-    # onto the dashboard as a one-sided comparison instead of dropping it.
-    if "pm_rep" in result.columns:
-        miss_dem = result["pm_dem"].isna() & result["pm_rep"].notna()
-        result.loc[miss_dem, "pm_dem"] = 1 - result.loc[miss_dem, "pm_rep"].astype(float)
-        result.loc[miss_dem, "pm_dem_inferred"] = True
-        miss_rep = result["pm_rep"].isna() & result["pm_dem"].notna()
-        result.loc[miss_rep, "pm_rep"] = 1 - result.loc[miss_rep, "pm_dem"].astype(float)
-        result.loc[miss_rep, "pm_rep_inferred"] = True
     return result
 
 
@@ -792,7 +776,6 @@ def run():
                 "volume_a": r.get("kalshi_volume"), "volume_b": None,
                 "market_id_a": r.get("kalshi_dem_ticker"),
                 "market_id_b": None,
-                "a_inferred": r.get("kalshi_dem_inferred") is True,
             },
         )
         if row:
@@ -813,8 +796,6 @@ def run():
                     "volume_a": r.get("kalshi_volume"), "volume_b": r.get("pm_volume"),
                     "market_id_a": r.get("kalshi_dem_ticker"),
                     "market_id_b": r.get("pm_dem_token"),
-                    "a_inferred": r.get("kalshi_dem_inferred") is True,
-                    "b_inferred": r.get("pm_dem_inferred") is True,
                 },
             )
             if row:
@@ -836,7 +817,6 @@ def run():
                     "volume_a": None, "volume_b": r.get("pm_volume"),
                     "market_id_a": None,
                     "market_id_b": r.get("pm_dem_token"),
-                    "b_inferred": r.get("pm_dem_inferred") is True,
                 },
             )
             if row:
@@ -930,10 +910,6 @@ def run():
             if (row.get("raw_gap_pp") or 0) > 20:
                 rs.append("wide_gap")
             for side in ("a", "b"):
-                # Plain truthiness fails here: row.get returns NaN (a float,
-                # which is truthy) for rows where this column wasn't set.
-                if row.get(f"{side}_inferred") is True:
-                    rs.append(f"inferred_{side}")
                 bb = row.get(f"depth_{side}_best_bid")
                 ba = row.get(f"depth_{side}_best_ask")
                 if pd.notna(bb) and pd.notna(ba) and (ba - bb) > 0.15:
