@@ -1,9 +1,44 @@
 # Code Audit & To-Do — polling-agg-2026
 
 **Created:** 2026-06-20
+**Last touched:** 2026-06-21
 **Scope:** every tracked file in the repo (scrapers, scripts, utils, docs,
 infra, root). Companion file lives at `pred-arbitrage/AUDIT.md` covering
 the sibling repo.
+
+> ## ⚠ Cross-repo drift note (2026-06-21)
+>
+> The sibling repo `pred-arbitrage` got a substantial round of
+> improvements on 2026-06-21 (live-CLOB Polymarket freshen, real
+> ASK/NO-ASK arb math, last_price display, scrape freshness guard,
+> past-settle-date filter, dead-prop scraper-level filters, NO-token
+> orderbook fetch). **None of those changes were ported back into this
+> repo today.** The user explicitly decided to keep polling-agg untouched
+> while working through pred-arb so we'd have one stable point of
+> reference.
+>
+> See "**Improvements from pred-arbitrage that should be ported here**"
+> section below for the full punch list. Top three to port:
+>
+> 1. **`compute_arb_math` should accept real bid/ask** — today's polling-
+>    agg computes guaranteed-arb math on midpoints. Pred-arb takes
+>    `bid_a/ask_a/no_bid_a/no_ask_a` etc. kwargs and uses the real
+>    fillable prices. Midpoint math overstates the arb (Somaliland
+>    incident — see pred-arb AUDIT.md).
+> 2. **Add a freshness guard** (`_assert_scrape_freshness()` from pred-arb's
+>    `arb_scanner.py`). Catches the silent-staleness mode where a
+>    scraper succeeds structurally but produces no new data.
+> 3. **Use `last_price` as the Kalshi `implied_prob`** (matches Kalshi UI).
+>    Polling-agg still uses midpoint, will surface the same Somaliland-
+>    style "18 cents on dashboard, 14 cents on Kalshi" discrepancy if
+>    anyone looks.
+>
+> These are real bugs in this repo — not just nice-to-haves. They produce
+> fake-guaranteed-arb numbers and display prices that don't match what
+> Kalshi shows. The reason they're not fixed yet is scope discipline:
+> we just spent a long session debugging the same issues in pred-arb,
+> and a copy-paste port without re-verification is risky. Next session
+> should port them carefully with smoke tests.
 
 This is a working document. As issues get fixed, move them out of the
 **To-do** section at the bottom and into the **Done** section, with the
@@ -208,10 +243,123 @@ tab.
 
 ---
 
+## Improvements from pred-arbitrage that should be ported here
+
+These all landed in pred-arb on 2026-06-21 and are real fixes for bugs
+that ALSO exist in polling-agg. Listed in priority order for the next
+session. Each links to the pred-arb commit / file for reference.
+
+### A. `compute_arb_math` should use real bid/ask, not midpoints
+
+**The bug**: polling-agg's `compute_arb_math(prob_a, prob_b,
+prob_a_rep, prob_b_rep, fee_a, fee_b)` runs on midpoints (`prob_a` is
+typically `(bid + ask) / 2`). For a real buy-yes-buy-no basket you pay
+the **ask** on the yes leg and `1 - bid` on the no leg, which is
+strictly wider than the midpoint math. The midpoint version overstates
+the arb.
+
+**The pred-arb fix**: `compute_arb` accepts `bid_a/ask_a/bid_b/ask_b`
++ `no_bid_a/no_ask_a/no_bid_b/no_ask_b` kwargs. Uses real ASK for the
+buy-YES leg and real NO ASK for the buy-NO leg. Falls back to midpoint
+only when bid/ask is missing.
+
+**To port**:
+- Update `scripts/arb_scanner.py:compute_arb_math` signature to accept
+  the bid/ask kwargs. Wire `depth_a_best_bid`, `depth_a_best_ask`,
+  `depth_no_a_best_bid`, `depth_no_a_best_ask` (and b-side equivalents)
+  in via the depth-join loop.
+- For Polymarket NO orderbooks, also flow `no_market_id` through
+  `depth_targets.csv` so `fetch_depth.py` can pull the NO book.
+- Add `fillable_ask_a/b`, `fillable_no_ask_a/b` etc. to the row dict
+  so the dashboard can show actual fillable prices.
+
+### B. Add `_assert_scrape_freshness()` guard at top of `arb_scanner.run()`
+
+**The bug**: silent staleness. A scraper can succeed structurally
+(exit 0) but produce no new data because of an API change or
+authentication issue. Polling-agg currently has no check that the raw
+CSVs are actually fresh — a 6-week-stale Polymarket CSV in pred-arb
+went unnoticed for a long time.
+
+**The pred-arb fix**: `arb_scanner._assert_scrape_freshness()` reads
+the `fetched_at` column of every raw CSV and raises SystemExit if any
+is more than 12 hours old. Fails the scanner step → workflow's commit
+step skips → live dashboard keeps the last good snapshot.
+
+**To port**: copy-paste from
+`pred-arbitrage/scripts/arb_scanner.py:_assert_scrape_freshness()`.
+Call from the top of polling-agg's `run()`.
+
+### C. Use `last_price` as Kalshi `implied_prob` (UI consistency)
+
+**The bug**: polling-agg's `scrapers/kalshi.py` sets `implied_prob` to
+the bid/ask midpoint when both are present. Kalshi's website displays
+`last_price` as the headline number. The two differ by several pp on
+illiquid markets. User reported the discrepancy on pred-arb on
+2026-06-21 ("dashboard shows 18, Kalshi UI shows 14").
+
+**The pred-arb fix**: prefer `last_price` first, fall back to midpoint.
+Arb math is unaffected (still uses real ASK from depth). Only the
+display number changed.
+
+**To port**: copy `scrapers/kalshi.py` lines 169-191 from pred-arb.
+
+### D. Live Polymarket CLOB freshen (`scripts/freshen_polymarket.py`)
+
+**The bug**: Polymarket's gamma `/markets` endpoint caches bid/ask
+snapshots that lag the live CLOB by minutes-to-hours on low-volume
+markets. Polling-agg works around this with a "depth-time price
+override" in `arb_scanner.py` (overwrites matched-pair midpoints with
+live CLOB midpoints after `fetch_depth`). That's a partial fix — it
+only helps for pairs that already got matched on stale gamma prices;
+markets the matcher never paired because the gamma price looked wrong
+never get re-priced.
+
+**The pred-arb fix**: `scripts/freshen_polymarket.py` runs immediately
+after the gamma scrape and re-fetches `clob.polymarket.com/book` for
+every market in parallel (16 worker threads, ~4-6 min). Overwrites
+bid/ask/midpoint with live values BEFORE the matcher runs.
+
+**To port**:
+- Copy `scripts/freshen_polymarket.py` from pred-arb.
+- Add as a step in `run_all.py` between `polymarket.py` and
+  `regen_data.py`.
+
+### E. Past-settle-date / past-close-date scraper filters
+
+**The bug**: Polymarket leaves `active=true&closed=false` flagged on
+~22% of events whose `endDate` is already in the past. Kalshi leaves
+~40% of `open` markets with `close_date` already past. Polling-agg
+trusts the status flags; pred-arb dropped the trust and filters on
+the date itself.
+
+**To port**:
+- `scrapers/kalshi.py`: skip rows where `close_date < today`.
+- `scrapers/polymarket.py`: drop rows where `end_date < today`.
+- `scripts/arb_scanner.py`: drop pairs where `settle_date < today` as
+  defense in depth.
+
+### F. Single-source HEADERS helper already exists
+
+`utils/http_headers.py` is in both repos and they're functionally
+identical. No port needed — verify they don't drift, that's it.
+
+### G. Cross-repo sync mechanism
+
+`scripts/elections.py` in pred-arb was hand-ported from polling-agg's
+`scripts/arb_scanner.py` 2026-06-18. Both files reimplement the same
+state/office/last-name parsing + race_id derivation. Any change to
+polling-agg's election logic risks silent divergence. Options at
+pred-arb/AUDIT.md item #6.
+
+---
+
 ## To-do (open)
 
 Highest leverage first. Each item is a self-contained piece of work.
 
+0. **Port the 5 items above from pred-arbitrage** (see "Improvements
+   from pred-arbitrage" section).
 1. **Decide on `docs/polls.html`.** Either link it from `index.html` as
    a dedicated Poll Explorer URL (it already exists) or delete it.
 2. **Pin `requirements.txt`.** Use the versions from the GHA runner's
