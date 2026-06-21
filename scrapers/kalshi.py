@@ -25,6 +25,7 @@ Race identification: see infer_race_id() — pattern-matches series tickers
 to canonical race_ids defined in utils/races.py.
 """
 
+import sys
 import time
 import urllib.request
 import urllib.error
@@ -34,24 +35,16 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone
 
-RAW_DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+from utils.http_headers import browser_xhr_headers
+
+RAW_DATA_DIR = ROOT / "data" / "raw"
 KALSHI_BASE = "https://api.elections.kalshi.com/trade-api/v2"
-# Real browser UA. Kalshi's WAF started rejecting "Mozilla/5.0 (research/...)"
-# with 403 in mid-June 2026 — apparently flagging the identifying string.
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/126.0.0.0 Safari/537.36"
-    ),
-    "Accept": "application/json,text/html;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://kalshi.com/",
-    "Origin": "https://kalshi.com",
-    "Sec-Fetch-Site": "same-site",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Dest": "empty",
-}
+# Kalshi's WAF began rejecting "Mozilla/5.0 (research/...)" with 403 in
+# June 2026; the full Sec-Fetch/Referer/Origin set makes the request look
+# like a real kalshi.com webapp XHR. See utils/http_headers.py.
+HEADERS = browser_xhr_headers("https://kalshi.com")
 
 # Keywords to identify 2026 election series (filter against 1800+ Politics series)
 ELECTION_KEYWORDS = [

@@ -6,6 +6,22 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 from utils.races import RACE_BY_ID
 
+
+def _safe_read_csv(path: Path, **kw) -> pd.DataFrame:
+    """Same pattern as scripts/arb_scanner.py — tolerate missing/empty
+    CSVs from scrapers that fail fast. Returns an empty frame instead
+    of crashing the pipeline so the dashboard keeps its last good
+    snapshot."""
+    if not path.exists():
+        print(f"  WARNING: {path.name} not found — treating as no data")
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path, **kw)
+    except pd.errors.EmptyDataError:
+        print(f"  WARNING: {path.name} is empty — treating as no data")
+        return pd.DataFrame()
+
+
 def wavg(g, vc, wc):
     w = g[wc].values.astype(float); v = g[vc].values.astype(float)
     return np.average(v, weights=w) if w.sum() > 0 else v.mean()
@@ -17,10 +33,16 @@ def get_meta(race_id):
     return r.state, r.office, lbl
 
 def parse_iso(s):
-    try: return pd.to_datetime(s, format='%m/%d/%y').date().isoformat()
-    except:
-        try: return pd.to_datetime(s).date().isoformat()
-        except: return ''
+    # Try the NYT short format first (most common), then any ISO-ish
+    # form pandas can recognize. Bare except would swallow KeyboardInterrupt
+    # too — keep these narrow.
+    try:
+        return pd.to_datetime(s, format='%m/%d/%y').date().isoformat()
+    except (ValueError, TypeError):
+        try:
+            return pd.to_datetime(s).date().isoformat()
+        except (ValueError, TypeError):
+            return ''
 
 ABBREV = {
     'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California',
@@ -36,13 +58,18 @@ ABBREV = {
 }
 
 # ── Load + filter to 2026 polls only ──
-polls_raw = pd.read_csv(ROOT / 'data/raw/nyt_polls.csv')
-polls_raw['end_date_iso'] = polls_raw['end_date'].apply(parse_iso)
-polls = polls_raw[polls_raw['end_date_iso'].str.startswith('2026')].copy()
-print(f"Polls after 2026 filter: {len(polls)} / {len(polls_raw)}")
+polls_raw = _safe_read_csv(ROOT / 'data/raw/nyt_polls.csv')
+if polls_raw.empty:
+    polls = polls_raw.copy()
+    print("Polls after 2026 filter: 0 / 0 (no NYT data)")
+else:
+    polls_raw['end_date_iso'] = polls_raw['end_date'].apply(parse_iso)
+    # na=False so NaN end_dates don't get coerced into a bad mask.
+    polls = polls_raw[polls_raw['end_date_iso'].str.startswith('2026', na=False)].copy()
+    print(f"Polls after 2026 filter: {len(polls)} / {len(polls_raw)}")
 
 # ── data.js ──
-agg = pd.read_csv(ROOT / 'data/processed/aggregated.csv').fillna('')
+agg = _safe_read_csv(ROOT / 'data/processed/aggregated.csv').fillna('')
 def label(row):
     if row['office'] == 'H':
         d = str(row['district'])
@@ -91,7 +118,10 @@ with open(ROOT / 'docs/polls_data.js', 'w') as f:
 print(f"polls_data.js: {len(out)} races")
 
 # ── mismatch_data.js ──
-k = pd.read_csv(ROOT / 'data/raw/kalshi_markets.csv')
+k = _safe_read_csv(ROOT / 'data/raw/kalshi_markets.csv')
+if k.empty:
+    print("mismatch_data.js: skipped (no Kalshi data)")
+    sys.exit(0)
 k = k[k['race_id'].notna() & k['implied_prob'].notna()].copy()
 k['weight'] = pd.to_numeric(k['open_interest'], errors='coerce').fillna(
     pd.to_numeric(k['volume'], errors='coerce')).fillna(1.0)

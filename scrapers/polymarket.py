@@ -20,6 +20,7 @@ Market object key fields (verified):
   marketType, closed, resolutionSource
 """
 
+import sys
 import time
 import re
 import urllib.request
@@ -30,9 +31,13 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone
 
-RAW_DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+from utils.http_headers import DEFAULT_HEADERS
+
+RAW_DATA_DIR = ROOT / "data" / "raw"
 GAMMA_BASE = "https://gamma-api.polymarket.com"
-HEADERS = {"User-Agent": "Mozilla/5.0 (research/polling-aggregator)"}
+HEADERS = DEFAULT_HEADERS
 
 # Keywords to identify US election markets by question text
 ELECTION_KEYWORDS = [

@@ -32,6 +32,9 @@ data/processed/scrutiny_cache.json
 .idea/
 *.swp
 
+# Stray log files from dev runs (e.g. polymarket.log) — never check in
+*.log
+
 # OS
 .DS_Store
 Thumbs.db

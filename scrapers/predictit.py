@@ -26,14 +26,19 @@ import urllib.request
 import urllib.error
 import json
 import re
+import sys
 import time
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone
 
-RAW_DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+from utils.http_headers import DEFAULT_HEADERS
+
+RAW_DATA_DIR = ROOT / "data" / "raw"
 PREDICTIT_URL = "https://www.predictit.org/api/marketdata/all/"
-HEADERS = {"User-Agent": "Mozilla/5.0 (research/polling-aggregator)", "Accept": "application/json"}
+HEADERS = DEFAULT_HEADERS
 
 STATE_NAME_TO_ABBREV = {
     "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",

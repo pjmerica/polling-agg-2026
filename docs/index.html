@@ -771,6 +771,15 @@ document.addEventListener('click', e => {
 let sortCol = 'implied_prob_avg', sortDir = 1;
 let filterOffice = 'ALL', filterSource = 'ALL', searchQ = '';
 
+// Search inputs trigger a full table re-render (hundreds of rows). Without
+// debouncing, typing "California" fires 10 renders in a few hundred ms and
+// the UI stutters. 150ms is short enough to feel instant but folds a normal
+// typing burst into a single render.
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
 function applyFilters(data) {
   return data.filter(r => {
     if (filterOffice !== 'ALL' && r.office !== filterOffice) return false;
@@ -898,7 +907,7 @@ function renderAll() {
 
 document.getElementById('filter-office').addEventListener('change', e => { filterOffice = e.target.value; renderAll(); });
 document.getElementById('filter-source').addEventListener('change', e => { filterSource = e.target.value; renderAll(); });
-document.getElementById('search').addEventListener('input', e => { searchQ = e.target.value; renderTable(RACES); });
+document.getElementById('search').addEventListener('input', debounce(e => { searchQ = e.target.value; renderTable(RACES); }, 150));
 document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => {
     if (sortCol === th.dataset.col) sortDir *= -1; else { sortCol = th.dataset.col; sortDir = 1; }
@@ -1030,7 +1039,7 @@ function renderPollDetail() {
   });
 }
 
-document.getElementById('p-search').addEventListener('input', e => { pSearch = e.target.value; renderSidebar(); });
+document.getElementById('p-search').addEventListener('input', debounce(e => { pSearch = e.target.value; renderSidebar(); }, 150));
 document.getElementById('p-office').addEventListener('change', e => { pOffice = e.target.value; renderSidebar(); });
 document.getElementById('p-stage').addEventListener('change', e => { pStage = e.target.value; renderSidebar(); renderPollDetail(); });
 document.getElementById('p-only50').addEventListener('change', e => { pOnly50 = e.target.checked; renderSidebar(); });
@@ -1489,7 +1498,7 @@ function renderRawPolls() {
   });
 }
 
-document.getElementById('raw-search').addEventListener('input', e => {
+document.getElementById('raw-search').addEventListener('input', debounce(e => {
   rawSearch = e.target.value;
   // Typing in the search box clears any pinned filter so the user can
   // go back to free-text search without first hitting "show all polls".
@@ -1500,7 +1509,7 @@ document.getElementById('raw-search').addEventListener('input', e => {
     if (b) b.remove();
   }
   renderRawPolls();
-});
+}, 150));
 document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
 document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
 document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });

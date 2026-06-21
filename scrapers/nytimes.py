@@ -24,6 +24,7 @@ For polls, implied_prob is the candidate's poll share (0.0-1.0).
 Weight = f(sample_size, recency, pollster_grade).
 """
 
+import sys
 import urllib.request
 import io
 import pandas as pd
@@ -31,7 +32,11 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timezone, date
 
-RAW_DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+from utils.http_headers import BROWSER_UA
+
+RAW_DATA_DIR = ROOT / "data" / "raw"
 
 NYT_CSV_URLS = {
     "senate":   "https://www.nytimes.com/newsgraphics/polls/senate.csv",
@@ -40,7 +45,7 @@ NYT_CSV_URLS = {
 }
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (research/polling-aggregator)",
+    "User-Agent": BROWSER_UA,
     "Accept": "text/csv,text/plain,*/*",
 }
 

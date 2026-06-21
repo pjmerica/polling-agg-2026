@@ -19,6 +19,7 @@ Run this script whenever you want to refresh incumbent data:
 The output is read by utils/races.py at import time if present.
 """
 
+import sys
 import urllib.request
 import re
 import json
@@ -32,8 +33,12 @@ try:
 except ImportError:
     raise ImportError("PyYAML required: pip install pyyaml")
 
-PROCESSED_DIR = Path(__file__).parent.parent / "data" / "processed"
-HEADERS = {"User-Agent": "Mozilla/5.0 (research/polling-aggregator)"}
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+from utils.http_headers import DEFAULT_HEADERS
+
+PROCESSED_DIR = ROOT / "data" / "processed"
+HEADERS = DEFAULT_HEADERS
 
 LEGISLATORS_URL = (
     "https://raw.githubusercontent.com/unitedstates/"
