@@ -21,7 +21,8 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## 2026-06-24
 
-- *(pending push)* dashboard: change Raw Polls "Since" default from "Last 30 days" to "All time" — user reported polls being dropped when the race was no longer active. Cause was the date-cutoff default, not any active-race logic. Switched the default option in the dropdown and the JS state initial value to keep older polls visible by default.
+- *(pending push)* polls: archive historical polls, drop cycle filter, add year filter to dashboard — NY-13 polls were missing because (a) NYT pruned them from its bulk house.csv between May and June, and (b) we'd been overwriting the local CSV every run with no archive. Three changes: (1) `.gitignore` un-ignores `data/raw/nyt_polls.csv` so production cron commits it back to the repo, giving the scraper an archive to merge against. (2) `scrapers/nytimes.py` switched to append-mode: read existing CSV, concat with fresh scrape, dedup by `(poll_id, question_id, candidate)`, keep new on conflict. Cycle filter removed so all historical polls flow through. (3) `scripts/regen_data.py` dropped its 2026-only filter (kept the parse-validity filter). (4) `docs/index.html` added a Years dropdown to the Raw Polls tab (default "2025 + 2026", options 2023/2024/2025/2026/All). Confirmed locally: NY-13 reappears with 1 poll; total published races went from 121 to 137 with 85 of them gaining 2025 polls.
+- `[22ef3f1]` dashboard: Raw Polls 'Since' default = All time + introduce CHANGELOG.md — user reported polls being dropped when the race was no longer active. Cause was the date-cutoff default at 30 days, not any active-race logic. Switched the default option to All time and matched the JS initial state. Also created CHANGELOG.md and backfilled 2026-06-20 + 2026-06-21 entries.
 
 ## 2026-06-21
 

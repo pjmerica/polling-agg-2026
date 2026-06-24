@@ -530,6 +530,17 @@ tr:hover td { background: #1a2035; }
       </select>
     </div>
     <div class="filter-group">
+      <label>Years</label>
+      <select id="raw-years" title="Filter by poll end-year. Default: current cycle + previous (2025+2026).">
+        <option value="2025,2026" selected>2025 + 2026</option>
+        <option value="2026">2026 only</option>
+        <option value="2025">2025 only</option>
+        <option value="2024">2024 only</option>
+        <option value="2023">2023 only</option>
+        <option value="ALL">All years</option>
+      </select>
+    </div>
+    <div class="filter-group">
       <label>
         <input type="checkbox" id="raw-over-cut" style="vertical-align:middle">
         Any candidate ≥
@@ -1406,6 +1417,9 @@ let RAW_POLLS = [];
 
 let rawSortCol = 'end_date_iso', rawSortDir = -1;
 let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 0;
+// rawYears: array of year strings to KEEP, or null = all years.
+// Default = current cycle + previous, matches the dropdown's default option.
+let rawYears = ['2025', '2026'];
 let rawOverCut = false, rawOverThr = 50;
 
 function rawFilter() {
@@ -1424,6 +1438,10 @@ function rawFilter() {
     if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
     if (rawStage !== 'ALL' && p.stage !== rawStage) return false;
     if (cutoff && (!p.end_date_iso || p.end_date_iso < cutoff)) return false;
+    if (rawYears && p.end_date_iso) {
+      // end_date_iso is YYYY-MM-DD; first 4 chars are the year.
+      if (!rawYears.includes(p.end_date_iso.slice(0, 4))) return false;
+    }
     if (rawOverCut) {
       const hit = (p.candidates || []).some(c => c.pct != null && c.pct >= rawOverThr);
       if (!hit) return false;
@@ -1513,6 +1531,11 @@ document.getElementById('raw-search').addEventListener('input', debounce(e => {
 document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
 document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
 document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });
+document.getElementById('raw-years').addEventListener('change', e => {
+  const v = e.target.value;
+  rawYears = (v === 'ALL') ? null : v.split(',');
+  renderRawPolls();
+});
 document.getElementById('raw-over-cut').addEventListener('change', e => { rawOverCut = e.target.checked; renderRawPolls(); });
 document.getElementById('raw-over-thr').addEventListener('change', e => { rawOverThr = parseInt(e.target.value); if (rawOverCut) renderRawPolls(); });
 

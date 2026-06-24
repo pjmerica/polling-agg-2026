@@ -18,6 +18,12 @@ build/
 # Data files (large raw data)
 data/raw/*.csv
 data/raw/*.json
+
+# But DO track nyt_polls.csv so the scraper's append-mode merge has a
+# baseline to read from. Without this tracked, every cron starts fresh
+# and we lose any poll NYT has removed since the previous run. Added
+# 2026-06-24 after NY-13 polls silently disappeared.
+!data/raw/nyt_polls.csv
 data/raw/*.parquet
 
 # Transient scrutiny cache (rebuilt each run; not source of truth)

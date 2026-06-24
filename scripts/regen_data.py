@@ -64,9 +64,15 @@ if polls_raw.empty:
     print("Polls after 2026 filter: 0 / 0 (no NYT data)")
 else:
     polls_raw['end_date_iso'] = polls_raw['end_date'].apply(parse_iso)
-    # na=False so NaN end_dates don't get coerced into a bad mask.
-    polls = polls_raw[polls_raw['end_date_iso'].str.startswith('2026', na=False)].copy()
-    print(f"Polls after 2026 filter: {len(polls)} / {len(polls_raw)}")
+    # No year filter — keep all historical polls. The dashboard's Raw
+    # Polls tab has its own year filter (default 2025+2026) so users
+    # can scope the view. Changed 2026-06-24 after NY-13 polls were
+    # missed — relying on archive + UI filter rather than scrape-time
+    # cycle filter prevents silent loss when NYT prunes its feed.
+    # Still drop rows where end_date didn't parse so we never publish
+    # poll rows with no usable date.
+    polls = polls_raw[polls_raw['end_date_iso'].str.match(r"^\d{4}-\d{2}-\d{2}$", na=False)].copy()
+    print(f"Polls after parse filter: {len(polls)} / {len(polls_raw)}")
 
 # ── data.js ──
 agg = _safe_read_csv(ROOT / 'data/processed/aggregated.csv').fillna('')

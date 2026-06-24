@@ -162,8 +162,12 @@ def process_office(df_raw: pd.DataFrame, office_type: str, today: date) -> pd.Da
     """
     df = df_raw.copy()
 
-    # Filter to 2026 general election polls (also keep primary for now)
-    df = df[df["cycle"].astype(str) == "2026"].copy()
+    # No cycle filter — we want all historical polls so the dashboard
+    # can show races even after NYT prunes them from its current feed.
+    # The dashboard has a year filter to scope the view (default 2025
+    # + 2026). User decision 2026-06-24: rely on archive rather than
+    # cycle-pruning so historical polls (e.g. NY-13 primary) don't
+    # silently disappear when NYT removes them.
 
     # Exclude hypothetical matchups
     if "hypothetical" in df.columns:
@@ -237,6 +241,35 @@ def run():
 
     combined = pd.concat(all_frames, ignore_index=True)
     out_path = RAW_DATA_DIR / "nyt_polls.csv"
+
+    # APPEND MODE (added 2026-06-24): merge into existing CSV instead of
+    # overwriting. NYT prunes its historical polls (e.g. NY-13 primary
+    # was dropped from house.csv between May and June 2026); without
+    # append mode we lose anything they remove. Dedup key:
+    # (poll_id, question_id, candidate) — one row per candidate per
+    # poll question. Newer rows win on conflict so corrections from
+    # NYT propagate.
+    n_new = len(combined)
+    if out_path.exists():
+        try:
+            existing = pd.read_csv(out_path)
+        except Exception as e:
+            print(f"  WARN: could not read existing CSV ({e}); writing fresh")
+            existing = pd.DataFrame()
+        if not existing.empty:
+            # Order matters for drop_duplicates(keep='first') — new rows
+            # first means new wins on conflict.
+            combined_with_archive = pd.concat([combined, existing], ignore_index=True)
+            before = len(combined_with_archive)
+            combined = combined_with_archive.drop_duplicates(
+                subset=["poll_id", "question_id", "candidate"],
+                keep="first",
+            )
+            n_preserved = len(combined) - n_new
+            print(f"  Archive: kept {len(existing)} prior rows; "
+                  f"merged with {n_new} fresh -> {len(combined)} total "
+                  f"({n_preserved} preserved from prior scrape that NYT no longer carries)")
+
     combined.to_csv(out_path, index=False)
     print(f"\nSaved {len(combined)} rows to {out_path}")
 
