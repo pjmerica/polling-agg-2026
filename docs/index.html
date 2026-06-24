@@ -524,9 +524,9 @@ tr:hover td { background: #1a2035; }
       <select id="raw-since">
         <option value="7">Last 7 days</option>
         <option value="14">Last 14 days</option>
-        <option value="30" selected>Last 30 days</option>
+        <option value="30">Last 30 days</option>
         <option value="90">Last 90 days</option>
-        <option value="0">All time</option>
+        <option value="0" selected>All time</option>
       </select>
     </div>
     <div class="filter-group">
@@ -1405,7 +1405,7 @@ let RAW_POLLS = [];
 })();
 
 let rawSortCol = 'end_date_iso', rawSortDir = -1;
-let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 30;
+let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 0;
 let rawOverCut = false, rawOverThr = 50;
 
 function rawFilter() {
