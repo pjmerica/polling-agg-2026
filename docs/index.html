@@ -7,6 +7,7 @@
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <script src="data.js"></script>
 <script src="polls_data.js"></script>
+<script src="other_polls_data.js"></script>
 <script src="mismatch_data.js"></script>
 <script src="arb_data.js"></script>
 <script src="primaries_data.js"></script>
@@ -497,6 +498,15 @@ tr:hover td { background: #1a2035; }
      TAB: RAW POLLS (all polls, newest first)
      ══════════════════════════════════════════════ -->
 <div id="tab-raw" class="tab-panel">
+  <div class="raw-controls" style="margin-bottom:6px">
+    <div class="filter-group">
+      <label>Source</label>
+      <select id="raw-source" title="Switch between races (House/Senate/Gov polls) and other polls (generic ballot, approval, mayoral)">
+        <option value="races" selected>Races</option>
+        <option value="other">Generic ballot / Approval / Mayoral</option>
+      </select>
+    </div>
+  </div>
   <div class="raw-controls">
     <div class="filter-group">
       <label>Search</label>
@@ -517,6 +527,9 @@ tr:hover td { background: #1a2035; }
         <option value="ALL">All</option>
         <option value="general">General</option>
         <option value="primary">Primary</option>
+        <option value="generic_ballot">Generic ballot</option>
+        <option value="approval">Approval</option>
+        <option value="mayoral">Mayoral</option>
       </select>
     </div>
     <div class="filter-group">
@@ -1399,11 +1412,16 @@ document.getElementById('arb-profitable').addEventListener('change', e => { arbP
 // ════════════════════════════════════════════════
 // RAW POLLS TAB
 // ════════════════════════════════════════════════
-let RAW_POLLS = [];
-(function buildRawPolls() {
+// Two data sources for the Raw Polls tab, swappable via the Source
+// dropdown. RAW_POLLS_RACES is the per-race feed (House/Senate/Gov).
+// RAW_POLLS_OTHER is generic ballot + approval + mayoral, served from
+// other_polls_data.js. The variable `RAW_POLLS` is rebound when the
+// user flips Source, and the filter / render functions read from it.
+let RAW_POLLS_RACES = [];
+(function buildRawPollsRaces() {
   POLLS.forEach(race => {
     (race.polls || []).forEach(p => {
-      RAW_POLLS.push({
+      RAW_POLLS_RACES.push({
         ...p,
         race_id: race.race_id,
         race_label: race.label,
@@ -1414,6 +1432,17 @@ let RAW_POLLS = [];
     });
   });
 })();
+// OTHER_POLLS comes pre-flat (one row per poll, with .candidates),
+// so just normalize the shape. office/state empty so the existing
+// Office filter cleanly excludes nothing when the user has it set to
+// 'ALL' (and the Office filter is hidden in 'other' mode anyway).
+let RAW_POLLS_OTHER = (typeof OTHER_POLLS !== 'undefined' ? OTHER_POLLS : []).map(p => ({
+  ...p,
+  office: '',
+  state: '',
+  state_abbrev: '',
+}));
+let RAW_POLLS = RAW_POLLS_RACES;
 
 let rawSortCol = 'end_date_iso', rawSortDir = -1;
 let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 0;
@@ -1528,6 +1557,26 @@ document.getElementById('raw-search').addEventListener('input', debounce(e => {
   }
   renderRawPolls();
 }, 150));
+document.getElementById('raw-source').addEventListener('change', e => {
+  // Source flips between the two precomputed RAW_POLLS lists. Reset
+  // race/state pins (they don't apply to OTHER) and the Office/Stage
+  // filters (which don't carry over meaningfully). Office is hidden
+  // in 'other' mode via CSS toggled below.
+  RAW_POLLS = (e.target.value === 'other') ? RAW_POLLS_OTHER : RAW_POLLS_RACES;
+  rawPinnedRaceId = null;
+  rawPinnedStateAbbrev = null;
+  rawOffice = 'ALL';
+  rawStage = 'ALL';
+  document.getElementById('raw-office').value = 'ALL';
+  document.getElementById('raw-stage').value = 'ALL';
+  // Hide Office filter in 'other' mode (mayoral/ballot/approval don't
+  // have an office classification).
+  const officeFg = document.getElementById('raw-office').closest('.filter-group');
+  if (officeFg) officeFg.style.display = (e.target.value === 'other') ? 'none' : '';
+  const b = document.getElementById('raw-pinned-banner');
+  if (b) b.remove();
+  renderRawPolls();
+});
 document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
 document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
 document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });

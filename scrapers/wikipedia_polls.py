@@ -69,6 +69,25 @@ URL_GOVERNOR = "https://en.wikipedia.org/wiki/2026_{state}_gubernatorial_electio
 URL_GENERIC_BALLOT = "https://en.wikipedia.org/wiki/2026_United_States_elections"
 URL_APPROVAL = "https://en.wikipedia.org/wiki/Public_image_of_Donald_Trump"  # rough but has approval tables
 
+# Mayoral races. Wikipedia uses "<Year>_<City>_mayoral_election" pages.
+# Each tuple is (year, city_slug_for_url, race_id_slug). Mayoral cycle
+# varies by city — list curated 2026-06-25 from cities with a current
+# Wikipedia page. Add more as new cycles open up.
+MAYORAL_RACES = [
+    (2025, "New_York_City",  "nyc"),
+    (2025, "Boston",         "boston"),
+    (2025, "Detroit",        "detroit"),
+    (2025, "Pittsburgh",     "pittsburgh"),
+    (2025, "Cleveland",      "cleveland"),
+    (2025, "Seattle",        "seattle"),
+    (2025, "Atlanta",        "atlanta"),
+    (2025, "Minneapolis",    "minneapolis"),
+    (2025, "Buffalo",        "buffalo"),
+    (2026, "Los_Angeles",    "la"),
+    (2026, "Miami",          "miami"),
+    (2027, "Chicago",        "chicago"),
+]
+
 # State name → URL segment. Two-letter abbreviations for race_id mapping.
 STATES = {
     "AL": "Alabama",  "AK": "Alaska",   "AZ": "Arizona",  "AR": "Arkansas",
@@ -476,6 +495,30 @@ def scrape_generic_ballot() -> list[dict]:
     return rows
 
 
+def scrape_mayoral(year: int, city_slug: str, race_id_slug: str) -> list[dict]:
+    """Scrape one mayoral race page. race_id pattern is
+    'YYYY-MAYOR-<slug>' (e.g. '2025-MAYOR-nyc'). Note this is intentionally
+    NOT the same shape as state-race race_ids ('YYYY-OFFICE-STATE') —
+    regen_data.py's len(parts) < 3 guard catches the right ones but we
+    want mayoral polls routed to the separate Raw Polls sub-tab anyway.
+    Stage tag 'mayoral' lets downstream filter on it.
+    """
+    url = f"https://en.wikipedia.org/wiki/{year}_{city_slug}_mayoral_election"
+    html = fetch_page(url)
+    if html is None:
+        return []
+    soup = BeautifulSoup(html, "html.parser")
+    rows = []
+    race_id = f"{year}-MAYOR-{race_id_slug}"
+    for table in soup.find_all("table"):
+        classes = table.get("class", []) or []
+        if "wikitable" not in classes:
+            continue
+        new_rows = parse_poll_table(table, race_id, "mayoral")
+        rows.extend(new_rows)
+    return rows
+
+
 def scrape_approval() -> list[dict]:
     """Scrape presidential approval polling. Best-effort; the Wikipedia page
     isn't strictly a polling-only page so coverage may be partial."""
@@ -525,6 +568,15 @@ def run():
         rows = scrape_governor_state(abbr)
         if rows:
             print(f"  {abbr} gov: {len(rows)} rows")
+        all_rows.extend(rows)
+        time.sleep(REQUEST_DELAY_S)
+
+    # Mayoral races
+    print("\n[mayoral]")
+    for year, city_slug, race_id_slug in MAYORAL_RACES:
+        rows = scrape_mayoral(year, city_slug, race_id_slug)
+        if rows:
+            print(f"  {year} {race_id_slug}: {len(rows)} rows")
         all_rows.extend(rows)
         time.sleep(REQUEST_DELAY_S)
 

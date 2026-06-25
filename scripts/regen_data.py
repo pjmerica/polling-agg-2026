@@ -162,6 +162,56 @@ for race_id, rdf in polls.groupby('race_id'):
 out = sorted(races.values(), key=lambda r: (-r['n_over50'], -r['n_polls']))
 with open(ROOT / 'docs/polls_data.js', 'w') as f:
     f.write('const POLLS = '); json.dump(out, f, separators=(',',':')); f.write(';')
+
+# ── Other polls (nationwide ballot, approval, mayoral) ──
+# These don't fit the per-race "office / state / district" structure of
+# polls_data.js so they get a parallel feed. Same row shape as RAW_POLLS
+# in the dashboard so the existing table renderer can reuse it.
+other_stages = {'generic_ballot', 'approval', 'mayoral'}
+if 'polls' in dir() and not polls.empty:
+    other = polls[polls['stage'].isin(other_stages)].copy()
+else:
+    other = pd.DataFrame()
+
+other_list = []
+if not other.empty:
+    # Group by (race_id, poll_id, question_id) so each "poll" is one row
+    # with its candidates as a list, matching the RAW_POLLS structure.
+    for (race_id, poll_id, question_id), qdf in other.groupby(['race_id', 'poll_id', 'question_id']):
+        row0 = qdf.iloc[0]
+        cands = sorted([{
+            'name': r['candidate'], 'party': str(r['party']) if str(r['party']) != 'nan' else '',
+            'pct': round(r['implied_prob'] * 100, 1),
+        } for _, r in qdf.iterrows()], key=lambda c: -c['pct'])
+        # Friendly race label. '2026-GENERIC' -> 'Generic Ballot'.
+        # '2026-APPROVAL' -> 'Trump Approval'. '2025-MAYOR-nyc' -> 'NYC Mayor 2025'.
+        rid_parts = race_id.split('-')
+        stage = str(row0['stage'])
+        if stage == 'generic_ballot':
+            label = 'Generic Ballot'
+        elif stage == 'approval':
+            label = 'Trump Approval'
+        elif stage == 'mayoral' and len(rid_parts) >= 3:
+            label = f"{rid_parts[2].upper()} Mayor {rid_parts[0]}"
+        else:
+            label = race_id
+        other_list.append({
+            'poll_id': poll_id, 'question_id': question_id,
+            'race_id': race_id, 'race_label': label, 'stage': stage,
+            'pollster': str(row0['pollster']), 'end_date': str(row0['end_date']),
+            'end_date_iso': str(row0['end_date_iso']),
+            'sample_size': int(row0['sample_size']) if str(row0['sample_size']) not in ('nan', '') else None,
+            'partisan': str(row0['partisan']) if str(row0['partisan']) != 'nan' else '',
+            'candidates': cands,
+        })
+
+other_list.sort(key=lambda p: p['end_date_iso'], reverse=True)
+with open(ROOT / 'docs/other_polls_data.js', 'w') as f:
+    f.write('const OTHER_POLLS = '); json.dump(other_list, f, separators=(',', ':')); f.write(';')
+print(f"other_polls_data.js: {len(other_list)} polls "
+      f"({sum(1 for p in other_list if p['stage']=='generic_ballot')} generic_ballot, "
+      f"{sum(1 for p in other_list if p['stage']=='mayoral')} mayoral, "
+      f"{sum(1 for p in other_list if p['stage']=='approval')} approval)")
 print(f"polls_data.js: {len(out)} races")
 
 # ── mismatch_data.js ──
