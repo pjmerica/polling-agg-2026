@@ -257,12 +257,33 @@ def clean_pollster(text: str) -> tuple[str, str]:
 
 
 def clean_candidate_header(text: str) -> str:
-    """A column header like 'Darializa\\nAvila Chevalier' → 'Darializa Avila Chevalier'."""
+    """A column header like 'Darializa\\nAvila Chevalier' → 'Darializa Avila Chevalier'.
+
+    Also strips party suffix annotations like '(D)' / '(R)' / '(I)' that
+    Wikipedia adds on the column header. The party gets parsed
+    separately (extract_candidate_party) so dedup against NYT (which
+    uses bare names) works."""
     if not text:
         return ""
     text = re.sub(r"\[[^\]]+\]", "", text)
+    text = re.sub(r"\s*\(\s*[DRIL](?:EM|EP|ND|IB)?\s*\)\s*$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+", " ", text).strip()
     return text
+
+
+def extract_candidate_party(text: str) -> str:
+    """Pull DEM/REP/IND from a candidate label like 'Mike Rogers (R)' or
+    'Abdul El-Sayed (D)'. Returns '' if no annotation."""
+    if not text:
+        return ""
+    m = re.search(r"\(\s*([DRIL](?:EM|EP|ND|IB)?)\s*\)", text, re.IGNORECASE)
+    if not m:
+        return ""
+    code = m.group(1).upper()
+    if code.startswith("D"): return "DEM"
+    if code.startswith("R"): return "REP"
+    if code.startswith("I") or code.startswith("L"): return "IND"
+    return ""
 
 
 def stable_id(*parts) -> str:
@@ -285,7 +306,19 @@ def parse_poll_table(table, race_id: str, stage: str) -> list[dict]:
     header_cells = thead_rows[0].find_all(["th"])
     if not header_cells:
         return []
-    header_texts = [clean_candidate_header(c.get_text(" ", strip=True)) for c in header_cells]
+    # Keep both the raw text (carries party annotations like '(D)')
+    # and the cleaned text (party stripped). Party gets parsed out
+    # from raw and stored on the row so we know each candidate's
+    # affiliation; the cleaned text is the dedup-safe candidate name
+    # that matches NYT's bare names.
+    header_raw = [
+        re.sub(r"\s+", " ",
+               re.sub(r"\[[^\]]+\]", "", c.get_text(" ", strip=True))
+        ).strip()
+        for c in header_cells
+    ]
+    header_texts = [clean_candidate_header(t) for t in header_raw]
+    candidate_party_for_col = [extract_candidate_party(t) for t in header_raw]
     if not header_texts:
         return []
     # Verify first column is a poll-source header (otherwise it's a different table)
@@ -312,6 +345,15 @@ def parse_poll_table(table, race_id: str, stage: str) -> list[dict]:
             col_role.append(f"candidate:{h}")
         else:
             col_role.append("skip")
+
+    # Per-candidate party lookup built from the header annotations,
+    # used by the row loop below so each candidate gets the right
+    # party rather than inheriting from the pollster sponsor tag.
+    candidate_party = {
+        header_texts[i]: candidate_party_for_col[i]
+        for i, role in enumerate(col_role)
+        if role.startswith("candidate:")
+    }
 
     fetched_at = datetime.now(timezone.utc).isoformat()
 
@@ -367,12 +409,14 @@ def parse_poll_table(table, race_id: str, stage: str) -> list[dict]:
             pct = parse_pct(text)
             if pct is None:
                 continue
-            party = "DEM" if partisan == "D" else ("REP" if partisan == "R" else "")
-            # When the partisan tag on the pollster is empty (most polls)
-            # we don't know the candidate's party from the table alone.
-            # Leave blank — the dashboard mostly uses race + candidate as
-            # the join key, not party. NYT rows have party reliably; ours
-            # won't and that's an acceptable downgrade.
+            # Party comes from the column-header annotation (e.g. "Mike
+            # Rogers (R)" → REP), NOT from the pollster's sponsor tag.
+            # Earlier this was inheriting `partisan` from the pollster,
+            # which made e.g. Mike Rogers show up as DEM whenever the
+            # pollster was a Democratic firm. The pollster's partisan
+            # is preserved separately in the `partisan` column below
+            # for the dashboard's partisan-poll badge.
+            party = candidate_party.get(cand_name, "")
             rows_out.append({
                 "race_id": race_id,
                 "source": "wikipedia",

@@ -88,20 +88,35 @@ else:
     combined = combined[
         combined['end_date_iso'].str.match(r"^\d{4}-\d{2}-\d{2}$", na=False)
     ].copy()
-    # NYT-wins dedup. NYT rows are listed first in `frames` above, so
-    # keep='first' preserves NYT on conflict. race_id IS in the dedup
-    # key — without it, the same pollster running the same date in
-    # different races (e.g. a national pollster's House + Gov polls on
-    # the same day) collapses into a single row. With it, dedup only
-    # fires when both sources actually describe the same poll.
+    # Source-aware dedup. Two passes:
+    #   1. Cross-source: drop wikipedia rows whose
+    #      (race_id, pollster, end_date, candidate) already appears in
+    #      NYT. NYT is canonical when both sources have the same poll.
+    #   2. Within-source: do NOT collapse rows further. NYT publishes
+    #      multi-question polls where the same candidate (e.g. Mike
+    #      Rogers) appears in 3 different head-to-head matchups under
+    #      the same poll_id. Dropping those duplicates makes the
+    #      polls_data.js per-question grouping lose pairs. Same goes
+    #      for Wikipedia tables that publish multiple matchup tables
+    #      on the same race page.
     n_before = len(combined)
-    combined = combined.drop_duplicates(
-        subset=['race_id', 'pollster', 'end_date_iso', 'candidate'],
-        keep='first',
-    )
+    nyt_keys = set()
+    if 'source' in combined.columns:
+        nyt_mask = combined['source'].eq('nyt')
+        nyt_keys = set(
+            zip(combined.loc[nyt_mask, 'race_id'],
+                combined.loc[nyt_mask, 'pollster'],
+                combined.loc[nyt_mask, 'end_date_iso'],
+                combined.loc[nyt_mask, 'candidate'])
+        )
+        def drop_wiki_if_nyt_has(r):
+            if r['source'] != 'wikipedia':
+                return True
+            return (r['race_id'], r['pollster'], r['end_date_iso'], r['candidate']) not in nyt_keys
+        combined = combined[combined.apply(drop_wiki_if_nyt_has, axis=1)].copy()
     n_dropped = n_before - len(combined)
     if n_dropped:
-        print(f"  Deduped: dropped {n_dropped} cross-source duplicates (NYT wins)")
+        print(f"  Deduped: dropped {n_dropped} wikipedia rows that NYT already carries")
     polls = combined
     print(f"Polls after parse + dedup: {len(polls)}")
 
