@@ -140,8 +140,18 @@ for race_id, rdf in polls.groupby('race_id'):
             'candidates': cands, 'any_over50': any(c['over50'] for c in cands),
         })
     poll_list.sort(key=lambda p: p['end_date_iso'], reverse=True)
-    office = race_id.split('-')[1]; sa = race_id.split('-')[2]
-    parts = race_id.split('-'); district = parts[3] if len(parts) > 3 and office == 'H' else ''
+    # Skip race_ids that don't follow the "YYYY-OFFICE-STATE[-DISTRICT]"
+    # shape — currently the nationwide ones from Wikipedia
+    # ("2026-GENERIC", "2026-APPROVAL"). polls_data.js feeds the
+    # per-race dashboard tabs which need office + state to render;
+    # ballot/approval polls would need a separate output target.
+    # Their stage tags ('generic_ballot' / 'approval') are preserved
+    # on the rows for a future Raw Polls sub-tab.
+    parts = race_id.split('-')
+    if len(parts) < 3:
+        continue
+    office = parts[1]; sa = parts[2]
+    district = parts[3] if len(parts) > 3 and office == 'H' else ''
     lbl = f"{sa}-{district}" if office == 'H' else f"{sa} {office}"
     n_over50 = sum(1 for p in poll_list if p['any_over50'])
     races[race_id] = {
