@@ -24,6 +24,10 @@ data/raw/*.json
 # and we lose any poll NYT has removed since the previous run. Added
 # 2026-06-24 after NY-13 polls silently disappeared.
 !data/raw/nyt_polls.csv
+# Wikipedia supplements NYT. Same reasoning — tracked so the merge in
+# regen_data.py has both sources available, and so we keep a record
+# even if Wikipedia is temporarily unreachable. Added 2026-06-24.
+!data/raw/wikipedia_polls.csv
 data/raw/*.parquet
 
 # Transient scrutiny cache (rebuilt each run; not source of truth)

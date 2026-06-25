@@ -57,22 +57,53 @@ ABBREV = {
     'VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming',
 }
 
-# ── Load + filter to 2026 polls only ──
-polls_raw = _safe_read_csv(ROOT / 'data/raw/nyt_polls.csv')
-if polls_raw.empty:
-    polls = polls_raw.copy()
-    print("Polls after 2026 filter: 0 / 0 (no NYT data)")
+# ── Load + merge NYT (primary) + Wikipedia (supplement) polls ──
+# Two sources, identical schemas. NYT wins on conflict — its rows are
+# editorially curated and have reliable party labels. Wikipedia fills in
+# polls NYT prunes (e.g. NY-13 primary) and races NYT never covered in
+# its bulk feed. Dedup key: (pollster, end_date, candidate) — the
+# minimum reasonable identifier across the two sources since their
+# poll_id values aren't comparable (NYT uses UUIDs, Wikipedia uses our
+# hashed stable IDs).
+nyt = _safe_read_csv(ROOT / 'data/raw/nyt_polls.csv')
+wiki = _safe_read_csv(ROOT / 'data/raw/wikipedia_polls.csv')
+
+frames = []
+if not nyt.empty:
+    nyt['source'] = nyt.get('source', 'nyt').fillna('nyt')
+    frames.append(nyt)
+    print(f"  NYT polls: {len(nyt)}")
+if not wiki.empty:
+    wiki['source'] = wiki.get('source', 'wikipedia').fillna('wikipedia')
+    frames.append(wiki)
+    print(f"  Wikipedia polls: {len(wiki)}")
+
+if not frames:
+    polls = pd.DataFrame()
+    print("Polls: 0 / 0 (no NYT or Wikipedia data)")
 else:
-    polls_raw['end_date_iso'] = polls_raw['end_date'].apply(parse_iso)
-    # No year filter — keep all historical polls. The dashboard's Raw
-    # Polls tab has its own year filter (default 2025+2026) so users
-    # can scope the view. Changed 2026-06-24 after NY-13 polls were
-    # missed — relying on archive + UI filter rather than scrape-time
-    # cycle filter prevents silent loss when NYT prunes its feed.
-    # Still drop rows where end_date didn't parse so we never publish
-    # poll rows with no usable date.
-    polls = polls_raw[polls_raw['end_date_iso'].str.match(r"^\d{4}-\d{2}-\d{2}$", na=False)].copy()
-    print(f"Polls after parse filter: {len(polls)} / {len(polls_raw)}")
+    combined = pd.concat(frames, ignore_index=True)
+    combined['end_date_iso'] = combined['end_date'].apply(parse_iso)
+    # Drop rows where end_date didn't parse — we can't display undated polls.
+    combined = combined[
+        combined['end_date_iso'].str.match(r"^\d{4}-\d{2}-\d{2}$", na=False)
+    ].copy()
+    # NYT-wins dedup. NYT rows are listed first in `frames` above, so
+    # keep='first' preserves NYT on conflict. race_id IS in the dedup
+    # key — without it, the same pollster running the same date in
+    # different races (e.g. a national pollster's House + Gov polls on
+    # the same day) collapses into a single row. With it, dedup only
+    # fires when both sources actually describe the same poll.
+    n_before = len(combined)
+    combined = combined.drop_duplicates(
+        subset=['race_id', 'pollster', 'end_date_iso', 'candidate'],
+        keep='first',
+    )
+    n_dropped = n_before - len(combined)
+    if n_dropped:
+        print(f"  Deduped: dropped {n_dropped} cross-source duplicates (NYT wins)")
+    polls = combined
+    print(f"Polls after parse + dedup: {len(polls)}")
 
 # ── data.js ──
 agg = _safe_read_csv(ROOT / 'data/processed/aggregated.csv').fillna('')

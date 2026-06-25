@@ -10,6 +10,11 @@ steps = [
     ("Polymarket scraper",   [sys.executable, "scrapers/polymarket.py"]),
     ("PredictIt scraper",    [sys.executable, "scrapers/predictit.py"]),
     ("NYT polls scraper",    [sys.executable, "scrapers/nytimes.py"]),
+    # Wikipedia is a supplement to NYT. NYT bulk feed only carries
+    # ~86 races and prunes per-district House polls over time;
+    # Wikipedia state pages have comprehensive per-district tables.
+    # regen_data.py merges both with NYT winning on conflict.
+    ("Wikipedia polls",      [sys.executable, "scrapers/wikipedia_polls.py"]),
     ("House incumbents",     [sys.executable, "scrapers/house_incumbents.py"]),
     ("Ballotpedia primaries",[sys.executable, "scrapers/primaries.py"]),
     ("Regen aggregated data",[sys.executable, "scripts/regen_data.py"]),
@@ -18,10 +23,18 @@ steps = [
     ("Arb scanner (pass 2)", [sys.executable, "scripts/arb_scanner.py"]),
 ]
 
+# Steps that are best-effort supplements rather than critical sources.
+# A failure here logs a warning and continues; downstream steps will
+# fall back to whatever's already on disk.
+NON_FATAL = {"Wikipedia polls"}
+
 for name, cmd in steps:
     print(f"\n{'='*60}\n{name}\n{'='*60}", flush=True)
     result = subprocess.run(cmd, cwd=str(ROOT))
     if result.returncode != 0:
+        if name in NON_FATAL:
+            print(f"WARN: {name} failed with exit code {result.returncode} (non-fatal, continuing)", flush=True)
+            continue
         print(f"ERROR: {name} failed with exit code {result.returncode}", flush=True)
         sys.exit(result.returncode)
 

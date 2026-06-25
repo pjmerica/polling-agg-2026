@@ -360,7 +360,14 @@ Highest leverage first. Each item is a self-contained piece of work.
 
 0. **Port the 5 items above from pred-arbitrage** (see "Improvements
    from pred-arbitrage" section).
-1. **Decide on `docs/polls.html`.** Either link it from `index.html` as
+1. **~~Wikipedia polling scraper to supplement NYT bulk feed.~~ DONE 2026-06-24** —
+   landed as `scrapers/wikipedia_polls.py`. Parses per-state House,
+   Senate, and Governor wiki pages plus generic-ballot and approval.
+   `regen_data.py` merges with NYT, NYT wins on conflict. Runs as
+   non-fatal step in `run_all.py` — Wikipedia downtime doesn't break
+   the pipeline. 5-state smoke test: 1,252 rows / 53 races / 107
+   pollsters; dashboard race count went 137 → 151.
+2. **Decide on `docs/polls.html`.** Either link it from `index.html` as
    a dedicated Poll Explorer URL (it already exists) or delete it.
 2. **Pin `requirements.txt`.** Use the versions from the GHA runner's
    pip cache as the floor: `pandas>=2.2,<3.0`, `numpy>=2.0,<3.0`,
