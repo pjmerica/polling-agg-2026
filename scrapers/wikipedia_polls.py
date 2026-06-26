@@ -293,10 +293,39 @@ def stable_id(*parts) -> str:
     return hashlib.md5(s.encode("utf-8")).hexdigest()[:24]
 
 
-def parse_poll_table(table, race_id: str, stage: str) -> list[dict]:
+def infer_section_context(header_text: str) -> tuple[str, str]:
+    """Read a section heading like 'Republican primary' or 'Democratic
+    primary runoff' and return (stage, party). Stage is one of
+    'primary', 'primary runoff', 'general', or '' if unknown. Party is
+    'REP', 'DEM', 'IND', or '' if unknown.
+
+    Wikipedia consistently uses these section names, and tables under
+    them tend not to repeat the party annotation on each candidate
+    column — so when our header parser comes back with empty party we
+    fall back to the section's implied party.
+    """
+    if not header_text:
+        return ("", "")
+    h = header_text.lower()
+    party = ""
+    if "republican" in h: party = "REP"
+    elif "democratic" in h or "democrat" in h: party = "DEM"
+    elif "independent" in h: party = "IND"
+    stage = ""
+    if "runoff" in h: stage = "primary runoff"
+    elif "primary" in h: stage = "primary"
+    elif "general" in h: stage = "general"
+    return (stage, party)
+
+
+def parse_poll_table(table, race_id: str, stage: str, default_party: str = "") -> list[dict]:
     """Parse one Wikipedia <table class='wikitable'> that contains polls.
     Returns a list of row dicts in nyt_polls.csv schema. Returns [] if the
     table isn't actually a polling table.
+
+    default_party: fallback party assigned to candidates whose column
+    header lacks a (D)/(R) annotation. Comes from the enclosing
+    section heading (see infer_section_context).
     """
     rows_out = []
     # Pull header row
@@ -410,13 +439,14 @@ def parse_poll_table(table, race_id: str, stage: str) -> list[dict]:
             if pct is None:
                 continue
             # Party comes from the column-header annotation (e.g. "Mike
-            # Rogers (R)" → REP), NOT from the pollster's sponsor tag.
-            # Earlier this was inheriting `partisan` from the pollster,
-            # which made e.g. Mike Rogers show up as DEM whenever the
-            # pollster was a Democratic firm. The pollster's partisan
-            # is preserved separately in the `partisan` column below
-            # for the dashboard's partisan-poll badge.
-            party = candidate_party.get(cand_name, "")
+            # Rogers (R)" → REP), with fallback to the enclosing
+            # section's implied party (e.g. "Republican primary"
+            # section → REP for unlabeled candidates). The pollster's
+            # partisan sponsor tag is intentionally NOT used —
+            # historically that made Mike Rogers (R) show up as DEM
+            # whenever the pollster was a Democratic firm. It's still
+            # preserved separately in the `partisan` column below.
+            party = candidate_party.get(cand_name, "") or default_party
             rows_out.append({
                 "race_id": race_id,
                 "source": "wikipedia",
@@ -450,71 +480,81 @@ def scrape_house_state(state_abbrev: str) -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
 
     rows = []
-    # Walk through the document, tracking current "District N" section header.
+    # Walk the DOM in order tracking both the current District N and
+    # the current stage / party context. When we cross into a new
+    # district section both stage and party reset since district-level
+    # subsections vary independently.
     current_district = None
+    current_stage, current_party = "general", ""
     for el in soup.find_all(["h2", "h3", "h4", "table"]):
         if el.name in ("h2", "h3", "h4"):
             text = el.get_text(" ", strip=True)
             m = re.search(r"District\s+(\d+)", text)
-            current_district = int(m.group(1)) if m else current_district
+            if m:
+                current_district = int(m.group(1))
+                current_stage, current_party = "general", ""
+            s, p = infer_section_context(text)
+            if s: current_stage = s
+            if p: current_party = p
         elif el.name == "table" and current_district is not None:
             classes = el.get("class", []) or []
             if "wikitable" not in classes:
                 continue
             race_id = f"2026-H-{state_abbrev}-{current_district:02d}"
-            # Wikipedia House district pages typically combine primary + general
-            # polls in the same section. We tag everything "general" by default
-            # and let the dashboard / downstream code handle stage assignment
-            # if needed. Could be improved by looking at section subheaders
-            # ("Primary results" → primary).
-            stage = "general"
-            new_rows = parse_poll_table(el, race_id, stage)
+            new_rows = parse_poll_table(
+                el, race_id, current_stage, default_party=current_party,
+            )
+            rows.extend(new_rows)
+    return rows
+
+
+def _scrape_state_race(url: str, race_id: str) -> list[dict]:
+    """Shared helper for state-level races (Senate, Governor). Walks the
+    DOM in document order so we know the closest preceding
+    'Republican primary' / 'Democratic primary' / 'General election'
+    section header, and use it to derive (stage, party) for each
+    table. Falls back to ('general', '') when no section context
+    applies."""
+    html = fetch_page(url)
+    if html is None:
+        return []
+    soup = BeautifulSoup(html, "html.parser")
+    rows = []
+    current_stage, current_party = "general", ""
+    for el in soup.find_all(["h2", "h3", "h4", "table"]):
+        if el.name in ("h2", "h3", "h4"):
+            s, p = infer_section_context(el.get_text(" ", strip=True))
+            if s: current_stage = s
+            if p: current_party = p
+            # No party-bearing keywords means this is a non-partisan
+            # section heading (e.g. "Campaign", "Endorsements") — only
+            # reset stage if it ALSO had no stage match, otherwise we'd
+            # lose section context every time we passed a sub-header.
+            # In practice infer_section_context returns ('','') for
+            # those, so we don't overwrite.
+        elif el.name == "table":
+            classes = el.get("class", []) or []
+            if "wikitable" not in classes:
+                continue
+            new_rows = parse_poll_table(
+                el, race_id, current_stage, default_party=current_party,
+            )
             rows.extend(new_rows)
     return rows
 
 
 def scrape_senate_state(state_abbrev: str) -> list[dict]:
-    """Scrape the Senate page for one state."""
     state = STATES.get(state_abbrev)
     if not state:
         return []
-    url = URL_SENATE.format(state=state)
-    html = fetch_page(url)
-    if html is None:
-        return []
-    soup = BeautifulSoup(html, "html.parser")
-    rows = []
-    race_id = f"2026-SEN-{state_abbrev}"
-    for table in soup.find_all("table"):
-        classes = table.get("class", []) or []
-        if "wikitable" not in classes:
-            continue
-        # Senate pages also have non-polling tables. parse_poll_table will
-        # return [] for anything not actually a polling table.
-        new_rows = parse_poll_table(table, race_id, "general")
-        rows.extend(new_rows)
-    return rows
+    return _scrape_state_race(URL_SENATE.format(state=state), f"2026-SEN-{state_abbrev}")
 
 
 def scrape_governor_state(state_abbrev: str) -> list[dict]:
-    """Scrape the Governor page for one state."""
     state = STATES.get(state_abbrev)
     if not state:
         return []
-    url = URL_GOVERNOR.format(state=state)
-    html = fetch_page(url)
-    if html is None:
-        return []
-    soup = BeautifulSoup(html, "html.parser")
-    rows = []
-    race_id = f"2026-GOV-{state_abbrev}"
-    for table in soup.find_all("table"):
-        classes = table.get("class", []) or []
-        if "wikitable" not in classes:
-            continue
-        new_rows = parse_poll_table(table, race_id, "general")
-        rows.extend(new_rows)
-    return rows
+    return _scrape_state_race(URL_GOVERNOR.format(state=state), f"2026-GOV-{state_abbrev}")
 
 
 def scrape_generic_ballot() -> list[dict]:
@@ -541,11 +581,9 @@ def scrape_generic_ballot() -> list[dict]:
 
 def scrape_mayoral(year: int, city_slug: str, race_id_slug: str) -> list[dict]:
     """Scrape one mayoral race page. race_id pattern is
-    'YYYY-MAYOR-<slug>' (e.g. '2025-MAYOR-nyc'). Note this is intentionally
-    NOT the same shape as state-race race_ids ('YYYY-OFFICE-STATE') —
-    regen_data.py's len(parts) < 3 guard catches the right ones but we
-    want mayoral polls routed to the separate Raw Polls sub-tab anyway.
-    Stage tag 'mayoral' lets downstream filter on it.
+    'YYYY-MAYOR-<slug>'. Stage stays 'mayoral' so the Raw Polls
+    sub-tab can route accordingly; section-context still feeds
+    default_party for primary tables.
     """
     url = f"https://en.wikipedia.org/wiki/{year}_{city_slug}_mayoral_election"
     html = fetch_page(url)
@@ -554,12 +592,20 @@ def scrape_mayoral(year: int, city_slug: str, race_id_slug: str) -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
     rows = []
     race_id = f"{year}-MAYOR-{race_id_slug}"
-    for table in soup.find_all("table"):
-        classes = table.get("class", []) or []
-        if "wikitable" not in classes:
-            continue
-        new_rows = parse_poll_table(table, race_id, "mayoral")
-        rows.extend(new_rows)
+    current_party = ""
+    for el in soup.find_all(["h2", "h3", "h4", "table"]):
+        if el.name in ("h2", "h3", "h4"):
+            _, p = infer_section_context(el.get_text(" ", strip=True))
+            if p: current_party = p
+        elif el.name == "table":
+            classes = el.get("class", []) or []
+            if "wikitable" not in classes:
+                continue
+            new_rows = parse_poll_table(
+                table=el, race_id=race_id, stage="mayoral",
+                default_party=current_party,
+            )
+            rows.extend(new_rows)
     return rows
 
 

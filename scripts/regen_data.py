@@ -88,35 +88,47 @@ else:
     combined = combined[
         combined['end_date_iso'].str.match(r"^\d{4}-\d{2}-\d{2}$", na=False)
     ].copy()
-    # Source-aware dedup. Two passes:
-    #   1. Cross-source: drop wikipedia rows whose
-    #      (race_id, pollster, end_date, candidate) already appears in
-    #      NYT. NYT is canonical when both sources have the same poll.
-    #   2. Within-source: do NOT collapse rows further. NYT publishes
-    #      multi-question polls where the same candidate (e.g. Mike
-    #      Rogers) appears in 3 different head-to-head matchups under
-    #      the same poll_id. Dropping those duplicates makes the
-    #      polls_data.js per-question grouping lose pairs. Same goes
-    #      for Wikipedia tables that publish multiple matchup tables
-    #      on the same race page.
+    # Whole-poll dedup. Earlier per-candidate dedup left orphan rows:
+    # if NYT's "Genter Drummond" matched Wiki's "Mike Mazzei" for the
+    # same poll but NYT spelled "Gentner" without the second 't' so
+    # Drummond's name didn't match, we'd drop Mazzei from Wiki and
+    # leave a Drummond-only "poll" — which the dashboard rendered as a
+    # second duplicate row. Whole-poll fix: if ANY candidate in a Wiki
+    # (race_id, pollster, end_date) matches ANY NYT row in the same
+    # (race_id, pollster, end_date), drop the entire Wiki poll. NYT is
+    # canonical; if they have the same survey, prefer their data.
     n_before = len(combined)
-    nyt_keys = set()
     if 'source' in combined.columns:
         nyt_mask = combined['source'].eq('nyt')
-        nyt_keys = set(
+        nyt_keys_full = set(
             zip(combined.loc[nyt_mask, 'race_id'],
                 combined.loc[nyt_mask, 'pollster'],
                 combined.loc[nyt_mask, 'end_date_iso'],
                 combined.loc[nyt_mask, 'candidate'])
         )
-        def drop_wiki_if_nyt_has(r):
-            if r['source'] != 'wikipedia':
-                return True
-            return (r['race_id'], r['pollster'], r['end_date_iso'], r['candidate']) not in nyt_keys
-        combined = combined[combined.apply(drop_wiki_if_nyt_has, axis=1)].copy()
+        # The poll-level keys NYT has — used to drop wiki polls that
+        # share (race_id, pollster, end_date) AND have at least one
+        # overlapping candidate.
+        wiki_mask = combined['source'].eq('wikipedia')
+        wiki = combined[wiki_mask]
+        # Group wiki by poll-level key; for each group, check if any
+        # candidate appears in nyt_keys_full at the matching key.
+        polls_to_drop = set()
+        for (rid, pollster, dt), grp in wiki.groupby(
+                ['race_id', 'pollster', 'end_date_iso']):
+            for cand in grp['candidate']:
+                if (rid, pollster, dt, cand) in nyt_keys_full:
+                    polls_to_drop.add((rid, pollster, dt))
+                    break
+        if polls_to_drop:
+            keep_mask = ~(
+                combined['source'].eq('wikipedia') &
+                combined.set_index(['race_id', 'pollster', 'end_date_iso']).index.isin(polls_to_drop)
+            )
+            combined = combined[keep_mask].copy()
     n_dropped = n_before - len(combined)
     if n_dropped:
-        print(f"  Deduped: dropped {n_dropped} wikipedia rows that NYT already carries")
+        print(f"  Deduped: dropped {n_dropped} wikipedia rows from polls NYT already carries")
     polls = combined
     print(f"Polls after parse + dedup: {len(polls)}")
 
