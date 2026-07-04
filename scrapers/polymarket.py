@@ -155,33 +155,72 @@ def _get(path: str, params: dict = None, max_retries: int = 4) -> list | dict:
     raise RuntimeError(f"Polymarket {path} failed after {max_retries} retries")
 
 
-def fetch_all_active_markets(limit: int = 100) -> list[dict]:
-    """
-    Paginate through ALL active Polymarket events; flatten into markets.
-    Each market is annotated with its parent event_slug so we can build
-    working polymarket.com/event/{slug} URLs.
-    Returns only election-related markets.
-    """
-    all_markets = []
-    offset = 0
-    page = 0
+# Tag slugs whose event universes together cover US election markets.
+# Verified live 2026-07-03: elections = 825 events / 11,359 markets,
+# politics = 1,365 / 14,269, us-election = 52 / 746 — each comfortably
+# under the 2000-offset cap.
+TAG_SLUGS = ["elections", "politics", "us-election"]
 
-    while True:
+# Gamma hard-caps `offset` at 2000 (HTTP 422 beyond, since ~mid-June 2026)
+# and /events/keyset is broken (cursor ignored — probed 2026-06-21 in the
+# pred-arb repo). Worse, the DEFAULT sort is id ASCENDING = oldest first,
+# so an unfiltered scan only ever sees the ~2000 OLDEST active events and
+# never sees newly listed markets. Fix (2026-07-03): query per tag_slug —
+# each filtered query gets its own 2000-offset window, and the election
+# and politics tag universes fit entirely inside it.
+OFFSET_CAP = 2000
+
+
+def _fetch_events_for_tag(tag_slug: str, limit: int = 100) -> list[dict]:
+    """Paginate active events for one tag_slug up to the offset cap."""
+    events = []
+    offset = 0
+    while offset < OFFSET_CAP:
         try:
-            batch = _get("/events", {"limit": limit, "active": "true", "closed": "false", "offset": offset})
+            batch = _get("/events", {
+                "limit": limit, "active": "true", "closed": "false",
+                "offset": offset, "tag_slug": tag_slug,
+            })
         except Exception as e:
-            # Polymarket gamma now returns HTTP 422 once `offset` exceeds an
-            # internal cap (~20–25k). Treat that (and any other transient
-            # API error) as end-of-stream rather than failing the run.
-            print(f"  Error at offset {offset}: {e} — stopping pagination")
+            print(f"  Error at tag={tag_slug} offset={offset}: {e} — stopping this tag")
             break
         if not batch:
             break
+        events.extend(batch)
+        if len(batch) < limit:
+            break
+        offset += limit
+    if offset >= OFFSET_CAP:
+        print(f"  WARNING: tag={tag_slug} hit the {OFFSET_CAP}-offset cap — "
+              f"universe grew past the cap, coverage is truncated. Consider "
+              f"adding order=id&ascending=false second pass (verified working).")
+    return events
 
-        for event in batch:
+
+def fetch_all_active_markets(limit: int = 100) -> list[dict]:
+    """
+    Fetch active Polymarket events via per-tag queries; flatten into markets.
+    Each market is annotated with its parent event_slug so we can build
+    working polymarket.com/event/{slug} URLs.
+    Returns only election-related markets (keyword filter kept as a
+    secondary sieve — the politics tag includes non-race markets).
+    """
+    all_markets = []
+    seen_event_ids = set()
+    seen_market_ids = set()
+
+    for tag in TAG_SLUGS:
+        batch = _fetch_events_for_tag(tag, limit)
+        new = [e for e in batch if e.get("id") not in seen_event_ids]
+        print(f"  tag={tag}: {len(batch)} events ({len(new)} new)")
+        for event in new:
+            seen_event_ids.add(event.get("id"))
             event_slug = event.get("slug", "") or ""
             event_title = event.get("title", "") or ""
             for m in event.get("markets", []) or []:
+                mid = m.get("id")
+                if mid in seen_market_ids:
+                    continue
                 q = m.get("question", "").lower()
                 t = event_title.lower()
                 combined = q + " " + t
@@ -189,17 +228,10 @@ def fetch_all_active_markets(limit: int = 100) -> list[dict]:
                     any(k in combined for k in ELECTION_KEYWORDS)
                     and not any(k in combined for k in EXCLUDE_KEYWORDS)
                 ):
+                    seen_market_ids.add(mid)
                     m["_event_slug"] = event_slug
                     m["_event_title"] = event_title
                     all_markets.append(m)
-
-        page += 1
-        if len(batch) < limit:
-            break
-        offset += limit
-
-        if page % 10 == 0:
-            print(f"  Scanned {offset} events, found {len(all_markets)} election markets so far")
 
     return all_markets
 
@@ -349,9 +381,20 @@ def run():
 
     df = df.drop_duplicates(subset=["condition_id"])
 
+    # Drop markets whose endDate is already past. Polymarket leaves
+    # active=true&closed=false on a meaningful share of expired events;
+    # trusting the flags lets dead props into the matcher.
+    if "end_date" in df.columns:
+        end = pd.to_datetime(df["end_date"], errors="coerce", utc=True)
+        now = pd.Timestamp.now(tz="UTC")
+        before = len(df)
+        df = df[end.isna() | (end >= now)]
+        if before != len(df):
+            print(f"  Dropped {before - len(df)} markets with past end_date")
+
     # Drop unrealistic markets:
     #   1. Liquidity < $200 — basically no real trading
-    #   2. Spread (best_ask - best_bid) > 30pp — only one-sided standing
+    #   2. Spread (best_ask - best_bid) > 20pp — only one-sided standing
     #      orders, no two-sided market. Pairing these against active
     #      Kalshi markets produces fake 80%+ "guaranteed" arbs against
     #      a $0.97 sell order that nothing would actually fill.
@@ -362,12 +405,12 @@ def run():
         has_two_sided = bb.notna() & ba.notna() & ((ba - bb) <= 0.20)
         before = len(df)
         df = df[(liq >= 200) & has_two_sided]
-        print(f"  Dropped {before - len(df)} markets (liquidity<$200 or spread>30pp)")
+        print(f"  Dropped {before - len(df)} markets (liquidity<$200 or spread>20pp)")
 
     df.to_csv(out_path, index=False)
     print(f"Saved {len(df)} markets to {out_path}")
-    print("\nMarket questions found:")
-    for q in df["question"].tolist():
+    print("\nSample market questions (first 20):")
+    for q in df["question"].head(20).tolist():
         print(f"  - {q}")
 
 

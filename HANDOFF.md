@@ -1,9 +1,16 @@
 # Handoff — Polling Aggregator & Prediction Markets
 
-**Last updated:** 2026-06-18
+**Last updated:** 2026-07-03
 **Status:** Live dashboard at https://pjmerica.github.io/polling-agg-2026/.
-GitHub Actions runs the full pipeline twice daily (12:00 + 00:00 UTC) and
-pushes refreshed `docs/*.js` back to master. Pages auto-redeploys.
+GitHub Actions runs the full pipeline twice daily (12:00 + 00:00 UTC) and a
+fast markets-only loop every 2h on odd hours at :30 (`market-refresh.yml`),
+both pushing refreshed `docs/*.js` back to master. Pages auto-redeploys.
+
+> **2026-07-03 major rework** — real-quote arb math (YES+NO baskets),
+> tag-based Polymarket scrape, bulk Kalshi scrape, settle dates/annualized
+> returns, freshness guard, 2h market cadence. Read
+> `AGENT_EXECUTION_NOTES.md` "What was implemented" for the full delta;
+> sections below are updated but that file is the authoritative record.
 
 If you're picking this up cold, read this top-to-bottom once. The
 "Gotchas" section is where most of the weeks-of-pain debugging lives.
@@ -74,8 +81,17 @@ outage.
 
 ### GitHub Actions
 
-`.github/workflows/refresh.yml`. Schedule: `0 12 * * *` and `0 0 * * *`.
-The job:
+Two workflows sharing `concurrency: group: refresh` (they queue, never
+race each other's commit step):
+
+- `.github/workflows/refresh.yml` — full pipeline, `0 12 * * *` and
+  `0 0 * * *`. Commit prefix `data refresh:`.
+- `.github/workflows/market-refresh.yml` (added 2026-07-03) — market
+  scrapers + arb scan only (`run_all.py --markets-only`, ~2-3 min),
+  every 2h at :30 on odd hours. Commit prefix `market refresh:`. Odd
+  hours keep it clear of the full runs and of pred-arb's 12:30 cron.
+
+The full-refresh job:
 
 1. `actions/checkout@v4` — gets the latest master (incl. yesterday's
    tracked `docs/*` and `data/processed/excluded_pairs.json`).
@@ -104,13 +120,23 @@ Kalshi/PredictIt/Polymarket on canonical `race_id` (e.g. `2026-SEN-PA`).
 For each race, picks the highest-volume "Will Dems win X?" / "Will Reps
 win X?" market per platform, then crosses them. Computes:
 
-- `raw_gap_pp` — abs difference in implied Dem-win probability.
+- `raw_gap_pp` — abs difference in implied Dem-win probability (DISPLAY
+  prices; never used in basket math).
 - `net_gap_pp` — raw gap minus both platforms' fees.
-- `arb_type` — `"guaranteed"` if you can buy YES Dem on the cheap
-  platform AND buy YES Rep on the expensive platform (or NO Dem,
-  equivalently) for a combined cost <1 after fees. Otherwise `"one-sided"`.
-- Stake sizing for guaranteed arbs (in `compute_arb_math` /
-  `make_pair`).
+- `arb_type` — `"guaranteed"` (since 2026-07-03) means: Buy Dem-YES on one
+  platform at the real ASK + Buy Dem-NO on the other at the real NO-ASK
+  for combined cost < $1 after fees, with net return > 0.25%, using REAL
+  quotes on both legs (Kalshi NO = 1 − yes_bid, exact on its unified book;
+  Polymarket NO = the NO token's live orderbook ask; PredictIt NO =
+  bestBuyNoCost). Otherwise `"one-sided"`. The old midpoint-based
+  Dem-YES + Rep-YES basket (and its `safe_rep` 3-way-race guard) is gone —
+  the same-question YES/NO basket is a binary partition, immune to
+  independents.
+- Stake sizing for guaranteed arbs (in `compute_arb` / `make_pair`).
+- `settle_date` / `days_to_settle` / `annualized_return_pct` — later leg's
+  settlement (Kalshi `expected_expiration_time`, NOT `close_time` which is
+  a year-late buffer), and return annualized over the lock-up. The
+  dashboard's "Settles" column sorts on this.
 
 Both Kalshi and Polymarket loaders inner-join Dem and Rep; only races
 with both sides explicitly priced reach the scanner. See the "Do not"
@@ -125,12 +151,16 @@ Matching key is `(state, office, district, candidate_last,
 candidate_first)` — no party in the key because general-election
 candidate names are unambiguous (the surname carries identity).
 
-These rows are emitted as `arb_type: "one-sided"` even when the gap is
-large. Reason: the template gives you `P(candidate wins)` on each
-platform, but neither Kalshi nor Polymarket lists `P(candidate loses)`
-as a separately tradeable contract under this template. A real arb
-would need the no-leg or a competing-candidate-yes leg on the
-expensive side, which the scanner doesn't try to construct.
+~~These rows are emitted as `arb_type: "one-sided"`~~ **CORRECTED
+2026-07-03**: the old claim that "neither Kalshi nor Polymarket lists
+P(candidate loses) as tradeable" was wrong — every Kalshi binary market
+has a NO side (unified book), every Polymarket binary market has a NO
+token (we scrape `no_token_id`), and PredictIt quotes Buy-No. Candidate
+pairs now run the same real-quote YES+NO basket math as general pairs
+and are promoted to `"guaranteed"` when the books justify it. Every
+promoted candidate pair is additionally run through rules-text scrutiny
+at threshold 0 (criteria-divergence risk is highest on same-name
+candidate markets: runoffs, specials, withdrawal rules).
 
 `_GEN_CAND_EXCLUDE` and `_GEN_CAND_SUBJECT_SKIP` regexes drop noise
 templates ("Will X win Harris County?", "Will X finish 3rd?", "Will X
@@ -297,7 +327,17 @@ docs/                  GitHub Pages site. Tracked.
 - **Polymarket gamma snapshots lag the live CLOB book.** A market with
   tight gamma quotes can have a wide live book by the time fetch_depth
   polls it. The depth-derived spread filter in arb_scanner.py is the
-  backup.
+  backup, and since 2026-07-03 the pass-2 recompute reprices every
+  basket on the live books anyway.
+- **Polymarket gamma pagination is capped and oldest-first.** `offset`
+  hard-caps at 2000 (HTTP 422 beyond, since ~mid-June 2026), the
+  `/events/keyset` replacement ignores its cursor (probed 2026-06-21),
+  and the DEFAULT sort is id ascending = oldest events first — an
+  unfiltered scan never sees newly listed markets. That's why
+  `scrapers/polymarket.py` queries per `tag_slug` (each tag gets its own
+  2000-offset window). If a tag's universe outgrows the cap, the scraper
+  prints a WARNING — then add a second pass with
+  `order=id&ascending=false` (verified working 2026-07-03).
 - **Kalshi orderbook semantics.** The `/orderbook` endpoint returns
   `yes_dollars` and `no_dollars` which are stacks of resting BUY
   orders, not asks. Best YES bid = max price in `yes_dollars`. Best
@@ -390,6 +430,14 @@ docs/                  GitHub Pages site. Tracked.
   explicitly priced reach the scanner. If you want to surface
   one-sided coverage somewhere, do it in the Polling vs Markets tab or
   a separate "coverage" view — never feed it back into arb math.
+  **Clarification (2026-07-03):** the new arb math's Kalshi NO ask
+  (`1 − yes_bid`) is NOT this pattern. The ban is on inferring a
+  DIFFERENT market's price from a midpoint; `1 − yes_bid` on the SAME
+  Kalshi market is exact (its YES and NO books are one book — buying NO
+  at 1−p literally fills against the resting YES bid at p). Polymarket
+  NO asks come from the real NO-token book; never infer those from
+  midpoints either (that's `no_ask_real=False`, which blocks the
+  guaranteed label by design).
 
 ---
 

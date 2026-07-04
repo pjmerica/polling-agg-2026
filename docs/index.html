@@ -431,6 +431,8 @@ tr:hover td { background: #1a2035; }
     <p class="mismatch-explainer">
       Same race, different prices across prediction markets. <strong>Raw gap</strong> = difference in implied probability between platforms (Dem win probability for general-election rows; nominee probability for the named candidate on primary-candidate rows).
       <strong>Net gap</strong> subtracts estimated round-trip fees (Kalshi ~2%, Polymarket ~2%, PredictIt ~12%). Positive net gap = theoretical arb.
+      <strong>★ Guaranteed</strong> means a Buy-YES + Buy-NO basket across the two platforms costs &lt;$1 after fees at <em>real fillable quotes</em> (live ask / NO-ask, not midpoints) — locked profit either way the race resolves.
+      <strong>Settles</strong> is when both legs pay out; the green %/yr is the guaranteed return annualized over that lock-up (sort by it to find arbs that cash soonest).
       <strong>Tradeable</strong> shows max contracts you could buy on each side (A / B) before paying ≥3pp worse than best ask — the smaller side caps the realistic trade. Red &lt;50, yellow &lt;500, green ≥500.
       <span id="arb-updated" style="color:#4a5568;font-size:0.75rem;display:block;margin-top:4px;"></span>
     </p>
@@ -447,6 +449,7 @@ tr:hover td { background: #1a2035; }
           <th data-arbcol="net_gap_pp">Net Gap</th>
           <th data-arbcol="depth_a_max_at_3pp" title="Max contracts you could buy on each side before paying >=3pp worse than best ask. Lower side caps the trade.">Tradeable</th>
           <th data-arbcol="guaranteed_return_pct">Guaranteed Return</th>
+          <th data-arbcol="days_to_settle" title="When both legs settle (later of the two). For guaranteed arbs, the green number is the return annualized over the capital lock-up — the 'sooner they cash' ranking metric.">Settles</th>
           <th>Bet ($100 total)</th>
           <th data-arbcol="match_type" title="How the two markets were paired">Match</th>
           <th>Action / Links</th>
@@ -1284,6 +1287,14 @@ function renderArbTable() {
       ? `<span class="arb-gap-pos" style="font-weight:700">${r.guaranteed_return_pct.toFixed(1)}%</span>`
       : '<span style="color:#4a5568">—</span>';
 
+    // Settlement timing: date + days out; for guaranteed arbs also the
+    // annualized return (profit scaled to the capital lock-up period).
+    const apyPart = isGuaranteed && r.annualized_return_pct != null
+      ? ` · <span style="color:#34d399">${r.annualized_return_pct.toFixed(1)}%/yr</span>` : '';
+    const settleCell = r.settle_date
+      ? `<span style="font-size:0.72rem;color:#94a3b8">${r.settle_date}<br><span style="color:#4a5568;font-size:0.66rem">${r.days_to_settle != null ? Math.round(r.days_to_settle) + 'd' : ''}${apyPart}</span></span>`
+      : '<span style="color:#4a5568">—</span>';
+
     // Stake ratio — show as dollar amounts for $100 total
     const stakeCell = isGuaranteed && r.stake_a_dollars != null
       ? `<span style="font-size:0.72rem;color:#94a3b8">${platLabel(pa)} <strong>$${r.stake_a_dollars.toFixed(2)}</strong> / ${platLabel(pb)} <strong>$${r.stake_b_dollars.toFixed(2)}</strong><br><span style="color:#34d399;font-size:0.68rem">+$${r.profit_dollars != null ? r.profit_dollars.toFixed(2) : '—'} profit</span></span>`
@@ -1363,11 +1374,12 @@ function renderArbTable() {
       <td class="${netCls}">${netStr}</td>
       <td>${tradeableCell}</td>
       <td>${retCell}</td>
+      <td>${settleCell}</td>
       <td>${stakeCell}</td>
       <td>${matchBadge}</td>
       <td class="arb-action" style="font-size:0.72rem">${r.action}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="13" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
+  }).join('') || '<tr><td colspan="14" style="text-align:center;color:#4a5568;padding:20px">No races match filters</td></tr>';
 
   // Wire sort headers + draw arrow on the active column
   document.querySelectorAll('#arb-table th[data-arbcol]').forEach(th => {

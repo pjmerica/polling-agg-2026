@@ -123,13 +123,48 @@ def fetch_all_series() -> list[dict]:
 
 
 def fetch_events_for_series(series_ticker: str) -> list[dict]:
-    """Fetch events with nested markets for a series."""
+    """Fetch events with nested markets for a series.
+
+    LEGACY (kept for ad-hoc debugging of a single series). The pipeline
+    no longer calls this — fetch_all_open_events() replaced the
+    one-request-per-series loop that was eating ~7 of the pipeline's
+    ~10.5 minutes (1,573 series × 1 request × 0.2s sleep, 2026-07-03).
+    """
     data = _get("/events", {
         "series_ticker": series_ticker,
         "with_nested_markets": "true",
         "limit": "200",
     })
     return data.get("events", [])
+
+
+def fetch_all_open_events() -> list[dict]:
+    """Fetch ALL open events with nested markets via cursor pagination.
+
+    One paginated sweep (~25-40 requests for ~5k open events) instead of
+    one request per series. Same response shape per event/market as the
+    per-series endpoint, so parse_market_row is unchanged. Events carry
+    their own `series_ticker` field, which we use to filter to election
+    series downstream.
+    """
+    events = []
+    cursor = None
+    page = 0
+    while True:
+        params = {"limit": "200", "status": "open", "with_nested_markets": "true"}
+        if cursor:
+            params["cursor"] = cursor
+        data = _get("/events", params)
+        batch = data.get("events", [])
+        events.extend(batch)
+        cursor = data.get("cursor")
+        page += 1
+        if page % 10 == 0:
+            print(f"  Progress: {page} pages, {len(events)} events so far")
+        if not cursor or len(batch) < 200:
+            break
+        time.sleep(0.1)
+    return events
 
 
 def infer_race_id(series_ticker: str, series_title: str, event_ticker: str = "") -> str | None:
@@ -225,24 +260,27 @@ def parse_market_row(event: dict, market: dict, series_ticker: str, series_title
     yes_ask = _to_float(market.get("yes_ask_dollars"))
     last_price = _to_float(market.get("last_price_dollars"))
 
-    # Use the bid/ask midpoint when the book has a tight spread (a real
-    # two-sided market). If the spread is wide (>30pp) there's no active
-    # quoting — only stale limit orders at price-range endpoints — and the
-    # midpoint is meaningless. Example: IN-07 Dem had yes_bid=$0.10 and
-    # yes_ask=$0.97 (87pp spread); the midpoint $0.535 was paired against
-    # Polymarket's real $0.92 and produced a fake 40pp arb.
+    # implied_prob = last_price first. This is the DISPLAY price — what
+    # kalshi.com shows as the headline number. Using the midpoint here
+    # made our dashboard disagree with Kalshi's own UI by several pp on
+    # illiquid markets ("dashboard shows 18, Kalshi shows 14" —
+    # pred-arb incident 2026-06-21; ported here 2026-07-03).
+    # Arb math does NOT use this — it runs on real bid/ask (scrape-time
+    # columns below, overridden by live depth in arb_scanner pass 2).
     #
-    # When the book is broken, fall back to last_price if it's recent;
-    # otherwise drop the prob so the matcher won't pair this market.
+    # Fallback chain when last_price is missing or pinned at the ends:
+    #   midpoint (tight book) → ask → bid → None (drop from matcher).
+    # The wide-spread guard stays: a >30pp book has no active quoting
+    # (IN-07 Dem: bid $0.10 / ask $0.97 — midpoint $0.535 was fiction).
     implied_prob = None
-    if yes_bid is not None and yes_ask is not None and (yes_ask - yes_bid) <= 0.30:
+    if last_price is not None and 0.01 < last_price < 0.99:
+        implied_prob = last_price
+    elif yes_bid is not None and yes_ask is not None and (yes_ask - yes_bid) <= 0.30:
         implied_prob = (yes_bid + yes_ask) / 2
     elif yes_ask is not None and yes_bid is None:
         implied_prob = yes_ask  # one-sided ask available
     elif yes_bid is not None and yes_ask is None:
         implied_prob = yes_bid
-    elif last_price is not None and 0.01 < last_price < 0.99:
-        implied_prob = last_price
 
     return {
         "race_id": race_id,
@@ -264,6 +302,12 @@ def parse_market_row(event: dict, market: dict, series_ticker: str, series_title
         "volume": _to_float(market.get("volume_fp")),
         "volume_24h": _to_float(market.get("volume_24h_fp")),
         "status": market.get("status"),
+        # Settlement timing — used by arb_scanner to compute days_to_settle
+        # and annualized return ("sooner they cash" ranking). close_time is
+        # when trading stops; expected_expiration_time is expected
+        # settlement. They can differ — keep both.
+        "close_time": market.get("close_time"),
+        "expected_expiration_time": market.get("expected_expiration_time"),
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -275,24 +319,37 @@ def run(delay: float = 0.2):
     print("Fetching Kalshi election series list (v2)...")
     series_list = fetch_all_series()
     print(f"  Found {len(series_list)} election-related series")
+    # ticker -> title map; also the membership filter for the bulk sweep.
+    series_titles = {s["ticker"]: s.get("title", "") for s in series_list}
 
+    print("Fetching all open events (bulk cursor pagination)...")
+    events = fetch_all_open_events()
+    print(f"  Got {len(events)} open events total")
+
+    now = datetime.now(timezone.utc)
     rows = []
-    for i, series in enumerate(series_list):
-        ticker = series["ticker"]
-        title = series.get("title", "")
-        try:
-            events = fetch_events_for_series(ticker)
-        except Exception as e:
-            print(f"  WARNING: failed to fetch events for {ticker}: {e}")
+    skipped_past = 0
+    for event in events:
+        ticker = event.get("series_ticker", "")
+        if ticker not in series_titles:
             continue
-
-        for event in events:
-            for market in event.get("markets", []):
-                rows.append(parse_market_row(event, market, ticker, title))
-
-        if (i + 1) % 50 == 0:
-            print(f"  Progress: {i+1}/{len(series_list)} series, {len(rows)} markets so far")
-        time.sleep(delay)
+        title = series_titles[ticker]
+        for market in event.get("markets", []):
+            row = parse_market_row(event, market, ticker, title)
+            # Drop markets whose trading close is already past — Kalshi
+            # leaves a large share of expired markets flagged "open".
+            ct = row.get("close_time")
+            if ct:
+                try:
+                    close_dt = datetime.fromisoformat(str(ct).replace("Z", "+00:00"))
+                    if close_dt < now:
+                        skipped_past += 1
+                        continue
+                except (ValueError, TypeError):
+                    pass
+            rows.append(row)
+    if skipped_past:
+        print(f"  Skipped {skipped_past} markets with past close_time")
 
     df = pd.DataFrame(rows)
     out_path = RAW_DATA_DIR / "kalshi_markets.csv"

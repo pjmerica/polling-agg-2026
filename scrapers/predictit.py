@@ -141,6 +141,8 @@ def parse_contract(market: dict, contract: dict, race_id: str | None) -> dict:
     last = contract.get("lastTradePrice")
     buy_yes = contract.get("bestBuyYesCost")    # price to BUY YES (= ask)
     sell_yes = contract.get("bestSellYesCost")  # price to SELL YES (= bid)
+    buy_no = contract.get("bestBuyNoCost")      # price to BUY NO (= NO ask)
+    sell_no = contract.get("bestSellNoCost")    # price to SELL NO (= NO bid)
 
     # PredictIt reports the full price range ($0.01–$0.99) as bid/ask when
     # a contract has no real two-sided market. Naively averaging gives a
@@ -175,7 +177,17 @@ def parse_contract(market: dict, contract: dict, race_id: str | None) -> dict:
         "last_trade_price": last,
         "best_buy_yes": buy_yes,
         "best_sell_yes": sell_yes,
+        # NO-side quotes: PredictIt YES and NO are separately quoted books.
+        # best_buy_no is a real fillable NO ask — needed for YES+NO basket
+        # math on pairs with a PredictIt leg (PI has no orderbook endpoint,
+        # so these top-of-book quotes are the only fillable prices we get).
+        "best_buy_no": buy_no,
+        "best_sell_no": sell_no,
         "implied_prob": round(implied_prob, 4) if implied_prob is not None else None,
+        # Contract end date — used for days_to_settle / annualized return.
+        # PredictIt dateEnd is often "N/A" or a trading-halt date, not a
+        # settlement guarantee; treat as approximate.
+        "date_end": contract.get("dateEnd"),
         "status": market.get("status"),
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     }

@@ -1,0 +1,58 @@
+name: Market refresh
+
+# Fast loop: market scrapers + arb scan only (~2-3 min). Runs every 2 hours
+# at :30 on ODD hours so it never collides with the full "Daily refresh"
+# (00:00 / 12:00 UTC) and stays offset from the sibling pred-arbitrage
+# repo's cron (12:30 UTC) — we deliberately don't hit the Kalshi/Polymarket
+# APIs from both repos at the same minute.
+#
+# Why this exists: arbs decay in minutes-to-hours. The full pipeline only
+# ran twice a day, so most short-lived mispricings were never seen. The
+# polls/primaries scrape (the slow part) doesn't gate arb detection, so it
+# stays on the twice-daily schedule in refresh.yml.
+
+on:
+  schedule:
+    - cron: '30 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
+  workflow_dispatch:
+
+# Same group as refresh.yml: a market run queues behind a full run instead
+# of racing it to the commit step.
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  market-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Run market pipeline
+        run: python -u run_all.py --markets-only
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ docs/arb_data.js
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "market refresh: $(date -u +%Y-%m-%dT%H:%MZ)"
+            for i in 1 2 3; do
+              if git push; then break; fi
+              echo "Push rejected, rebasing on origin/master (attempt $i)…"
+              git pull --rebase origin master
+            done
+          fi

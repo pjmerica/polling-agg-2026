@@ -164,7 +164,7 @@ def fetch_one(platform: str, market_id: str) -> dict:
     return d
 
 
-def run(targets_csv: Path = None, out_csv: Path = None, delay: float = 0.1):
+def run(targets_csv: Path = None, out_csv: Path = None, workers: int = 12):
     targets_csv = targets_csv or (PROCESSED / "depth_targets.csv")
     out_csv = out_csv or (RAW / "orderbook_depth.csv")
     if not targets_csv.exists():
@@ -174,14 +174,15 @@ def run(targets_csv: Path = None, out_csv: Path = None, delay: float = 0.1):
     targets = pd.read_csv(targets_csv, dtype={"market_id": str})
     targets = targets[targets["platform"].isin(["kalshi", "polymarket"])].copy()
     targets = targets.dropna(subset=["market_id"]).drop_duplicates(subset=["platform", "market_id"])
-    print(f"Fetching depth for {len(targets)} markets...")
+    print(f"Fetching depth for {len(targets)} markets ({workers} threads)...")
 
-    rows = []
-    for i, (_, r) in enumerate(targets.iterrows()):
-        rows.append(fetch_one(r["platform"], str(r["market_id"])))
-        if (i + 1) % 25 == 0:
-            print(f"  {i+1}/{len(targets)} fetched")
-        time.sleep(delay)
+    # Parallel fetch (2026-07-03; was serial + 0.1s sleep = ~66s for 372
+    # books). Same pattern as pred-arb's freshen_polymarket.py. Both
+    # orderbook endpoints tolerate this concurrency level fine.
+    from concurrent.futures import ThreadPoolExecutor
+    pairs = [(r["platform"], str(r["market_id"])) for _, r in targets.iterrows()]
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        rows = list(ex.map(lambda t: fetch_one(*t), pairs))
 
     df = pd.DataFrame(rows)
     df["market_id"] = df["market_id"].astype(str)

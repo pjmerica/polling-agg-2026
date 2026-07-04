@@ -5,19 +5,18 @@ Compares implied probabilities for the same event across Kalshi, PredictIt,
 and Polymarket. Flags gaps after estimated fees and computes guaranteed arb
 stake ratios where applicable.
 
-Fee assumptions (round-trip):
-  Kalshi:    ~7%  (maker/taker on entry + exit)
-  PredictIt: ~15% (10% on profits + 5% withdrawal)
-  Polymarket: ~2% (low-fee CLOB)
+Fee assumptions (round-trip): see the FEES dict below — it is the single
+source of truth (currently Kalshi 2%, Polymarket 2%, PredictIt 12%).
 
 Arb types:
-  guaranteed — pA_dem + pB_rep < 1 (or pA_rep + pB_dem < 1) after fees.
-               You can buy both sides and lock in a profit regardless of outcome.
-               Stake ratio: sA / sB = (1 - pB) / (1 - pA)
-               Guaranteed return % = 1/(pA + pB) - 1  (approx, ignoring fees)
+  guaranteed — Buy YES on one platform + Buy NO on the other for a combined
+               cost < $1 after fees, using REAL fillable quotes on both
+               legs (ask for the YES leg, NO-ask for the NO leg).
+               Locked profit regardless of outcome.
 
-  one-sided  — same outcome priced differently across platforms.
-               You're just getting a better price; outcome is still uncertain.
+  one-sided  — same outcome priced differently across platforms, but no
+               real-quote basket clears fees. You're just getting a better
+               price; outcome is still uncertain.
 
 Output: docs/arb_data.js
 """
@@ -90,9 +89,20 @@ def load_kalshi_general():
         r"Republican(?:s)?\s+win|Will Republican(?:s)?\s+win", case=False, na=False
     ) & ~df["market_title"].str.contains("nominee|primary|nominate", case=False, na=False)
 
-    cols = ["implied_prob", "open_interest", "volume", "series_ticker", "market_ticker", "market_title"]
+    cols = ["implied_prob", "open_interest", "volume", "series_ticker", "market_ticker", "market_title",
+            "yes_bid", "yes_ask", "close_time"]
     if "market_ticker" not in df.columns:
         df["market_ticker"] = None
+    for c in ("yes_bid", "yes_ask", "close_time", "expected_expiration_time"):
+        if c not in df.columns:
+            df[c] = None
+    # Kalshi's close_time is a safety buffer (often a year past the event);
+    # expected_expiration_time is when they actually expect to settle
+    # (e.g. 2027-01-04 for 2026 House races — when Congress is seated).
+    # Prefer it so days_to_settle / annualized returns aren't understated.
+    df["close_time"] = df["expected_expiration_time"].where(
+        df["expected_expiration_time"].notna(), df["close_time"]
+    )
 
     def best(g):
         oi = pd.to_numeric(g["open_interest"], errors="coerce").fillna(0)
@@ -106,6 +116,9 @@ def load_kalshi_general():
         "volume": "kalshi_volume",
         "series_ticker": "kalshi_series_ticker",
         "market_ticker": "kalshi_dem_ticker",
+        "yes_bid": "kalshi_dem_bid",
+        "yes_ask": "kalshi_dem_ask",
+        "close_time": "kalshi_close_time",
     })
 
     rep = df[rep_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
@@ -115,7 +128,8 @@ def load_kalshi_general():
         "market_ticker": "kalshi_rep_ticker",
     })
 
-    merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_volume", "kalshi_series_ticker", "kalshi_dem_ticker"]].merge(
+    merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_volume", "kalshi_series_ticker",
+                  "kalshi_dem_ticker", "kalshi_dem_bid", "kalshi_dem_ask", "kalshi_close_time"]].merge(
         rep[["race_id", "kalshi_rep", "kalshi_rep_ticker"]], on="race_id", how="inner"
     )
     merged["kalshi_url"] = merged["kalshi_series_ticker"].apply(kalshi_url)
@@ -129,10 +143,15 @@ def load_predictit_general():
         return pd.DataFrame()
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
     df = df[df["contract_name"].str.strip().isin(["Democratic", "Republican"])].copy()
+    for c in ("best_buy_no", "date_end"):
+        if c not in df.columns:
+            df[c] = None
 
     dem = df[df["contract_name"].str.strip() == "Democratic"][
-        ["race_id", "implied_prob", "best_buy_yes", "best_sell_yes", "market_id"]
-    ].rename(columns={"implied_prob": "pi_dem", "best_buy_yes": "pi_dem_buy", "best_sell_yes": "pi_dem_sell"})
+        ["race_id", "implied_prob", "best_buy_yes", "best_sell_yes", "best_buy_no", "date_end", "market_id"]
+    ].rename(columns={"implied_prob": "pi_dem", "best_buy_yes": "pi_dem_buy",
+                      "best_sell_yes": "pi_dem_sell", "best_buy_no": "pi_dem_buy_no",
+                      "date_end": "pi_date_end"})
 
     rep = df[df["contract_name"].str.strip() == "Republican"][
         ["race_id", "implied_prob"]
@@ -169,11 +188,14 @@ def load_polymarket_general():
             mask = df["_slug"].eq("")
             df.loc[mask, "_slug"] = df.loc[mask, "market_slug"].fillna("").astype(str)
 
-    if "yes_token_id" not in df.columns:
-        df["yes_token_id"] = None
+    for c in ("yes_token_id", "no_token_id", "best_bid", "best_ask", "end_date"):
+        if c not in df.columns:
+            df[c] = None
 
-    dem = df[df["is_dem"]][["race_id", "implied_prob", "liquidity", "volume", "_slug", "yes_token_id"]].copy()
-    rep = df[df["is_rep"]][["race_id", "implied_prob", "liquidity", "volume", "_slug", "yes_token_id"]].copy()
+    keep = ["race_id", "implied_prob", "liquidity", "volume", "_slug", "yes_token_id",
+            "no_token_id", "best_bid", "best_ask", "end_date"]
+    dem = df[df["is_dem"]][keep].copy()
+    rep = df[df["is_rep"]][keep].copy()
 
     def best_liq(g):
         liq = pd.to_numeric(g["liquidity"], errors="coerce").fillna(0)
@@ -184,7 +206,9 @@ def load_polymarket_general():
         dem = dem.rename(columns={
             "implied_prob": "pm_dem", "liquidity": "pm_liq",
             "volume": "pm_volume", "_slug": "pm_dem_slug",
-            "yes_token_id": "pm_dem_token",
+            "yes_token_id": "pm_dem_token", "no_token_id": "pm_dem_no_token",
+            "best_bid": "pm_dem_bid", "best_ask": "pm_dem_ask",
+            "end_date": "pm_end_date",
         })
 
     if not rep.empty:
@@ -197,7 +221,8 @@ def load_polymarket_general():
     if dem.empty and rep.empty:
         return pd.DataFrame()
 
-    dem_cols = ["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug", "pm_dem_token"]
+    dem_cols = ["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug", "pm_dem_token",
+                "pm_dem_no_token", "pm_dem_bid", "pm_dem_ask", "pm_end_date"]
     result = dem[dem_cols] if not dem.empty else pd.DataFrame(columns=dem_cols)
     if not rep.empty:
         result = result.merge(rep[["race_id", "pm_rep", "pm_rep_slug", "pm_rep_token"]], on="race_id", how="outer")
@@ -240,25 +265,69 @@ def get_race_meta():
 
 
 # ── arb math ──────────────────────────────────────────────────────────────────
+#
+# Ported from pred-arbitrage scripts/arb_scanner.py:compute_arb on 2026-07-03,
+# replacing the old midpoint-based compute_arb_math. See
+# AGENT_EXECUTION_NOTES.md Findings 1+2 for the full rationale. Key changes:
+#
+#   1. The basket is now YES + NO on the SAME question across platforms
+#      (Buy Dem-YES on cheap platform + Buy Dem-NO on expensive platform).
+#      A binary market's YES/NO is a complete 2-state partition, so the old
+#      safe_rep() cross-flip guard (3-way-race protection for Dem-YES vs
+#      Rep-YES baskets) is no longer needed — Rep prices are display-only.
+#      This is NOT the banned "inferred-complement" pattern from HANDOFF's
+#      Do-not list: that inferred a PRICE (1 - other side's midpoint) and
+#      pretended it was fillable. Here the NO leg is a real, separately
+#      quoted contract (Kalshi NO side / Polymarket NO token / PredictIt
+#      Buy-No quote) and we only claim "guaranteed" when the winning
+#      direction used real quotes on both legs.
+#
+#   2. Two price layers. DISPLAY (prob_a/prob_b = implied_prob) feeds
+#      raw_gap_pp / net_gap_pp only. FILLABLE (bid/ask/no_ask kwargs)
+#      feeds the basket math. Midpoints never enter the cost calc unless
+#      a leg has no quote data at all (then that direction can't be
+#      classified guaranteed anyway).
 
-def compute_arb_math(prob_a, prob_b, prob_a_rep, prob_b_rep, fee_a, fee_b):
+def compute_arb(prob_a, prob_b, fee_a, fee_b,
+                bid_a=None, ask_a=None, bid_b=None, ask_b=None,
+                no_ask_a=None, no_ask_b=None,
+                no_ask_a_real=False, no_ask_b_real=False):
     """
-    Determine arb type and compute stake ratios.
+    Returns arb type, guaranteed return, and stake ratios for the basket
+    Buy YES on one platform + Buy NO on the other.
 
-    guaranteed arb: exists when buying Dem on one side and Rep on the other
-    locks in profit regardless of outcome.
+    no_ask_a/no_ask_b: price to BUY the NO side on that platform.
+      - Kalshi: 1 - yes_bid is EXACT (unified book: buying NO at 1-p fills
+        against the resting YES bid at p) — pass it with no_ask_real=True.
+      - Polymarket: gamma has no NO quote; pass the real NO-token book ask
+        when fetch_depth got it (real=True), else leave None and we infer
+        1 - bid (approximate, real=False).
+      - PredictIt: bestBuyNoCost is a real quote — pass real=True.
 
-    For guaranteed arb: buy Dem at pA on platform A, buy Rep at (1-pB_dem) on platform B.
-    This costs pA + (1 - pB_dem). If cost < 1, you profit.
-
-    Stake ratio (per $1 total):
-      sA = (1 - pB_rep) / (2 - pA_dem - pB_rep)    [stake on platform A, dem side]
-      sB = (1 - pA_dem) / (2 - pA_dem - pB_rep)    [stake on platform B, rep side]
-    Guaranteed profit % (pre-fee) = 1 - pA_dem - pB_rep
-
-    one-sided arb: same outcome priced differently — just buy the cheaper one.
-    Edge = abs(pA - pB)
+    arb_type stays binary ("guaranteed" / "one-sided") for dashboard
+    compatibility. "guaranteed" requires the winning direction to have
+    used REAL quotes on both legs AND clear both platforms' fees.
     """
+    prob_a, prob_b = float(prob_a), float(prob_b)
+
+    yes_a_real = bid_a is not None and not pd.isna(bid_a) and bid_a > 0 \
+        and ask_a is not None and not pd.isna(ask_a) and ask_a > 0
+    yes_b_real = bid_b is not None and not pd.isna(bid_b) and bid_b > 0 \
+        and ask_b is not None and not pd.isna(ask_b) and ask_b > 0
+    no_a_real = bool(no_ask_a_real) and no_ask_a is not None and not pd.isna(no_ask_a) and no_ask_a > 0
+    no_b_real = bool(no_ask_b_real) and no_ask_b is not None and not pd.isna(no_ask_b) and no_ask_b > 0
+
+    # Fallbacks (approximate — only used when real data is missing, and a
+    # direction built on them can never be classified "guaranteed").
+    bid_a_f = bid_a if yes_a_real else prob_a
+    ask_a_f = ask_a if yes_a_real else prob_a
+    bid_b_f = bid_b if yes_b_real else prob_b
+    ask_b_f = ask_b if yes_b_real else prob_b
+    no_ask_a_f = no_ask_a if (no_ask_a is not None and not pd.isna(no_ask_a) and no_ask_a > 0) \
+        else max(0.001, 1 - bid_a_f)
+    no_ask_b_f = no_ask_b if (no_ask_b is not None and not pd.isna(no_ask_b) and no_ask_b > 0) \
+        else max(0.001, 1 - bid_b_f)
+
     result = {
         "arb_type": "one-sided",
         "guaranteed_return_pct": None,
@@ -268,81 +337,140 @@ def compute_arb_math(prob_a, prob_b, prob_a_rep, prob_b_rep, fee_a, fee_b):
         "stake_b_dollars": None,
         "profit_dollars": None,
         "stake_note": None,
+        # Audit fields: what you'd actually pay, and whether it's live data.
+        "fillable_ask_a": round(ask_a_f, 4),
+        "fillable_ask_b": round(ask_b_f, 4),
+        "fillable_no_ask_a": round(no_ask_a_f, 4),
+        "fillable_no_ask_b": round(no_ask_b_f, 4),
+        "arb_uses_live_book": bool(yes_a_real or yes_b_real),
     }
 
-    # Check if we can construct a guaranteed arb:
-    # Case 1: buy Dem on A (cheaper), buy Rep on B
-    #
-    # CRITICAL: only treat (Dem, Rep) as a complete two-state partition when
-    # the SAME platform's prices for Dem and Rep sum to ~1. If a serious
-    # third-party / independent candidate is in the race (e.g. Osborn in
-    # Nebraska 2026, where Polymarket prices Indep at 30%), then "1 - prob_dem"
-    # is NOT the price of Rep — it's the price of "Dem doesn't win", which
-    # includes both Rep AND Indep wins. Buying YES Dem on one platform and
-    # NO Dem on another (or YES Rep on the other) would NOT form a guaranteed
-    # basket because of the independent third state.
-    #
-    # We allow the cross-flip implication only when same-platform Dem+Rep
-    # sum to >= 0.97 (covers the full outcome space within ~3pp).
-    PARTITION_TOL = 0.03
+    # Direction 1: Buy YES on A + Buy NO on B. Direction 2: the reverse.
+    directions = [
+        (ask_a_f, no_ask_b_f, "a", "b", yes_a_real and no_b_real),
+        (ask_b_f, no_ask_a_f, "b", "a", yes_b_real and no_a_real),
+    ]
+    # Floor: a "guaranteed" arb returning less than 0.25% net is noise —
+    # a rounding artifact of the fee model, not a trade (10c profit per
+    # $100 at best). Tune here if the dashboard feels too quiet/noisy.
+    MIN_NET_RETURN = 0.0025
 
-    def safe_rep(prob_dem, prob_rep_explicit):
-        """Return the Rep price IFF same-platform Dem + Rep sum to ~1.
-        Otherwise return None — meaning we can't safely complete the basket."""
-        if prob_rep_explicit is not None and not pd.isna(prob_rep_explicit):
-            # Both sides explicit — check they actually partition the outcome
-            if abs(float(prob_dem) + float(prob_rep_explicit) - 1.0) <= PARTITION_TOL:
-                return float(prob_rep_explicit)
-            return None  # 3-way race — cross-flip unsafe
-        return None  # never use 1-prob_dem as a fallback for Rep
+    best = None
+    for pay_yes, pay_no, yes_side, no_side, is_real in directions:
+        if not (0 < pay_yes < 1 and 0 < pay_no < 1):
+            continue
+        net = (1.0 - (pay_yes + pay_no)) - fee_a - fee_b
+        if net > MIN_NET_RETURN and is_real and (best is None or net > best["net"]):
+            best = {"net": net, "pay_yes": pay_yes, "pay_no": pay_no,
+                    "yes_side": yes_side, "no_side": no_side}
 
-    rep_b = safe_rep(prob_b, prob_b_rep)
-    rep_a = safe_rep(prob_a, prob_a_rep)
-    if rep_a is None or rep_b is None:
-        return result  # can't form a safe two-state basket
-
-    # Try Dem on A + Rep on B
-    cost1 = prob_a + rep_b
-    cost2 = prob_b + rep_a  # Dem on B + Rep on A
-
-    best_cost = min(cost1, cost2)
-    if best_cost < 1.0:
-        gross_return = 1.0 - best_cost
-        net_return = gross_return - fee_a - fee_b
-        if net_return > 0:
-            result["arb_type"] = "guaranteed"
-            result["guaranteed_return_pct"] = round(net_return * 100, 2)
-            if cost1 <= cost2:
-                # Buy Dem on A, Rep on B
-                denom = 2 - prob_a - rep_b
-                sA = (1 - rep_b) / denom if denom > 0 else 0.5
-                sB = (1 - prob_a) / denom if denom > 0 else 0.5
-                result["stake_a_pct"] = round(sA * 100, 1)
-                result["stake_b_pct"] = round(sB * 100, 1)
-                result["stake_a_dollars"] = round(sA * 100, 2)
-                result["stake_b_dollars"] = round(sB * 100, 2)
-                result["profit_dollars"] = round(net_return * 100, 2)
-                result["stake_note"] = f"Buy Dem on A ({round(sA*100,1)}% of bankroll) + Buy Rep on B ({round(sB*100,1)}%)"
-            else:
-                denom = 2 - prob_b - rep_a
-                sB = (1 - rep_a) / denom if denom > 0 else 0.5
-                sA = (1 - prob_b) / denom if denom > 0 else 0.5
-                result["stake_a_pct"] = round(sA * 100, 1)
-                result["stake_b_pct"] = round(sB * 100, 1)
-                result["stake_a_dollars"] = round(sA * 100, 2)
-                result["stake_b_dollars"] = round(sB * 100, 2)
-                result["profit_dollars"] = round(net_return * 100, 2)
-                result["stake_note"] = f"Buy Rep on A ({round(sA*100,1)}% of bankroll) + Buy Dem on B ({round(sB*100,1)}%)"
+    if best is not None:
+        # Stake split proportional to inverse cost so both outcomes pay
+        # the same total (per $100 deployed).
+        inv_yes = 1 / best["pay_yes"]
+        inv_no = 1 / best["pay_no"]
+        s_yes = inv_yes / (inv_yes + inv_no)
+        s_no = inv_no / (inv_yes + inv_no)
+        sA, sB = (s_yes, s_no) if best["yes_side"] == "a" else (s_no, s_yes)
+        result.update({
+            "arb_type": "guaranteed",
+            "guaranteed_return_pct": round(best["net"] * 100, 2),
+            "stake_a_pct": round(sA * 100, 1),
+            "stake_b_pct": round(sB * 100, 1),
+            "stake_a_dollars": round(sA * 100, 2),
+            "stake_b_dollars": round(sB * 100, 2),
+            "profit_dollars": round(best["net"] * 100, 2),
+            # Caller substitutes {yes_platform}/{no_platform} with names.
+            "stake_note": (f"Buy YES on {{{best['yes_side']}}} at {best['pay_yes']*100:.1f}c "
+                           f"+ Buy NO on {{{best['no_side']}}} at {best['pay_no']*100:.1f}c"),
+        })
 
     return result
 
 
+def _assert_scrape_freshness():
+    """Fail loudly if any platform's raw CSV is more than MAX_AGE_HOURS old.
+
+    Catches the silent-staleness failure mode where a scraper succeeds
+    structurally (exit 0) but the CSV on disk is from a previous run.
+    Pred-arb had a real incident (2026-06-21): a 44-day-old Polymarket CSV
+    while every refresh reported success. Ported here 2026-07-03.
+    """
+    MAX_AGE_HOURS = 12
+    issues = []
+    for name in ("kalshi_markets.csv", "polymarket_markets.csv", "predictit_markets.csv"):
+        path = RAW / name
+        if not path.exists():
+            issues.append(f"{name}: missing")
+            continue
+        try:
+            df = pd.read_csv(path, nrows=1, dtype={"yes_token_id": str, "no_token_id": str})
+        except Exception as e:
+            issues.append(f"{name}: unreadable ({e})")
+            continue
+        if "fetched_at" not in df.columns:
+            issues.append(f"{name}: no fetched_at column")
+            continue
+        ts = pd.to_datetime(df["fetched_at"].iloc[0], errors="coerce", utc=True)
+        if pd.isna(ts):
+            issues.append(f"{name}: unparseable fetched_at")
+            continue
+        age_h = (datetime.now(timezone.utc) - ts.to_pydatetime()).total_seconds() / 3600
+        if age_h > MAX_AGE_HOURS:
+            issues.append(f"{name}: stale by {age_h:.1f}h (max {MAX_AGE_HOURS}h)")
+    if issues:
+        print("FRESHNESS CHECK FAILED — refusing to write arb_data.js:")
+        for issue in issues:
+            print(f"  - {issue}")
+        raise SystemExit(
+            "One or more scraper CSVs are stale or missing. The workflow's "
+            "commit step will skip; the live dashboard keeps the last good snapshot."
+        )
+
+
 # ── pair builder ──────────────────────────────────────────────────────────────
+
+def _finalize_stake_note(arb_math: dict, platform_a: str, platform_b: str) -> dict:
+    """Substitute the {a}/{b} placeholders compute_arb leaves in stake_note."""
+    note = arb_math.get("stake_note")
+    if note:
+        arb_math["stake_note"] = note.replace("{a}", platform_a.title()).replace("{b}", platform_b.title())
+    return arb_math
+
+
+def _settle_fields(settle_a, settle_b, guaranteed_return_pct):
+    """settle_date / days_to_settle / annualized return for a pair.
+
+    Uses the LATER of the two legs' dates — capital is locked until both
+    settle. Annualized = guaranteed return scaled to a year; the ranking
+    metric for "sooner they cash" (a 3pp arb settling in 2 weeks beats a
+    6pp arb settling in 4 months).
+    """
+    dates = []
+    for s in (settle_a, settle_b):
+        if s is None or (isinstance(s, float) and pd.isna(s)):
+            continue
+        d = pd.to_datetime(str(s), errors="coerce", utc=True)
+        if pd.notna(d):
+            dates.append(d)
+    out = {"settle_date": None, "days_to_settle": None, "annualized_return_pct": None}
+    if not dates:
+        return out
+    settle = max(dates)
+    out["settle_date"] = settle.date().isoformat()
+    days = max(1, (settle - pd.Timestamp.now(tz="UTC")).days)
+    out["days_to_settle"] = int(days)
+    if guaranteed_return_pct is not None and guaranteed_return_pct > 0:
+        out["annualized_return_pct"] = round(guaranteed_return_pct / days * 365, 1)
+    return out
+
 
 def make_pair(race_id, label, state, office,
               prob_a, prob_b, platform_a, platform_b,
-              prob_a_rep=None, prob_b_rep=None,
               url_a=None, url_b=None,
+              bid_a=None, ask_a=None, no_ask_a=None, no_ask_a_real=False,
+              bid_b=None, ask_b=None, no_ask_b=None, no_ask_b_real=False,
+              settle_a=None, settle_b=None,
               extra=None):
     if pd.isna(prob_a) or pd.isna(prob_b):
         return None
@@ -357,12 +485,14 @@ def make_pair(race_id, label, state, office,
         action = f"Buy Dem on {platform_a.title()}, Sell Dem on {platform_b.title()}"
         higher = platform_b
 
-    arb_math = compute_arb_math(
-        prob_a, prob_b,
-        float(prob_a_rep) if prob_a_rep is not None and not pd.isna(prob_a_rep) else None,
-        float(prob_b_rep) if prob_b_rep is not None and not pd.isna(prob_b_rep) else None,
-        FEES[platform_a], FEES[platform_b]
+    arb_math = compute_arb(
+        prob_a, prob_b, FEES[platform_a], FEES[platform_b],
+        bid_a=bid_a, ask_a=ask_a, bid_b=bid_b, ask_b=ask_b,
+        no_ask_a=no_ask_a, no_ask_b=no_ask_b,
+        no_ask_a_real=no_ask_a_real, no_ask_b_real=no_ask_b_real,
     )
+    arb_math = _finalize_stake_note(arb_math, platform_a, platform_b)
+    arb_math.update(_settle_fields(settle_a, settle_b, arb_math.get("guaranteed_return_pct")))
 
     row = {
         "race_id": race_id,
@@ -385,6 +515,17 @@ def make_pair(race_id, label, state, office,
         "action": action,
         "url_a": url_a,
         "url_b": url_b,
+        # Scrape-time quotes, kept on the row so the pass-2 depth join can
+        # recompute the basket with live books and fall back to these.
+        "bid_a": None if bid_a is None or pd.isna(bid_a) else float(bid_a),
+        "ask_a": None if ask_a is None or pd.isna(ask_a) else float(ask_a),
+        "no_ask_a": None if no_ask_a is None or pd.isna(no_ask_a) else float(no_ask_a),
+        "no_ask_a_real": bool(no_ask_a_real),
+        "bid_b": None if bid_b is None or pd.isna(bid_b) else float(bid_b),
+        "ask_b": None if ask_b is None or pd.isna(ask_b) else float(ask_b),
+        "no_ask_b": None if no_ask_b is None or pd.isna(no_ask_b) else float(no_ask_b),
+        "no_ask_b_real": bool(no_ask_b_real),
+        "settle_a": settle_a, "settle_b": settle_b,
         **arb_math,
     }
     if extra:
@@ -518,6 +659,55 @@ def _first_initial(name: str) -> str | None:
     return parts[0][0].lower() if parts[0] else None
 
 
+def _safe_num(v):
+    """NaN-safe float or None (module-level; loaders + pair builders)."""
+    if v is None:
+        return None
+    v = pd.to_numeric(v, errors="coerce")
+    return None if pd.isna(v) else float(v)
+
+
+def _quote_fields_kalshi(r):
+    """Fillable-quote fields for a Kalshi market row (candidate loaders).
+    Kalshi NO ask = 1 - yes_bid is exact (unified book), so it counts as real."""
+    bid = _safe_num(r.get("yes_bid"))
+    # Prefer expected_expiration_time (actual expected settlement) over
+    # close_time (safety buffer, often a year late).
+    settle = r.get("expected_expiration_time")
+    if settle is None or (isinstance(settle, float) and pd.isna(settle)):
+        settle = r.get("close_time")
+    return {
+        "bid": bid, "ask": _safe_num(r.get("yes_ask")),
+        "no_ask": round(1 - bid, 4) if bid is not None and bid > 0 else None,
+        "no_ask_real": bid is not None and bid > 0,
+        "no_market_id": None,
+        "settle": settle,
+    }
+
+
+def _quote_fields_polymarket(r):
+    """Fillable-quote fields for a Polymarket market row (candidate loaders).
+    No real NO quote at scrape time — pass 2 joins the NO-token book."""
+    return {
+        "bid": _safe_num(r.get("best_bid")), "ask": _safe_num(r.get("best_ask")),
+        "no_ask": None, "no_ask_real": False,
+        "no_market_id": r.get("no_token_id"),
+        "settle": r.get("end_date"),
+    }
+
+
+def _quote_fields_predictit(r):
+    """Fillable-quote fields for a PredictIt contract row (candidate loaders).
+    bestBuyNo is a real fillable quote."""
+    no_ask = _safe_num(r.get("best_buy_no"))
+    return {
+        "bid": _safe_num(r.get("best_sell_yes")), "ask": _safe_num(r.get("best_buy_yes")),
+        "no_ask": no_ask, "no_ask_real": no_ask is not None,
+        "no_market_id": None,
+        "settle": r.get("date_end"),
+    }
+
+
 def load_primary_candidates():
     """
     Build a tidy frame of primary-nominee rows across all three platforms,
@@ -563,6 +753,7 @@ def load_primary_candidates():
                 "oi": pd.to_numeric(r.get("open_interest"), errors="coerce"),
                 "market_id": r.get("market_ticker"),
                 "raw_title": title,
+                **_quote_fields_kalshi(r),
             })
 
     # ── PredictIt ──
@@ -602,6 +793,7 @@ def load_primary_candidates():
                 "volume": None, "oi": None,
                 "market_id": None,
                 "raw_title": f"{mn} — {cn}",
+                **_quote_fields_predictit(r),
             })
 
     # ── Polymarket ──
@@ -642,6 +834,7 @@ def load_primary_candidates():
                 "oi": pd.to_numeric(r.get("liquidity"), errors="coerce"),
                 "market_id": r.get("yes_token_id"),
                 "raw_title": title,
+                **_quote_fields_polymarket(r),
             })
 
     df = pd.DataFrame(rows)
@@ -735,6 +928,7 @@ def load_general_candidates():
                 "oi": pd.to_numeric(r.get("open_interest"), errors="coerce"),
                 "market_id": r.get("market_ticker"),
                 "raw_title": title,
+                **_quote_fields_kalshi(r),
             })
 
     # ── Polymarket ──
@@ -787,6 +981,7 @@ def load_general_candidates():
                 "oi": pd.to_numeric(r.get("liquidity"), errors="coerce"),
                 "market_id": r.get("yes_token_id"),
                 "raw_title": title,
+                **_quote_fields_polymarket(r),
             })
 
     # ── PredictIt ──
@@ -830,6 +1025,7 @@ def load_general_candidates():
                 "volume": None, "oi": None,
                 "market_id": None,
                 "raw_title": f"{mn} — {cn}",
+                **_quote_fields_predictit(r),
             })
 
     df = pd.DataFrame(rows)
@@ -886,9 +1082,25 @@ def general_candidate_pairs(meta_df):
                 prob_a = float(ra["prob"])
                 prob_b = float(rb["prob"])
                 raw_gap = abs(prob_a - prob_b)
-                net_gap = raw_gap - FEES.get(pa, 0.03) - FEES.get(pb, 0.03)
+                net_gap = raw_gap - FEES[pa] - FEES[pb]
                 cheaper = pa if prob_a < prob_b else pb
                 expensive = pb if prob_a < prob_b else pa
+                # Real YES+NO basket math (2026-07-03). These templates DO
+                # have tradeable NO sides (Kalshi unified book, Polymarket
+                # NO token, PredictIt Buy-No quote) — the old hardcoded
+                # "one-sided" was wrong. `is True` guards the bool(NaN)
+                # footgun (see HANDOFF Python footguns).
+                arb_math = compute_arb(
+                    prob_a, prob_b, FEES[pa], FEES[pb],
+                    bid_a=_safe_num(ra.get("bid")), ask_a=_safe_num(ra.get("ask")),
+                    bid_b=_safe_num(rb.get("bid")), ask_b=_safe_num(rb.get("ask")),
+                    no_ask_a=_safe_num(ra.get("no_ask")), no_ask_b=_safe_num(rb.get("no_ask")),
+                    no_ask_a_real=ra.get("no_ask_real") is True,
+                    no_ask_b_real=rb.get("no_ask_real") is True,
+                )
+                arb_math = _finalize_stake_note(arb_math, pa, pb)
+                arb_math.update(_settle_fields(ra.get("settle"), rb.get("settle"),
+                                               arb_math.get("guaranteed_return_pct")))
                 action = (
                     f"Buy {ra['candidate_name']} on {cheaper.title()} "
                     f"({min(prob_a, prob_b)*100:.1f}%), fade on "
@@ -923,16 +1135,19 @@ def general_candidate_pairs(meta_df):
                     "suspicious": bool(raw_gap * 100 > 20),
                     "higher_platform": expensive,
                     "action": action,
-                    "arb_type": "one-sided",
-                    "guaranteed_return_pct": None,
-                    "stake_a_pct": None, "stake_b_pct": None,
-                    "stake_a_dollars": None, "stake_b_dollars": None,
-                    "profit_dollars": None, "stake_note": None,
+                    **arb_math,
                     "url_a": ra.get("url"), "url_b": rb.get("url"),
                     "volume_a": None if pd.isna(ra.get("volume")) else float(ra.get("volume")),
                     "volume_b": None if pd.isna(rb.get("volume")) else float(rb.get("volume")),
                     "market_id_a": ra.get("market_id"),
                     "market_id_b": rb.get("market_id"),
+                    "market_no_id_a": ra.get("no_market_id"),
+                    "market_no_id_b": rb.get("no_market_id"),
+                    "bid_a": _safe_num(ra.get("bid")), "ask_a": _safe_num(ra.get("ask")),
+                    "no_ask_a": _safe_num(ra.get("no_ask")), "no_ask_a_real": ra.get("no_ask_real") is True,
+                    "bid_b": _safe_num(rb.get("bid")), "ask_b": _safe_num(rb.get("ask")),
+                    "no_ask_b": _safe_num(rb.get("no_ask")), "no_ask_b_real": rb.get("no_ask_real") is True,
+                    "settle_a": ra.get("settle"), "settle_b": rb.get("settle"),
                     "question_a": ra.get("raw_title", ""),
                     "question_b": rb.get("raw_title", ""),
                 })
@@ -981,9 +1196,25 @@ def primary_pairs(meta_df):
                 prob_a = float(ra["prob"])
                 prob_b = float(rb["prob"])
                 raw_gap = abs(prob_a - prob_b)
-                net_gap = raw_gap - FEES.get(pa, 0.03) - FEES.get(pb, 0.03)
+                net_gap = raw_gap - FEES[pa] - FEES[pb]
                 cheaper = pa if prob_a < prob_b else pb
                 expensive = pb if prob_a < prob_b else pa
+                # Real YES+NO basket math (2026-07-03). These templates DO
+                # have tradeable NO sides (Kalshi unified book, Polymarket
+                # NO token, PredictIt Buy-No quote) — the old hardcoded
+                # "one-sided" was wrong. `is True` guards the bool(NaN)
+                # footgun (see HANDOFF Python footguns).
+                arb_math = compute_arb(
+                    prob_a, prob_b, FEES[pa], FEES[pb],
+                    bid_a=_safe_num(ra.get("bid")), ask_a=_safe_num(ra.get("ask")),
+                    bid_b=_safe_num(rb.get("bid")), ask_b=_safe_num(rb.get("ask")),
+                    no_ask_a=_safe_num(ra.get("no_ask")), no_ask_b=_safe_num(rb.get("no_ask")),
+                    no_ask_a_real=ra.get("no_ask_real") is True,
+                    no_ask_b_real=rb.get("no_ask_real") is True,
+                )
+                arb_math = _finalize_stake_note(arb_math, pa, pb)
+                arb_math.update(_settle_fields(ra.get("settle"), rb.get("settle"),
+                                               arb_math.get("guaranteed_return_pct")))
                 action = f"Buy {ra['candidate_name']} on {cheaper.title()} ({min(prob_a, prob_b)*100:.1f}%), fade on {expensive.title()} ({max(prob_a, prob_b)*100:.1f}%)"
                 state, office, district, party, last, first = key
                 rid = _race_id_from(state, office, district or None)
@@ -1015,16 +1246,19 @@ def primary_pairs(meta_df):
                     "suspicious": bool(raw_gap * 100 > 20),
                     "higher_platform": expensive,
                     "action": action,
-                    "arb_type": "one-sided",
-                    "guaranteed_return_pct": None,
-                    "stake_a_pct": None, "stake_b_pct": None,
-                    "stake_a_dollars": None, "stake_b_dollars": None,
-                    "profit_dollars": None, "stake_note": None,
+                    **arb_math,
                     "url_a": ra.get("url"), "url_b": rb.get("url"),
                     "volume_a": None if pd.isna(ra.get("volume")) else float(ra.get("volume")),
                     "volume_b": None if pd.isna(rb.get("volume")) else float(rb.get("volume")),
                     "market_id_a": ra.get("market_id"),
                     "market_id_b": rb.get("market_id"),
+                    "market_no_id_a": ra.get("no_market_id"),
+                    "market_no_id_b": rb.get("no_market_id"),
+                    "bid_a": _safe_num(ra.get("bid")), "ask_a": _safe_num(ra.get("ask")),
+                    "no_ask_a": _safe_num(ra.get("no_ask")), "no_ask_a_real": ra.get("no_ask_real") is True,
+                    "bid_b": _safe_num(rb.get("bid")), "ask_b": _safe_num(rb.get("ask")),
+                    "no_ask_b": _safe_num(rb.get("no_ask")), "no_ask_b_real": rb.get("no_ask_real") is True,
+                    "settle_a": ra.get("settle"), "settle_b": rb.get("settle"),
                     "question_a": ra.get("raw_title", ""),
                     "question_b": rb.get("raw_title", ""),
                 })
@@ -1034,6 +1268,7 @@ def primary_pairs(meta_df):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def run():
+    _assert_scrape_freshness()
     print("Loading markets...")
     kalshi = load_kalshi_general()
     pi = load_predictit_general()
@@ -1053,15 +1288,34 @@ def run():
 
     rows = []
 
+    def _num(v):
+        """NaN-safe float or None."""
+        if v is None:
+            return None
+        v = pd.to_numeric(v, errors="coerce")
+        return None if pd.isna(v) else float(v)
+
+    def _kalshi_no_ask(bid):
+        # Kalshi's book is unified: buying NO at (1 - yes_bid) fills against
+        # the resting YES bid, so this is an EXACT fillable NO ask, not the
+        # banned midpoint-complement inference.
+        b = _num(bid)
+        return (round(1 - b, 4), True) if b is not None and b > 0 else (None, False)
+
     # ── Kalshi vs PredictIt ──
     kpi = kalshi.merge(pi, on="race_id", how="inner")
     for _, r in kpi.iterrows():
+        k_no, k_no_real = _kalshi_no_ask(r.get("kalshi_dem_bid"))
         row = make_pair(
             r["race_id"], r.get("label", r["race_id"]), r.get("state", ""), r.get("office", ""),
             r.get("kalshi_dem"), r.get("pi_dem"),
             "kalshi", "predictit",
-            prob_a_rep=r.get("kalshi_rep"), prob_b_rep=r.get("pi_rep"),
             url_a=r.get("kalshi_url"), url_b=r.get("pi_url"),
+            bid_a=_num(r.get("kalshi_dem_bid")), ask_a=_num(r.get("kalshi_dem_ask")),
+            no_ask_a=k_no, no_ask_a_real=k_no_real,
+            bid_b=_num(r.get("pi_dem_sell")), ask_b=_num(r.get("pi_dem_buy")),
+            no_ask_b=_num(r.get("pi_dem_buy_no")), no_ask_b_real=_num(r.get("pi_dem_buy_no")) is not None,
+            settle_a=r.get("kalshi_close_time"), settle_b=r.get("pi_date_end"),
             extra={
                 "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell"),
                 "kalshi_oi": r.get("kalshi_oi"),
@@ -1077,17 +1331,24 @@ def run():
     if not pm.empty and "pm_dem" in pm.columns:
         kpm = kalshi.merge(pm, on="race_id", how="inner")
         for _, r in kpm.iterrows():
+            k_no, k_no_real = _kalshi_no_ask(r.get("kalshi_dem_bid"))
             row = make_pair(
                 r["race_id"], r.get("label", r["race_id"]), r.get("state", ""), r.get("office", ""),
                 r.get("kalshi_dem"), r.get("pm_dem"),
                 "kalshi", "polymarket",
-                prob_a_rep=r.get("kalshi_rep"), prob_b_rep=r.get("pm_rep"),
                 url_a=r.get("kalshi_url"), url_b=r.get("pm_url"),
+                bid_a=_num(r.get("kalshi_dem_bid")), ask_a=_num(r.get("kalshi_dem_ask")),
+                no_ask_a=k_no, no_ask_a_real=k_no_real,
+                bid_b=_num(r.get("pm_dem_bid")), ask_b=_num(r.get("pm_dem_ask")),
+                # Real PM NO ask arrives via the NO-token book in pass 2.
+                no_ask_b=None, no_ask_b_real=False,
+                settle_a=r.get("kalshi_close_time"), settle_b=r.get("pm_end_date"),
                 extra={
                     "pm_liq": r.get("pm_liq"), "kalshi_oi": r.get("kalshi_oi"),
                     "volume_a": r.get("kalshi_volume"), "volume_b": r.get("pm_volume"),
                     "market_id_a": r.get("kalshi_dem_ticker"),
                     "market_id_b": r.get("pm_dem_token"),
+                    "market_no_id_b": r.get("pm_dem_no_token"),
                 },
             )
             if row:
@@ -1101,14 +1362,19 @@ def run():
                 r["race_id"], r.get("label", r["race_id"]), r.get("state", ""), r.get("office", ""),
                 r.get("pi_dem"), r.get("pm_dem"),
                 "predictit", "polymarket",
-                prob_a_rep=r.get("pi_rep"), prob_b_rep=r.get("pm_rep"),
                 url_a=r.get("pi_url"), url_b=r.get("pm_url"),
+                bid_a=_num(r.get("pi_dem_sell")), ask_a=_num(r.get("pi_dem_buy")),
+                no_ask_a=_num(r.get("pi_dem_buy_no")), no_ask_a_real=_num(r.get("pi_dem_buy_no")) is not None,
+                bid_b=_num(r.get("pm_dem_bid")), ask_b=_num(r.get("pm_dem_ask")),
+                no_ask_b=None, no_ask_b_real=False,
+                settle_a=r.get("pi_date_end"), settle_b=r.get("pm_end_date"),
                 extra={
                     "pm_liq": r.get("pm_liq"),
                     "pi_dem_buy": r.get("pi_dem_buy"), "pi_dem_sell": r.get("pi_dem_sell"),
                     "volume_a": None, "volume_b": r.get("pm_volume"),
                     "market_id_a": None,
                     "market_id_b": r.get("pm_dem_token"),
+                    "market_no_id_b": r.get("pm_dem_no_token"),
                 },
             )
             if row:
@@ -1148,13 +1414,18 @@ def run():
     arb["volume_b"] = pd.to_numeric(arb.get("volume_b"), errors="coerce")
 
     # ── emit depth_targets.csv (consumed by scripts/fetch_depth.py) ──
+    # Includes Polymarket NO tokens (market_no_id_*) so fetch_depth pulls
+    # the real NO book — needed for exact YES+NO basket math in pass 2.
     targets = []
     for _, r in arb.iterrows():
         for side in ("a", "b"):
-            mid = r.get(f"market_id_{side}")
             plat = r.get(f"platform_{side}")
-            if mid is not None and not (isinstance(mid, float) and pd.isna(mid)) and plat in ("kalshi", "polymarket"):
-                targets.append({"platform": plat, "market_id": mid})
+            if plat not in ("kalshi", "polymarket"):
+                continue
+            for col in (f"market_id_{side}", f"market_no_id_{side}"):
+                mid = r.get(col)
+                if mid is not None and not (isinstance(mid, float) and pd.isna(mid)):
+                    targets.append({"platform": plat, "market_id": mid})
     if targets:
         td = pd.DataFrame(targets)
         td["market_id"] = td["market_id"].astype(str)
@@ -1169,9 +1440,14 @@ def run():
     if depth_path.exists():
         depth = pd.read_csv(depth_path, dtype={"market_id": str}).drop_duplicates(subset=["platform", "market_id"], keep="last")
         for side in ("a", "b"):
-            arb[f"market_id_{side}"] = arb[f"market_id_{side}"].apply(
-                lambda v: None if v is None or (isinstance(v, float) and pd.isna(v)) else str(v)
-            )
+            # Ensure the NO-token column exists even when no row set it
+            # (e.g. a run where candidate paths matched nothing).
+            if f"market_no_id_{side}" not in arb.columns:
+                arb[f"market_no_id_{side}"] = None
+            for col in (f"market_id_{side}", f"market_no_id_{side}"):
+                arb[col] = arb[col].apply(
+                    lambda v: None if v is None or (isinstance(v, float) and pd.isna(v)) else str(v)
+                )
             d = depth.rename(columns={
                 "platform": f"platform_{side}",
                 "market_id": f"market_id_{side}",
@@ -1188,8 +1464,75 @@ def run():
                 f"depth_{side}_bid_1pp", f"depth_{side}_ask_1pp",
                 f"depth_{side}_max_at_3pp"]]
             arb = arb.merge(d, on=[f"platform_{side}", f"market_id_{side}"], how="left")
+            # Join the NO-token book (Polymarket only — Kalshi NO is derived
+            # from the same book; PredictIt has no orderbook).
+            dno = depth.rename(columns={
+                "platform": f"platform_{side}",
+                "market_id": f"market_no_id_{side}",
+                "best_bid": f"depth_no_{side}_best_bid",
+                "best_ask": f"depth_no_{side}_best_ask",
+            })[[f"platform_{side}", f"market_no_id_{side}",
+                f"depth_no_{side}_best_bid", f"depth_no_{side}_best_ask"]]
+            arb = arb.merge(dno, on=[f"platform_{side}", f"market_no_id_{side}"], how="left")
         joined = arb[["depth_a_best_ask", "depth_b_best_ask"]].notna().any(axis=1).sum()
         print(f"Joined orderbook depth onto {joined}/{len(arb)} pairs")
+
+        # ── recompute basket math on LIVE books (2026-07-03) ──
+        # Pass-1 math ran on scrape-time quotes; the depth fetch is fresher
+        # and includes the real Polymarket NO-token ask. Priority per leg:
+        # live book > scrape-time quote > display prob (never guaranteed).
+        def _recompute(row):
+            pa_, pb_ = row.get("platform_a"), row.get("platform_b")
+            legs = {}
+            for side in ("a", "b"):
+                plat = row.get(f"platform_{side}")
+                bid = row.get(f"depth_{side}_best_bid")
+                ask = row.get(f"depth_{side}_best_ask")
+                bid = float(bid) if pd.notna(bid) else row.get(f"bid_{side}")
+                ask = float(ask) if pd.notna(ask) else row.get(f"ask_{side}")
+                no_ask = row.get(f"depth_no_{side}_best_ask")
+                if pd.notna(no_ask):
+                    no_ask, no_real = float(no_ask), True
+                elif plat == "kalshi" and bid is not None and not pd.isna(bid) and bid > 0:
+                    no_ask, no_real = round(1 - float(bid), 4), True  # unified book — exact
+                else:
+                    no_ask = row.get(f"no_ask_{side}")
+                    no_real = row.get(f"no_ask_{side}_real") is True
+                legs[side] = (bid, ask, no_ask, no_real)
+            prob_a = row.get("prob_a")
+            if prob_a is None or pd.isna(prob_a):
+                prob_a = row.get(f"{pa_}_dem")
+            prob_b = row.get("prob_b")
+            if prob_b is None or pd.isna(prob_b):
+                prob_b = row.get(f"{pb_}_dem")
+            if prob_a is None or pd.isna(prob_a) or prob_b is None or pd.isna(prob_b):
+                return None
+            am = compute_arb(
+                prob_a, prob_b, FEES[pa_], FEES[pb_],
+                bid_a=legs["a"][0], ask_a=legs["a"][1],
+                bid_b=legs["b"][0], ask_b=legs["b"][1],
+                no_ask_a=legs["a"][2], no_ask_b=legs["b"][2],
+                no_ask_a_real=legs["a"][3], no_ask_b_real=legs["b"][3],
+            )
+            am = _finalize_stake_note(am, pa_, pb_)
+            am.update(_settle_fields(row.get("settle_a"), row.get("settle_b"),
+                                     am.get("guaranteed_return_pct")))
+            return am
+        recomputed = arb.apply(_recompute, axis=1)
+        n_upgraded = n_downgraded = 0
+        for idx, am in recomputed.items():
+            if am is None:
+                continue
+            was = arb.at[idx, "arb_type"]
+            for k, v in am.items():
+                arb.at[idx, k] = v
+            if was != am["arb_type"]:
+                if am["arb_type"] == "guaranteed":
+                    n_upgraded += 1
+                else:
+                    n_downgraded += 1
+        print(f"Live-book recompute: {n_upgraded} pairs upgraded to guaranteed, "
+              f"{n_downgraded} downgraded")
 
         # Defense in depth: even if a scraper missed a wide-spread market at
         # scrape time (gamma snapshots lag the live CLOB book), the
@@ -1241,6 +1584,16 @@ def run():
                 _scrutinize = None
         if _scrutinize is not None:
             scrut = _scrutinize(arb.to_dict(orient="records"), threshold_pp=30)
+            # Candidate-level pairs promoted to guaranteed get scrutinized
+            # regardless of gap size — resolution-criteria divergence risk
+            # is highest exactly there (same candidate name, different fine
+            # print: runoffs, specials, withdrawal rules). Cheap: scrutiny
+            # caches rules text for 7 days.
+            promoted = [r for r in arb.to_dict(orient="records")
+                        if r.get("match_type") in ("general_candidate", "primary_candidate")
+                        and r.get("arb_type") == "guaranteed"]
+            if promoted:
+                scrut.update(_scrutinize(promoted, threshold_pp=0))
             def apply_scrut(row):
                 k = (str(row.get("market_id_a")), str(row.get("market_id_b")))
                 return scrut.get(k)
