@@ -124,7 +124,9 @@ def market_race_id(row):
     rid = f"2026-{off}-{row['state']}"
     di = str(row["district"]) if pd.notna(row["district"]) else ""
     di = di.split(".")[0]
-    if row["office"] == "House" and di not in ("", "nan"):
+    if di == "S":                                   # special election (own market race_id)
+        rid += "-S"
+    elif row["office"] == "House" and di not in ("", "nan"):
         rid += f"-{int(di):02d}"
     return rid
 
