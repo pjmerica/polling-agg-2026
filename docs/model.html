@@ -4,135 +4,199 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Model vs Markets — 2026</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <script src="model_data.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
-  header { padding: 20px 28px 14px; border-bottom: 1px solid #1e2433; display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap; }
-  header h1 { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; }
-  header .sub { font-size: 0.75rem; color: #64748b; }
-  nav a { font-size: 0.8rem; color: #4f6ef7; text-decoration: none; margin-right: 14px; }
-  nav a:hover { text-decoration: underline; }
-  .controls { padding: 12px 28px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
-  .controls select, .controls input { background: #1a2035; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.82rem; }
-  .controls label { font-size: 0.78rem; color: #94a3b8; }
-  .wrap { padding: 16px 28px; overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
-  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #161b27; white-space: nowrap; }
-  th { color: #94a3b8; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; user-select: none; position: sticky; top: 0; background: #0f1117; }
-  th:hover { color: #e2e8f0; }
-  td.race, th.race { text-align: left; }
-  .badge { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 700; margin-right: 6px; }
-  .badge.SEN { background: rgba(167,139,250,0.15); color: #a78bfa; }
-  .badge.GOV { background: rgba(52,211,153,0.15); color: #34d399; }
-  .badge.H   { background: rgba(96,165,250,0.15); color: #60a5fa; }
-  .cand { font-size: 0.72rem; color: #64748b; }
-  .dem { color: #60a5fa; } .rep { color: #f87171; }
-  .edge-pos { color: #34d399; font-weight: 700; }   /* model likes DEM more than market */
-  .edge-neg { color: #f87171; font-weight: 700; }   /* model likes REP more than market */
-  .edge-big { background: rgba(250,204,21,0.07); }
-  .muted { color: #4a5568; }
-  .lowpolls { color: #facc15; }
-  .split { display: inline-block; background: rgba(249,115,22,0.18); color: #fb923c; border-radius: 4px; padding: 1px 6px; font-size: 0.65rem; font-weight: 700; margin-left: 6px; cursor: help; }
-  tr.splitrow td { opacity: 0.75; }
-  footer { padding: 10px 28px 24px; font-size: 0.72rem; color: #4a5568; max-width: 900px; line-height: 1.5; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+header { padding: 18px 28px 14px; border-bottom: 1px solid #1e2433; display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap; }
+header h1 { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; }
+header p { font-size: 0.78rem; color: #64748b; }
+nav a { font-size: 0.8rem; color: #4f6ef7; text-decoration: none; margin-right: 14px; }
+nav a:hover { text-decoration: underline; }
+
+.mismatch-controls { display: flex; gap: 12px; padding: 14px 28px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
+.mismatch-controls label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+.mismatch-controls select, .mismatch-controls input[type=number] { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.84rem; cursor: pointer; }
+.mismatch-controls input[type=number] { width: 64px; }
+.chk { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #94a3b8; cursor: pointer; text-transform: none; }
+.chk input { accent-color: #fb923c; }
+
+.mismatch-body { padding: 20px 28px 40px; }
+.mismatch-explainer { font-size: 0.8rem; color: #64748b; margin-bottom: 18px; max-width: 760px; line-height: 1.6; }
+.mismatch-explainer strong { color: #94a3b8; }
+#model-chart { margin-bottom: 28px; }
+
+.mm-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.mm-table th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e2433; cursor: pointer; user-select: none; white-space: nowrap; }
+.mm-table th:hover { color: #94a3b8; }
+.mm-table th.sorted { color: #a78bfa; }
+.mm-table td { padding: 8px 12px; border-bottom: 1px solid #161b27; white-space: nowrap; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 700; margin-right: 6px; }
+.badge.SEN { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.badge.GOV { background: rgba(52,211,153,0.15); color: #34d399; }
+.badge.H   { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.cand { font-size: 0.72rem; color: #64748b; }
+.dem { color: #60a5fa; } .rep { color: #f87171; }
+.edge-pos { color: #3b82f6; font-weight: 700; }
+.edge-neg { color: #ef4444; font-weight: 700; }
+.muted { color: #4a5568; }
+.lowpolls { color: #facc15; }
+.split { display: inline-block; background: rgba(249,115,22,0.18); color: #fb923c; border-radius: 4px; padding: 1px 6px; font-size: 0.65rem; font-weight: 700; margin-left: 6px; cursor: help; }
+tr.splitrow td { opacity: 0.72; }
+footer { padding: 6px 28px 26px; font-size: 0.72rem; color: #4a5568; max-width: 900px; line-height: 1.5; }
 </style>
 </head>
 <body>
 <header>
   <h1>Model vs Markets</h1>
-  <nav><a href="index.html">Arb Dashboard</a><a href="polls.html">Poll Explorer</a></nav>
-  <span class="sub" id="meta"></span>
+  <nav><a href="index.html">← Dashboard</a><a href="polls.html">Poll Explorer</a></nav>
+  <p id="meta"></p>
 </header>
-<div class="controls">
-  <select id="office">
-    <option value="">All offices</option>
-    <option value="Senate">Senate</option>
-    <option value="Governor">Governor</option>
-    <option value="House">House</option>
-  </select>
-  <label>min polls <input type="number" id="minpolls" value="0" min="0" style="width:60px"></label>
-  <label>min |edge| % <input type="number" id="minedge" value="0" min="0" style="width:60px"></label>
-  <label><input type="checkbox" id="bothvenues"> both venues only</label>
-  <label><input type="checkbox" id="agreedonly"> hide model-split races</label>
+
+<div class="mismatch-controls">
+  <label>Office</label>
+  <select id="m-office"><option value="ALL">All</option><option value="Senate">Senate</option><option value="Governor">Governor</option><option value="House">House</option></select>
+  <label>Venue</label>
+  <select id="m-venue"><option value="kalshi">Kalshi</option><option value="poly">Polymarket</option></select>
+  <label>Direction</label>
+  <select id="m-dir"><option value="ALL">All</option><option value="model-dem">Model likes Dem more</option><option value="model-rep">Model likes Rep more</option></select>
+  <label>Min polls</label><input type="number" id="m-minpolls" value="0" min="0">
+  <label class="chk"><input type="checkbox" id="m-hidesplit"> hide model-split races</label>
 </div>
-<div class="wrap">
-  <table id="tbl">
-    <thead><tr>
-      <th class="race" data-k="race_id">Race</th>
-      <th data-k="primary_date">Primary</th>
-      <th data-k="n_polls">Polls</th>
-      <th data-k="model_dem">Model D%</th>
-      <th data-k="kalshi_dem">Kalshi D%</th>
-      <th data-k="edge_kalshi">Edge K</th>
-      <th data-k="poly_dem">Poly D%</th>
-      <th data-k="edge_poly">Edge P</th>
-      <th data-k="model_margin_dem">Model marg (D)</th>
-      <th data-k="kalshi_margin_dem">Kalshi marg (D)</th>
-      <th data-k="margin_edge">Marg &Delta;</th>
-      <th data-k="maxedge">Max |edge|</th>
-    </tr></thead>
-    <tbody></tbody>
+
+<div class="mismatch-body">
+  <div class="mismatch-explainer">
+    <strong>Model win probability vs market price, general elections only, in states whose
+    primaries (incl. runoffs) are decided.</strong> Bars show <strong>edge = model Dem win
+    prob − market Dem prob</strong> (market vig-normalized D/(D+R)).
+    <span style="color:#3b82f6">Blue right</span> = the model likes the Democrat more than the
+    market; <span style="color:#ef4444">red left</span> = the model likes the Republican more.
+    <span style="color:#fb923c">⚠ SPLIT</span> = the win-probability model and the separate
+    margin model pick <em>different winners</em> — treat those as toss-ups with no edge
+    (they're drawn hollow in the chart and dimmed in the table).
+    Yellow poll counts (&lt;5) = thin data; big edge + thin polls usually means the market
+    knows something the polls don't.
+  </div>
+  <div id="model-chart"></div>
+  <table class="mm-table">
+    <thead id="mm-thead"></thead>
+    <tbody id="mm-tbody"></tbody>
   </table>
 </div>
 <footer id="note"></footer>
+
 <script>
-const R = MODEL_COMPARE.races.map(r => ({...r,
-  maxedge: Math.max(Math.abs(r.edge_kalshi ?? 0), Math.abs(r.edge_poly ?? 0))}));
-let sortKey = 'maxedge', sortDir = -1;
+const R = MODEL_COMPARE.races;
+let mOffice = 'ALL', mVenue = 'kalshi', mDir = 'ALL', mMinPolls = 0, mHideSplit = false;
+let sortCol = 'edge_abs', sortDir = -1;
 
-const pct = v => v == null ? '<span class="muted">—</span>' : (100*v).toFixed(1);
-const edgeCell = v => v == null ? '<span class="muted">—</span>'
-  : `<span class="${v > 0 ? 'edge-pos' : 'edge-neg'}">${v > 0 ? '+' : ''}${(100*v).toFixed(1)}</span>`;
-const officeBadge = o => `<span class="badge ${o === 'Senate' ? 'SEN' : o === 'Governor' ? 'GOV' : 'H'}">${o === 'Senate' ? 'SEN' : o === 'Governor' ? 'GOV' : 'H'}</span>`;
+const venueProb = r => mVenue === 'kalshi' ? r.kalshi_dem : r.poly_dem;
+const venueEdge = r => mVenue === 'kalshi' ? r.edge_kalshi : r.edge_poly;
 
-function render() {
-  const of = document.getElementById('office').value;
-  const mp = +document.getElementById('minpolls').value || 0;
-  const me = (+document.getElementById('minedge').value || 0) / 100;
-  const bv = document.getElementById('bothvenues').checked;
-  const ao = document.getElementById('agreedonly').checked;
-  let rows = R.filter(r => (!of || r.office === of) && r.n_polls >= mp && r.maxedge >= me
-                          && (!bv || (r.edge_kalshi != null && r.edge_poly != null))
-                          && (!ao || r.models_agree !== false));
-  rows.sort((a, b) => {
-    const av = a[sortKey], bv2 = b[sortKey];
-    if (av == null) return 1; if (bv2 == null) return -1;
-    return (av < bv2 ? -1 : av > bv2 ? 1 : 0) * sortDir;
+function filtered() {
+  return R.filter(r => venueEdge(r) != null)
+    .filter(r => (mOffice === 'ALL' || r.office === mOffice)
+              && (mDir !== 'model-dem' || venueEdge(r) > 0)
+              && (mDir !== 'model-rep' || venueEdge(r) < 0)
+              && r.n_polls >= mMinPolls
+              && (!mHideSplit || r.models_agree !== false))
+    .map(r => ({...r, edge: venueEdge(r), edge_abs: Math.abs(venueEdge(r)),
+                market: venueProb(r),
+                label: r.state + (r.district ? '-' + r.district : '') + ' ' +
+                       (r.office === 'Senate' ? 'SEN' : r.office === 'Governor' ? 'GOV' : 'H')}));
+}
+
+function renderChart(rows) {
+  const sorted = [...rows].sort((a, b) => b.edge - a.edge);
+  const h = Math.max(300, sorted.length * 24);
+  Plotly.react('model-chart', [{
+    type: 'bar', orientation: 'h',
+    x: sorted.map(r => r.edge),
+    y: sorted.map(r => r.label + (r.models_agree === false ? ' ⚠' : '')),
+    customdata: sorted.map(r => [
+      (100 * r.model_dem).toFixed(1), (100 * r.market).toFixed(1),
+      r.dem_name || '?', r.rep_name || '?', r.n_polls,
+      r.models_agree === false ? 'MODELS SPLIT — margin model picks ' + (r.margin_pick_name || 'other side') : 'models agree',
+    ]),
+    hovertemplate: '<b>%{y}</b><br>%{customdata[2]} (D) v %{customdata[3]} (R)<br>' +
+      'Model Dem win prob: %{customdata[0]}%<br>Market Dem prob: %{customdata[1]}%<br>' +
+      'Edge: %{x:.1%} · %{customdata[4]} polls<br>%{customdata[5]}<extra></extra>',
+    marker: {
+      color: sorted.map(r => r.edge > 0 ? '#3b82f6' : '#ef4444'),
+      opacity: sorted.map(r => r.models_agree === false ? 0.35 : 0.85),
+      line: { color: sorted.map(r => r.models_agree === false ? '#fb923c' : 'rgba(0,0,0,0)'),
+              width: sorted.map(r => r.models_agree === false ? 1.5 : 0) },
+    },
+  }], {
+    height: h, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { t: 30, b: 40, l: 110, r: 70 },
+    xaxis: { tickformat: '.0%', gridcolor: '#1e2433', color: '#64748b', zeroline: true, zerolinecolor: '#facc15', zerolinewidth: 1 },
+    yaxis: { gridcolor: '#1e2433', color: '#94a3b8', tickfont: { size: 10 }, automargin: true },
+    font: { color: '#94a3b8' }, bargap: 0.3,
+    annotations: [{ x: 0, y: 1.04, xref: 'paper', yref: 'paper', xanchor: 'center',
+      text: '← Model likes Republican more  |  Model likes Democrat more →',
+      showarrow: false, font: { size: 11, color: '#4a5568' } }],
+  }, { responsive: true, displayModeBar: false });
+}
+
+const COLS = [
+  ['label', 'Race'], ['primary_date', 'Primary'], ['n_polls', 'Polls'],
+  ['model_dem', 'Model D%'], ['market', 'Market D%'], ['edge', 'Edge'],
+  ['model_margin_dem', 'Model margin'], ['kalshi_margin_dem', 'Kalshi margin'], ['margin_edge', 'Marg Δ'],
+];
+const pct = v => v == null ? '<span class="muted">—</span>' : (100 * v).toFixed(1);
+const marg = v => v == null ? '<span class="muted">—</span>'
+  : `<span class="${v >= 0 ? 'dem' : 'rep'}">${v >= 0 ? 'D' : 'R'}+${Math.abs(v).toFixed(1)}</span>`;
+
+function renderTable(rows) {
+  document.getElementById('mm-thead').innerHTML = '<tr>' + COLS.map(([k, t]) =>
+    `<th data-col="${k}" class="${sortCol === k ? 'sorted' : ''}">${t}${sortCol === k ? (sortDir < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('') + '</tr>';
+  const sorted = [...rows].sort((a, b) => {
+    const av = a[sortCol], bv = b[sortCol];
+    if (av == null) return 1; if (bv == null) return -1;
+    return (av < bv ? -1 : av > bv ? 1 : 0) * sortDir;
   });
-  const marg = v => v == null ? '<span class="muted">—</span>'
-    : `<span class="${v >= 0 ? 'dem' : 'rep'}">${v >= 0 ? 'D' : 'R'}+${Math.abs(v).toFixed(1)}</span>`;
-  document.getElementById('tbl').querySelector('tbody').innerHTML = rows.map(r => {
-    const label = r.state + (r.district ? '-' + r.district : '') + ' ' ;
+  document.getElementById('mm-tbody').innerHTML = sorted.map(r => {
+    const badge = `<span class="badge ${r.office === 'Senate' ? 'SEN' : r.office === 'Governor' ? 'GOV' : 'H'}">${r.office === 'Senate' ? 'SEN' : r.office === 'Governor' ? 'GOV' : 'H'}</span>`;
     const cands = `<span class="cand"><span class="dem">${r.dem_name || '?'}</span> v <span class="rep">${r.rep_name || '?'}</span></span>`;
     const split = r.models_agree === false
-      ? `<span class="split" title="Win model and margin model pick different winners — margin model likes ${r.margin_pick_name || 'the other side'}. Treat as no-edge.">&#9888; SPLIT</span>` : '';
-    return `<tr class="${r.maxedge >= 0.15 ? 'edge-big' : ''} ${r.models_agree === false ? 'splitrow' : ''}">
-      <td class="race">${officeBadge(r.office)}<b>${label}</b> ${cands}${split}</td>
+      ? `<span class="split" title="Win model and margin model disagree — margin model picks ${r.margin_pick_name || 'the other side'}. No edge.">⚠ SPLIT</span>` : '';
+    return `<tr class="${r.models_agree === false ? 'splitrow' : ''}">
+      <td>${badge}<b>${r.state}${r.district ? '-' + r.district : ''}</b> ${cands}${split}</td>
       <td>${r.primary_date || '—'}</td>
       <td class="${r.n_polls < 5 ? 'lowpolls' : ''}">${r.n_polls}</td>
       <td><b>${pct(r.model_dem)}</b></td>
-      <td>${pct(r.kalshi_dem)}</td><td>${edgeCell(r.edge_kalshi)}</td>
-      <td>${pct(r.poly_dem)}</td><td>${edgeCell(r.edge_poly)}</td>
+      <td>${pct(r.market)}</td>
+      <td><span class="${r.edge > 0 ? 'edge-pos' : 'edge-neg'}">${r.edge > 0 ? '+' : ''}${(100 * r.edge).toFixed(1)}</span></td>
       <td>${marg(r.model_margin_dem)}</td>
       <td>${marg(r.kalshi_margin_dem)}</td>
       <td>${r.margin_edge == null ? '<span class="muted">—</span>' : (r.margin_edge > 0 ? '+' : '') + r.margin_edge.toFixed(1)}</td>
-      <td>${(100*r.maxedge).toFixed(1)}</td></tr>`;
+    </tr>`;
   }).join('');
-  document.getElementById('meta').textContent =
-    `${rows.length} races · primaries decided in ${MODEL_COMPARE.decided_states.length} states · generated ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')}`;
+  document.querySelectorAll('#mm-thead th').forEach(th => th.onclick = () => {
+    const c = th.dataset.col;
+    sortDir = (sortCol === c) ? -sortDir : -1; sortCol = c; render();
+  });
 }
-document.querySelectorAll('th').forEach(th => th.onclick = () => {
-  const k = th.dataset.k;
-  sortDir = (sortKey === k) ? -sortDir : -1; sortKey = k; render();
-});
-['office','minpolls','minedge','bothvenues','agreedonly'].forEach(id =>
-  document.getElementById(id).addEventListener('input', render));
+
+function render() {
+  const rows = filtered();
+  renderChart(rows);
+  renderTable(rows);
+  document.getElementById('meta').textContent =
+    `${rows.length} general races · primaries decided in ${MODEL_COMPARE.decided_states.length} states · ${MODEL_COMPARE.generated_at.slice(0, 16).replace('T', ' ')}`;
+}
+
+document.getElementById('m-office').onchange = e => { mOffice = e.target.value; render(); };
+document.getElementById('m-venue').onchange = e => { mVenue = e.target.value; render(); };
+document.getElementById('m-dir').onchange = e => { mDir = e.target.value; render(); };
+document.getElementById('m-minpolls').oninput = e => { mMinPolls = +e.target.value || 0; render(); };
+document.getElementById('m-hidesplit').onchange = e => { mHideSplit = e.target.checked; render(); };
+
 document.getElementById('note').textContent = MODEL_COMPARE.note +
-  ' Yellow poll counts (<5) mean the model is working from thin data — treat those edges skeptically. ' +
-  '⚠ SPLIT = the win-probability model and the (separate) margin model pick different winners; those rows are dimmed and should be treated as toss-ups with NO model edge. ' +
-  'Margin columns: model margin is the symmetrized D−R prediction from the margin model; Kalshi margin is the implied median from the margin-of-victory ladder markets (where the "at least N points" curve crosses 50%); Marg Δ = model minus market, in points. ' +
-  'Edge is NOT automatically tradable: the model is an election-eve-style read of current polling, four months out.';
+  ' Margin columns: model = symmetrized D−R prediction from the separate margin model; Kalshi = implied median from the margin-of-victory ladders (where the "at least N points" curve crosses 50%); Marg Δ = model − market in points. ' +
+  'The model is an election-eve-style read of current polling, months out — edges are a screening tool, not automatic trades.';
 render();
 </script>
 </body>
