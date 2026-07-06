@@ -212,6 +212,9 @@ def main():
         row = dict(
             race_id=rid, market_race_id=mrid, state=st,
             redistricted=bool(g["office"].iloc[0] == "House" and st in redrawn),
+            # pick flips under a +/-3pt national poll shift => treat as no-edge (poll errors
+            # are cycle-correlated; see the model repo's HANDOFF.md)
+            bias_fragile=bool(g["bias_fragile"].max()) if "bias_fragile" in g.columns else None,
             office=g["office"].iloc[0],
             district=str(g["district"].iloc[0]).split(".")[0].replace("nan", ""),
             primary_date=last_primary.get(st),
