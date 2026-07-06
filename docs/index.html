@@ -1905,7 +1905,7 @@ function renderModelTab(){
   const rows=mvFiltered();
   mvChart(rows); mvTable(rows);
   document.getElementById('mv-meta').textContent=
-    `${rows.length} races \u00b7 primaries decided in ${MODEL_COMPARE.decided_states.length} states \u00b7 ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')}`;
+    `${rows.length} races \u00b7 primaries decided in ${MODEL_COMPARE.decided_states.length} states \u00b7 ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')} + (MODEL_COMPARE.predictions_as_of ? ' · model as-of ' + MODEL_COMPARE.predictions_as_of.slice(0,10) : '')`;
   mvRendered=true;
 }
 

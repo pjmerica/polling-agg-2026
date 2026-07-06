@@ -249,6 +249,9 @@ def main():
     rows.sort(key=lambda r: -max(abs(r.get("edge_kalshi") or 0), abs(r.get("edge_poly") or 0)))
     payload = dict(
         generated_at=pd.Timestamp.now().isoformat(),
+        # market side refreshes every Action run; the MODEL side only when predictions are
+        # re-run locally — surface both timestamps so staleness is visible on the page.
+        predictions_as_of=pd.Timestamp(os.path.getmtime(args.preds), unit="s").isoformat(),
         note="model_dem = model's normalized DEM win prob; venue *_dem are vig-normalized "
              "(D/(D+R)); edge = model - market (positive = model likes DEM more than market). "
              "Only races in states whose primaries (incl. runoffs) are already decided.",
