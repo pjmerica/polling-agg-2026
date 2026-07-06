@@ -575,6 +575,13 @@ tr:hover td { background: #1a2035; }
       </select>
     </div>
     <div class="filter-group">
+      <label>State</label>
+      <select id="raw-state">
+        <option value="ALL">All</option>
+        <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="DC">DC</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option>
+      </select>
+    </div>
+    <div class="filter-group">
       <label>Stage</label>
       <select id="raw-stage">
         <option value="ALL">All</option>
@@ -812,6 +819,9 @@ function resetRawSearchUI() {
   rawSinceDays = 0;
   const offSel = document.getElementById('raw-office');
   if (offSel) offSel.value = 'ALL';
+  rawState = 'ALL';
+  const stSel = document.getElementById('raw-state');
+  if (stSel) stSel.value = 'ALL';
   const sinceSel = document.getElementById('raw-since');
   if (sinceSel) sinceSel.value = '0';
 }
@@ -1508,6 +1518,7 @@ let RAW_POLLS = RAW_POLLS_RACES;
 
 let rawSortCol = 'end_date_iso', rawSortDir = -1;
 let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 0;
+let rawState = 'ALL';
 // rawYears: array of year strings to KEEP, or null = all years.
 // Default = current cycle + previous, matches the dropdown's default option.
 let rawYears = ['2025', '2026'];
@@ -1527,6 +1538,7 @@ function rawFilter() {
     if (rawPinnedRaceId && p.race_id !== rawPinnedRaceId) return false;
     if (rawPinnedStateAbbrev && p.state_abbrev !== rawPinnedStateAbbrev) return false;
     if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
+    if (rawState !== 'ALL' && p.state_abbrev !== rawState) return false;
     if (rawStage !== 'ALL' && p.stage !== rawStage) return false;
     if (cutoff && (!p.end_date_iso || p.end_date_iso < cutoff)) return false;
     if (rawYears && p.end_date_iso) {
@@ -1630,6 +1642,7 @@ document.getElementById('raw-source').addEventListener('change', e => {
   rawOffice = 'ALL';
   rawStage = 'ALL';
   document.getElementById('raw-office').value = 'ALL';
+  rawState = 'ALL'; document.getElementById('raw-state').value = 'ALL';
   document.getElementById('raw-stage').value = 'ALL';
   // Hide Office filter in 'other' mode (mayoral/ballot/approval don't
   // have an office classification).
@@ -1640,6 +1653,7 @@ document.getElementById('raw-source').addEventListener('change', e => {
   renderRawPolls();
 });
 document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
+document.getElementById('raw-state').addEventListener('change', e => { rawState = e.target.value; renderRawPolls(); });
 document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
 document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });
 document.getElementById('raw-years').addEventListener('change', e => {
