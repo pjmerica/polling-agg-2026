@@ -177,6 +177,10 @@ def main():
 
     preds = pd.read_csv(args.preds)
     mpreds = pd.read_csv(args.margin_preds) if os.path.exists(args.margin_preds) else None
+    # 2025-26 mid-decade redistricting: House fundamentals (prior margin, incumbency joins)
+    # key on district numbers that describe OLD boundaries in these states — flag them.
+    rd_path = os.path.join(REPO, "data", "processed", "redistricted_2026.csv")
+    redrawn = (set(pd.read_csv(rd_path)["state"]) if os.path.exists(rd_path) else set())
     decided, last_primary = decided_primary_states()
     print(f"states with decided primaries: {len(decided)} "
           f"(of {len(last_primary)} with known dates)")
@@ -205,6 +209,7 @@ def main():
         pdm = p.get("DEM", {}).get("prob"); pr_ = p.get("REP", {}).get("prob")
         row = dict(
             race_id=rid, market_race_id=mrid, state=st,
+            redistricted=bool(g["office"].iloc[0] == "House" and st in redrawn),
             office=g["office"].iloc[0],
             district=str(g["district"].iloc[0]).split(".")[0].replace("nan", ""),
             primary_date=last_primary.get(st),
