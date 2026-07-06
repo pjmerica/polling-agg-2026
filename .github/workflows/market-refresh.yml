@@ -41,6 +41,12 @@ jobs:
       - name: Run market pipeline
         run: python -u run_all.py --markets-only
 
+      # Rebuild the Model vs Markets tab data against the fresh polls/markets. The model
+      # predictions are committed snapshots (data/processed/model_*.csv), refreshed locally via
+      # the model repo's refresh_dashboard.py; this step re-prices the market side.
+      - name: Model vs markets compare
+        run: python analysis/model_compare.py || echo model-compare skipped
+
       - name: Commit and push if changed
         run: |
           git config user.name  "github-actions[bot]"

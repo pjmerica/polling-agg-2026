@@ -22,8 +22,21 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 MODEL_REPO = os.path.join(REPO, "..", "..", "Polling prediction model")
-DEFAULT_PREDS = os.path.join(MODEL_REPO, "predictions_2026.csv")
-DEFAULT_MARGIN_PREDS = os.path.join(MODEL_REPO, "margin_predictions_2026.csv")
+
+def _first_existing(*paths):
+    for p in paths:
+        if os.path.exists(p):
+            return p
+    return paths[0]
+
+# Committed snapshots in THIS repo first (lets the GitHub Action refresh the market side on
+# its own); the sibling model-repo outputs are the fallback for local runs.
+DEFAULT_PREDS = _first_existing(
+    os.path.join(REPO, "data", "processed", "model_predictions_2026.csv"),
+    os.path.join(MODEL_REPO, "predictions_2026.csv"))
+DEFAULT_MARGIN_PREDS = _first_existing(
+    os.path.join(REPO, "data", "processed", "model_margin_predictions_2026.csv"),
+    os.path.join(MODEL_REPO, "margin_predictions_2026.csv"))
 
 OFFICE_CODE = {"Senate": "SEN", "House": "H", "Governor": "GOV"}
 
