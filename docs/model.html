@@ -33,6 +33,8 @@
   .edge-big { background: rgba(250,204,21,0.07); }
   .muted { color: #4a5568; }
   .lowpolls { color: #facc15; }
+  .split { display: inline-block; background: rgba(249,115,22,0.18); color: #fb923c; border-radius: 4px; padding: 1px 6px; font-size: 0.65rem; font-weight: 700; margin-left: 6px; cursor: help; }
+  tr.splitrow td { opacity: 0.75; }
   footer { padding: 10px 28px 24px; font-size: 0.72rem; color: #4a5568; max-width: 900px; line-height: 1.5; }
 </style>
 </head>
@@ -52,6 +54,7 @@
   <label>min polls <input type="number" id="minpolls" value="0" min="0" style="width:60px"></label>
   <label>min |edge| % <input type="number" id="minedge" value="0" min="0" style="width:60px"></label>
   <label><input type="checkbox" id="bothvenues"> both venues only</label>
+  <label><input type="checkbox" id="agreedonly"> hide model-split races</label>
 </div>
 <div class="wrap">
   <table id="tbl">
@@ -64,6 +67,9 @@
       <th data-k="edge_kalshi">Edge K</th>
       <th data-k="poly_dem">Poly D%</th>
       <th data-k="edge_poly">Edge P</th>
+      <th data-k="model_margin_dem">Model marg (D)</th>
+      <th data-k="kalshi_margin_dem">Kalshi marg (D)</th>
+      <th data-k="margin_edge">Marg &Delta;</th>
       <th data-k="maxedge">Max |edge|</th>
     </tr></thead>
     <tbody></tbody>
@@ -85,23 +91,32 @@ function render() {
   const mp = +document.getElementById('minpolls').value || 0;
   const me = (+document.getElementById('minedge').value || 0) / 100;
   const bv = document.getElementById('bothvenues').checked;
+  const ao = document.getElementById('agreedonly').checked;
   let rows = R.filter(r => (!of || r.office === of) && r.n_polls >= mp && r.maxedge >= me
-                          && (!bv || (r.edge_kalshi != null && r.edge_poly != null)));
+                          && (!bv || (r.edge_kalshi != null && r.edge_poly != null))
+                          && (!ao || r.models_agree !== false));
   rows.sort((a, b) => {
     const av = a[sortKey], bv2 = b[sortKey];
     if (av == null) return 1; if (bv2 == null) return -1;
     return (av < bv2 ? -1 : av > bv2 ? 1 : 0) * sortDir;
   });
+  const marg = v => v == null ? '<span class="muted">—</span>'
+    : `<span class="${v >= 0 ? 'dem' : 'rep'}">${v >= 0 ? 'D' : 'R'}+${Math.abs(v).toFixed(1)}</span>`;
   document.getElementById('tbl').querySelector('tbody').innerHTML = rows.map(r => {
     const label = r.state + (r.district ? '-' + r.district : '') + ' ' ;
     const cands = `<span class="cand"><span class="dem">${r.dem_name || '?'}</span> v <span class="rep">${r.rep_name || '?'}</span></span>`;
-    return `<tr class="${r.maxedge >= 0.15 ? 'edge-big' : ''}">
-      <td class="race">${officeBadge(r.office)}<b>${label}</b> ${cands}</td>
+    const split = r.models_agree === false
+      ? `<span class="split" title="Win model and margin model pick different winners — margin model likes ${r.margin_pick_name || 'the other side'}. Treat as no-edge.">&#9888; SPLIT</span>` : '';
+    return `<tr class="${r.maxedge >= 0.15 ? 'edge-big' : ''} ${r.models_agree === false ? 'splitrow' : ''}">
+      <td class="race">${officeBadge(r.office)}<b>${label}</b> ${cands}${split}</td>
       <td>${r.primary_date || '—'}</td>
       <td class="${r.n_polls < 5 ? 'lowpolls' : ''}">${r.n_polls}</td>
       <td><b>${pct(r.model_dem)}</b></td>
       <td>${pct(r.kalshi_dem)}</td><td>${edgeCell(r.edge_kalshi)}</td>
       <td>${pct(r.poly_dem)}</td><td>${edgeCell(r.edge_poly)}</td>
+      <td>${marg(r.model_margin_dem)}</td>
+      <td>${marg(r.kalshi_margin_dem)}</td>
+      <td>${r.margin_edge == null ? '<span class="muted">—</span>' : (r.margin_edge > 0 ? '+' : '') + r.margin_edge.toFixed(1)}</td>
       <td>${(100*r.maxedge).toFixed(1)}</td></tr>`;
   }).join('');
   document.getElementById('meta').textContent =
@@ -111,10 +126,12 @@ document.querySelectorAll('th').forEach(th => th.onclick = () => {
   const k = th.dataset.k;
   sortDir = (sortKey === k) ? -sortDir : -1; sortKey = k; render();
 });
-['office','minpolls','minedge','bothvenues'].forEach(id =>
+['office','minpolls','minedge','bothvenues','agreedonly'].forEach(id =>
   document.getElementById(id).addEventListener('input', render));
 document.getElementById('note').textContent = MODEL_COMPARE.note +
   ' Yellow poll counts (<5) mean the model is working from thin data — treat those edges skeptically. ' +
+  '⚠ SPLIT = the win-probability model and the (separate) margin model pick different winners; those rows are dimmed and should be treated as toss-ups with NO model edge. ' +
+  'Margin columns: model margin is the symmetrized D−R prediction from the margin model; Kalshi margin is the implied median from the margin-of-victory ladder markets (where the "at least N points" curve crosses 50%); Marg Δ = model minus market, in points. ' +
   'Edge is NOT automatically tradable: the model is an election-eve-style read of current polling, four months out.';
 render();
 </script>

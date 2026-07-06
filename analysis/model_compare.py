@@ -9,7 +9,7 @@ matchups from unresolved primaries make model probabilities apples-to-oranges vs
 Market probabilities are vig-normalized per venue: dem_norm = D / (D + R), so a venue
 quoting D 52 / R 49 shows as D 51.5. Raw quotes are kept alongside.
 
-    python analysis/model_compare.py [--preds path\to\predictions_2026.csv]
+    python analysis/model_compare.py [--preds path/to/predictions_2026.csv]
 """
 import argparse
 import json
@@ -21,10 +21,85 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-DEFAULT_PREDS = os.path.join(REPO, "..", "..", "Polling prediction model",
-                             "predictions_2026.csv")
+MODEL_REPO = os.path.join(REPO, "..", "..", "Polling prediction model")
+DEFAULT_PREDS = os.path.join(MODEL_REPO, "predictions_2026.csv")
+DEFAULT_MARGIN_PREDS = os.path.join(MODEL_REPO, "margin_predictions_2026.csv")
 
 OFFICE_CODE = {"Senate": "SEN", "House": "H", "Governor": "GOV"}
+
+STATE_ABBR = {
+    'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA','Colorado':'CO',
+    'Connecticut':'CT','Delaware':'DE','District of Columbia':'DC','Florida':'FL','Georgia':'GA',
+    'Hawaii':'HI','Idaho':'ID','Illinois':'IL','Indiana':'IN','Iowa':'IA','Kansas':'KS','Kentucky':'KY',
+    'Louisiana':'LA','Maine':'ME','Maryland':'MD','Massachusetts':'MA','Michigan':'MI','Minnesota':'MN',
+    'Mississippi':'MS','Missouri':'MO','Montana':'MT','Nebraska':'NE','Nevada':'NV','New Hampshire':'NH',
+    'New Jersey':'NJ','New Mexico':'NM','New York':'NY','North Carolina':'NC','North Dakota':'ND',
+    'Ohio':'OH','Oklahoma':'OK','Oregon':'OR','Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC',
+    'South Dakota':'SD','Tennessee':'TN','Texas':'TX','Utah':'UT','Vermont':'VT','Virginia':'VA',
+    'Washington':'WA','West Virginia':'WV','Wisconsin':'WI','Wyoming':'WY',
+}
+_STATES_RX = "|".join(sorted(STATE_ABBR, key=len, reverse=True))
+
+# Kalshi "margin of victory" ladders (race_id is NaN in the feed for these — parsed from titles):
+#   Will the margin of victory for Democrats in the U.S. Senate election in Maine be at least 4 percentage points?
+#   Will the margin of victory for Republicans in the governor election in Ohio be at least 6 percentage points?
+#   Will the margin of victory for Democrats in the Wisconsin's 3rd District House election be at least 2 percentage points?
+MOV_RX = re.compile(
+    r"^Will the margin of victory for (Democrats|Republicans) in the "
+    r"(?:U\.S\. Senate election in (?P<sen>" + _STATES_RX + r")"
+    r"|governor election in (?P<gov>" + _STATES_RX + r")"
+    r"|(?P<hst>" + _STATES_RX + r")(?:'s (?P<dist>\d+)\w{2} District)? House election)"
+    r" be at least (?P<n>\d+) percentage points", re.I)
+
+def parse_mov_markets(kalshi_csv):
+    """-> {model_race_id: {'DEM': [(threshold, prob, volume), ...], 'REP': [...]}}"""
+    k = pd.read_csv(kalshi_csv, low_memory=False)
+    k = k[k["status"].astype(str).str.lower().eq("active")]
+    out = {}
+    for r in k.itertuples():
+        m = MOV_RX.match(str(r.market_title))
+        if not m:
+            continue
+        party = "DEM" if m.group(1).lower().startswith("dem") else "REP"
+        if m.group("sen"):
+            rid = f"2026_{STATE_ABBR[m.group('sen')]}_Senate"
+        elif m.group("gov"):
+            rid = f"2026_{STATE_ABBR[m.group('gov')]}_Governor"
+        else:
+            di = m.group("dist") or "1"     # at-large House = district 1 in our race ids
+            rid = f"2026_{STATE_ABBR[m.group('hst')]}_House-{int(di)}"
+        if pd.isna(r.implied_prob):
+            continue
+        out.setdefault(rid, {}).setdefault(party, []).append(
+            (int(m.group("n")), float(r.implied_prob), float(r.volume or 0)))
+    return out
+
+def ladder_median(ladder, p_win=None):
+    """Implied MEDIAN margin from an 'at least N' ladder [(N, P(margin>=N), vol)].
+
+    Anchored at (0, p_win) when the party-level win prob is known. Returns None if the
+    ladder never reaches 50% (that party is not the market favorite)."""
+    pts = sorted(ladder)
+    xs = [0.0] + [float(n) for n, _, _ in pts] if p_win is not None else [float(n) for n, _, _ in pts]
+    ps = ([float(p_win)] if p_win is not None else []) + [p for _, p, _ in pts]
+    ps = pd.Series(ps).cummin().tolist()          # enforce monotone non-increasing
+    if not ps or ps[0] < 0.5:
+        return None
+    for i in range(len(ps) - 1):
+        if ps[i] >= 0.5 > ps[i + 1]:
+            x0, x1, p0, p1 = xs[i], xs[i + 1], ps[i], ps[i + 1]
+            return x0 + (x1 - x0) * (p0 - 0.5) / (p0 - p1) if p0 > p1 else x0
+    return xs[-1]   # still >=50% at the top rung: margin at least the highest threshold
+
+def market_margin_dem(ladders, kalshi_dem_raw=None, kalshi_rep_raw=None):
+    """Signed (DEM minus REP) market-implied median margin from the two party ladders."""
+    d = ladder_median(ladders.get("DEM", []), kalshi_dem_raw) if ladders.get("DEM") else None
+    r = ladder_median(ladders.get("REP", []), kalshi_rep_raw) if ladders.get("REP") else None
+    if d is not None:
+        return round(d, 1)
+    if r is not None:
+        return round(-r, 1)
+    return None
 
 PARTY_RX = re.compile(r"^will (the )?(democrat|republican)\w*s? win the .*"
                       r"(race|senate|house|governor|gubernatorial)", re.I)
@@ -84,18 +159,22 @@ def norm_pair(d, r):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--preds", default=DEFAULT_PREDS)
+    ap.add_argument("--margin-preds", default=DEFAULT_MARGIN_PREDS)
     args = ap.parse_args()
 
     preds = pd.read_csv(args.preds)
+    mpreds = pd.read_csv(args.margin_preds) if os.path.exists(args.margin_preds) else None
     decided, last_primary = decided_primary_states()
     print(f"states with decided primaries: {len(decided)} "
           f"(of {len(last_primary)} with known dates)")
 
-    kalshi = load_party_markets(os.path.join(REPO, "data", "raw", "kalshi_markets.csv"),
-                                "market_title")
+    kalshi_csv = os.path.join(REPO, "data", "raw", "kalshi_markets.csv")
+    kalshi = load_party_markets(kalshi_csv, "market_title")
     poly = load_party_markets(os.path.join(REPO, "data", "raw", "polymarket_markets.csv"),
                               "question")
-    print(f"party-level race markets: kalshi {len(kalshi)} races, polymarket {len(poly)}")
+    mov = parse_mov_markets(kalshi_csv)
+    print(f"party-level race markets: kalshi {len(kalshi)} races, polymarket {len(poly)}; "
+          f"kalshi margin-of-victory ladders: {len(mov)} races")
 
     rows = []
     for rid, g in preds.groupby("race_id"):
@@ -131,6 +210,27 @@ def main():
             mv = row[f"{venue}_dem"]
             row[f"edge_{venue}"] = (round(model_dem - mv, 4)
                                     if (mv is not None and model_dem is not None) else None)
+
+        # --- margin model + models-agree flag + Kalshi margin-of-victory comparison ---
+        row["model_margin_dem"] = None
+        row["models_agree"] = None
+        if mpreds is not None:
+            mg = mpreds[mpreds["race_id"] == rid]
+            md_ = mg[mg["party"] == "DEM"]["pred_margin"]
+            mr_ = mg[mg["party"] == "REP"]["pred_margin"]
+            if len(md_) and len(mr_):
+                # per-candidate margins aren't race-consistent; symmetrize to a signed D-R number
+                row["model_margin_dem"] = round((float(md_.iloc[0]) - float(mr_.iloc[0])) / 2, 2)
+            if len(mg) and model_dem is not None:
+                margin_pick = mg.loc[mg["pred_margin"].idxmax()]
+                win_pick_party = "DEM" if model_dem >= 0.5 else "REP"
+                row["margin_pick_party"] = margin_pick["party"]
+                row["margin_pick_name"] = margin_pick["candidate"]
+                row["models_agree"] = bool(margin_pick["party"] == win_pick_party)
+        mm = market_margin_dem(mov[rid], kd, kr) if rid in mov else None
+        row["kalshi_margin_dem"] = mm
+        row["margin_edge"] = (round(row["model_margin_dem"] - mm, 1)
+                              if (mm is not None and row["model_margin_dem"] is not None) else None)
         rows.append(row)
 
     rows.sort(key=lambda r: -max(abs(r.get("edge_kalshi") or 0), abs(r.get("edge_poly") or 0)))
