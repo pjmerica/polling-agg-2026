@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model vs Markets — 2026</title>
+<script src="model_data.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { padding: 20px 28px 14px; border-bottom: 1px solid #1e2433; display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; }
+  header .sub { font-size: 0.75rem; color: #64748b; }
+  nav a { font-size: 0.8rem; color: #4f6ef7; text-decoration: none; margin-right: 14px; }
+  nav a:hover { text-decoration: underline; }
+  .controls { padding: 12px 28px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #1e2433; }
+  .controls select, .controls input { background: #1a2035; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.82rem; }
+  .controls label { font-size: 0.78rem; color: #94a3b8; }
+  .wrap { padding: 16px 28px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #161b27; white-space: nowrap; }
+  th { color: #94a3b8; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; user-select: none; position: sticky; top: 0; background: #0f1117; }
+  th:hover { color: #e2e8f0; }
+  td.race, th.race { text-align: left; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 700; margin-right: 6px; }
+  .badge.SEN { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .badge.GOV { background: rgba(52,211,153,0.15); color: #34d399; }
+  .badge.H   { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .cand { font-size: 0.72rem; color: #64748b; }
+  .dem { color: #60a5fa; } .rep { color: #f87171; }
+  .edge-pos { color: #34d399; font-weight: 700; }   /* model likes DEM more than market */
+  .edge-neg { color: #f87171; font-weight: 700; }   /* model likes REP more than market */
+  .edge-big { background: rgba(250,204,21,0.07); }
+  .muted { color: #4a5568; }
+  .lowpolls { color: #facc15; }
+  footer { padding: 10px 28px 24px; font-size: 0.72rem; color: #4a5568; max-width: 900px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Model vs Markets</h1>
+  <nav><a href="index.html">Arb Dashboard</a><a href="polls.html">Poll Explorer</a></nav>
+  <span class="sub" id="meta"></span>
+</header>
+<div class="controls">
+  <select id="office">
+    <option value="">All offices</option>
+    <option value="Senate">Senate</option>
+    <option value="Governor">Governor</option>
+    <option value="House">House</option>
+  </select>
+  <label>min polls <input type="number" id="minpolls" value="0" min="0" style="width:60px"></label>
+  <label>min |edge| % <input type="number" id="minedge" value="0" min="0" style="width:60px"></label>
+  <label><input type="checkbox" id="bothvenues"> both venues only</label>
+</div>
+<div class="wrap">
+  <table id="tbl">
+    <thead><tr>
+      <th class="race" data-k="race_id">Race</th>
+      <th data-k="primary_date">Primary</th>
+      <th data-k="n_polls">Polls</th>
+      <th data-k="model_dem">Model D%</th>
+      <th data-k="kalshi_dem">Kalshi D%</th>
+      <th data-k="edge_kalshi">Edge K</th>
+      <th data-k="poly_dem">Poly D%</th>
+      <th data-k="edge_poly">Edge P</th>
+      <th data-k="maxedge">Max |edge|</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+<footer id="note"></footer>
+<script>
+const R = MODEL_COMPARE.races.map(r => ({...r,
+  maxedge: Math.max(Math.abs(r.edge_kalshi ?? 0), Math.abs(r.edge_poly ?? 0))}));
+let sortKey = 'maxedge', sortDir = -1;
+
+const pct = v => v == null ? '<span class="muted">—</span>' : (100*v).toFixed(1);
+const edgeCell = v => v == null ? '<span class="muted">—</span>'
+  : `<span class="${v > 0 ? 'edge-pos' : 'edge-neg'}">${v > 0 ? '+' : ''}${(100*v).toFixed(1)}</span>`;
+const officeBadge = o => `<span class="badge ${o === 'Senate' ? 'SEN' : o === 'Governor' ? 'GOV' : 'H'}">${o === 'Senate' ? 'SEN' : o === 'Governor' ? 'GOV' : 'H'}</span>`;
+
+function render() {
+  const of = document.getElementById('office').value;
+  const mp = +document.getElementById('minpolls').value || 0;
+  const me = (+document.getElementById('minedge').value || 0) / 100;
+  const bv = document.getElementById('bothvenues').checked;
+  let rows = R.filter(r => (!of || r.office === of) && r.n_polls >= mp && r.maxedge >= me
+                          && (!bv || (r.edge_kalshi != null && r.edge_poly != null)));
+  rows.sort((a, b) => {
+    const av = a[sortKey], bv2 = b[sortKey];
+    if (av == null) return 1; if (bv2 == null) return -1;
+    return (av < bv2 ? -1 : av > bv2 ? 1 : 0) * sortDir;
+  });
+  document.getElementById('tbl').querySelector('tbody').innerHTML = rows.map(r => {
+    const label = r.state + (r.district ? '-' + r.district : '') + ' ' ;
+    const cands = `<span class="cand"><span class="dem">${r.dem_name || '?'}</span> v <span class="rep">${r.rep_name || '?'}</span></span>`;
+    return `<tr class="${r.maxedge >= 0.15 ? 'edge-big' : ''}">
+      <td class="race">${officeBadge(r.office)}<b>${label}</b> ${cands}</td>
+      <td>${r.primary_date || '—'}</td>
+      <td class="${r.n_polls < 5 ? 'lowpolls' : ''}">${r.n_polls}</td>
+      <td><b>${pct(r.model_dem)}</b></td>
+      <td>${pct(r.kalshi_dem)}</td><td>${edgeCell(r.edge_kalshi)}</td>
+      <td>${pct(r.poly_dem)}</td><td>${edgeCell(r.edge_poly)}</td>
+      <td>${(100*r.maxedge).toFixed(1)}</td></tr>`;
+  }).join('');
+  document.getElementById('meta').textContent =
+    `${rows.length} races · primaries decided in ${MODEL_COMPARE.decided_states.length} states · generated ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')}`;
+}
+document.querySelectorAll('th').forEach(th => th.onclick = () => {
+  const k = th.dataset.k;
+  sortDir = (sortKey === k) ? -sortDir : -1; sortKey = k; render();
+});
+['office','minpolls','minedge','bothvenues'].forEach(id =>
+  document.getElementById(id).addEventListener('input', render));
+document.getElementById('note').textContent = MODEL_COMPARE.note +
+  ' Yellow poll counts (<5) mean the model is working from thin data — treat those edges skeptically. ' +
+  'Edge is NOT automatically tradable: the model is an election-eve-style read of current polling, four months out.';
+render();
+</script>
+</body>
+</html>
