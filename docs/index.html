@@ -868,7 +868,7 @@ function renderScatter(data) {
   Plotly.react('scatter-chart', traces, {
     paper_bgcolor:'transparent', plot_bgcolor:'transparent',
     margin:{t:10,b:50,l:80,r:20},
-    xaxis:{ title:'Implied Democrat Win Probability', range:[0,1], gridcolor:'#1e2433', tickformat:'.0%', color:'#64748b', tickvals:[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1] },
+    xaxis:{ title:'Implied Democrat Win Probability (Dem \u2190 \u2192 Rep)', range:[1,0], gridcolor:'#1e2433', tickformat:'.0%', color:'#64748b', tickvals:[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1] },
     yaxis:{ gridcolor:'#1e2433', color:'#64748b' },
     legend:{ bgcolor:'transparent', font:{color:'#94a3b8'} },
     shapes:[{ type:'line', x0:.5, x1:.5, y0:-.5, y1:2.5, line:{color:'#facc15',width:1,dash:'dot'} }],
@@ -890,7 +890,7 @@ function renderBar(divId, rows) {
   }], {
     height:h, paper_bgcolor:'transparent', plot_bgcolor:'transparent',
     margin:{t:10,b:30,l:90,r:60},
-    xaxis:{ range:[0,1.12], tickformat:'.0%', gridcolor:'#1e2433', color:'#64748b' },
+    xaxis:{ range:[1.12,0], tickformat:'.0%', gridcolor:'#1e2433', color:'#64748b' },
     yaxis:{ gridcolor:'#1e2433', color:'#94a3b8', tickfont:{size:10}, automargin:true },
     shapes:[{ type:'line', x0:.5, x1:.5, y0:-.5, y1:display.length-.5, line:{color:'#facc15',width:1,dash:'dot'} }],
     font:{color:'#94a3b8'}, bargap:.3,
@@ -1675,11 +1675,11 @@ function mvChart(rows){
     height:Math.max(300,sorted.length*24),
     paper_bgcolor:'transparent',plot_bgcolor:'transparent',
     margin:{t:30,b:40,l:110,r:70},
-    xaxis:{tickformat:'.0%',gridcolor:'#1e2433',color:'#64748b',zeroline:true,zerolinecolor:'#facc15',zerolinewidth:1},
+    xaxis:{autorange:'reversed',tickformat:'.0%',gridcolor:'#1e2433',color:'#64748b',zeroline:true,zerolinecolor:'#facc15',zerolinewidth:1},
     yaxis:{gridcolor:'#1e2433',color:'#94a3b8',tickfont:{size:10},automargin:true},
     font:{color:'#94a3b8'},bargap:0.3,
     annotations:[{x:0,y:1.04,xref:'paper',yref:'paper',xanchor:'center',
-      text:'\u2190 Model likes Republican more  |  Model likes Democrat more \u2192',
+      text:'\u2190 Model likes Democrat more  |  Model likes Republican more \u2192',
       showarrow:false,font:{size:11,color:'#4a5568'}}],
   },{responsive:true,displayModeBar:false});
 }
@@ -1787,7 +1787,7 @@ function mvRenderExplain(){
   }], {
     height: 420, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
     margin: { t: 10, b: 40, l: 10, r: 30 },
-    xaxis: { gridcolor: '#1e2433', color: '#64748b', zeroline: true,
+    xaxis: { autorange: 'reversed', gridcolor: '#1e2433', color: '#64748b', zeroline: true,
              zerolinecolor: '#facc15', zerolinewidth: 1,
              title: { text: mvExplainTab === 'win' ? 'impact on win odds (log-odds)' : 'impact on margin (pts)',
                       font: { size: 11, color: '#4a5568' } } },
