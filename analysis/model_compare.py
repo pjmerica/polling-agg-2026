@@ -187,6 +187,14 @@ def main():
     print(f"states with decided primaries: {len(decided)} "
           f"(of {len(last_primary)} with known dates)")
 
+    # SHAP explanations (produced by the model repo's explain_2026.py; optional)
+    exp_path = os.path.join(REPO, "data", "processed", "model_explanations_2026.json")
+    explanations = {}
+    if os.path.exists(exp_path):
+        with open(exp_path, encoding="utf-8") as f:
+            explanations = json.load(f).get("races", {})
+        print(f"explanations loaded: {len(explanations)} races")
+
     kalshi_csv = os.path.join(REPO, "data", "raw", "kalshi_markets.csv")
     kalshi = load_party_markets(kalshi_csv, "market_title")
     poly = load_party_markets(os.path.join(REPO, "data", "raw", "polymarket_markets.csv"),
@@ -253,6 +261,7 @@ def main():
                 row["margin_pick_party"] = margin_pick["party"]
                 row["margin_pick_name"] = margin_pick["candidate"]
                 row["models_agree"] = bool(margin_pick["party"] == win_pick_party)
+        row["explain"] = explanations.get(rid)
         mm = market_margin_dem(mov[rid], kd, kr) if rid in mov else None
         row["kalshi_margin_dem"] = mm
         row["margin_edge"] = (round(row["model_margin_dem"] - mm, 1)

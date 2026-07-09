@@ -314,6 +314,18 @@ tr:hover td { background: #1a2035; }
     .mv-badge.SEN { background:rgba(167,139,250,0.15); color:#a78bfa; }
     .mv-badge.GOV { background:rgba(52,211,153,0.15); color:#34d399; }
     .mv-badge.H { background:rgba(96,165,250,0.15); color:#60a5fa; }
+    .mv-explainbtn { background:#1e2d50; border:1px solid #34437a; color:#8ea2ff; border-radius:6px; padding:3px 10px; font-size:0.7rem; font-weight:600; cursor:pointer; }
+    .mv-explainbtn:hover { background:#26386a; }
+    #mv-modal { display:none; position:fixed; inset:0; background:rgba(5,8,15,0.75); z-index:1000; }
+    #mv-modal .mv-panel { position:absolute; top:5%; left:50%; transform:translateX(-50%); width:min(860px,94vw); max-height:88vh; overflow-y:auto; background:#12141c; border:1px solid #2d3748; border-radius:12px; padding:18px 22px; }
+    #mv-modal h3 { color:#f1f5f9; font-size:1.05rem; margin-bottom:2px; }
+    #mv-modal .mv-sub { color:#64748b; font-size:0.78rem; margin-bottom:12px; }
+    #mv-modal .mv-close { position:absolute; top:12px; right:16px; background:none; border:none; color:#64748b; font-size:1.3rem; cursor:pointer; }
+    .mv-etabs { display:flex; gap:0; margin-bottom:10px; border-bottom:1px solid #1e2433; }
+    .mv-etab { padding:8px 18px; background:none; border:none; color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; }
+    .mv-etab.active { color:#8ea2ff; border-bottom-color:#4f6ef7; }
+    .mv-esummary { color:#cbd5e1; font-size:0.85rem; margin-bottom:8px; line-height:1.5; }
+
   </style>
   <div class="mismatch-controls">
     <label>Office</label>
@@ -342,6 +354,20 @@ tr:hover td { background: #1a2035; }
     </div>
     <div id="model-chart"></div>
     <table class="mm-table"><thead id="mv-thead"></thead><tbody id="mv-tbody"></tbody></table>
+  <div id="mv-modal">
+    <div class="mv-panel">
+      <button class="mv-close" onclick="document.getElementById('mv-modal').style.display='none'">&times;</button>
+      <h3 id="mv-etitle"></h3>
+      <div class="mv-sub" id="mv-esub"></div>
+      <div class="mv-etabs">
+        <button class="mv-etab active" data-etab="win">Winner model</button>
+        <button class="mv-etab" data-etab="margin">Margin model</button>
+      </div>
+      <div class="mv-esummary" id="mv-esummary"></div>
+      <div id="mv-explain-chart" style="height:420px"></div>
+    </div>
+  </div>
+
   </div>
 </div>
 
@@ -1666,7 +1692,7 @@ const mvMarg=v=>v==null?'<span class="mv-muted">-</span>':`<span class="${v>=0?'
 
 function mvTable(rows){
   document.getElementById('mv-thead').innerHTML='<tr>'+MV_COLS.map(([k,t])=>
-    `<th data-col="${k}" class="${mvSortCol===k?'sorted':''}">${t}${mvSortCol===k?(mvSortDir<0?' \u2193':' \u2191'):''}</th>`).join('')+'</tr>';
+    `<th data-col="${k}" class="${mvSortCol===k?'sorted':''}">${t}${mvSortCol===k?(mvSortDir<0?' \u2193':' \u2191'):''}</th>`).join('')+'<th></th></tr>';
   const sorted=[...rows].sort((a,b)=>{const av=a[mvSortCol],bv=b[mvSortCol];
     if(av==null)return 1; if(bv==null)return -1;
     return (av<bv?-1:av>bv?1:0)*mvSortDir;});
@@ -1683,7 +1709,12 @@ function mvTable(rows){
       <td>${mvMarg(r.model_margin_dem)}</td>
       <td>${mvMarg(r.kalshi_margin_dem)}</td>
       <td>${r.margin_edge==null?'<span class="mv-muted">-</span>':(r.margin_edge>0?'+':'')+r.margin_edge.toFixed(1)}</td>
+      <td>${r.explain?'<button class="mv-explainbtn" data-rid="'+r.race_id+'">Explain</button>':''}</td>
     </tr>`;}).join('');
+  document.getElementById('mv-tbody').onclick = e => {
+    const b = e.target.closest('.mv-explainbtn');
+    if (b) mvOpenExplain(b.dataset.rid);
+  };
   document.querySelectorAll('#mv-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; mvSortDir=(mvSortCol===c)?-mvSortDir:-1; mvSortCol=c; renderModelTab();});
 }
@@ -1705,6 +1736,54 @@ document.getElementById('mv-dir').onchange=e=>{mvDir=e.target.value;renderModelT
 document.getElementById('mv-minpolls').oninput=e=>{mvMinPolls=+e.target.value||0;renderModelTab();};
 document.getElementById('mv-hidesplit').onchange=e=>{mvHideSplit=e.target.checked;renderModelTab();};
 document.querySelector('[data-tab="model"]').addEventListener('click',()=>setTimeout(renderModelTab,0));
+
+// ── per-race SHAP explain modal ──
+let mvExplainRace = null, mvExplainTab = 'win';
+function mvOpenExplain(rid){
+  mvExplainRace = MV.find(r => r.race_id === rid);
+  if (!mvExplainRace || !mvExplainRace.explain) return;
+  mvExplainTab = 'win';
+  document.getElementById('mv-modal').style.display = 'block';
+  mvRenderExplain();
+}
+document.querySelectorAll('.mv-etab').forEach(b => b.onclick = () => {
+  mvExplainTab = b.dataset.etab; mvRenderExplain();
+});
+document.getElementById('mv-modal').onclick = e => {
+  if (e.target.id === 'mv-modal') e.target.style.display = 'none';
+};
+function mvRenderExplain(){
+  const r = mvExplainRace, ex = r.explain, blk = ex[mvExplainTab];
+  document.querySelectorAll('.mv-etab').forEach(b =>
+    b.classList.toggle('active', b.dataset.etab === mvExplainTab));
+  const lbl = r.state + (r.district ? '-' + r.district : '') + ' ' +
+    (r.office === 'Senate' ? 'SEN' : r.office === 'Governor' ? 'GOV' : 'H');
+  document.getElementById('mv-etitle').textContent = 'Why the model predicts ' + lbl;
+  document.getElementById('mv-esub').textContent =
+    'Explaining ' + ex.candidate + ' (' + ex.party + ') \u00b7 top 10 drivers by SHAP value \u00b7 ' +
+    'blue pushes toward the ' + (mvExplainTab === 'win' ? 'candidate winning' : 'candidate\u2019s margin') + ', red against';
+  const fmtPct = v => (100 * v).toFixed(0) + '%';
+  document.getElementById('mv-esummary').innerHTML = mvExplainTab === 'win'
+    ? `A generic race would start at <b>${fmtPct(blk.base)}</b>; the features below move ${ex.candidate} to <b>${fmtPct(blk.pred)}</b> win probability \u2014 the model's raw estimate for this candidate; the table's Model D% is the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`
+    : `Baseline margin <b>${blk.base > 0 ? '+' : ''}${blk.base.toFixed(1)} pts</b>; the features below move ${ex.candidate} to <b>${blk.pred > 0 ? '+' : ''}${blk.pred.toFixed(1)} pts</b> (positive = wins by that much).`;
+  const feats = [...blk.feats].reverse();   // largest at top after reverse for plotly
+  Plotly.react('mv-explain-chart', [{
+    type: 'bar', orientation: 'h',
+    x: feats.map(f => f.shap),
+    y: feats.map(f => f.label + (f.val === null ? '' : '  =  ' + f.val)),
+    marker: { color: feats.map(f => f.shap > 0 ? '#3b82f6' : '#ef4444'), opacity: 0.85 },
+    hovertemplate: '<b>%{y}</b><br>SHAP: %{x:+.3f}<extra></extra>',
+  }], {
+    height: 420, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { t: 10, b: 40, l: 10, r: 30 },
+    xaxis: { gridcolor: '#1e2433', color: '#64748b', zeroline: true,
+             zerolinecolor: '#facc15', zerolinewidth: 1,
+             title: { text: mvExplainTab === 'win' ? 'impact on win odds (log-odds)' : 'impact on margin (pts)',
+                      font: { size: 11, color: '#4a5568' } } },
+    yaxis: { color: '#cbd5e1', tickfont: { size: 11 }, automargin: true },
+    font: { color: '#94a3b8' }, bargap: 0.25,
+  }, { responsive: true, displayModeBar: false });
+}
 })();
 </script>
 </body>
