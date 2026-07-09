@@ -129,6 +129,21 @@ else:
     n_dropped = n_before - len(combined)
     if n_dropped:
         print(f"  Deduped: dropped {n_dropped} wikipedia rows from polls NYT already carries")
+
+    # Content-level safety net. The name-overlap dedup above misses cross-source pairs
+    # where the poll is byte-identical but the earlier match logic didn't fire (e.g.
+    # co/efficient NC-01 4/29 appeared under both an NYT UUID and a Wikipedia hash id).
+    # Collapse any rows identical on (race, pollster, normalized-date, candidate, pct);
+    # keep NYT over Wikipedia. This is what the model's own dedup does, kept in sync here.
+    n2 = len(combined)
+    combined['_pct_r'] = pd.to_numeric(combined['implied_prob'], errors='coerce').round(3)
+    combined['_src_pri'] = combined['source'].map({'nyt': 0}).fillna(1)
+    combined = (combined.sort_values('_src_pri')
+                .drop_duplicates(subset=['race_id', 'pollster', 'end_date_iso',
+                                         'candidate', '_pct_r'], keep='first')
+                .drop(columns=['_pct_r', '_src_pri']))
+    if n2 - len(combined):
+        print(f"  Deduped (content): dropped {n2 - len(combined)} byte-identical duplicate rows")
     polls = combined
     print(f"Polls after parse + dedup: {len(polls)}")
 
@@ -147,8 +162,14 @@ with open(ROOT / 'docs/data.js', 'w') as f:
 print(f"data.js: {len(agg)} races")
 
 # ── polls_data.js ──
+# Per-race view is GENERAL-election polls only: a district's primary polls (e.g. NC-01's
+# Feb Emerson GOP-primary survey) measure a different contest and must not inflate the
+# race's poll count or averages. Primary polls remain available via the primary-market
+# path below; generic-ballot/approval/mayoral go to other_polls_data.js.
 races = {}
-for race_id, rdf in polls.groupby('race_id'):
+_general_polls = polls[~polls['stage'].astype(str).str.lower().isin(
+    ['primary', 'primary runoff', 'generic_ballot', 'approval', 'mayoral'])]
+for race_id, rdf in _general_polls.groupby('race_id'):
     poll_list = []
     for (poll_id, question_id), qdf in rdf.groupby(['poll_id', 'question_id']):
         row0 = qdf.iloc[0]
