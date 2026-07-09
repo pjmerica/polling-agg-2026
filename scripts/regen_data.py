@@ -155,6 +155,40 @@ def label(row):
         return f"{row['state_abbrev']}-{d.zfill(2) if d else '?'}"
     return f"{row['state_abbrev']} {row['office']}"
 agg['label'] = agg.apply(label, axis=1)
+
+# --- Override the market average with the MODEL's Dem win probability ---
+# The `implied_prob_avg` market aggregate blends primary "finish 1st/2nd/3rd" markets,
+# individual-candidate win markets, and even Lieutenant-Governor markets into one number,
+# which is nonsense for a race's Dem-win probability (e.g. it read CA GOV as 7% Dem).
+# Our model produces a clean per-race probability; use it where available, keep the market
+# number only as a labeled fallback.
+_mp = _safe_read_csv(ROOT / 'data/processed/model_predictions_2026.csv')
+if not _mp.empty:
+    _mp['dem'] = _mp['party'].astype(str).str.upper().str.startswith('DEM')
+    _dem = (_mp[_mp['dem']].groupby('race_id')['win_prob_norm'].sum())
+    # model race_id is '2026_ME_Senate' / '2026_NC_House-1'; agg uses '2026-GOV-CA' etc.
+    OFF = {'Senate': 'SEN', 'House': 'H', 'Governor': 'GOV'}
+    def to_agg_id(mid):
+        p = str(mid).split('_')
+        if len(p) < 3:
+            return None
+        yr, st, off = p[0], p[1], p[2]
+        code = OFF.get(off)
+        if off == 'House' and len(p) > 3:
+            return f"{yr}-H-{st}-{int(p[3]):02d}"
+        return f"{yr}-{code}-{st}" if code else None
+    model_dem = {to_agg_id(rid): round(float(v), 4) for rid, v in _dem.items()}
+    agg['model_dem_prob'] = agg['race_id'].map(model_dem)
+    # the tab reads implied_prob_avg — point it at the model where we have it
+    agg['market_prob_avg'] = agg['implied_prob_avg']      # keep the old number, labeled
+    agg['implied_prob_avg'] = agg.apply(
+        lambda r: r['model_dem_prob'] if r.get('model_dem_prob') == r.get('model_dem_prob')
+        and r['model_dem_prob'] is not None else r['implied_prob_avg'], axis=1)
+    agg['prob_source'] = agg['model_dem_prob'].apply(
+        lambda v: 'model' if v == v and v is not None else 'market')
+    n_model = int(agg['prob_source'].eq('model').sum())
+    print(f"  data.js: model Dem-prob applied to {n_model} races (market fallback for the rest)")
+
 with open(ROOT / 'docs/data.js', 'w') as f:
     f.write('const RACES = ')
     json.dump(agg.to_dict(orient='records'), f, separators=(',',':'))
