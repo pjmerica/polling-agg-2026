@@ -162,14 +162,15 @@ with open(ROOT / 'docs/data.js', 'w') as f:
 print(f"data.js: {len(agg)} races")
 
 # ── polls_data.js ──
-# Per-race view is GENERAL-election polls only: a district's primary polls (e.g. NC-01's
-# Feb Emerson GOP-primary survey) measure a different contest and must not inflate the
-# race's poll count or averages. Primary polls remain available via the primary-market
-# path below; generic-ballot/approval/mayoral go to other_polls_data.js.
+# Per-race view is a COMPLETE poll browser: every candidate-race poll for the district,
+# including primary/jungle-primary and single-candidate polls, each tagged with its stage
+# so the frontend can filter. (Generic-ballot/approval/mayoral are nationwide/other and go
+# to other_polls_data.js.) The MODEL's general-only filtering happens separately in
+# predict.py; n_general below is the count the model-facing views should use.
 races = {}
-_general_polls = polls[~polls['stage'].astype(str).str.lower().isin(
-    ['primary', 'primary runoff', 'generic_ballot', 'approval', 'mayoral'])]
-for race_id, rdf in _general_polls.groupby('race_id'):
+_race_polls = polls[~polls['stage'].astype(str).str.lower().isin(
+    ['generic_ballot', 'approval', 'mayoral'])]
+for race_id, rdf in _race_polls.groupby('race_id'):
     poll_list = []
     for (poll_id, question_id), qdf in rdf.groupby(['poll_id', 'question_id']):
         row0 = qdf.iloc[0]
@@ -202,10 +203,15 @@ for race_id, rdf in _general_polls.groupby('race_id'):
     district = parts[3] if len(parts) > 3 and office == 'H' else ''
     lbl = f"{sa}-{district}" if office == 'H' else f"{sa} {office}"
     n_over50 = sum(1 for p in poll_list if p['any_over50'])
+    # n_general = distinct GENERAL-stage surveys (what the model uses); n_polls = every
+    # poll shown in the browser (incl. primary/jungle/single-candidate).
+    n_general = len({(p['pollster'], p['end_date_iso']) for p in poll_list
+                     if str(p['stage']).lower() == 'general'})
     races[race_id] = {
         'race_id': race_id, 'label': lbl, 'office': office,
         'state': ABBREV.get(sa, sa), 'state_abbrev': sa, 'district': district,
-        'n_polls': len(poll_list), 'n_over50': n_over50, 'polls': poll_list,
+        'n_polls': len(poll_list), 'n_general': n_general,
+        'n_over50': n_over50, 'polls': poll_list,
     }
 out = sorted(races.values(), key=lambda r: (-r['n_over50'], -r['n_polls']))
 with open(ROOT / 'docs/polls_data.js', 'w') as f:
