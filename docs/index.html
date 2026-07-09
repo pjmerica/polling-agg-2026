@@ -1767,12 +1767,23 @@ function mvRenderExplain(){
     ? `A generic race would start at <b>${fmtPct(blk.base)}</b>; the features below move ${ex.candidate} to <b>${fmtPct(blk.pred)}</b> win probability \u2014 the model's raw estimate for this candidate; the table's Model D% is the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`
     : `Baseline margin <b>${blk.base > 0 ? '+' : ''}${blk.base.toFixed(1)} pts</b>; the features below move ${ex.candidate} to <b>${blk.pred > 0 ? '+' : ''}${blk.pred.toFixed(1)} pts</b> (positive = wins by that much).`;
   const feats = [...blk.feats].reverse();   // largest at top after reverse for plotly
+  const wrap = (txt, w=52) => {               // word-wrap descriptions for the hover box
+    const words = String(txt || '').split(' '); const lines = []; let cur = '';
+    for (const word of words) {
+      if ((cur + ' ' + word).trim().length > w) { lines.push(cur.trim()); cur = word; }
+      else cur += ' ' + word;
+    }
+    if (cur.trim()) lines.push(cur.trim());
+    return lines.join('<br>');
+  };
   Plotly.react('mv-explain-chart', [{
     type: 'bar', orientation: 'h',
     x: feats.map(f => f.shap),
     y: feats.map(f => f.label + (f.val === null ? '' : '  =  ' + f.val)),
+    customdata: feats.map(f => wrap(f.desc)),
     marker: { color: feats.map(f => f.shap > 0 ? '#3b82f6' : '#ef4444'), opacity: 0.85 },
-    hovertemplate: '<b>%{y}</b><br>SHAP: %{x:+.3f}<extra></extra>',
+    hovertemplate: '<b>%{y}</b><br>SHAP: %{x:+.3f}<br><br>' +
+                   '<span style="color:#94a3b8">%{customdata}</span><extra></extra>',
   }], {
     height: 420, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
     margin: { t: 10, b: 40, l: 10, r: 30 },
