@@ -331,7 +331,7 @@ tr:hover td { background: #1a2035; }
     <label>Office</label>
     <select id="mv-office"><option value="ALL">All</option><option value="Senate">Senate</option><option value="Governor">Governor</option><option value="House">House</option></select>
     <label>Venue</label>
-    <select id="mv-venue"><option value="kalshi">Kalshi</option><option value="poly">Polymarket</option></select>
+    <select id="mv-venue"><option value="auto">Best available</option><option value="kalshi">Kalshi only</option><option value="poly">Polymarket only</option></select>
     <label>Direction</label>
     <select id="mv-dir"><option value="ALL">All</option><option value="model-dem">Model likes Dem more</option><option value="model-rep">Model likes Rep more</option></select>
     <label>Min polls</label><input type="number" id="mv-minpolls" value="0" min="0" style="width:64px;background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:6px 10px;font-size:0.84rem;">
@@ -1642,11 +1642,15 @@ renderPrimaries();
 (function(){
 if (typeof MODEL_COMPARE === 'undefined') return;
 const MV = MODEL_COMPARE.races;
-let mvOffice='ALL', mvVenue='kalshi', mvDir='ALL', mvMinPolls=0, mvHideSplit=false;
+let mvOffice='ALL', mvVenue='auto', mvDir='ALL', mvMinPolls=0, mvHideSplit=false;
 let mvSortCol='edge_abs', mvSortDir=-1, mvRendered=false;
 
-const vProb = r => mvVenue==='kalshi' ? r.kalshi_dem : r.poly_dem;
-const vEdge = r => mvVenue==='kalshi' ? r.edge_kalshi : r.edge_poly;
+const vProb = r => mvVenue==='kalshi' ? r.kalshi_dem
+  : mvVenue==='poly' ? r.poly_dem
+  : (r.kalshi_dem != null ? r.kalshi_dem : r.poly_dem);
+const vEdge = r => mvVenue==='kalshi' ? r.edge_kalshi
+  : mvVenue==='poly' ? r.edge_poly
+  : (r.edge_kalshi != null ? r.edge_kalshi : r.edge_poly);
 
 function mvFiltered(){
   return MV.filter(r => vEdge(r) != null)

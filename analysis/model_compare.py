@@ -114,7 +114,9 @@ def market_margin_dem(ladders, kalshi_dem_raw=None, kalshi_rep_raw=None):
         return round(-r, 1)
     return None
 
-PARTY_RX = re.compile(r"^will (the )?(democrat|republican)\w*s? win the .*"
+# matches: 'Will Democrats win the Senate race in Maine?', 'Will the Democrats win the
+# Maine Senate race in 2026?', 'Will the Democratic party win the governorship in Ohio?'
+PARTY_RX = re.compile(r"^will (the )?(democrat|republican)\w*s?( party)? win the .*"
                       r"(race|senate|house|governor|gubernatorial)", re.I)
 
 def market_race_id(row):
