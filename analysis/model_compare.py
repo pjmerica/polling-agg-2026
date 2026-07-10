@@ -154,16 +154,38 @@ def load_party_markets(path, title_col):
     return out
 
 def decided_primary_states(today=None):
-    """States whose LAST scheduled primary/runoff date (Ballotpedia) is before today."""
-    with open(os.path.join(REPO, "data", "raw", "primaries.json"), encoding="utf-8") as f:
-        pr = json.load(f)
+    """States whose LAST scheduled primary/runoff date is before today.
+
+    Dates ACCUMULATE in a committed file (data/processed/primary_calendar_2026.json):
+    Ballotpedia's calendar only lists UPCOMING elections, so a fresh scrape forgets past
+    primaries — a naive read once collapsed 'decided' from 23 states to 8 and emptied the
+    dashboard. Also, data/raw/primaries.json is gitignored, so CI market-refresh runs
+    don't have it at all (this function used to crash there, swallowed by '|| echo').
+    Max-date-per-state is merged in whenever the raw file exists; never removed."""
+    accum_path = os.path.join(REPO, "data", "processed", "primary_calendar_2026.json")
+    accum = {}
+    if os.path.exists(accum_path):
+        with open(accum_path, encoding="utf-8") as f:
+            accum = json.load(f)
+    raw_path = os.path.join(REPO, "data", "raw", "primaries.json")
+    if os.path.exists(raw_path):
+        with open(raw_path, encoding="utf-8") as f:
+            pr = json.load(f)
+        for r in pr.get("races", []):
+            st, dt = r.get("state_abbrev"), r.get("date_iso")
+            if st and dt:
+                accum[st] = max(accum.get(st, ""), dt)
+        with open(accum_path, "w", encoding="utf-8") as f:
+            json.dump(accum, f, indent=0, sort_keys=True)
     today = today or date.today().isoformat()
-    last = {}
-    for r in pr.get("races", []):
-        st, dt = r.get("state_abbrev"), r.get("date_iso")
-        if st and dt:
-            last[st] = max(last.get(st, ""), dt)
-    return {st for st, dt in last.items() if dt < today}, last
+    return {st for st, dt in accum.items() if dt < today}, accum
+
+def _predictions_as_of(preds_path):
+    sidecar = os.path.join(REPO, "data", "processed", "model_predictions_as_of.txt")
+    if os.path.exists(sidecar):
+        with open(sidecar) as f:
+            return f.read().strip()
+    return pd.Timestamp(os.path.getmtime(preds_path), unit="s").isoformat()
 
 def norm_pair(d, r):
     """Vig-normalized DEM probability from raw D and R quotes (either may be missing)."""
@@ -273,7 +295,9 @@ def main():
         generated_at=pd.Timestamp.now().isoformat(),
         # market side refreshes every Action run; the MODEL side only when predictions are
         # re-run locally — surface both timestamps so staleness is visible on the page.
-        predictions_as_of=pd.Timestamp(os.path.getmtime(args.preds), unit="s").isoformat(),
+        # Prefer the sidecar written by refresh_dashboard.py: file mtimes are meaningless
+        # in CI (checkout resets them, faking freshness).
+        predictions_as_of=_predictions_as_of(args.preds),
         note="model_dem = model's normalized DEM win prob; venue *_dem are vig-normalized "
              "(D/(D+R)); edge = model - market (positive = model likes DEM more than market). "
              "Only races in states whose primaries (incl. runoffs) are already decided.",
