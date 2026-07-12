@@ -52,26 +52,38 @@ lowercased-alphanumeric, so spelling/punctuation variants collapse automatically
 un-referenced firms by volume (safe to add if you verify): Alaska Survey Research (D),
 Evitarus (D), Harper Polling (R), Big Data Poll (R), EMC Research (D).
 
-## 3. Candidate party corrections (model repo)
+## 3. Candidate party corrections + effective-party slot (model repo)
 
-Feed party labels had a handful of real errors that distort the model's two-party framing.
-Fixed via committed override files **in the model repo** (`Polling prediction model/data/`),
-applied inside `predict.py`:
+Feed party labels had real errors that distort the model's two-party framing. Fixed via
+committed override files **in the model repo** (`Polling prediction model/data/`), applied in
+`predict.py`.
 
-- **`candidate_party_overrides.csv`** — audited feed errors:
-  - **Dan Osborn (NE-SEN)**: NYT labeled him **DEM**; he runs as an **independent** → set to
-    IND (OTH). This mattered: he was being treated as the Democratic nominee.
-  - **Kelly Loeffler (GA-SEN)**: one feed tagged IND → REP.
-- **`dropped_out_2026.csv`** — candidates who ended their campaigns; their stale poll rows are
-  removed so they don't linger as phantom options:
-  - **Mike Duggan (MI-GOV)**: ended his independent bid → excluded.
+**`candidate_party_overrides.csv`** has TWO party columns (this is the key design point):
+- **`model_party`** — what the MODEL treats them as (`party_std`). Fills the two-party slot so
+  `poll_lead`, two-party margin, and win-prob normalization work.
+- **`display_party`** — their REAL affiliation, shown on the dashboard.
 
-Verified after regen: Osborn now OTH in `predictions_2026.csv` (NE-Sen two-party framing
-correct), Duggan removed from MI-GOV.
+Current rows:
+- **Dan Osborn (NE-SEN)**: `model_party=DEM`, `display_party=IND`. Osborn is an independent but
+  the de-facto main challenger vs Ricketts (NE Democrats didn't field a nominee). Modeling him
+  in the DEM slot gives a real two-way (Ricketts ~78 / Osborn ~22); the tab shows **"Dan
+  Osborn (I)"**. **User decision 2026-07-12** — do NOT "correct" his model party back to IND,
+  it collapses the two-party math. (See model-repo AGENTS.md rule 9.)
+- **Kelly Loeffler (GA-SEN)**: REP/REP — plain correction of a bad IND feed tag.
 
-**Maintenance:** these are 2026-specific, hand-maintained lists. When a candidate drops out or
-a party label is wrong, add a row and re-run `refresh_dashboard.py`. Keys are `cand_key`
-(features.norm_name → "lastname firstinitial", e.g. `osborn d`).
+**`dropped_out_2026.csv`** — remove stale poll rows for candidates not in the general:
+- **Mike Duggan (MI-GOV)**: withdrew.
+- **Cindy Burbank, William Forbes (NE-SEN)**: fringe also-rans in early multi-way ballot tests;
+  removed so Osborn is the clean two-way challenger.
+
+**Flow:** `predict.py` sets `party_std`=model_party and carries `display_party` as a separate
+column; `features.py` passes it through; `predict.py`/`predict_margin.py`/`explain_2026.py`
+emit it; `analysis/model_compare.py` emits `dem_display`; the Model-vs-Markets tab appends
+"(I)" when the Dem-slot candidate isn't actually a Democrat.
+
+**Maintenance:** hand-maintained 2026 lists. Candidate drops out, party is wrong, or an
+independent is the real challenger → add a row, re-run `refresh_dashboard.py`. Keys are
+`cand_key` (features.norm_name → "lastname firstinitial", e.g. `osborn d`).
 
 ## 4. General Raw-Polls sanity checks (all clean or explained)
 
@@ -94,8 +106,11 @@ a party label is wrong, add a row and re-run `refresh_dashboard.py`. Keys are `c
 - `scrapers/pollster_partisanship.py` — NEW: curated reference + `normalize_partisan()` + `audit()`.
 - `scripts/regen_data.py` — emit `population` and normalized `partisan_lean` per poll.
 - `docs/index.html` — population badges/filter; partisan badge uses normalized lean.
-- Model repo `data/candidate_party_overrides.csv`, `data/dropped_out_2026.csv` — NEW.
-- Model repo `predict.py` — applies both override files.
+- Model repo `data/candidate_party_overrides.csv` (model_party + display_party),
+  `data/dropped_out_2026.csv` — NEW.
+- Model repo `predict.py` / `predict_margin.py` / `explain_2026.py` / `features.py` — apply
+  the overrides + carry `display_party` through to output.
+- `analysis/model_compare.py` — emits `dem_display`; `docs/index.html` — "(I)" marker.
 
 ## Next steps / open items
 - Population as a **model feature** (flag/adult-downweight) — needs a training-side change +
