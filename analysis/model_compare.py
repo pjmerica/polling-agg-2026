@@ -252,6 +252,10 @@ def main():
             primary_date=last_primary.get(st),
             dem_name=(dem["candidate"].iloc[0] if len(dem) else None),
             rep_name=(rep["candidate"].iloc[0] if len(rep) else None),
+            # real affiliation of the "Dem-slot" candidate (e.g. Osborn = IND though modeled
+            # as the two-party challenger) — lets the tab mark independents honestly
+            dem_display=(dem["display_party"].iloc[0]
+                         if len(dem) and "display_party" in dem.columns else "DEM"),
             # distinct surveys the MODEL used (n_polls is a per-candidate row count that
             # over-sums; n_surveys = pollster+date pairs the model ingested for this race)
             n_polls=(int(g["n_surveys"].iloc[0]) if "n_surveys" in g.columns
