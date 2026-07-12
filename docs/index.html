@@ -131,6 +131,8 @@ tr:hover td { background: #1a2035; }
 .poll-badges   { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
 .mini-badge { border-radius: 4px; padding: 2px 6px; font-size: 0.64rem; font-weight: 700; }
 .mini-badge.partisan { background: rgba(248,113,113,0.12); color: #f87171; }
+.mini-badge.pop { background: rgba(45,212,191,0.12); color: #2dd4bf; }
+.mini-badge.pop[title] { cursor: help; }
 .mini-badge.stage    { background: #1e2433; color: #64748b; }
 .mini-badge.over50   { background: rgba(250,204,21,0.18); color: #facc15; }
 
@@ -530,6 +532,15 @@ tr:hover td { background: #1a2035; }
       <select id="raw-state">
         <option value="ALL">All</option>
         <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="DC">DC</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Population</label>
+      <select id="raw-pop">
+        <option value="ALL">All</option>
+        <option value="lv">Likely voters (LV)</option>
+        <option value="rv">Registered voters (RV)</option>
+        <option value="a">Adults (A)</option>
       </select>
     </div>
     <div class="filter-group">
@@ -1057,6 +1068,7 @@ function renderPollDetail() {
         <div class="poll-badges">
           <span class="mini-badge stage">${p.stage}</span>
           ${p.partisan?'<span class="mini-badge partisan">Partisan</span>':''}
+          ${p.population?`<span class="mini-badge pop" title="${({lv:'Likely voters',rv:'Registered voters',a:'All adults',v:'Voters'})[p.population]||p.population}">${p.population.toUpperCase()}</span>`:''}
           ${p.any_over50?'<span class="mini-badge over50">▲50% flag</span>':''}
         </div>
       </div>
@@ -1332,6 +1344,7 @@ let RAW_POLLS = RAW_POLLS_RACES;
 let rawSortCol = 'end_date_iso', rawSortDir = -1;
 let rawSearch = '', rawOffice = 'ALL', rawStage = 'ALL', rawSinceDays = 0;
 let rawState = 'ALL';
+let rawPop = 'ALL';
 // rawYears: array of year strings to KEEP, or null = all years.
 // Default = current cycle + previous, matches the dropdown's default option.
 let rawYears = ['2025', '2026'];
@@ -1352,6 +1365,7 @@ function rawFilter() {
     if (rawPinnedStateAbbrev && p.state_abbrev !== rawPinnedStateAbbrev) return false;
     if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
     if (rawState !== 'ALL' && p.state_abbrev !== rawState) return false;
+    if (rawPop !== 'ALL' && String(p.population||'').toLowerCase() !== rawPop) return false;
     if (rawStage !== 'ALL' && p.stage !== rawStage) return false;
     if (cutoff && (!p.end_date_iso || p.end_date_iso < cutoff)) return false;
     if (rawYears && p.end_date_iso) {
@@ -1407,7 +1421,7 @@ function renderRawPolls() {
       <tr>
         <td style="white-space:nowrap;color:#cbd5e1">${p.end_date || '—'}${flag}</td>
         <td data-race-id="${p.race_id}" style="cursor:pointer" title="Show all polls for this race"><span class="badge ${p.office}">${p.office}</span> ${p.race_label}</td>
-        <td><span class="mini-badge stage">${p.stage || '—'}</span>${p.partisan ? ` <span class="mini-badge partisan">${p.partisan}</span>` : ''}</td>
+        <td><span class="mini-badge stage">${p.stage || '—'}</span>${p.partisan_lean ? ` <span class="mini-badge partisan" title="Pollster leans ${({D:'Democratic',R:'Republican',I:'Independent/nonpartisan'})[p.partisan_lean]||p.partisan_lean}">${p.partisan_lean}-lean</span>` : ''}${p.population ? ` <span class="mini-badge pop" title="${({lv:'Likely voters',rv:'Registered voters',a:'All adults',v:'Voters'})[p.population] || p.population}">${p.population.toUpperCase()}</span>` : ''}</td>
         <td style="color:#e2e8f0">${p.pollster || '—'}</td>
         <td style="color:#94a3b8">${p.sample_size ? p.sample_size.toLocaleString() : '—'}</td>
         <td><div class="raw-cands">${cands}</div></td>
@@ -1467,6 +1481,7 @@ document.getElementById('raw-source').addEventListener('change', e => {
 });
 document.getElementById('raw-office').addEventListener('change', e => { rawOffice = e.target.value; renderRawPolls(); });
 document.getElementById('raw-state').addEventListener('change', e => { rawState = e.target.value; renderRawPolls(); });
+document.getElementById('raw-pop').addEventListener('change', e => { rawPop = e.target.value; renderRawPolls(); });
 document.getElementById('raw-stage').addEventListener('change', e => { rawStage = e.target.value; renderRawPolls(); });
 document.getElementById('raw-since').addEventListener('change', e => { rawSinceDays = parseInt(e.target.value); renderRawPolls(); });
 document.getElementById('raw-years').addEventListener('change', e => {

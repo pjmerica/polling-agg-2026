@@ -182,6 +182,15 @@ def parse_sample_size(text: str) -> int | None:
         return None
 
 
+def parse_population(text: str) -> str:
+    """Extract the surveyed-population tag from '468 (LV)' / '1,200 RV' / 'A' cells.
+    Returns 'lv' | 'rv' | 'a' | 'v' | '' (matching the NYT/538 vocabulary)."""
+    if not text:
+        return ""
+    m = re.search(r"\b(LV|RV|A|V)\b", str(text).upper())
+    return m.group(1).lower() if m else ""
+
+
 def parse_end_date(text: str) -> str | None:
     """Parse the END date from a Wikipedia date range like 'June 9-11, 2026'
     or 'March 25–30, 2026'. Returns ISO YYYY-MM-DD or None.
@@ -415,6 +424,7 @@ def parse_poll_table(table, race_id: str, stage: str, default_party: str = "") -
         if not end_date_iso:
             continue
         sample = parse_sample_size(sample_raw)
+        population = parse_population(sample_raw)   # 'lv'/'rv'/'a'/'v'/'' from '468 (LV)'
 
         # NYT CSV expects end_date in M/D/YY format (the format
         # regen_data.py's parse_iso handles). Convert.
@@ -461,6 +471,7 @@ def parse_poll_table(table, race_id: str, stage: str, default_party: str = "") -
                 "sample_size": float(sample) if sample else None,
                 "end_date": nyt_format_date,
                 "partisan": partisan,
+                "population": population,
                 "poll_id": poll_id,
                 "question_id": question_id,
             })

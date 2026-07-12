@@ -211,6 +211,9 @@ def process_office(df_raw: pd.DataFrame, office_type: str, today: date) -> pd.Da
         "sample_size": pd.to_numeric(df["sample_size"], errors="coerce"),
         "end_date": df["end_date"],
         "partisan": df.get("partisan", pd.Series("", index=df.index)).fillna(""),
+        # surveyed population: lv (likely voters) / rv (registered) / a (adults) / v (voters)
+        "population": (df.get("population", pd.Series("", index=df.index))
+                       .fillna("").astype(str).str.strip().str.lower()),
         "poll_id": df["poll_id"],
         "question_id": df["question_id"],
     })

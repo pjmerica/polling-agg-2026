@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 from utils.races import RACE_BY_ID
+from scrapers.pollster_partisanship import normalize_partisan
 
 
 def _safe_read_csv(path: Path, **kw) -> pd.DataFrame:
@@ -220,6 +221,12 @@ for race_id, rdf in _race_polls.groupby('race_id'):
             'sample_size': int(row0['sample_size']) if str(row0['sample_size']) not in ('nan', '') else None,
             'stage': str(row0['stage']),
             'partisan': str(row0['partisan']) if str(row0['partisan']) != 'nan' else '',
+            # normalized pollster house lean (curated reference + feed fallback): D/R/I/''
+            'partisan_lean': normalize_partisan(row0['pollster'],
+                                                row0.get('partisan', '')),
+            # surveyed population: LV likely voters / RV registered / A adults / V voters
+            'population': (str(row0.get('population', '')).lower()
+                           if str(row0.get('population', '')) not in ('nan', 'None') else ''),
             'candidates': cands, 'any_over50': any(c['over50'] for c in cands),
         })
     poll_list.sort(key=lambda p: p['end_date_iso'], reverse=True)
