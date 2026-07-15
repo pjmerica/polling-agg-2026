@@ -37,8 +37,12 @@ jobs:
       # Rebuild the Model vs Markets tab data against the fresh polls/markets. The model
       # predictions are committed snapshots (data/processed/model_*.csv), refreshed locally via
       # the model repo's refresh_dashboard.py; this step re-prices the market side.
+      # continue-on-error so a compare crash can't block the data-refresh commit; the final
+      # step re-raises the failure AFTER the commit so the run still shows red.
       - name: Model vs markets compare
-        run: python analysis/model_compare.py || echo model-compare skipped
+        id: modelcompare
+        continue-on-error: true
+        run: python analysis/model_compare.py
 
       - name: Commit and push if changed
         run: |
@@ -57,3 +61,9 @@ jobs:
               git pull --rebase origin master
             done
           fi
+
+      - name: Fail loudly if model compare crashed
+        if: steps.modelcompare.outcome == 'failure'
+        run: |
+          echo "::error::model_compare.py failed — the Model vs Markets tab is serving STALE data"
+          exit 1

@@ -15,7 +15,30 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
-(nothing pending)
+- Model-vs-Markets fixes from the 2026-07-14 audit (commit hash added on push). Two classes
+  of FAKE edges removed from the tab:
+  (1) analysis/model_compare.py summed win_prob_norm over ALTERNATIVE same-party candidates
+  (leftover hypothetical primary matchups) — ME-Sen published "87% Dem" (six Dems summed) vs
+  Kalshi 51.5, NE-H-02 and two CA races showed 100%. model_dem is now the LEADING Dem's win
+  prob renormalized against the LEADING Rep's (matches the market's D/(D+R) vig
+  normalization); races with >1 same-party candidate left in the feed get
+  `unresolved_field` + a "? FIELD" badge.
+  (2) Independent-slot races compared different events: NE-Sen model P(Osborn) was diffed
+  against the DEMOCRATIC-party market (fake +21-pt edge). New IND_RX matches both venues'
+  independent-win markets; when dem_display != DEM the slot is priced against those
+  (`slot_market='IND'`, "I MKT" badge), normalized over the full D+R+I book. Honest NE-Sen
+  edge: ~-9 pts.
+  Also: MOV-ladder medians anchored at vig-NORMALIZED win probs; margin symmetrization uses
+  each party's leading candidate; payload gains `polls_as_of` (newest poll end_date the
+  model consumed, from the model repo's new predictions meta sidecar).
+- docs/index.html: mv-meta line was rendering raw JS source (string concatenation
+  accidentally inside the template literal) — fixed; meta line now also shows "newest poll
+  used"; new FIELD/I-MKT badges.
+- .github/workflows: market-refresh.yml regenerated docs/model_data.js every 2h but its
+  commit step only added `data/ docs/arb_data.js` — the model tab's market side silently
+  updated only 2x/day. Now committed. Both workflows: `|| echo` crash-swallowing on
+  model_compare replaced with continue-on-error + a post-commit step that fails the run
+  loudly (data commits still land).
 
 ---
 

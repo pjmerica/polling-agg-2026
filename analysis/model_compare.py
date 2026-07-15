@@ -17,6 +17,7 @@ import os
 import re
 from datetime import date
 
+import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -119,6 +120,14 @@ def market_margin_dem(ladders, kalshi_dem_raw=None, kalshi_rep_raw=None):
 PARTY_RX = re.compile(r"^will (the )?(democrat|republican)\w*s?( party)? win the .*"
                       r"(race|senate|house|governor|gubernatorial)", re.I)
 
+# independent-win markets, e.g. 'Will an independent win the Nebraska Senate race in 2026?'
+# (Polymarket), 'Will Independents win the Senate race in Montana?' / 'Will Dan Osborn (as
+# an independent)s win the Senate race in Nebraska?' (Kalshi). Used when the model's
+# two-party "Dem slot" is really an independent (dem_display != DEM, e.g. Osborn): the
+# party-level Democratic market is then the WRONG comparison (different event).
+IND_RX = re.compile(r"^will .*independent.*win the .*"
+                    r"(race|senate|house|governor|gubernatorial)", re.I)
+
 def market_race_id(row):
     """model race key -> feed race_id format: 2026_ME_Senate -> 2026-SEN-ME,
     2026_AL_House-1 -> 2026-H-AL-01."""
@@ -139,9 +148,13 @@ def load_party_markets(path, title_col):
         df = df[df["status"].astype(str).str.lower().eq("active")]
     if "closed" in df.columns:
         df = df[~df["closed"].astype(bool)]
-    df = df[df[title_col].astype(str).str.match(PARTY_RX)]
-    df["party"] = df[title_col].str.extract(r"(?i)(democrat|republican)")[0].str.upper().str[:3]
-    df["party"] = df["party"].map({"DEM": "DEM", "REP": "REP"})
+    is_party = df[title_col].astype(str).str.match(PARTY_RX)
+    is_ind = df[title_col].astype(str).str.match(IND_RX)
+    df = df[is_party | is_ind]
+    df["party"] = np.where(
+        is_ind[is_party | is_ind], "IND",
+        df[title_col].str.extract(r"(?i)(democrat|republican)")[0].str.upper().str[:3])
+    df["party"] = df["party"].map({"DEM": "DEM", "REP": "REP", "IND": "IND"})
     keep = df.dropna(subset=["party", "implied_prob"])
     # one row per race+party: highest-volume market wins if duplicated
     vol = "volume" if "volume" in keep.columns else None
@@ -189,11 +202,30 @@ def _predictions_as_of(preds_path):
             return f.read().strip()
     return pd.Timestamp(os.path.getmtime(preds_path), unit="s").isoformat()
 
+def _predictions_meta():
+    """predict.py's meta sidecar (copied over by refresh_dashboard.py): the freshest poll
+    end_date the model actually consumed + the natl_env it used. An edge on the page can be
+    a stale-POLLS artifact even when predictions_as_of looks recent — surface both."""
+    path = os.path.join(REPO, "data", "processed", "model_predictions_meta.json")
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+def norm_outcomes(target, *others):
+    """Vig-normalized probability of `target` given the other outcomes' raw quotes.
+    Missing quotes are simply left out of the book; a single-sided quote passes through."""
+    if target is None:
+        return None
+    quoted = [q for q in others if q is not None]
+    if not quoted:
+        return target  # single-sided quote: nothing to normalize against
+    total = target + sum(quoted)
+    return target / total if total > 0 else target
+
 def norm_pair(d, r):
     """Vig-normalized DEM probability from raw D and R quotes (either may be missing)."""
-    if d is not None and r is not None and (d + r) > 0:
-        return d / (d + r)
-    return d  # single-sided quote: use as-is
+    return norm_outcomes(d, r)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -235,12 +267,45 @@ def main():
         mrid = market_race_id(g.iloc[0])
         dem = g[g["party"] == "DEM"]
         rep = g[g["party"] == "REP"]
-        model_dem = float(dem["win_prob_norm"].sum()) if len(dem) else None
+        # LEADING matchup only: the feed can still carry several same-party candidates from
+        # hypothetical primary-season matchup polls. Those are ALTERNATIVE nominees, not
+        # co-candidates — summing their probabilities double-counts (ME-Sen once showed a
+        # fake 87% "Dem" prob = six alternative Dems summed). model_dem = leading Dem's raw
+        # win prob renormalized against the leading Rep's (matches the market's D/(D+R) vig
+        # normalization). Races with a leftover multi-candidate field get flagged.
+        d_top = dem.loc[dem["win_prob"].idxmax()] if len(dem) else None
+        r_top = rep.loc[rep["win_prob"].idxmax()] if len(rep) else None
+        dp = float(d_top["win_prob"]) if d_top is not None else None
+        rp = float(r_top["win_prob"]) if r_top is not None else None
+        if dp is not None and rp is not None:
+            model_dem = dp / (dp + rp) if (dp + rp) > 0 else None
+        elif dp is not None:
+            model_dem = float(d_top["win_prob_norm"])   # no Rep in field (e.g. top-two D-v-D)
+        elif rp is not None:
+            model_dem = 1.0 - float(r_top["win_prob_norm"])
+        else:
+            model_dem = None
+        unresolved = bool(len(dem) > 1 or len(rep) > 1)
+        dem_display = (d_top["display_party"] if d_top is not None
+                       and "display_party" in dem.columns else "DEM")
+        # the model's "Dem slot" is really an independent (e.g. Osborn): the party-level
+        # Democratic market is a DIFFERENT event — compare against the independent-win
+        # market instead (both venues list one), or no comparison at all.
+        slot = "IND" if (dem_display not in (None, "DEM") and str(dem_display) != "nan") else "DEM"
         k, p = kalshi.get(mrid, {}), poly.get(mrid, {})
         if not k and not p:
             continue          # nothing to compare against
         kd = k.get("DEM", {}).get("prob"); kr = k.get("REP", {}).get("prob")
         pdm = p.get("DEM", {}).get("prob"); pr_ = p.get("REP", {}).get("prob")
+        ki = k.get("IND", {}).get("prob"); pi_ = p.get("IND", {}).get("prob")
+        if slot == "IND":
+            # slot candidate's market quote = independent market, normalized over the full
+            # quoted book (D + R + I); None if the venue has no independent market
+            k_slot = norm_outcomes(ki, kd, kr)
+            p_slot = norm_outcomes(pi_, pdm, pr_)
+        else:
+            k_slot = norm_outcomes(kd, kr, ki)
+            p_slot = norm_outcomes(pdm, pr_, pi_)
         row = dict(
             race_id=rid, market_race_id=mrid, state=st,
             redistricted=bool(g["office"].iloc[0] == "House" and st in redrawn),
@@ -250,22 +315,27 @@ def main():
             office=g["office"].iloc[0],
             district=str(g["district"].iloc[0]).split(".")[0].replace("nan", ""),
             primary_date=last_primary.get(st),
-            dem_name=(dem["candidate"].iloc[0] if len(dem) else None),
-            rep_name=(rep["candidate"].iloc[0] if len(rep) else None),
+            dem_name=(d_top["candidate"] if d_top is not None else None),
+            rep_name=(r_top["candidate"] if r_top is not None else None),
             # real affiliation of the "Dem-slot" candidate (e.g. Osborn = IND though modeled
             # as the two-party challenger) — lets the tab mark independents honestly
-            dem_display=(dem["display_party"].iloc[0]
-                         if len(dem) and "display_party" in dem.columns else "DEM"),
+            dem_display=dem_display,
+            # which market the model's slot candidate is priced against ('DEM' normally,
+            # 'IND' when the slot candidate is an independent)
+            slot_market=slot,
+            # >1 same-party candidate survived the stale filter: leftover hypothetical
+            # matchups — model_dem is the LEADING matchup only; treat the edge with suspicion
+            unresolved_field=unresolved,
             # distinct surveys the MODEL used (n_polls is a per-candidate row count that
             # over-sums; n_surveys = pollster+date pairs the model ingested for this race)
             n_polls=(int(g["n_surveys"].iloc[0]) if "n_surveys" in g.columns
                      else int(g["n_polls"].sum())),
             model_dem=model_dem,
-            kalshi_dem_raw=kd, kalshi_rep_raw=kr,
-            kalshi_dem=norm_pair(kd, kr),
+            kalshi_dem_raw=kd, kalshi_rep_raw=kr, kalshi_ind_raw=ki,
+            kalshi_dem=k_slot,
             kalshi_volume=(k.get("DEM", {}).get("volume") or 0) + (k.get("REP", {}).get("volume") or 0),
-            poly_dem_raw=pdm, poly_rep_raw=pr_,
-            poly_dem=norm_pair(pdm, pr_),
+            poly_dem_raw=pdm, poly_rep_raw=pr_, poly_ind_raw=pi_,
+            poly_dem=p_slot,
             poly_volume=(p.get("DEM", {}).get("volume") or 0) + (p.get("REP", {}).get("volume") or 0),
         )
         for venue in ("kalshi", "poly"):
@@ -281,8 +351,9 @@ def main():
             md_ = mg[mg["party"] == "DEM"]["pred_margin"]
             mr_ = mg[mg["party"] == "REP"]["pred_margin"]
             if len(md_) and len(mr_):
-                # per-candidate margins aren't race-consistent; symmetrize to a signed D-R number
-                row["model_margin_dem"] = round((float(md_.iloc[0]) - float(mr_.iloc[0])) / 2, 2)
+                # per-candidate margins aren't race-consistent; symmetrize to a signed D-R
+                # number, using each party's LEADING candidate (same rule as model_dem)
+                row["model_margin_dem"] = round((float(md_.max()) - float(mr_.max())) / 2, 2)
             if len(mg) and model_dem is not None:
                 margin_pick = mg.loc[mg["pred_margin"].idxmax()]
                 win_pick_party = "DEM" if model_dem >= 0.5 else "REP"
@@ -290,7 +361,9 @@ def main():
                 row["margin_pick_name"] = margin_pick["candidate"]
                 row["models_agree"] = bool(margin_pick["party"] == win_pick_party)
         row["explain"] = explanations.get(rid)
-        mm = market_margin_dem(mov[rid], kd, kr) if rid in mov else None
+        # anchor the MOV ladder at the VIG-NORMALIZED win prob, not the raw quote
+        mm = (market_margin_dem(mov[rid], norm_pair(kd, kr), norm_pair(kr, kd))
+              if rid in mov else None)
         row["kalshi_margin_dem"] = mm
         row["margin_edge"] = (round(row["model_margin_dem"] - mm, 1)
                               if (mm is not None and row["model_margin_dem"] is not None) else None)
@@ -304,9 +377,13 @@ def main():
         # Prefer the sidecar written by refresh_dashboard.py: file mtimes are meaningless
         # in CI (checkout resets them, faking freshness).
         predictions_as_of=_predictions_as_of(args.preds),
-        note="model_dem = model's normalized DEM win prob; venue *_dem are vig-normalized "
-             "(D/(D+R)); edge = model - market (positive = model likes DEM more than market). "
-             "Only races in states whose primaries (incl. runoffs) are already decided.",
+        polls_as_of=_predictions_meta().get("polls_max_end_date"),
+        note="model_dem = leading Dem-slot candidate's win prob renormalized against the "
+             "leading Rep's (matches the market's D/(D+R) vig normalization); when the slot "
+             "candidate is an independent (slot_market='IND') the market side is the "
+             "independent-win market. edge = model - market (positive = model likes the "
+             "Dem-slot candidate more than the market). Only races in states whose primaries "
+             "(incl. runoffs) are already decided.",
         decided_states=sorted(decided),
         races=rows,
     )

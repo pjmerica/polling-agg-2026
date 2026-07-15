@@ -1719,7 +1719,7 @@ function mvTable(rows){
     const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
     const split=r.models_agree===false?`<span class="mv-split" title="Win model and margin model disagree - margin model picks ${r.margin_pick_name||'the other side'}. No edge.">\u26a0 SPLIT</span>`:'';
     return `<tr class="${r.models_agree===false?'mv-splitrow':''}">
-      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.state}${r.district?'-'+r.district:''}</b> <span class="mv-cand"><span class="mv-dem">${r.dem_name||'?'}${r.dem_display && r.dem_display!=='DEM' ? ' ('+r.dem_display[0]+')' : ''}</span> v <span class="mv-rep">${r.rep_name||'?'}</span></span>${r.redistricted?'<span class="mv-split" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="District redrawn in the 2025-26 mid-decade redistricting - prior-margin and incumbency fundamentals describe OLD boundaries. Extra suspicion warranted.">↺ REDRAWN</span>':''}${r.bias_fragile?'<span class="mv-split" style="background:rgba(250,204,21,0.15);color:#facc15" title="Pick flips under a +/-3pt national poll shift - poll errors are cycle-correlated, so treat as no-edge.">≈ FRAGILE</span>':''}${split}</td>
+      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.state}${r.district?'-'+r.district:''}</b> <span class="mv-cand"><span class="mv-dem">${r.dem_name||'?'}${r.dem_display && r.dem_display!=='DEM' ? ' ('+r.dem_display[0]+')' : ''}</span> v <span class="mv-rep">${r.rep_name||'?'}</span></span>${r.redistricted?'<span class="mv-split" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="District redrawn in the 2025-26 mid-decade redistricting - prior-margin and incumbency fundamentals describe OLD boundaries. Extra suspicion warranted.">↺ REDRAWN</span>':''}${r.bias_fragile?'<span class="mv-split" style="background:rgba(250,204,21,0.15);color:#facc15" title="Pick flips under a +/-3pt national poll shift - poll errors are cycle-correlated, so treat as no-edge.">≈ FRAGILE</span>':''}${r.unresolved_field?'<span class="mv-split" style="background:rgba(167,139,250,0.15);color:#a78bfa" title="More than one same-party candidate still in the poll feed (leftover hypothetical primary matchups). Model % shown is the LEADING matchup only - treat the edge with suspicion until the field settles.">? FIELD</span>':''}${r.slot_market==='IND'?'<span class="mv-split" style="background:rgba(45,212,191,0.15);color:#2dd4bf" title="The model\\'s candidate here is an independent, so the market price shown is the INDEPENDENT-win market (not the Democratic-party market - that is a different event).">I MKT</span>':''}${split}</td>
       <td>${r.primary_date||'-'}</td>
       <td class="${r.n_polls<5?'mv-lowpolls':''}">${r.n_polls}</td>
       <td><b>${mvPct(r.model_dem)}</b></td>
@@ -1745,7 +1745,9 @@ function renderModelTab(){
   const ageH = (Date.now()-Date.parse(MODEL_COMPARE.generated_at))/36e5;
   const stale = ageH > 30 ? ' ⚠ DATA STALE ('+ageH.toFixed(0)+'h old - check the Actions/compare step!)' : '';
   document.getElementById('mv-meta').textContent=
-    `${rows.length} races \u00b7 primaries decided in ${MODEL_COMPARE.decided_states.length} states \u00b7 ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')} + ' | exposure: ' + nD + ' D-lean vs ' + nR + ' R-lean edges' + stale + (MODEL_COMPARE.predictions_as_of ? ' · model as-of ' + MODEL_COMPARE.predictions_as_of.slice(0,10) : '')`;
+    `${rows.length} races \u00b7 primaries decided in ${MODEL_COMPARE.decided_states.length} states \u00b7 ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')} | exposure: ${nD} D-lean vs ${nR} R-lean edges${stale}`
+    + (MODEL_COMPARE.predictions_as_of ? ' \u00b7 model as-of ' + MODEL_COMPARE.predictions_as_of.slice(0,10) : '')
+    + (MODEL_COMPARE.polls_as_of ? ' \u00b7 newest poll used: ' + MODEL_COMPARE.polls_as_of : '');
   mvRendered=true;
 }
 
