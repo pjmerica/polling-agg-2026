@@ -400,6 +400,22 @@ tr:hover td { background: #1a2035; }
     <div id="pmodel-chart"></div>
     <table class="mm-table"><thead id="pm-thead"></thead><tbody id="pm-tbody"></tbody></table>
   </div>
+  <style>
+    #pm-modal { display:none; position:fixed; inset:0; background:rgba(5,8,15,0.75); z-index:1000; }
+    #pm-modal .mv-panel { position:absolute; top:5%; left:50%; transform:translateX(-50%); width:min(860px,94vw); max-height:88vh; overflow-y:auto; background:#12141c; border:1px solid #2d3748; border-radius:12px; padding:18px 22px; }
+    #pm-modal h3 { color:#f1f5f9; font-size:1.05rem; margin-bottom:2px; }
+    #pm-modal .mv-sub { color:#64748b; font-size:0.78rem; margin-bottom:12px; }
+    #pm-modal .mv-close { position:absolute; top:12px; right:16px; background:none; border:none; color:#64748b; font-size:1.3rem; cursor:pointer; }
+  </style>
+  <div id="pm-modal">
+    <div class="mv-panel">
+      <button class="mv-close" onclick="document.getElementById('pm-modal').style.display='none'">&times;</button>
+      <h3 id="pm-etitle"></h3>
+      <div class="mv-sub" id="pm-esub"></div>
+      <div class="mv-esummary" id="pm-esummary"></div>
+      <div id="pm-explain-chart" style="height:420px"></div>
+    </div>
+  </div>
 </div>
 
 <div id="tab-arb" class="tab-panel">
@@ -1861,12 +1877,13 @@ function pmRows(){
     if (r.n_polls < pmMinPolls) continue;
     const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
     const label=r.state+(r.district?'-'+r.district:'')+' '+ob+' '+(r.party==='DEM'?'(D)':'(R)');
-    for (const c of r.candidates){
-      if (c.edge==null) continue;
+    r.candidates.forEach((c,i)=>{
+      if (c.edge==null) return;
       rows.push({...c, race_id:r.race_id, label, party:r.party, office:r.office,
         election_date:r.election_date, partial_book:r.partial_book,
+        has_explain:(i===0 && !!r.explain),
         edge_abs:Math.abs(c.edge), key:label+' '+c.candidate});
-    }
+    });
   }
   return rows;
 }
@@ -1899,7 +1916,7 @@ const pmPct=v=>v==null?'<span class="mv-muted">-</span>':(100*v).toFixed(1);
 
 function pmTable(rows){
   document.getElementById('pm-thead').innerHTML='<tr>'+PM_COLS.map(([k,t])=>
-    `<th data-col="${k}" class="${pmSortCol===k?'sorted':''}">${t}${pmSortCol===k?(pmSortDir<0?' ↓':' ↑'):''}</th>`).join('')+'</tr>';
+    `<th data-col="${k}" class="${pmSortCol===k?'sorted':''}">${t}${pmSortCol===k?(pmSortDir<0?' ↓':' ↑'):''}</th>`).join('')+'<th></th></tr>';
   const sorted=[...rows].sort((a,b)=>{const av=a[pmSortCol],bv=b[pmSortCol];
     if(av==null)return 1; if(bv==null)return -1;
     return (av<bv?-1:av>bv?1:0)*pmSortDir;});
@@ -1916,7 +1933,12 @@ function pmTable(rows){
       <td><b>${pmPct(r.model)}</b></td>
       <td>${pmPct(r.market)}</td>
       <td><span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span></td>
+      <td>${r.has_explain?'<button class="mv-explainbtn pm-explainbtn" data-rid="'+r.race_id+'">Explain</button>':''}</td>
     </tr>`;}).join('');
+  document.getElementById('pm-tbody').onclick = e => {
+    const b = e.target.closest('.pm-explainbtn');
+    if (b) pmOpenExplain(b.dataset.rid);
+  };
   document.querySelectorAll('#pm-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; pmSortDir=(pmSortCol===c)?-pmSortDir:-1; pmSortCol=c; renderPmTab();});
 }
@@ -1935,6 +1957,56 @@ document.getElementById('pm-party').onchange=e=>{pmParty=e.target.value;renderPm
 document.getElementById('pm-office').onchange=e=>{pmOffice=e.target.value;renderPmTab();};
 document.getElementById('pm-minpolls').oninput=e=>{pmMinPolls=+e.target.value||0;renderPmTab();};
 document.querySelector('[data-tab="pmodel"]').addEventListener('click',()=>setTimeout(renderPmTab,0));
+
+// ── per-race SHAP explain modal (primary nominee model) ──
+function pmOpenExplain(rid){
+  const r = PRIMARY_COMPARE.races.find(x => x.race_id === rid);
+  if (!r || !r.explain) return;
+  const ex = r.explain, blk = ex.win;
+  document.getElementById('pm-modal').style.display = 'block';
+  const ob = r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
+  const lbl = r.state + (r.district ? '-' + r.district : '') + ' ' + ob + ' ' +
+    (r.party==='DEM' ? 'Democratic' : 'Republican') + ' primary';
+  document.getElementById('pm-etitle').textContent = 'Why the model predicts the ' + lbl;
+  document.getElementById('pm-esub').textContent =
+    'Explaining ' + ex.candidate + ' (predicted nominee) · top 10 drivers by SHAP value · blue pushes toward winning the nomination, red against';
+  const fmtPct = v => (100 * v).toFixed(0) + '%';
+  document.getElementById('pm-esummary').innerHTML =
+    `A generic primary candidate would start at <b>${fmtPct(blk.base)}</b>; the features below move ${ex.candidate} to <b>${fmtPct(blk.pred)}</b> nominee probability — the raw estimate; the table shows the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`;
+  const feats = [...blk.feats].reverse();
+  const wrap = (txt, w=52) => {
+    const words = String(txt || '').split(' '); const lines = []; let cur = '';
+    for (const word of words) {
+      if ((cur + ' ' + word).trim().length > w) { lines.push(cur.trim()); cur = word; }
+      else cur += ' ' + word;
+    }
+    if (cur.trim()) lines.push(cur.trim());
+    return lines.join('<br>');
+  };
+  Plotly.react('pm-explain-chart', [{
+    type: 'bar', orientation: 'h',
+    x: feats.map(f => f.shap),
+    y: feats.map(f => f.label + (f.val === null ? '' : '  =  ' + f.val)),
+    customdata: feats.map(f => wrap(f.desc)),
+    marker: { color: feats.map(f => f.shap > 0 ? '#3b82f6' : '#ef4444'), opacity: 0.85 },
+    hovertemplate: '<b>%{y}</b><br>SHAP: %{x:+.3f}<br><br>' +
+                   '<span style="color:#94a3b8">%{customdata}</span><extra></extra>',
+  }], {
+    height: 420, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { t: 10, b: 40, l: 10, r: 30 },
+    xaxis: { autorange: 'reversed', gridcolor: '#1e2433', color: '#64748b', zeroline: true,
+             zerolinecolor: '#facc15', zerolinewidth: 1,
+             title: { text: 'impact on nomination odds (log-odds)', font: { size: 11 } } },
+    yaxis: { gridcolor: '#1e2433', color: '#cbd5e1', tickfont: { size: 11 }, automargin: true },
+    font: { color: '#94a3b8' },
+  }, {responsive: true, displayModeBar: false});
+}
+document.getElementById('pm-modal').onclick = e => {
+  if (e.target.id === 'pm-modal') e.target.style.display = 'none';
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('pm-modal').style.display = 'none';
+});
 })();
 </script>
 </body>

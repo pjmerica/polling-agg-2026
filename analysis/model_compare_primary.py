@@ -103,6 +103,15 @@ def main():
     markets = load_primary_markets()
     today = date.today().isoformat()
 
+    # SHAP explanations (model repo's explain_primary.py; optional)
+    exp_path = os.path.join(REPO, "data", "processed",
+                            "model_primary_explanations_2026.json")
+    explanations = {}
+    if os.path.exists(exp_path):
+        with open(exp_path, encoding="utf-8") as f:
+            explanations = json.load(f).get("races", {})
+        print(f"primary explanations loaded: {len(explanations)} races")
+
     races, n_matched = [], 0
     for rid, g in preds.groupby("race_id"):
         ed = str(g["election_date"].iloc[0])[:10]
@@ -144,6 +153,7 @@ def main():
             partial_book=(not full_book), book_sum=round(book_sum, 3),
             unmatched_market_candidates=unmatched_mkt,
             max_abs_edge=abs(top["edge"]),
+            explain=explanations.get(rid),
             candidates=sorted(cands, key=lambda c: -c["model"]),
         ))
     # thin-poll races (n_polls < 3) sort BELOW everything else regardless of edge size:
