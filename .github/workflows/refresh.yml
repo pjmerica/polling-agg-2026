@@ -42,7 +42,9 @@ jobs:
       - name: Model vs markets compare
         id: modelcompare
         continue-on-error: true
-        run: python analysis/model_compare.py
+        run: |
+          python analysis/model_compare.py
+          python analysis/model_compare_primary.py
 
       - name: Commit and push if changed
         run: |

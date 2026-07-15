@@ -9,6 +9,7 @@
 <script src="polls_data.js"></script>
 <script src="other_polls_data.js"></script>
 <script src="model_data.js"></script>
+<script src="primary_model_data.js"></script>
 <script src="arb_data.js"></script>
 <script src="primaries_data.js"></script>
 <style>
@@ -224,6 +225,7 @@ tr:hover td { background: #1a2035; }
     <button class="tab-btn" data-tab="polls">Poll Explorer</button>
     <button class="tab-btn" data-tab="raw">Raw Polls</button>
     <button class="tab-btn" data-tab="model">Model vs Markets</button>
+    <button class="tab-btn" data-tab="pmodel">Primary vs Markets</button>
     <button class="tab-btn" data-tab="arb">Arb Scanner</button>
     <button class="tab-btn" data-tab="primaries">Primaries</button>
   </div>
@@ -370,6 +372,33 @@ tr:hover td { background: #1a2035; }
     </div>
   </div>
 
+  </div>
+</div>
+
+<div id="tab-pmodel" class="tab-panel">
+  <div class="mismatch-controls">
+    <label>Party</label>
+    <select id="pm-party"><option value="ALL">Both</option><option value="DEM">Democratic</option><option value="REP">Republican</option></select>
+    <label>Office</label>
+    <select id="pm-office"><option value="ALL">All</option><option value="Senate">Senate</option><option value="Governor">Governor</option><option value="House">House</option></select>
+    <label>Min polls</label><input type="number" id="pm-minpolls" value="0" min="0" style="width:64px;background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:6px 10px;font-size:0.84rem;">
+    <span id="pm-meta" style="font-size:0.75rem;color:#4a5568;margin-left:auto"></span>
+  </div>
+  <div class="mismatch-body">
+    <div class="mismatch-explainer">
+      <strong>Primary nominee model vs Polymarket candidate markets — UPCOMING primaries only</strong>
+      (the inverse of the Model vs Markets tab, which needs primaries decided). Model = XGBoost
+      nominee probability trained on historical contested partisan primaries (polls + fundraising
+      + field structure), normalized within each race. Market = Polymarket quote, vig-normalized
+      across the race book when the listed candidates sum to &ge;85%.
+      <strong>Edge = model &minus; market</strong>: <span style="color:#3b82f6">blue right</span> =
+      model likes the candidate more than the market. Primary polling is structurally less
+      accurate than general-election polling (late deciders, name recognition) — treat small
+      edges as noise, and thin poll counts (yellow) with extra suspicion. Jungle/top-two states
+      (CA, WA, LA, AK) are out of scope.
+    </div>
+    <div id="pmodel-chart"></div>
+    <table class="mm-table"><thead id="pm-thead"></thead><tbody id="pm-tbody"></tbody></table>
   </div>
 </div>
 
@@ -1816,6 +1845,96 @@ function mvRenderExplain(){
     font: { color: '#94a3b8' }, bargap: 0.25,
   }, { responsive: true, displayModeBar: false });
 }
+})();
+</script>
+<script>
+// ════════════════ PRIMARY vs MARKETS TAB ════════════════
+(function(){
+if (typeof PRIMARY_COMPARE === 'undefined') return;
+let pmParty='ALL', pmOffice='ALL', pmMinPolls=0, pmSortCol='edge_abs', pmSortDir=-1;
+
+function pmRows(){
+  const rows=[];
+  for (const r of PRIMARY_COMPARE.races){
+    if (pmParty!=='ALL' && r.party!==pmParty) continue;
+    if (pmOffice!=='ALL' && r.office!==pmOffice) continue;
+    if (r.n_polls < pmMinPolls) continue;
+    const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
+    const label=r.state+(r.district?'-'+r.district:'')+' '+ob+' '+(r.party==='DEM'?'(D)':'(R)');
+    for (const c of r.candidates){
+      if (c.edge==null) continue;
+      rows.push({...c, race_id:r.race_id, label, party:r.party, office:r.office,
+        election_date:r.election_date, partial_book:r.partial_book,
+        edge_abs:Math.abs(c.edge), key:label+' '+c.candidate});
+    }
+  }
+  return rows;
+}
+
+function pmChart(rows){
+  const sorted=[...rows].sort((a,b)=>b.edge-a.edge);
+  Plotly.react('pmodel-chart',[{
+    type:'bar',orientation:'h',
+    x:sorted.map(r=>r.edge),
+    y:sorted.map(r=>r.key),
+    customdata:sorted.map(r=>[(100*r.model).toFixed(1),(100*r.market).toFixed(1),r.n_polls,r.election_date]),
+    hovertemplate:'<b>%{y}</b><br>Model: %{customdata[0]}%  Market: %{customdata[1]}%<br>Edge: %{x:.1%} · %{customdata[2]} polls · primary %{customdata[3]}<extra></extra>',
+    marker:{color:sorted.map(r=>r.edge>0?'#3b82f6':'#ef4444'),opacity:0.85},
+  }],{
+    height:Math.max(280,sorted.length*22),
+    paper_bgcolor:'transparent',plot_bgcolor:'transparent',
+    margin:{t:30,b:40,l:190,r:60},
+    xaxis:{tickformat:'.0%',gridcolor:'#1e2433',color:'#64748b',zeroline:true,zerolinecolor:'#facc15',zerolinewidth:1},
+    yaxis:{gridcolor:'#1e2433',color:'#94a3b8',tickfont:{size:10},automargin:true},
+    font:{color:'#94a3b8'},bargap:0.3,
+    annotations:[{x:0,y:1.05,xref:'paper',yref:'paper',xanchor:'center',
+      text:'&#8592; Market likes them more  |  Model likes them more &#8594;',
+      showarrow:false,font:{size:11,color:'#4a5568'}}],
+  },{responsive:true,displayModeBar:false});
+}
+
+const PM_COLS=[['label','Race'],['election_date','Primary'],['candidate','Candidate'],
+  ['n_polls','Polls'],['poll_avg','Poll avg'],['model','Model %'],['market','Market %'],['edge','Edge']];
+const pmPct=v=>v==null?'<span class="mv-muted">-</span>':(100*v).toFixed(1);
+
+function pmTable(rows){
+  document.getElementById('pm-thead').innerHTML='<tr>'+PM_COLS.map(([k,t])=>
+    `<th data-col="${k}" class="${pmSortCol===k?'sorted':''}">${t}${pmSortCol===k?(pmSortDir<0?' ↓':' ↑'):''}</th>`).join('')+'</tr>';
+  const sorted=[...rows].sort((a,b)=>{const av=a[pmSortCol],bv=b[pmSortCol];
+    if(av==null)return 1; if(bv==null)return -1;
+    return (av<bv?-1:av>bv?1:0)*pmSortDir;});
+  document.getElementById('pm-tbody').innerHTML=sorted.map(r=>{
+    const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
+    const pchip=r.party==='DEM'?'<span class="mv-dem">(D)</span>':'<span class="mv-rep">(R)</span>';
+    const pb=r.partial_book?'<span class="mv-split" title="The market book for this race sums to well under 100% - quotes are raw, not vig-normalized. Edges less reliable.">PARTIAL BOOK</span>':'';
+    return `<tr>
+      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}</td>
+      <td>${r.election_date||'-'}</td>
+      <td>${r.candidate}</td>
+      <td class="${r.n_polls<3?'mv-lowpolls':''}">${r.n_polls}</td>
+      <td>${r.poll_avg==null?'<span class="mv-muted">-</span>':r.poll_avg}</td>
+      <td><b>${pmPct(r.model)}</b></td>
+      <td>${pmPct(r.market)}</td>
+      <td><span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span></td>
+    </tr>`;}).join('');
+  document.querySelectorAll('#pm-thead th').forEach(th=>th.onclick=()=>{
+    const c=th.dataset.col; pmSortDir=(pmSortCol===c)?-pmSortDir:-1; pmSortCol=c; renderPmTab();});
+}
+
+function renderPmTab(){
+  const rows=pmRows();
+  pmChart(rows); pmTable(rows);
+  const races=new Set(rows.map(r=>r.race_id)).size;
+  document.getElementById('pm-meta').textContent=
+    `${rows.length} candidate markets in ${races} upcoming primaries`
+    + (PRIMARY_COMPARE.predictions_as_of ? ' · model as-of ' + PRIMARY_COMPARE.predictions_as_of.slice(0,10) : '')
+    + (PRIMARY_COMPARE.polls_as_of ? ' · newest poll used: ' + PRIMARY_COMPARE.polls_as_of : '');
+}
+
+document.getElementById('pm-party').onchange=e=>{pmParty=e.target.value;renderPmTab();};
+document.getElementById('pm-office').onchange=e=>{pmOffice=e.target.value;renderPmTab();};
+document.getElementById('pm-minpolls').oninput=e=>{pmMinPolls=+e.target.value||0;renderPmTab();};
+document.querySelector('[data-tab="pmodel"]').addEventListener('click',()=>setTimeout(renderPmTab,0));
 })();
 </script>
 </body>

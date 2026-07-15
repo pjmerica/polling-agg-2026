@@ -15,6 +15,16 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- **"Primary vs Markets" tab** (2026-07-15): the model repo's new primary nominee model
+  (P(candidate wins the nomination); trained on Wikipedia-scraped 2018-24 primary polls —
+  this repo's wikipedia scraper parser drove the historical scrape too) priced against
+  POLYMARKET candidate primary markets (Kalshi has no usable downballot primary markets).
+  analysis/model_compare_primary.py → docs/primary_model_data.js; upcoming primaries only
+  (inverse of the general tab's decided-primaries filter); market books vig-normalized when
+  ≥85% complete; thin-poll races (<3 polls) sort last regardless of edge size (a 1-poll
+  90-pt "edge" = the market knowing something the polls don't). Both workflows run + commit
+  it. Filters: party/office/min-polls; PARTIAL BOOK badge.
+
 - Model-vs-Markets fixes from the 2026-07-14 audit (commit hash added on push). Two classes
   of FAKE edges removed from the tab:
   (1) analysis/model_compare.py summed win_prob_norm over ALTERNATIVE same-party candidates
