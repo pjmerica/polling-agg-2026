@@ -392,15 +392,19 @@ tr:hover td { background: #1a2035; }
     <label>Primary date</label>
     <input type="date" id="pm-datefrom" title="show primaries on/after this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
     <input type="date" id="pm-dateto" title="show primaries on/before this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
+    <label style="text-transform:none;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="pm-showall" style="accent-color:#2dd4bf"> show races without markets</label>
     <span id="pm-meta" style="font-size:0.75rem;color:#4a5568;margin-left:auto"></span>
   </div>
   <div class="mismatch-body">
     <div class="mismatch-explainer">
-      <strong>Primary nominee model vs Polymarket candidate markets — UPCOMING primaries only</strong>
+      <strong>Primary nominee model vs candidate markets — UPCOMING primaries only</strong>
       (the inverse of the Model vs Markets tab, which needs primaries decided). Model = XGBoost
-      nominee probability trained on historical contested partisan primaries (polls + fundraising
-      + field structure), normalized within each race. Market = Polymarket quote, vig-normalized
-      across the race book when the listed candidates sum to &ge;85%.
+      nominee probability trained on historical contested partisan primaries (polls + field
+      structure), normalized within each race. Market = <strong>Kalshi nominee markets
+      preferred (K), Polymarket fallback (P)</strong> — the letter next to the market price
+      shows the venue — vig-normalized across the race book when the listed candidates sum
+      to &ge;85%. Races with no market on either venue are hidden by default
+      ("show races without markets" reveals the model-only forecasts).
       <strong>Edge = model &minus; market</strong>: <span style="color:#3b82f6">blue right</span> =
       model likes the candidate more than the market. Primary polling is structurally less
       accurate than general-election polling (late deciders, name recognition) — treat small
@@ -1893,7 +1897,7 @@ function mvRenderExplain(){
 (function(){
 if (typeof PRIMARY_COMPARE === 'undefined') return;
 let pmParty='ALL', pmOffice='ALL', pmMinPolls=0, pmSortCol='edge_abs', pmSortDir=-1;
-let pmState='ALL', pmDateFrom='', pmDateTo='';
+let pmState='ALL', pmDateFrom='', pmDateTo='', pmShowAll=false;
 
 // populate the State dropdown from the data
 (function(){
@@ -1912,21 +1916,24 @@ function pmRows(){
     if (pmDateFrom && (!r.election_date || r.election_date < pmDateFrom)) continue;
     if (pmDateTo && (!r.election_date || r.election_date > pmDateTo)) continue;
     if (r.n_polls < pmMinPolls) continue;
+    if (!r.venue && !pmShowAll) continue;      // race with no market on either venue
     const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
     const label=r.state+(r.district?'-'+r.district:'')+' '+ob+' '+(r.party==='DEM'?'(D)':'(R)');
     r.candidates.forEach((c,i)=>{
-      if (c.edge==null) return;
+      // with markets: only candidate rows that have a quote. Without (toggle on):
+      // show the top 3 model candidates so the table stays readable.
+      if (r.venue ? c.edge==null : i>=3) return;
       rows.push({...c, race_id:r.race_id, label, party:r.party, office:r.office,
-        election_date:r.election_date, partial_book:r.partial_book,
+        election_date:r.election_date, partial_book:r.partial_book, venue:r.venue,
         has_explain:(i===0 && !!r.explain),
-        edge_abs:Math.abs(c.edge), key:label+' '+c.candidate});
+        edge_abs:(c.edge==null?0:Math.abs(c.edge)), key:label+' '+c.candidate});
     });
   }
   return rows;
 }
 
 function pmChart(rows){
-  const sorted=[...rows].sort((a,b)=>b.edge-a.edge);
+  const sorted=rows.filter(r=>r.edge!=null).sort((a,b)=>b.edge-a.edge);
   Plotly.react('pmodel-chart',[{
     type:'bar',orientation:'h',
     x:sorted.map(r=>r.edge),
@@ -1968,8 +1975,8 @@ function pmTable(rows){
       <td class="${r.n_polls<3?'mv-lowpolls':''}">${r.n_polls}</td>
       <td>${r.poll_avg==null?'<span class="mv-muted">-</span>':r.poll_avg}</td>
       <td><b>${pmPct(r.model)}</b></td>
-      <td>${pmPct(r.market)}</td>
-      <td><span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span></td>
+      <td>${pmPct(r.market)}${r.venue?'<span class="mv-muted" style="font-size:0.62rem;margin-left:4px">'+(r.venue==='kalshi'?'K':'P')+'</span>':''}</td>
+      <td>${r.edge==null?'<span class="mv-muted">-</span>':`<span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span>`}</td>
       <td>${r.has_explain?'<button class="mv-explainbtn pm-explainbtn" data-rid="'+r.race_id+'">Explain</button>':''}</td>
     </tr>`;}).join('');
   document.getElementById('pm-tbody').onclick = e => {
@@ -1984,8 +1991,9 @@ function renderPmTab(){
   const rows=pmRows();
   pmChart(rows); pmTable(rows);
   const races=new Set(rows.map(r=>r.race_id)).size;
+  const nMkt=rows.filter(r=>r.edge!=null).length;
   document.getElementById('pm-meta').textContent=
-    `${rows.length} candidate markets in ${races} upcoming primaries`
+    `${nMkt} candidate markets in ${races} upcoming primaries shown`
     + (PRIMARY_COMPARE.predictions_as_of ? ' · model as-of ' + PRIMARY_COMPARE.predictions_as_of.slice(0,10) : '')
     + (PRIMARY_COMPARE.polls_as_of ? ' · newest poll used: ' + PRIMARY_COMPARE.polls_as_of : '');
 }
@@ -1996,6 +2004,7 @@ document.getElementById('pm-minpolls').oninput=e=>{pmMinPolls=+e.target.value||0
 document.getElementById('pm-state').onchange=e=>{pmState=e.target.value;renderPmTab();};
 document.getElementById('pm-datefrom').onchange=e=>{pmDateFrom=e.target.value;renderPmTab();};
 document.getElementById('pm-dateto').onchange=e=>{pmDateTo=e.target.value;renderPmTab();};
+document.getElementById('pm-showall').onchange=e=>{pmShowAll=e.target.checked;renderPmTab();};
 document.querySelector('[data-tab="pmodel"]').addEventListener('click',()=>setTimeout(renderPmTab,0));
 
 // ── per-race SHAP explain modal (primary nominee model) ──

@@ -15,6 +15,15 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- Primary vs Markets: **Kalshi nominee markets, preferred venue** (user decision) +
+  **"show races without markets" toggle** (2026-07-16). Kalshi's "Will X be the
+  Democratic/Republican nominee for OFFICE in STATE?" markets (196 contracts, incl. 5
+  Senate races Polymarket lacks) parsed with combo/placement/county exclusions;
+  Polymarket = fallback per race; venue letter (K/P) shown next to market price.
+  Market coverage: 23 of 62 upcoming primary races; the toggle reveals the other 39 as
+  model-only forecasts (top-3 candidates each, edge blank). Null-safe edge cells; chart
+  shows market races only.
+
 - Primary vs Markets follow-ups (2026-07-15/16):
   - `[c9e587c]` Explain button + SHAP modal on leader rows (model repo's
     explain_primary.py payload; same pattern as the general tab). `[2f4a968]` hotfix:

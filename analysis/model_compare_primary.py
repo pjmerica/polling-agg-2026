@@ -3,9 +3,11 @@
 
 Joins the model repo's primary nominee probabilities
 (data/processed/model_primary_predictions_2026.csv, produced by predict_primary.py)
-against Polymarket candidate-level primary markets ("Will X win the 2026 Michigan
-Democratic Senate primary?"). Kalshi has no downballot-primary markets with usable race
-ids as of 2026-07 (its "nominee" markets are 2028-VP trivia) - Polymarket only for now.
+against candidate-level primary markets. Venue per race: KALSHI nominee markets
+("Will Ken Paxton be the Republican nominee for Senate in Texas?") PREFERRED (user
+decision 2026-07-16), Polymarket win-the-primary markets as fallback. Races with no
+market on either venue are still emitted (venue=null) for the page's
+"show races without markets" toggle.
 
 Only UPCOMING primaries (election_date >= today): the inverse of the general Model-vs-
 Markets tab, which requires primaries to be DECIDED.
@@ -64,6 +66,43 @@ MKT_RX = re.compile(r"^will (?P<name>[^?%]+?) win (?:the )?.*?primar", re.I)
 # Senate Democratic Primary?") are NOT win-the-primary markets - exclude them
 BAND_RX = re.compile(r"\bvotes?\b|%|less than|more than|at least|between", re.I)
 
+# Kalshi's candidate primary markets: "Will Ken Paxton be the Republican nominee for
+# Senate in Texas?" (196 such markets incl. 8 Senate races Polymarket lacks). Excluded:
+# "...AND General Election winner..." combo markets, CA/AK placement markets ("finish
+# 1st/2nd/3rd", "top-four"), county markets, polling-average props.
+KALSHI_RX = re.compile(
+    r"^will (?P<name>[^?]+?) be the (?:democratic|republican|gop|dem)\.?\s+nominee",
+    re.I)
+KALSHI_EXCL_RX = re.compile(r"\bAND\b|finish \d|top-four|top four|county|outperform", re.I)
+
+def load_kalshi_primary_markets():
+    k = pd.read_csv(os.path.join(REPO, "data", "raw", "kalshi_markets.csv"),
+                    low_memory=False)
+    if "status" in k.columns:
+        k = k[k["status"].astype(str).str.lower().eq("active")]
+    k = k[k["race_id"].notna()]
+    out = {}
+    for r in k.itertuples():
+        t = str(r.market_title)
+        if KALSHI_EXCL_RX.search(t):
+            continue
+        m = KALSHI_RX.match(t)
+        if not m or pd.isna(r.implied_prob):
+            continue
+        tl = t.lower()
+        party = "DEM" if ("democratic" in tl or " dem" in tl) else "REP"
+        parts = str(r.race_id).split("-")
+        if len(parts) < 3 or parts[1] not in OFFICE_FROM_CODE:
+            continue
+        office, state = OFFICE_FROM_CODE[parts[1]], parts[2].upper()
+        district = (str(int(parts[3])) if office == "House" and len(parts) > 3
+                    and parts[3].isdigit() else "")
+        base = f"2026_{state}_{office}" + (f"-{district}" if district else "")
+        out.setdefault(base + "_" + party, {})[norm_name(m.group("name"))] = dict(
+            prob=float(r.implied_prob), volume=float(getattr(r, "volume", 0) or 0),
+            question=t, market_candidate=m.group("name"))
+    return out
+
 def load_primary_markets():
     p = pd.read_csv(os.path.join(REPO, "data", "raw", "polymarket_markets.csv"),
                     low_memory=False)
@@ -110,7 +149,8 @@ def main():
     args = ap.parse_args()
     preds = pd.read_csv(args.preds)
     preds["cand_norm"] = preds["candidate"].map(norm_name)
-    markets = load_primary_markets()
+    markets = load_primary_markets()          # Polymarket (fallback venue)
+    kalshi = load_kalshi_primary_markets()    # Kalshi nominee markets (preferred)
     today = date.today().isoformat()
 
     # SHAP explanations (model repo's explain_primary.py; optional)
@@ -127,14 +167,17 @@ def main():
         ed = str(g["election_date"].iloc[0])[:10]
         if not ed or ed == "nan" or ed < today:
             continue                            # decided or dateless: not comparable
-        book = markets.get(rid, {})
+        # venue: KALSHI preferred (user decision 2026-07-16), Polymarket fallback
+        book, venue = kalshi.get(rid, {}), "kalshi"
         if not book:
-            continue
-        book_sum = sum(v["prob"] for v in book.values())
+            book, venue = markets.get(rid, {}), "poly"
+        if not book:
+            venue = None                        # kept: the no-markets toggle shows these
+        book_sum = sum(v["prob"] for v in book.values()) if book else 0.0
         full_book = book_sum >= 0.85
         cands = []
         for r in g.itertuples():
-            mkt = book.get(r.cand_norm)
+            mkt = book.get(r.cand_norm) if book else None
             cands.append(dict(
                 candidate=r.candidate, n_polls=int(r.n_surveys),
                 poll_avg=(round(float(r.poll_avg), 1) if r.poll_avg == r.poll_avg else None),
@@ -146,39 +189,43 @@ def main():
             ))
             if mkt:
                 n_matched += 1
-        matched = [c for c in cands if c["market"] is not None]
-        if not matched:
-            continue
         for c in cands:
             c["edge"] = (round(c["model"] - c["market"], 4)
                          if c["market"] is not None else None)
-        unmatched_mkt = [v["market_candidate"] for k, v in book.items()
-                         if k not in set(g["cand_norm"])]
-        top = max(matched, key=lambda c: abs(c["edge"]))
+        matched = [c for c in cands if c["market"] is not None]
+        if book and not matched:
+            venue = None                        # a book exists but no candidate matched
+        unmatched_mkt = ([v["market_candidate"] for k, v in book.items()
+                          if k not in set(g["cand_norm"])] if book else [])
+        top = max(matched, key=lambda c: abs(c["edge"])) if matched else None
         races.append(dict(
             race_id=rid, state=g["state"].iloc[0], office=g["office"].iloc[0],
             district=str(g["district"].iloc[0]).split(".")[0].replace("nan", ""),
             party=g["party"].iloc[0], election_date=ed,
             n_polls=int(g["n_surveys"].iloc[0]),
-            partial_book=(not full_book), book_sum=round(book_sum, 3),
+            venue=(venue if matched else None),
+            partial_book=(bool(matched) and not full_book),
+            book_sum=(round(book_sum, 3) if matched else None),
             unmatched_market_candidates=unmatched_mkt,
-            max_abs_edge=abs(top["edge"]),
+            max_abs_edge=(abs(top["edge"]) if top else 0.0),
             explain=explanations.get(rid),
             candidates=sorted(cands, key=lambda c: -c["model"]),
         ))
-    # thin-poll races (n_polls < 3) sort BELOW everything else regardless of edge size:
-    # a 90-pt "edge" off one stale survey (CT-Gov REP: 1 poll vs a 97% market favorite)
-    # is the market knowing something the polls don't, not alpha
-    races.sort(key=lambda r: (r["n_polls"] >= 3, r["max_abs_edge"]), reverse=True)
+    # market races first; within them thin-poll races (n_polls < 3) sort BELOW everything
+    # else regardless of edge size (a 90-pt "edge" off one stale survey is the market
+    # knowing something the polls don't). No-market races last (shown via page toggle).
+    races.sort(key=lambda r: (r["venue"] is not None, r["n_polls"] >= 3,
+                              r["max_abs_edge"]), reverse=True)
 
     meta = _meta()
     payload = dict(
         generated_at=pd.Timestamp.now().isoformat(),
         predictions_as_of=meta.get("generated_at"),
         polls_as_of=meta.get("polls_max_end_date"),
-        note="model = within-race normalized nominee prob; market = Polymarket quote, "
-             "vig-normalized across the race book when the book is >=85% complete; "
-             "edge = model - market. Upcoming primaries only.",
+        note="model = within-race normalized nominee prob; market = KALSHI nominee "
+             "markets preferred, Polymarket fallback (per race), vig-normalized across "
+             "the race book when >=85% complete; edge = model - market. Upcoming "
+             "primaries only; races without any market carry venue=null (page toggle).",
         races=races,
     )
     out = os.path.join(REPO, "docs", "primary_model_data.js")
