@@ -44,7 +44,18 @@ jobs:
           cache: pip
           cache-dependency-path: 'Polling prediction model/requirements.txt'
 
-      - run: pip install -r "Polling prediction model/requirements.txt"
+      - run: |
+          pip install -r "Polling prediction model/requirements.txt"
+          pip install -r "Polling Agg/Polling agg and Prediction markets/requirements.txt"
+
+      # the market CSVs are gitignored (regenerated 2-hourly, never committed), so a
+      # fresh checkout has none - scrape them or model_compare*.py crashes on read.
+      # Bonus: the compares price against markets fetched minutes ago, not hours.
+      - name: Scrape market prices (kalshi + polymarket)
+        working-directory: 'Polling Agg/Polling agg and Prediction markets'
+        run: |
+          python -u scrapers/kalshi.py
+          python -u scrapers/polymarket.py
 
       - name: Predict + explain + compare (all three models)
         working-directory: 'Polling prediction model'
