@@ -55,7 +55,14 @@ def norm_name(s):
     fi = parts[0][0] if parts[0] != last else ""
     return f"{last} {fi}".strip()
 
-MKT_RX = re.compile(r"^will (?P<name>.+?) win the 2026 .*?primary", re.I)
+# Polymarket phrases candidate primary markets at least two ways:
+#   "Will Andy Biggs win the 2026 Arizona Governor Republican primary?"
+#   "Will Mike Rogers win the Republican Primary for U.S. Senate in Michigan?"  (no year)
+# so: name = text between 'Will' and 'win', require the word 'primary' anywhere after.
+MKT_RX = re.compile(r"^will (?P<name>[^?%]+?) win (?:the )?.*?primar", re.I)
+# vote-share band markets ("Will Platner win between 70% and 75% of votes in the Maine
+# Senate Democratic Primary?") are NOT win-the-primary markets - exclude them
+BAND_RX = re.compile(r"\bvotes?\b|%|less than|more than|at least|between", re.I)
 
 def load_primary_markets():
     p = pd.read_csv(os.path.join(REPO, "data", "raw", "polymarket_markets.csv"),
@@ -66,7 +73,10 @@ def load_primary_markets():
     p = p[p["question"].astype(str).str.contains("primary", case=False, na=False)]
     out = {}   # {(model_race_base, party): {cand_norm: {...}}}
     for r in p.itertuples():
-        m = MKT_RX.match(str(r.question))
+        q = str(r.question)
+        if BAND_RX.search(q):
+            continue                    # vote-share band market, not a win market
+        m = MKT_RX.match(q)
         if not m or pd.isna(r.implied_prob):
             continue
         q = str(r.question).lower()
