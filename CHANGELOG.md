@@ -15,6 +15,17 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[93bf691]`+`[03c72a4]` **model-refresh.yml: daily scheduled Action regenerates all model
+  predictions** (2026-07-16). Until now predictions only updated when refresh_dashboard.py
+  was run by hand - the Raw Polls tab walked a week ahead of the model (polls Jul-15 vs
+  model consuming through Jul-7). The Action clones the PUBLIC model repo (no secrets),
+  mirrors the local sibling directory layout, scrapes both market venues (the market CSVs
+  are gitignored - first test run failed exactly there), runs predict/explain/compare for
+  all three models, and commits. Daily 13:15 UTC (after the 12:00 poll refresh), shared
+  'refresh' concurrency group. Verified end-to-end: run 29529497733 -> commit c9b3652.
+  Enabled by model-repo commits: polls_long_with_results.csv (14MB, needed for house
+  effects/bias priors on a fresh clone) + requirements.txt.
+
 - Primary vs Markets: **Kalshi nominee markets, preferred venue** (user decision) +
   **"show races without markets" toggle** (2026-07-16). Kalshi's "Will X be the
   Democratic/Republican nominee for OFFICE in STATE?" markets (196 contracts, incl. 5
