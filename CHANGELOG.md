@@ -15,6 +15,28 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- Primary vs Markets follow-ups (2026-07-15/16):
+  - `[c9e587c]` Explain button + SHAP modal on leader rows (model repo's
+    explain_primary.py payload; same pattern as the general tab). `[2f4a968]` hotfix:
+    conflict markers had been committed into the generated primary_model_data.js by a
+    stash-pop during publish — generated files must be REGENERATED after every
+    rebase/stash, never merge-resolved.
+  - `[bb85103]` **State + date filters on BOTH model tabs**: state dropdowns populate
+    from loaded data; date range = primary_date on the general tab (per-race primary
+    decision date), election_date on the primary tab.
+  - `[c8dc115]` **Senate primaries were missing from the tab**: Polymarket phrases
+    markets two ways ("...win the 2026 Michigan Democratic Governor primary" vs "...win
+    the Republican Primary for U.S. Senate in Michigan" - no year, inverted order); the
+    year-anchored regex silently dropped ALL Senate markets. Parser generalized;
+    vote-share band markets ("between 70% and 75% of votes") explicitly excluded.
+    Remaining governor skew is real market coverage, not a bug: Polymarket lists few
+    non-governor candidate primary markets for upcoming races (zero House).
+  - `[3866766]` refreshed model snapshots from the model repo's primary v2 (results-based
+    labels, nickname aliasing - 36 duplicate candidates merged in this repo's feed,
+    population-split features). Scorecard notebook lives in the model repo:
+    analysis/primary_backtest_2026.ipynb (84 decided primaries: model 81.0% vs
+    poll-leader 67.9%).
+
 - **"Primary vs Markets" tab** (2026-07-15): the model repo's new primary nominee model
   (P(candidate wins the nomination); trained on Wikipedia-scraped 2018-24 primary polls —
   this repo's wikipedia scraper parser drove the historical scrape too) priced against
