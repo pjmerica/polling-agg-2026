@@ -339,6 +339,11 @@ tr:hover td { background: #1a2035; }
     <label>Direction</label>
     <select id="mv-dir"><option value="ALL">All</option><option value="model-dem">Model likes Dem more</option><option value="model-rep">Model likes Rep more</option></select>
     <label>Min polls</label><input type="number" id="mv-minpolls" value="0" min="0" style="width:64px;background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:6px 10px;font-size:0.84rem;">
+    <label>State</label>
+    <select id="mv-state"><option value="ALL">All</option></select>
+    <label>Primary date</label>
+    <input type="date" id="mv-datefrom" title="show races whose primary was on/after this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
+    <input type="date" id="mv-dateto" title="show races whose primary was on/before this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
     <label style="text-transform:none;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="mv-hidesplit" style="accent-color:#fb923c"> hide model-split races</label>
     <span id="mv-meta" style="font-size:0.75rem;color:#4a5568;margin-left:auto"></span>
   </div>
@@ -382,6 +387,11 @@ tr:hover td { background: #1a2035; }
     <label>Office</label>
     <select id="pm-office"><option value="ALL">All</option><option value="Senate">Senate</option><option value="Governor">Governor</option><option value="House">House</option></select>
     <label>Min polls</label><input type="number" id="pm-minpolls" value="0" min="0" style="width:64px;background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:6px 10px;font-size:0.84rem;">
+    <label>State</label>
+    <select id="pm-state"><option value="ALL">All</option></select>
+    <label>Primary date</label>
+    <input type="date" id="pm-datefrom" title="show primaries on/after this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
+    <input type="date" id="pm-dateto" title="show primaries on/before this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
     <span id="pm-meta" style="font-size:0.75rem;color:#4a5568;margin-left:auto"></span>
   </div>
   <div class="mismatch-body">
@@ -1703,7 +1713,16 @@ renderPrimaries();
 if (typeof MODEL_COMPARE === 'undefined') return;
 const MV = MODEL_COMPARE.races;
 let mvOffice='ALL', mvVenue='auto', mvDir='ALL', mvMinPolls=0, mvHideSplit=false;
+let mvState='ALL', mvDateFrom='', mvDateTo='';
 let mvSortCol='edge_abs', mvSortDir=-1, mvRendered=false;
+
+// populate the State dropdown from the data
+(function(){
+  const sel=document.getElementById('mv-state');
+  [...new Set(MV.map(r=>r.state))].sort().forEach(s=>{
+    const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+  });
+})();
 
 const vProb = r => mvVenue==='kalshi' ? r.kalshi_dem
   : mvVenue==='poly' ? r.poly_dem
@@ -1715,6 +1734,9 @@ const vEdge = r => mvVenue==='kalshi' ? r.edge_kalshi
 function mvFiltered(){
   return MV.filter(r => vEdge(r) != null)
     .filter(r => (mvOffice==='ALL'||r.office===mvOffice)
+      && (mvState==='ALL'||r.state===mvState)
+      && (!mvDateFrom || (r.primary_date && r.primary_date >= mvDateFrom))
+      && (!mvDateTo || (r.primary_date && r.primary_date <= mvDateTo))
       && (mvDir!=='model-dem'||vEdge(r)>0) && (mvDir!=='model-rep'||vEdge(r)<0)
       && r.n_polls>=mvMinPolls && (!mvHideSplit||r.models_agree!==false))
     .map(r => ({...r, edge:vEdge(r), edge_abs:Math.abs(vEdge(r)), market:vProb(r),
@@ -1800,6 +1822,9 @@ document.getElementById('mv-office').onchange=e=>{mvOffice=e.target.value;render
 document.getElementById('mv-venue').onchange=e=>{mvVenue=e.target.value;renderModelTab();};
 document.getElementById('mv-dir').onchange=e=>{mvDir=e.target.value;renderModelTab();};
 document.getElementById('mv-minpolls').oninput=e=>{mvMinPolls=+e.target.value||0;renderModelTab();};
+document.getElementById('mv-state').onchange=e=>{mvState=e.target.value;renderModelTab();};
+document.getElementById('mv-datefrom').onchange=e=>{mvDateFrom=e.target.value;renderModelTab();};
+document.getElementById('mv-dateto').onchange=e=>{mvDateTo=e.target.value;renderModelTab();};
 document.getElementById('mv-hidesplit').onchange=e=>{mvHideSplit=e.target.checked;renderModelTab();};
 document.querySelector('[data-tab="model"]').addEventListener('click',()=>setTimeout(renderModelTab,0));
 
@@ -1868,12 +1893,24 @@ function mvRenderExplain(){
 (function(){
 if (typeof PRIMARY_COMPARE === 'undefined') return;
 let pmParty='ALL', pmOffice='ALL', pmMinPolls=0, pmSortCol='edge_abs', pmSortDir=-1;
+let pmState='ALL', pmDateFrom='', pmDateTo='';
+
+// populate the State dropdown from the data
+(function(){
+  const sel=document.getElementById('pm-state');
+  [...new Set(PRIMARY_COMPARE.races.map(r=>r.state))].sort().forEach(s=>{
+    const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+  });
+})();
 
 function pmRows(){
   const rows=[];
   for (const r of PRIMARY_COMPARE.races){
     if (pmParty!=='ALL' && r.party!==pmParty) continue;
     if (pmOffice!=='ALL' && r.office!==pmOffice) continue;
+    if (pmState!=='ALL' && r.state!==pmState) continue;
+    if (pmDateFrom && (!r.election_date || r.election_date < pmDateFrom)) continue;
+    if (pmDateTo && (!r.election_date || r.election_date > pmDateTo)) continue;
     if (r.n_polls < pmMinPolls) continue;
     const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
     const label=r.state+(r.district?'-'+r.district:'')+' '+ob+' '+(r.party==='DEM'?'(D)':'(R)');
@@ -1956,6 +1993,9 @@ function renderPmTab(){
 document.getElementById('pm-party').onchange=e=>{pmParty=e.target.value;renderPmTab();};
 document.getElementById('pm-office').onchange=e=>{pmOffice=e.target.value;renderPmTab();};
 document.getElementById('pm-minpolls').oninput=e=>{pmMinPolls=+e.target.value||0;renderPmTab();};
+document.getElementById('pm-state').onchange=e=>{pmState=e.target.value;renderPmTab();};
+document.getElementById('pm-datefrom').onchange=e=>{pmDateFrom=e.target.value;renderPmTab();};
+document.getElementById('pm-dateto').onchange=e=>{pmDateTo=e.target.value;renderPmTab();};
 document.querySelector('[data-tab="pmodel"]').addEventListener('click',()=>setTimeout(renderPmTab,0));
 
 // ── per-race SHAP explain modal (primary nominee model) ──
