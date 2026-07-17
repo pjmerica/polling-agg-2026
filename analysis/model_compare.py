@@ -168,6 +168,60 @@ def load_party_markets(path, title_col):
                           volume=float(getattr(r, vol) or 0) if vol else None)
     return out
 
+# ---- candidate-level GENERAL win markets (found in the 2026-07-17 quirk audit) ----
+# Some races have NO party-level market but DO have per-candidate ones:
+#   "Will Steve Hilton win the California Governor Election in 2026?"  (CA top-two!)
+#   "Will Dan Sullivan win the Alaska Senate race in 2026?"
+# Candidates are mapped to parties via the MODEL's own candidate list for that race;
+# P(party wins) = sum of that party's candidates' win quotes (matters in top-two states
+# where two same-party candidates can both be on the November ballot).
+import unicodedata
+
+def _norm_name(s):
+    if s is None or (isinstance(s, float) and s != s):
+        return None
+    s = unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower()
+    s = re.sub(r"\b(jr|sr|ii|iii|iv)\b", "", s)
+    s = re.sub(r"[^a-z\s]", " ", s)
+    parts = [w for w in s.split() if w]
+    if not parts:
+        return None
+    last = parts[-1]
+    fi = parts[0][0] if parts[0] != last else ""
+    return f"{last} {fi}".strip()
+
+CAND_WIN_RX = re.compile(
+    r"^will (?P<name>[^?]+?) win the .*?(?:election|race|governorship|senate seat)", re.I)
+CAND_WIN_EXCL = re.compile(
+    r"primar|nomin|margin|independent|democrat|republican|\bparty\b|county|total|"
+    r"turnout|popular|leader|speaker|president|runoff|special session", re.I)
+
+def load_candidate_party_markets(path, title_col, cand_party):
+    """cand_party: {market_race_id: {cand_norm: 'DEM'/'REP'}} from the predictions.
+    Returns the same shape as load_party_markets, for merging where that has nothing."""
+    df = pd.read_csv(path, low_memory=False)
+    df = df[df["race_id"].notna()]
+    if "status" in df.columns:
+        df = df[df["status"].astype(str).str.lower().eq("active")]
+    if "closed" in df.columns:
+        df = df[~df["closed"].astype(bool)]
+    out = {}
+    for r in df.itertuples():
+        t = str(getattr(r, title_col))
+        if CAND_WIN_EXCL.search(t) or pd.isna(r.implied_prob):
+            continue
+        m = CAND_WIN_RX.match(t)
+        if not m:
+            continue
+        party = cand_party.get(str(r.race_id), {}).get(_norm_name(m.group("name")))
+        if party not in ("DEM", "REP"):
+            continue
+        d = out.setdefault(str(r.race_id), {})
+        e = d.setdefault(party, dict(prob=0.0, volume=0.0))
+        e["prob"] += float(r.implied_prob)
+        e["volume"] += float(getattr(r, "volume", 0) or 0)
+    return out
+
 def decided_primary_states(today=None):
     """States whose LAST scheduled primary/runoff date is before today.
 
@@ -252,9 +306,28 @@ def main():
         print(f"explanations loaded: {len(explanations)} races")
 
     kalshi_csv = os.path.join(REPO, "data", "raw", "kalshi_markets.csv")
+    poly_csv = os.path.join(REPO, "data", "raw", "polymarket_markets.csv")
     kalshi = load_party_markets(kalshi_csv, "market_title")
-    poly = load_party_markets(os.path.join(REPO, "data", "raw", "polymarket_markets.csv"),
-                              "question")
+    poly = load_party_markets(poly_csv, "question")
+    # candidate-level general win markets fill races with NO party-level book
+    # (CA top-two, AK, ... - 2026-07-17 quirk audit)
+    cand_party = {}
+    for rr in preds.itertuples():
+        if rr.party in ("DEM", "REP"):
+            cand_party.setdefault(market_race_id(
+                {"office": rr.office, "state": rr.state, "district": rr.district}),
+                {})[_norm_name(rr.candidate)] = rr.party
+    n_filled = 0
+    for src, dst in [(load_candidate_party_markets(kalshi_csv, "market_title", cand_party),
+                      kalshi),
+                     (load_candidate_party_markets(poly_csv, "question", cand_party),
+                      poly)]:
+        for rid, book in src.items():
+            if rid not in dst:
+                dst[rid] = book
+                n_filled += 1
+    if n_filled:
+        print(f"candidate-level general markets filled {n_filled} party-less race books")
     mov = parse_mov_markets(kalshi_csv)
     print(f"party-level race markets: kalshi {len(kalshi)} races, polymarket {len(poly)}; "
           f"kalshi margin-of-victory ladders: {len(mov)} races")

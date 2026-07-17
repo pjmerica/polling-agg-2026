@@ -70,8 +70,10 @@ BAND_RX = re.compile(r"\bvotes?\b|%|less than|more than|at least|between", re.I)
 # Senate in Texas?" (196 such markets incl. 8 Senate races Polymarket lacks). Excluded:
 # "...AND General Election winner..." combo markets, CA/AK placement markets ("finish
 # 1st/2nd/3rd", "top-four"), county markets, polling-average props.
+# '(DFL)' = Minnesota's Democratic-Farmer-Labor suffix: 'the Democratic (DFL) nominee'
 KALSHI_RX = re.compile(
-    r"^will (?P<name>[^?]+?) be the (?:democratic|republican|gop|dem)\.?\s+nominee",
+    r"^will (?P<name>[^?]+?) be the (?:democratic|republican|gop|dem)\.?"
+    r"(?:\s*\([^)]*\))?\s+nominee",
     re.I)
 KALSHI_EXCL_RX = re.compile(r"\bAND\b|finish \d|top-four|top four|county|outperform", re.I)
 

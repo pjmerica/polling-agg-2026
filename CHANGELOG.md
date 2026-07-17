@@ -15,6 +15,19 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- Market-matching quirk sweep (2026-07-17, user-prompted after the MI-Sen DEM find).
+  Systematic audit of both tabs' matchers; two real bugs fixed, the rest classified:
+  (1) **Minnesota's "(DFL)" suffix** broke the Kalshi nominee regex ("Will Matt Little
+  be the Democratic (DFL) nominee for MN-2?") - MN House primary markets were invisible.
+  (2) **Candidate-level GENERAL win markets** ("Will Steve Hilton win the California
+  Governor Election in 2026?") were a whole unparsed class - the general tab only read
+  party-level markets, so races with no party book (CA top-two!, AK) had no market side.
+  Candidates now map to parties via the model's own race lists; P(party)=sum of its
+  candidates' quotes; used only where no party-level book exists (3 races filled incl.
+  CA Governor). NOT bugs (verified): ghost market keys = races the model has no polls
+  for; unmatched market candidates = poll-coverage gaps (PARTIAL BOOK already flags);
+  VP-nominee/finish-Nth/MOV/parlay/leadership titles correctly excluded.
+
 - Primary vs Markets: **Kalshi HOUSE nominee markets** + poll-driven model refresh
   (2026-07-16). Kalshi's House candidate markets carry NO race_id - the race lives in
   the EVENT title ("WI-07 Republican nominee?"; 160 events / 640 markets); requiring
