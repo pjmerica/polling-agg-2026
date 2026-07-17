@@ -15,6 +15,16 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- Primary vs Markets: **Kalshi HOUSE nominee markets** + poll-driven model refresh
+  (2026-07-16). Kalshi's House candidate markets carry NO race_id - the race lives in
+  the EVENT title ("WI-07 Republican nominee?"; 160 events / 640 markets); requiring
+  race_id had produced a wrong "Kalshi has no House primary markets" conclusion (user
+  caught it via the Arb Scanner). Parser now derives House races from event titles
+  (AL -> district 1; 2028 events excluded). Tab market coverage: 23 -> 54 races
+  (30 House / 19 Gov / 5 Sen; 156 candidate matches). model-refresh.yml now also
+  triggers on "Daily refresh" completion (workflow_run) - predictions regenerate the
+  moment new polls land (00:00 + 12:00 UTC), cron 13:15 kept as backstop only.
+
 - `[93bf691]`+`[03c72a4]` **model-refresh.yml: daily scheduled Action regenerates all model
   predictions** (2026-07-16). Until now predictions only updated when refresh_dashboard.py
   was run by hand - the Raw Polls tab walked a week ahead of the model (polls Jul-15 vs

@@ -14,6 +14,12 @@ name: Model refresh
 # concurrency group so it never races the other workflows' commits.
 
 on:
+  # THE set process for new polls: "Daily refresh" is the workflow that fetches polls
+  # (00:00 + 12:00 UTC); the moment it completes, this fires and re-predicts. The cron
+  # is only a backstop in case a Daily refresh run fails outright.
+  workflow_run:
+    workflows: ["Daily refresh"]
+    types: [completed]
   schedule:
     - cron: '15 13 * * *'
   workflow_dispatch:

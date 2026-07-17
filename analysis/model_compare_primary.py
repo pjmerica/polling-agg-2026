@@ -75,32 +75,57 @@ KALSHI_RX = re.compile(
     re.I)
 KALSHI_EXCL_RX = re.compile(r"\bAND\b|finish \d|top-four|top four|county|outperform", re.I)
 
+# House nominee events carry NO race_id on their markets - the race lives in the EVENT
+# title instead: "WI-07 Republican nominee?" (160 events / 640 candidate markets as of
+# 2026-07; requiring race_id made House invisible and produced a wrong "Kalshi has no
+# House primary markets" conclusion).
+KALSHI_HOUSE_EVENT_RX = re.compile(
+    r"^(?P<st>[A-Z]{2})-(?P<di>\d{1,2}|AL)\s+(?P<party>Democratic|Republican)\s+nominee",
+    re.I)
+
 def load_kalshi_primary_markets():
     k = pd.read_csv(os.path.join(REPO, "data", "raw", "kalshi_markets.csv"),
                     low_memory=False)
     if "status" in k.columns:
         k = k[k["status"].astype(str).str.lower().eq("active")]
-    k = k[k["race_id"].notna()]
     out = {}
+
+    def add(key, name, r):
+        out.setdefault(key, {})[norm_name(name)] = dict(
+            prob=float(r.implied_prob), volume=float(getattr(r, "volume", 0) or 0),
+            question=str(r.market_title), market_candidate=name)
+
     for r in k.itertuples():
         t = str(r.market_title)
-        if KALSHI_EXCL_RX.search(t):
+        if KALSHI_EXCL_RX.search(t) or pd.isna(r.implied_prob):
             continue
         m = KALSHI_RX.match(t)
-        if not m or pd.isna(r.implied_prob):
+        if not m:
             continue
-        tl = t.lower()
-        party = "DEM" if ("democratic" in tl or " dem" in tl) else "REP"
-        parts = str(r.race_id).split("-")
-        if len(parts) < 3 or parts[1] not in OFFICE_FROM_CODE:
-            continue
-        office, state = OFFICE_FROM_CODE[parts[1]], parts[2].upper()
-        district = (str(int(parts[3])) if office == "House" and len(parts) > 3
-                    and parts[3].isdigit() else "")
-        base = f"2026_{state}_{office}" + (f"-{district}" if district else "")
-        out.setdefault(base + "_" + party, {})[norm_name(m.group("name"))] = dict(
-            prob=float(r.implied_prob), volume=float(getattr(r, "volume", 0) or 0),
-            question=t, market_candidate=m.group("name"))
+        ev = str(r.event_title)
+        if "2028" in ev or "2028" in t:
+            continue                     # 2028 senate/presidential nominee props
+        if pd.notna(r.race_id):
+            # statewide (Senate/Governor): race_id present on the market row
+            parts = str(r.race_id).split("-")
+            if len(parts) < 3 or parts[1] not in OFFICE_FROM_CODE:
+                continue
+            office, state = OFFICE_FROM_CODE[parts[1]], parts[2].upper()
+            district = (str(int(parts[3])) if office == "House" and len(parts) > 3
+                        and parts[3].isdigit() else "")
+            tl = t.lower()
+            party = "DEM" if ("democratic" in tl or " dem" in tl) else "REP"
+            base = f"2026_{state}_{office}" + (f"-{district}" if district else "")
+            add(base + "_" + party, m.group("name"), r)
+        else:
+            # House: derive the race from the event title. At-large 'AL' -> district 1
+            # (matches the model's race keys).
+            me = KALSHI_HOUSE_EVENT_RX.match(ev)
+            if not me:
+                continue
+            di = "1" if me.group("di").upper() == "AL" else str(int(me.group("di")))
+            party = "DEM" if me.group("party").lower() == "democratic" else "REP"
+            add(f"2026_{me.group('st').upper()}_House-{di}_{party}", m.group("name"), r)
     return out
 
 def load_primary_markets():
