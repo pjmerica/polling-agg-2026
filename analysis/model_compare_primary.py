@@ -128,14 +128,33 @@ def load_kalshi_primary_markets():
             add(f"2026_{me.group('st').upper()}_House-{di}_{party}", m.group("name"), r)
     return out
 
-def load_primary_markets():
+_STATE_ABBR = {
+    'alabama':'AL','alaska':'AK','arizona':'AZ','arkansas':'AR','california':'CA',
+    'colorado':'CO','connecticut':'CT','delaware':'DE','florida':'FL','georgia':'GA',
+    'hawaii':'HI','idaho':'ID','illinois':'IL','indiana':'IN','iowa':'IA','kansas':'KS',
+    'kentucky':'KY','louisiana':'LA','maine':'ME','maryland':'MD','massachusetts':'MA',
+    'michigan':'MI','minnesota':'MN','mississippi':'MS','missouri':'MO','montana':'MT',
+    'nebraska':'NE','nevada':'NV','new hampshire':'NH','new jersey':'NJ','new mexico':'NM',
+    'new york':'NY','north carolina':'NC','north dakota':'ND','ohio':'OH','oklahoma':'OK',
+    'oregon':'OR','pennsylvania':'PA','rhode island':'RI','south carolina':'SC',
+    'south dakota':'SD','tennessee':'TN','texas':'TX','utah':'UT','vermont':'VT',
+    'virginia':'VA','washington':'WA','west virginia':'WV','wisconsin':'WI','wyoming':'WY'}
+
+def load_primary_markets(preds=None):
+    """preds (optional): the predictions frame, used to resolve OFFICE-LESS orphan
+    markets by candidate identity - 'Will Abdul El-Sayed win the 2026 Michigan
+    Democratic Primary?' names no office, so the feed scraper left race_id blank; the
+    candidate + state + party uniquely identify the model race."""
+    cand_lookup = {}
+    if preds is not None:
+        for r in preds.itertuples():
+            cand_lookup.setdefault((r.state, r.party), {})[r.cand_norm] = r.race_id
     p = pd.read_csv(os.path.join(REPO, "data", "raw", "polymarket_markets.csv"),
                     low_memory=False)
     if "closed" in p.columns:
         p = p[~p["closed"].astype(bool)]
-    p = p[p["race_id"].notna()]
     p = p[p["question"].astype(str).str.contains("primary", case=False, na=False)]
-    out = {}   # {(model_race_base, party): {cand_norm: {...}}}
+    out = {}   # {(model_race_base + _party): {cand_norm: {...}}}
     for r in p.itertuples():
         q = str(r.question)
         if BAND_RX.search(q):
@@ -143,22 +162,31 @@ def load_primary_markets():
         m = MKT_RX.match(q)
         if not m or pd.isna(r.implied_prob):
             continue
-        q = str(r.question).lower()
-        party = ("DEM" if "democratic" in q or "democrat" in q
-                 else "REP" if "republican" in q else None)
+        ql = q.lower()
+        party = ("DEM" if "democratic" in ql or "democrat" in ql
+                 else "REP" if "republican" in ql else None)
         if party is None:
             continue
-        parts = str(r.race_id).split("-")       # 2026-GOV-MI[-01]
-        if len(parts) < 3 or parts[1] not in OFFICE_FROM_CODE:
-            continue
-        office, state = OFFICE_FROM_CODE[parts[1]], parts[2].upper()
-        district = str(int(parts[3])) if office == "House" and len(parts) > 3 and parts[3].isdigit() else ""
-        base = f"2026_{state}_{office}" + (f"-{district}" if district else "")
-        key = (base + "_" + party)
+        key = None
+        if pd.notna(r.race_id):
+            parts = str(r.race_id).split("-")       # 2026-GOV-MI[-01]
+            if len(parts) < 3 or parts[1] not in OFFICE_FROM_CODE:
+                continue
+            office, state = OFFICE_FROM_CODE[parts[1]], parts[2].upper()
+            district = str(int(parts[3])) if office == "House" and len(parts) > 3 and parts[3].isdigit() else ""
+            key = f"2026_{state}_{office}" + (f"-{district}" if district else "") + "_" + party
+        else:
+            # orphan: resolve by candidate identity within (state, party)
+            st = next((ab for nm, ab in _STATE_ABBR.items() if nm in ql), None)
+            if st is None:
+                continue
+            key = cand_lookup.get((st, party), {}).get(norm_name(m.group("name")))
+            if key is None:
+                continue
         out.setdefault(key, {})[norm_name(m.group("name"))] = dict(
             prob=float(r.implied_prob),
             volume=float(getattr(r, "volume", 0) or 0),
-            question=str(r.question), market_candidate=m.group("name"))
+            question=q, market_candidate=m.group("name"))
     return out
 
 def _meta():
@@ -174,7 +202,7 @@ def main():
     args = ap.parse_args()
     preds = pd.read_csv(args.preds)
     preds["cand_norm"] = preds["candidate"].map(norm_name)
-    markets = load_primary_markets()          # Polymarket (fallback venue)
+    markets = load_primary_markets(preds)     # Polymarket (fallback venue)
     kalshi = load_kalshi_primary_markets()    # Kalshi nominee markets (preferred)
     today = date.today().isoformat()
 
