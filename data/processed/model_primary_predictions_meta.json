@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
  "generated_at": "2026-07-18T02:14:12",
+=======
+ "generated_at": "2026-07-17T23:22:40",
+>>>>>>> 7502b3e (Primary tab refresh: candidate-history model (race-acc .935 hist eval, 83.3% on decided 2026))
  "polls_max_end_date": "2026-07-15",
  "n_poll_rows": 4162,
  "n_races": 193
