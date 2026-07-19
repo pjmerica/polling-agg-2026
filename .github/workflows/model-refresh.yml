@@ -78,20 +78,36 @@ jobs:
           else
             git commit -m "model refresh: $(date -u +%Y-%m-%dT%H:%MZ)"
             # a market-refresh commit can land between checkout and push. On rejection:
-            # rebase; conflicts can only be the generated JS - take either side, continue,
-            # then REGENERATE from source (never merge-resolve generated files -
-            # hard-learned rule) and re-commit before retrying.
+            # rebase, then reconcile BOTH kinds of derived files (learned the hard way
+            # 2026-07-18 when data/processed conflicts stalled the loop):
+            #   - data/processed/* = model outputs -> restore OUR fresh copies from the
+            #     model repo checkout (never merge-resolve these)
+            #   - docs/*.js = generated -> REGENERATE from source, never merge-resolve
+            CONFLICTABLE="docs/model_data.js docs/primary_model_data.js \
+              data/processed/model_predictions_2026.csv \
+              data/processed/model_margin_predictions_2026.csv \
+              data/processed/model_predictions_meta.json \
+              data/processed/model_primary_predictions_2026.csv \
+              data/processed/model_primary_predictions_meta.json \
+              data/processed/model_primary_explanations_2026.json \
+              data/processed/model_explanations_2026.json"
             for i in 1 2 3; do
               if git push; then break; fi
               echo "Push rejected (attempt $i)"
               if ! git pull --rebase origin master; then
-                git checkout --theirs docs/model_data.js docs/primary_model_data.js || true
-                git add docs/model_data.js docs/primary_model_data.js
-                GIT_EDITOR=true git rebase --continue
+                git checkout --theirs $CONFLICTABLE 2>/dev/null || true
+                git add $CONFLICTABLE
+                GIT_EDITOR=true git rebase --continue || git rebase --abort
               fi
+              # our model outputs win; refresh_dashboard already copied them, but a
+              # --theirs above may have clobbered them - recopy from the model checkout
+              cp ../../"Polling prediction model"/predictions_2026.csv \
+                 data/processed/model_predictions_2026.csv 2>/dev/null || true
+              cp ../../"Polling prediction model"/primary_predictions_2026.csv \
+                 data/processed/model_primary_predictions_2026.csv 2>/dev/null || true
               python analysis/model_compare.py
               python analysis/model_compare_primary.py
-              git add docs/model_data.js docs/primary_model_data.js data/processed
-              git diff --cached --quiet || git commit -m "regen compares post-rebase"
+              git add docs data/processed
+              git diff --cached --quiet || git commit -m "regen post-rebase"
             done
           fi
