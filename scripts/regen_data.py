@@ -4,7 +4,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
-from utils.races import RACE_BY_ID
 from scrapers.pollster_partisanship import normalize_partisan
 
 
@@ -22,16 +21,6 @@ def _safe_read_csv(path: Path, **kw) -> pd.DataFrame:
         print(f"  WARNING: {path.name} is empty — treating as no data")
         return pd.DataFrame()
 
-
-def wavg(g, vc, wc):
-    w = g[wc].values.astype(float); v = g[vc].values.astype(float)
-    return np.average(v, weights=w) if w.sum() > 0 else v.mean()
-
-def get_meta(race_id):
-    r = RACE_BY_ID.get(race_id)
-    if not r: return '', '', ''
-    lbl = f"{r.state_abbrev}-{str(r.district).zfill(2)}" if r.office == 'H' else f"{r.state_abbrev} {r.office}"
-    return r.state, r.office, lbl
 
 def parse_iso(s):
     # Try the NYT short format first (most common), then any ISO-ish
@@ -309,67 +298,15 @@ print(f"other_polls_data.js: {len(other_list)} polls "
       f"{sum(1 for p in other_list if p['stage']=='approval')} approval)")
 print(f"polls_data.js: {len(out)} races")
 
-# ── mismatch_data.js ──
-k = _safe_read_csv(ROOT / 'data/raw/kalshi_markets.csv')
-if k.empty:
-    print("mismatch_data.js: skipped (no Kalshi data)")
-    sys.exit(0)
-k = k[k['race_id'].notna() & k['implied_prob'].notna()].copy()
-k['weight'] = pd.to_numeric(k['open_interest'], errors='coerce').fillna(
-    pd.to_numeric(k['volume'], errors='coerce')).fillna(1.0)
-
-# General
-k_gen_dem = k[
-    k['market_title'].str.contains('Democratic|Democrat', case=False, na=False) &
-    ~k['market_title'].str.contains('nominee|primary|nominate', case=False, na=False)
-].copy()
-kalshi_gen = k_gen_dem.groupby('race_id').apply(
-    lambda g: wavg(g, 'implied_prob', 'weight'), include_groups=False).rename('kalshi_dem_prob')
-
-nyt_gen = polls[(polls['stage'] == 'general') & (polls['party'] == 'DEM')].copy()
-nyt_gen['weight'] = pd.to_numeric(nyt_gen['weight'], errors='coerce').fillna(1.0)
-nyt_gen = nyt_gen[nyt_gen['weight'] > 0]
-nyt_gen_avg = nyt_gen.groupby('race_id').apply(
-    lambda g: wavg(g, 'implied_prob', 'weight'), include_groups=False).rename('nyt_dem_share')
-
-gen = pd.DataFrame({'kalshi_dem_prob': kalshi_gen, 'nyt_dem_share': nyt_gen_avg}).dropna().reset_index()
-gen['gap'] = (gen['kalshi_dem_prob'] - gen['nyt_dem_share']).round(4)
-gen['abs_gap'] = gen['gap'].abs().round(4)
-gen['stage'] = 'general'
-gen[['state', 'office', 'label']] = gen['race_id'].apply(lambda x: pd.Series(get_meta(x)))
-
-# Primary
-k_prim = k[k['market_title'].str.contains('nominee|primary|nominate', case=False, na=False)].copy()
-k_prim['prim_party'] = np.where(
-    k_prim['market_title'].str.contains('Republican', case=False, na=False), 'REP',
-    np.where(k_prim['market_title'].str.contains('Democrat|Democratic', case=False, na=False), 'DEM', 'OTHER'))
-k_prim = k_prim[k_prim['prim_party'].isin(['DEM', 'REP'])].copy()
-k_prim_leader = k_prim.groupby(['race_id', 'prim_party']).apply(
-    lambda g: g.loc[g['implied_prob'].idxmax(), ['market_title', 'implied_prob', 'weight']],
-    include_groups=False).reset_index()
-
-nyt_prim = polls[polls['stage'].isin(['primary', 'primary runoff'])].copy()
-nyt_prim['weight'] = pd.to_numeric(nyt_prim['weight'], errors='coerce').fillna(1.0)
-nyt_prim = nyt_prim[nyt_prim['weight'] > 0]
-
-def top_candidate(g):
-    ca = g.groupby('candidate').apply(lambda c: wavg(c, 'implied_prob', 'weight'), include_groups=False)
-    top = ca.idxmax()
-    return pd.Series({'candidate': top, 'nyt_share': ca[top]})
-
-nyt_prim_leader = nyt_prim.groupby(['race_id', 'party']).apply(
-    top_candidate, include_groups=False).reset_index().rename(columns={'party': 'prim_party'})
-
-prim = k_prim_leader.merge(nyt_prim_leader, on=['race_id', 'prim_party'], how='inner')
-prim = prim.rename(columns={'implied_prob': 'kalshi_dem_prob', 'nyt_share': 'nyt_dem_share'})
-prim['gap'] = (prim['kalshi_dem_prob'] - prim['nyt_dem_share']).round(4)
-prim['abs_gap'] = prim['gap'].abs().round(4)
-prim['stage'] = 'primary'
-prim[['state', 'office', 'label']] = prim['race_id'].apply(lambda x: pd.Series(get_meta(x)))
-
-with open(ROOT / 'docs/mismatch_data.js', 'w') as f:
-    f.write('const MISMATCH = ')
-    json.dump({'general': gen.to_dict(orient='records'), 'primary': prim.to_dict(orient='records')},
-              f, separators=(',', ':'))
-    f.write(';')
-print(f"mismatch_data.js: {len(gen)} general, {len(prim)} primary")
+# mismatch_data.js generation REMOVED 2026-07-21 (model-repo audit): it fed the old raw
+# poll-vs-Kalshi "Polling vs Markets Mismatch" tab, superseded by the real XGBoost-based
+# Model-vs-Markets tab (docs/index.html, live since 2026-07-05, analysis/model_compare.py).
+# AUDIT.md (2026-06-24) explicitly said keep generating it "until the model tab is live and
+# stable" -- confirmed true and stable for 16+ days (gh run list: all green). No HTML file
+# has read docs/mismatch_data.js since the real tab shipped (verified: no `mismatch_data.js`
+# <script> tag and no `MISMATCH` reference anywhere in docs/*.html). Removed the dead output
+# + its two single-purpose helpers (wavg/get_meta, used nowhere else in this file) rather
+# than leaving them generating a file nothing reads. docs/model.html (the OLD standalone
+# "Model vs Markets" page, pre-dating the embedded tab, last touched 2026-07-05, linked from
+# nowhere) was left in place but is a separate archive candidate -- not touched here since
+# it isn't generated by this script.
