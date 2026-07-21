@@ -41,8 +41,8 @@ race_id,state,office,district,candidate,party,display_party,n_polls,poll_avg,pol
 2026_CA_House-14,CA,House,14,Matt Ortega,DEM,DEM,1,2.0,-7.0,-27.0,40.0,1.0,-40.69526,-40.69526,-41.48251
 2026_CA_House-14,CA,House,14,Carin Elam,DEM,DEM,1,0.0,-9.0,-29.0,40.0,1.0,-42.913334,-42.913334,-43.8776
 2026_CA_House-14,CA,House,14,Suzanne Chenault,OTH,OTH,1,1.0,-8.0,-28.0,0.0,0.0,-46.00124,-44.914013,-47.522045
-2026_CA_House-22,CA,House,22,David G. Valadao,REP,REP,1,42.0,0.0,0.0,2.0,1.0,-0.27357504,3.9662616,-2.7027128
-2026_CA_House-22,CA,House,22,Jasmeet Bains,DEM,DEM,1,42.0,0.0,0.0,-2.0,0.0,-3.0770473,-5.18428,1.767041
+2026_CA_House-22,CA,House,22,Randy Villegas,DEM,DEM,1,48.0,5.0,5.0,-2.0,0.0,2.818087,-0.09133328,5.842215
+2026_CA_House-22,CA,House,22,David G. Valadao,REP,REP,2,43.0,0.0,18.5,2.0,1.0,-2.8502886,-1.1210558,-5.2849936
 2026_CA_House-3,CA,House,3,Kevin Kiley,REP,REP,1,47.0,2.0,2.0,4.0,1.0,1.0638417,4.620138,-2.342918
 2026_CA_House-3,CA,House,3,Heidi Hall,DEM,DEM,1,45.0,0.0,-2.0,-4.0,0.0,-2.776893,-4.891728,0.548552
 2026_CA_House-40,CA,House,40,Young Kim,REP,REP,1,44.0,0.0,0.0,2.0,1.0,-8.833994,-8.899774,-9.741855
