@@ -9,8 +9,10 @@ decision 2026-07-16), Polymarket win-the-primary markets as fallback. Races with
 market on either venue are still emitted (venue=null) for the page's
 "show races without markets" toggle.
 
-Only UPCOMING primaries (election_date >= today): the inverse of the general Model-vs-
-Markets tab, which requires primaries to be DECIDED.
+Upcoming + just-decided primaries (election_date >= today - 2 days): the inverse of the
+general Model-vs-Markets tab, which requires primaries to be DECIDED. The 2-day grace window
+(added 2026-07-22, user request) keeps a race on the page through election day and the day
+after, since results trickle in rather than posting instantly at midnight.
 
 Market normalization: candidate quotes within one primary race form a book; when the
 matched book sums to >= 0.85 the quotes are vig-normalized (prob / book_sum), else used
@@ -23,7 +25,7 @@ import json
 import os
 import re
 import unicodedata
-from datetime import date
+from datetime import date, timedelta
 
 import pandas as pd
 
@@ -217,11 +219,15 @@ def main():
             explanations = json.load(f).get("races", {})
         print(f"primary explanations loaded: {len(explanations)} races")
 
+    cutoff = (date.today() - timedelta(days=2)).isoformat()   # keep races visible through
+                                                                # election day + 2 (results
+                                                                # trickle in; don't vanish the
+                                                                # page the instant polls close)
     races, n_matched = [], 0
     for rid, g in preds.groupby("race_id"):
         ed = str(g["election_date"].iloc[0])[:10]
-        if not ed or ed == "nan" or ed < today:
-            continue                            # decided or dateless: not comparable
+        if not ed or ed == "nan" or ed < cutoff:
+            continue                            # decided 2+ days ago, or dateless: not comparable
         # venue: KALSHI preferred (user decision 2026-07-16), Polymarket fallback
         book, venue = kalshi.get(rid, {}), "kalshi"
         if not book:
