@@ -270,6 +270,16 @@ def main():
             unmatched_market_candidates=unmatched_mkt,
             max_abs_edge=(abs(top["edge"]) if top else 0.0),
             explain=explanations.get(rid),
+            # raw win_prob summed across the field, before within-race normalization (model
+            # repo's predict_primary.py; added 2026-07-22). A crowded weak-signal field can
+            # sum well under 1 - normalizing then manufactures a confident-looking "model"
+            # number (e.g. SD-Governor-REP: raw sum 0.064, so a real 3.3% became a
+            # normalized 51.8%). low_confidence_field flags races where that's happening so
+            # the page can caveat the leader instead of presenting it as a confident pick.
+            field_confidence=(g["field_confidence"].iloc[0]
+                              if "field_confidence" in g.columns else None),
+            low_confidence_field=bool(g["low_confidence_field"].iloc[0])
+                                 if "low_confidence_field" in g.columns else False,
             candidates=sorted(cands, key=lambda c: -c["model"]),
         ))
     # market races first; within them thin-poll races (n_polls < 3) sort BELOW everything

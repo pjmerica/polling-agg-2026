@@ -1926,6 +1926,7 @@ function pmRows(){
       if (r.venue ? c.edge==null : i>=3) return;
       rows.push({...c, race_id:r.race_id, label, party:r.party, office:r.office,
         election_date:r.election_date, partial_book:r.partial_book, venue:r.venue,
+        low_confidence_field:r.low_confidence_field,
         has_explain:(i===0 && !!r.explain),
         edge_abs:(c.edge==null?0:Math.abs(c.edge)), key:label+' '+c.candidate});
     });
@@ -1969,8 +1970,9 @@ function pmTable(rows){
     const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
     const pchip=r.party==='DEM'?'<span class="mv-dem">(D)</span>':'<span class="mv-rep">(R)</span>';
     const pb=r.partial_book?'<span class="mv-split" title="The market book for this race sums to well under 100% - quotes are raw, not vig-normalized. Edges less reliable.">PARTIAL BOOK</span>':'';
+    const lc=r.low_confidence_field?'<span class="mv-split" title="The model has no strong opinion about ANY candidate here (raw probabilities across the field sum to well under 1) - normalizing to 100% still picks a leader, but treat it as a best guess among weak options, not a confident pick.">WEAK FIELD</span>':'';
     return `<tr>
-      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}</td>
+      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}${lc}</td>
       <td>${r.election_date||'-'}</td>
       <td>${r.candidate}</td>
       <td class="${r.n_polls<3?'mv-lowpolls':''}">${r.n_polls}</td>
