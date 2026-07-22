@@ -1,4 +1,6 @@
-"""Model vs market comparison -> docs/model_data.js (rendered by docs/model.html).
+"""Model vs market comparison -> docs/model_data.js (rendered by the embedded Model-vs-Markets
+tab in docs/index.html; docs/archive/model.html is the retired standalone predecessor page,
+archived 2026-07-21 - it still happens to read this same file but is linked from nowhere).
 
 Joins the polling-prediction-model's win probabilities (predictions_2026.csv, produced by
 predict.py in the sibling "Polling prediction model" repo) against Kalshi and Polymarket
