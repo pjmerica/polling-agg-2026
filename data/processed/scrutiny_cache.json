@@ -30,5 +30,13 @@
   "polymarket:2618138322856109565904469085316346602627882727483900432328802655317079880335": {
     "text": "Will Dan Sullivan win the Alaska Senate race in 2026? This market will resolve according to the winner of the 2026 midterm Alaska U.S. Senate election, inclusive of any run-offs, currently scheduled for November 3, 2026.\n\nIf the results of the election are not confirmed by July 31, 2027, this market will resolve to \"Other\".\n\nThe resolution source for this market is the Associated Press, Fox News, and NBC. This market will resolve once all three sources call the race for the same candidate. If all three sources haven\u2019t called the race in this state for the same candidate, this market will resolve based on official certification.",
     "fetched_at": 1783610321.4464297
+  },
+  "kalshi:HOUSEMI7-26-D": {
+    "text": "Will Democratic win the House race for MI-7? If the House member sworn in for MI-07 for the term beginning in 2027 is a member of Democratic, then the market resolves to Yes. This market is eligible for accelerated determination after a consensus of media organizations project the winner. See full rules for details.",
+    "fetched_at": 1785052581.2915025
+  },
+  "polymarket:28428563408232158641020832230598845099279456308678642815367173717175353290703": {
+    "text": "Will the Democratic Party win the MI-07 House seat? This market will resolve according to the party of the candidate who wins the MI-07 congressional district seat in the U.S. House of Representatives in the 2026 midterm elections. The midterm elections will take place on November 3, 2026.\n\n\u200b\u200bA candidate's party will be determined by their ballot-listed or otherwise identifiable affiliation with that party at the time all of the 2026 House elections are conclusively called by this market's resolution sources. A candidate without a ballot-listed affiliation to either the Democrat or Republican parties will be considered a member of one of these parties based on the party with which they most recently expressed their intent to caucus at the time all of the House elections are conclusively called by this market's resolution sources.\n\nThis market will resolve based on the result of the election as indicated by a consensus of credible reporting. If there is ambiguity, this market will resolve based solely on the official results as reported by the United States government, specifically the Federal Election Commission (https://www.fec.gov/).",
+    "fetched_at": 1785052581.3466818
   }
 }
