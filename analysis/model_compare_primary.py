@@ -87,6 +87,16 @@ KALSHI_HOUSE_EVENT_RX = re.compile(
     r"^(?P<st>[A-Z]{2})-(?P<di>\d{1,2}|AL)\s+(?P<party>Democratic|Republican)\s+nominee",
     re.I)
 
+# STATEWIDE nominee events ALSO arrive with race_id blank (found 2026-08-01). Kalshi titles
+# them "<State> <Party> <Office> nominee?" - "Michigan Democratic Senate nominee?",
+# "Connecticut Democratic Governor nominee?". Before this they fell through to the House
+# branch, whose regex only matches "MI-11 ..." district titles, so EVERY statewide Kalshi
+# nominee market was silently dropped and the page fell back to Polymarket - MI-Sen DEM and
+# REP both showed Polymarket while a 9-leg Kalshi market existed for each.
+KALSHI_STATE_EVENT_RX = re.compile(
+    r"^(?P<state>[A-Za-z ]+?)\s+(?P<party>Democratic|Republican)\s+"
+    r"(?P<office>Senate|Governor)\s+nominee", re.I)
+
 def load_kalshi_primary_markets():
     k = pd.read_csv(os.path.join(REPO, "data", "raw", "kalshi_markets.csv"),
                     low_memory=False)
@@ -122,14 +132,23 @@ def load_kalshi_primary_markets():
             base = f"2026_{state}_{office}" + (f"-{district}" if district else "")
             add(base + "_" + party, m.group("name"), r)
         else:
-            # House: derive the race from the event title. At-large 'AL' -> district 1
-            # (matches the model's race keys).
+            # No race_id: derive the race from the EVENT title. Two shapes -
+            # House "MI-11 Democratic nominee?" and statewide "Michigan Democratic Senate
+            # nominee?". At-large 'AL' -> district 1 (matches the model's race keys).
             me = KALSHI_HOUSE_EVENT_RX.match(ev)
-            if not me:
+            if me:
+                di = "1" if me.group("di").upper() == "AL" else str(int(me.group("di")))
+                party = "DEM" if me.group("party").lower() == "democratic" else "REP"
+                add(f"2026_{me.group('st').upper()}_House-{di}_{party}", m.group("name"), r)
                 continue
-            di = "1" if me.group("di").upper() == "AL" else str(int(me.group("di")))
-            party = "DEM" if me.group("party").lower() == "democratic" else "REP"
-            add(f"2026_{me.group('st').upper()}_House-{di}_{party}", m.group("name"), r)
+            ms = KALSHI_STATE_EVENT_RX.match(ev)
+            if not ms:
+                continue
+            st_abbr = _STATE_ABBR.get(ms.group("state").strip().lower())
+            if not st_abbr:
+                continue
+            party = "DEM" if ms.group("party").lower() == "democratic" else "REP"
+            add(f"2026_{st_abbr}_{ms.group('office').title()}_{party}", m.group("name"), r)
     return out
 
 _STATE_ABBR = {
