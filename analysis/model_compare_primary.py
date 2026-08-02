@@ -45,19 +45,18 @@ DEFAULT_PREDS = _first_existing(
 
 OFFICE_FROM_CODE = {"SEN": "Senate", "H": "House", "GOV": "Governor"}
 
-def norm_name(s):
-    """Match the model repo's features.norm_name: 'lastname firstinitial'."""
-    if s is None or (isinstance(s, float) and s != s):
-        return None
-    s = unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower()
-    s = re.sub(r"\b(jr|sr|ii|iii|iv)\b", "", s)
-    s = re.sub(r"[^a-z\s]", " ", s)
-    parts = [w for w in s.split() if w]
-    if not parts:
-        return None
-    last = parts[-1]
-    fi = parts[0][0] if parts[0] != last else ""
-    return f"{last} {fi}".strip()
+# NEVER-FORK (2026-08-02). This used to be a hand-copied reimplementation of the model repo's
+# features.norm_name, and it DRIFTED: the model repo fixed intra-word punctuation on
+# 2026-08-01 (so "Abdul El-Sayed" keys as 'elsayed a' and "Debbie Mucarsel-Powell" as
+# 'mucarselpowell d'), while this copy still split on the hyphen and produced 'sayed a' /
+# 'powell d'. A market candidate whose key differs from the model's key silently fails to
+# join, and the race then renders with market=null - looking exactly like "Kalshi has no
+# market for this race" when in fact the market exists and the names simply did not match.
+# Import the real one so the two can never diverge again.
+import sys as _sys  # noqa: E402
+if MODEL_REPO not in _sys.path:
+    _sys.path.insert(0, MODEL_REPO)
+from features import norm_name  # noqa: E402,F401
 
 # Polymarket phrases candidate primary markets at least two ways:
 #   "Will Andy Biggs win the 2026 Arizona Governor Republican primary?"
