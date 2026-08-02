@@ -188,6 +188,15 @@ tr:hover td { background: #1a2035; }
 .mismatch-explainer { font-size: 0.8rem; color: #64748b; margin-bottom: 18px; max-width: 700px; line-height: 1.6; }
 .mismatch-explainer strong { color: #94a3b8; }
 #mismatch-chart { margin-bottom: 28px; }
+/* thin-poll reliability warning, shown when the "reliable only (4+ polls)" filter is OFF.
+   Amber rather than red: the thin-poll rows are not wrong, they are less trustworthy. */
+.thin-warn { margin: 0 0 14px; padding: 12px 16px; border-radius: 8px;
+  background: #2a2010; border: 1px solid #7c5a12; border-left: 3px solid #f59e0b;
+  color: #fcd34d; font-size: 0.82rem; line-height: 1.5; }
+.thin-warn b { color: #fde68a; }
+.thin-warn .tw-detail { color: #d4a24c; font-size: 0.78rem; margin-top: 6px; }
+.mm-table tr.thin-row td { opacity: 0.62; }
+.mm-table td .thin-flag { color: #f59e0b; font-weight: 700; margin-left: 4px; cursor: help; }
 .mm-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .mm-table th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #1e2433; cursor: pointer; user-select: none; white-space: nowrap; }
 .mm-table th:hover { color: #94a3b8; }
@@ -345,6 +354,7 @@ tr:hover td { background: #1a2035; }
     <input type="date" id="mv-datefrom" title="show races whose primary was on/after this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
     <input type="date" id="mv-dateto" title="show races whose primary was on/before this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
     <label style="text-transform:none;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="mv-hidesplit" style="accent-color:#fb923c"> hide model-split races</label>
+    <label style="text-transform:none;display:flex;align-items:center;gap:6px;cursor:pointer" title="The models are measurably less reliable below 4 distinct surveys - see the warning shown when you uncheck this."><input type="checkbox" id="mv-reliable" checked style="accent-color:#22c55e"> reliable only (4+ polls)</label>
     <span id="mv-meta" style="font-size:0.75rem;color:#4a5568;margin-left:auto"></span>
   </div>
   <div class="mismatch-body">
@@ -362,6 +372,7 @@ tr:hover td { background: #1a2035; }
       re-run against new polls; market side refreshes with the data feed.
     </div>
     <div id="model-chart"></div>
+    <div id="mv-thinwarn" class="thin-warn" hidden></div>
     <table class="mm-table"><thead id="mv-thead"></thead><tbody id="mv-tbody"></tbody></table>
   <div id="mv-modal">
     <div class="mv-panel">
@@ -393,6 +404,7 @@ tr:hover td { background: #1a2035; }
     <input type="date" id="pm-datefrom" title="show primaries on/after this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
     <input type="date" id="pm-dateto" title="show primaries on/before this date" style="background:#1e2433;border:1px solid #2d3748;color:#e2e8f0;border-radius:6px;padding:5px 8px;font-size:0.8rem;">
     <label style="text-transform:none;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="pm-showall" style="accent-color:#2dd4bf"> show races without markets</label>
+    <label style="text-transform:none;display:flex;align-items:center;gap:6px;cursor:pointer" title="The primary model is measurably overconfident below 4 distinct surveys - see the warning shown when you uncheck this."><input type="checkbox" id="pm-reliable" checked style="accent-color:#22c55e"> reliable only (4+ polls)</label>
     <span id="pm-meta" style="font-size:0.75rem;color:#4a5568;margin-left:auto"></span>
   </div>
   <div class="mismatch-body">
@@ -412,6 +424,7 @@ tr:hover td { background: #1a2035; }
       (CA, WA, LA, AK) are out of scope.
     </div>
     <div id="pmodel-chart"></div>
+    <div id="pm-thinwarn" class="thin-warn" hidden></div>
     <table class="mm-table"><thead id="pm-thead"></thead><tbody id="pm-tbody"></tbody></table>
   </div>
   <style>
@@ -1712,11 +1725,49 @@ renderPrimaries();
 </script>
 
 <script>
+// ════════════════ THIN-POLL RELIABILITY WARNING (shared by both model tabs) ════════════════
+// Threshold lives HERE, at module scope, so BOTH tab IIFEs can read it. (It was briefly
+// declared inside the general tab's IIFE, which made the primary tab's filter throw.)
+const RELIABLE_MIN_POLLS = 4;
+// Rendered when the "reliable only (4+ polls)" gate is switched OFF, i.e. the table is now
+// showing races the models are measurably worse at. Source for the numbers:
+// analysis/poll_volume_breakpoint.ipynb in the model repo - expanding-window held-out
+// calibration, leader-call gap = mean predicted minus actual win rate.
+function renderThinWarning(elId, gateOn, rows, which){
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (gateOn) { el.hidden = true; el.innerHTML = ''; return; }
+  const thin = rows.filter(r => (r.n_polls || 0) < 4).length;
+  const detail = which === 'primary'
+    ? 'Held out on 2022+2024, the primary model claimed ~90% confidence in races with 3 or '
+      + 'fewer surveys but was right about 70-82% of the time (permutation test p=0.024). '
+      + 'About a third of its inputs are missing in those races - poll_momentum needs 3+ '
+      + 'dated polls to exist at all, and poll-spread needs 2.'
+    : 'The general model showed NO measurable overconfidence at low poll counts (it is if '
+      + 'anything slightly under-confident), because incumbency, prior seat margin and '
+      + 'district lean carry a general election when polls are thin. Thin rows are still '
+      + 'shown greyed: a call resting on one survey is a weaker claim regardless.';
+  el.innerHTML =
+    '<b>⚠ Showing races with fewer than 4 polls.</b> '
+    + (thin ? thin + (thin === 1 ? ' race in this view is' : ' races in this view are')
+              + ' below the threshold and marked <span class="thin-flag">▲</span>.'
+            : 'None in the current view fall below it.')
+    + '<div class="tw-detail">' + detail + '</div>';
+  el.hidden = false;
+}
+
 // ════════════════ MODEL vs MARKETS TAB ════════════════
 (function(){
 if (typeof MODEL_COMPARE === 'undefined') return;
 const MV = MODEL_COMPARE.races;
 let mvOffice='ALL', mvVenue='auto', mvDir='ALL', mvMinPolls=0, mvHideSplit=false;
+// Thin-poll reliability gate (2026-08-02). Held-out analysis
+// (model repo: analysis/poll_volume_breakpoint.ipynb) found the PRIMARY model runs ~9-12
+// points overconfident in races with <=3 distinct surveys (permutation p=0.024), and ~33% of
+// its features are NaN there. The general model showed no such break, but the same gate is
+// offered on both tabs for consistency - a 1-poll general race is still a thin claim.
+// ON by default: the safer view is the default view; unchecking is an explicit opt-in.
+let mvReliableOnly = true;
 let mvState='ALL', mvDateFrom='', mvDateTo='';
 let mvSortCol='edge_abs', mvSortDir=-1, mvRendered=false;
 
@@ -1742,7 +1793,8 @@ function mvFiltered(){
       && (!mvDateFrom || (r.primary_date && r.primary_date >= mvDateFrom))
       && (!mvDateTo || (r.primary_date && r.primary_date <= mvDateTo))
       && (mvDir!=='model-dem'||vEdge(r)>0) && (mvDir!=='model-rep'||vEdge(r)<0)
-      && r.n_polls>=mvMinPolls && (!mvHideSplit||r.models_agree!==false))
+      && r.n_polls>=mvMinPolls && (!mvHideSplit||r.models_agree!==false)
+      && (!mvReliableOnly || r.n_polls>=RELIABLE_MIN_POLLS))
     .map(r => ({...r, edge:vEdge(r), edge_abs:Math.abs(vEdge(r)), market:vProb(r),
       mvlabel:r.state+(r.district?'-'+r.district:'')+' '+(r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H')}));
 }
@@ -1789,10 +1841,11 @@ function mvTable(rows){
   document.getElementById('mv-tbody').innerHTML=sorted.map(r=>{
     const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
     const split=r.models_agree===false?`<span class="mv-split" title="Win model and margin model disagree - margin model picks ${r.margin_pick_name||'the other side'}. No edge.">\u26a0 SPLIT</span>`:'';
-    return `<tr class="${r.models_agree===false?'mv-splitrow':''}">
+    const thin = (r.n_polls||0) < 4;
+    return `<tr class="${r.models_agree===false?'mv-splitrow':''}${thin?' thin-row':''}">
       <td><span class="mv-badge ${ob}">${ob}</span><b>${r.state}${r.district?'-'+r.district:''}</b> <span class="mv-cand"><span class="mv-dem">${r.dem_name||'?'}${r.dem_display && r.dem_display!=='DEM' ? ' ('+r.dem_display[0]+')' : ''}</span> v <span class="mv-rep">${r.rep_name||'?'}</span></span>${r.redistricted?'<span class="mv-split" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="District redrawn in the 2025-26 mid-decade redistricting - prior-margin and incumbency fundamentals describe OLD boundaries. Extra suspicion warranted.">↺ REDRAWN</span>':''}${r.bias_fragile?'<span class="mv-split" style="background:rgba(250,204,21,0.15);color:#facc15" title="Pick flips under a +/-3pt national poll shift - poll errors are cycle-correlated, so treat as no-edge.">≈ FRAGILE</span>':''}${r.unresolved_field?'<span class="mv-split" style="background:rgba(167,139,250,0.15);color:#a78bfa" title="More than one same-party candidate still in the poll feed (leftover hypothetical primary matchups). Model % shown is the LEADING matchup only - treat the edge with suspicion until the field settles.">? FIELD</span>':''}${r.slot_market==='IND'?'<span class="mv-split" style="background:rgba(45,212,191,0.15);color:#2dd4bf" title="This candidate is an independent, so the market price shown is the INDEPENDENT-win market (not the Democratic-party market - that is a different event).">I MKT</span>':''}${split}</td>
       <td>${r.primary_date||'-'}</td>
-      <td class="${r.n_polls<5?'mv-lowpolls':''}">${r.n_polls}</td>
+      <td class="${r.n_polls<5?'mv-lowpolls':''}">${r.n_polls}${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - below the reliability threshold. See the warning above the table.">▲</span>':''}</td>
       <td><b>${mvPct(r.model_dem)}</b></td>
       <td>${mvPct(r.market)}</td>
       <td><span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span></td>
@@ -1815,6 +1868,7 @@ function renderModelTab(){
   const nD = rows.filter(r=>r.edge>0).length, nR = rows.filter(r=>r.edge<0).length;
   const ageH = (Date.now()-Date.parse(MODEL_COMPARE.generated_at))/36e5;
   const stale = ageH > 30 ? ' ⚠ DATA STALE ('+ageH.toFixed(0)+'h old - check the Actions/compare step!)' : '';
+  renderThinWarning('mv-thinwarn', mvReliableOnly, rows, 'general');
   document.getElementById('mv-meta').textContent=
     `${rows.length} races \u00b7 primaries decided in ${MODEL_COMPARE.decided_states.length} states \u00b7 ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')} | exposure: ${nD} D-lean vs ${nR} R-lean edges${stale}`
     + (MODEL_COMPARE.predictions_as_of ? ' \u00b7 model as-of ' + MODEL_COMPARE.predictions_as_of.slice(0,10) : '')
@@ -1830,6 +1884,7 @@ document.getElementById('mv-state').onchange=e=>{mvState=e.target.value;renderMo
 document.getElementById('mv-datefrom').onchange=e=>{mvDateFrom=e.target.value;renderModelTab();};
 document.getElementById('mv-dateto').onchange=e=>{mvDateTo=e.target.value;renderModelTab();};
 document.getElementById('mv-hidesplit').onchange=e=>{mvHideSplit=e.target.checked;renderModelTab();};
+document.getElementById('mv-reliable').onchange=e=>{mvReliableOnly=e.target.checked;renderModelTab();};
 document.querySelector('[data-tab="model"]').addEventListener('click',()=>setTimeout(renderModelTab,0));
 renderModelTab();   // default-active tab (2026-07-16): render at load, not first click
 
@@ -1898,6 +1953,7 @@ function mvRenderExplain(){
 (function(){
 if (typeof PRIMARY_COMPARE === 'undefined') return;
 let pmParty='ALL', pmOffice='ALL', pmMinPolls=0, pmSortCol='edge_abs', pmSortDir=-1;
+let pmReliableOnly = true;   // thin-poll gate, ON by default (see renderThinWarning)
 let pmState='ALL', pmDateFrom='', pmDateTo='', pmShowAll=false;
 
 // populate the State dropdown from the data
@@ -1917,6 +1973,7 @@ function pmRows(){
     if (pmDateFrom && (!r.election_date || r.election_date < pmDateFrom)) continue;
     if (pmDateTo && (!r.election_date || r.election_date > pmDateTo)) continue;
     if (r.n_polls < pmMinPolls) continue;
+    if (pmReliableOnly && r.n_polls < RELIABLE_MIN_POLLS) continue;
     if (!r.venue && !pmShowAll) continue;      // race with no market on either venue
     const ob=r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
     const label=r.state+(r.district?'-'+r.district:'')+' '+ob+' '+(r.party==='DEM'?'(D)':'(R)');
@@ -1971,11 +2028,12 @@ function pmTable(rows){
     const pchip=r.party==='DEM'?'<span class="mv-dem">(D)</span>':'<span class="mv-rep">(R)</span>';
     const pb=r.partial_book?'<span class="mv-split" title="The market book for this race sums to well under 100% - quotes are raw, not vig-normalized. Edges less reliable.">PARTIAL BOOK</span>':'';
     const lc=r.low_confidence_field?'<span class="mv-split" title="The model has no strong opinion about ANY candidate here (raw probabilities across the field sum to well under 1) - normalizing to 100% still picks a leader, but treat it as a best guess among weak options, not a confident pick.">WEAK FIELD</span>':'';
-    return `<tr>
+    const thin=(r.n_polls||0)<4;
+    return `<tr class="${thin?'thin-row':''}">
       <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}${lc}</td>
       <td>${r.election_date||'-'}</td>
       <td>${r.candidate}</td>
-      <td class="${r.n_polls<3?'mv-lowpolls':''}">${r.n_polls}</td>
+      <td class="${r.n_polls<3?'mv-lowpolls':''}">${r.n_polls}${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - the primary model is measurably overconfident below this. See the warning above the table.">▲</span>':''}</td>
       <td>${r.poll_avg==null?'<span class="mv-muted">-</span>':r.poll_avg}</td>
       <td><b>${pmPct(r.model)}</b></td>
       <td>${pmPct(r.market)}${r.venue?'<span class="mv-muted" style="font-size:0.62rem;margin-left:4px">'+(r.venue==='kalshi'?'K':'P')+'</span>':''}</td>
@@ -1995,6 +2053,7 @@ function renderPmTab(){
   pmChart(rows); pmTable(rows);
   const races=new Set(rows.map(r=>r.race_id)).size;
   const nMkt=rows.filter(r=>r.edge!=null).length;
+  renderThinWarning('pm-thinwarn', pmReliableOnly, sorted, 'primary');
   document.getElementById('pm-meta').textContent=
     `${nMkt} candidate markets in ${races} upcoming primaries shown`
     + (PRIMARY_COMPARE.predictions_as_of ? ' · model as-of ' + PRIMARY_COMPARE.predictions_as_of.slice(0,10) : '')
@@ -2008,6 +2067,7 @@ document.getElementById('pm-state').onchange=e=>{pmState=e.target.value;renderPm
 document.getElementById('pm-datefrom').onchange=e=>{pmDateFrom=e.target.value;renderPmTab();};
 document.getElementById('pm-dateto').onchange=e=>{pmDateTo=e.target.value;renderPmTab();};
 document.getElementById('pm-showall').onchange=e=>{pmShowAll=e.target.checked;renderPmTab();};
+document.getElementById('pm-reliable').onchange=e=>{pmReliableOnly=e.target.checked;renderPmTab();};
 document.querySelector('[data-tab="pmodel"]').addEventListener('click',()=>setTimeout(renderPmTab,0));
 
 // ── per-race SHAP explain modal (primary nominee model) ──
