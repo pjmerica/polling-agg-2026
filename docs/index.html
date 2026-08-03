@@ -1924,7 +1924,7 @@ function mvRenderExplain(){
     'blue pushes toward the ' + (mvExplainTab === 'win' ? 'candidate winning' : 'candidate\u2019s margin') + ', red against';
   const fmtPct = v => (100 * v).toFixed(0) + '%';
   document.getElementById('mv-esummary').innerHTML = mvExplainTab === 'win'
-    ? `A generic race would start at <b>${fmtPct(blk.base)}</b>; the features below move ${who} to <b>${fmtPct(blk.pred)}</b> win probability \u2014 the model's raw estimate for this candidate; the table's Model D% is the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`
+    ? `A generic race would start at <b>${fmtPct(blk.base)}</b>; the features below move ${ex.candidate} to <b>${fmtPct(blk.pred)}</b> win probability \u2014 the model's raw estimate for this candidate; the table's Model D% is the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`
     : `Baseline margin <b>${blk.base > 0 ? '+' : ''}${blk.base.toFixed(1)} pts</b>; the features below move ${ex.candidate} to <b>${blk.pred > 0 ? '+' : ''}${blk.pred.toFixed(1)} pts</b> (positive = wins by that much).`;
   const feats = [...blk.feats].reverse();   // largest at top after reverse for plotly
   const wrap = (txt, w=52) => {               // word-wrap descriptions for the hover box
