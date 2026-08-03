@@ -438,6 +438,12 @@ tr:hover td { background: #1a2035; }
     <div class="mv-panel">
       <button class="mv-close" onclick="document.getElementById('pm-modal').style.display='none'">&times;</button>
       <h3 id="pm-etitle"></h3>
+      <!-- same two-tab switcher the general modal uses (mv-etabs): nominee model vs the
+           primary MARGIN model. Hidden when the explanations file carries no margin block. -->
+      <div class="mv-etabs" id="pm-etabs">
+        <button class="mv-etab active" data-petab="win">Nominee model</button>
+        <button class="mv-etab" data-petab="margin">Margin model</button>
+      </div>
       <div class="mv-sub" id="pm-esub"></div>
       <div class="mv-esummary" id="pm-esummary"></div>
       <div id="pm-explain-chart" style="height:420px"></div>
@@ -2102,20 +2108,49 @@ document.getElementById('pm-reliable').onchange=e=>{pmReliableOnly=e.target.chec
 document.querySelector('[data-tab="pmodel"]').addEventListener('click',()=>setTimeout(renderPmTab,0));
 
 // ── per-race SHAP explain modal (primary nominee model) ──
+// Modal state, mirroring the general tab's mvExplainRace / mvExplainTab pair so both modals
+// behave identically: pick a race + candidate, then switch between the two models' SHAP
+// blocks without reopening.
+let pmExplainRace = null, pmExplainCand = null, pmExplainTab = 'win';
+
 function pmOpenExplain(rid, candName){
   const r = PRIMARY_COMPARE.races.find(x => x.race_id === rid);
   if (!r || !r.explain) return;
-  const ex = r.explain;
+  pmExplainRace = r; pmExplainCand = candName || null; pmExplainTab = 'win';
+  document.getElementById('pm-modal').style.display = 'block';
+  pmRenderExplain();
+}
+
+document.getElementById('pm-etabs').onclick = e => {
+  const b = e.target.closest('.mv-etab');
+  if (!b) return;
+  pmExplainTab = b.dataset.petab; pmRenderExplain();
+};
+
+function pmRenderExplain(){
+  const r = pmExplainRace; if (!r) return;
+  const ex = r.explain, candName = pmExplainCand;
   // Per-candidate explanations (2026-08-03). `ex.candidates` is ordered by model probability
   // and each entry carries its own SHAP block; `ex.win` remains the front-runner's block so
   // an older explanations file still renders. If the requested candidate is not in the array
   // (name mismatch), fall back to the headline rather than showing nothing.
-  let who = ex.candidate, blk = ex.win, mdl = null;
+  let who = ex.candidate, entry = null;
   if (candName && Array.isArray(ex.candidates)) {
     const hit = ex.candidates.find(c => c.candidate === candName);
-    if (hit) { who = hit.candidate; blk = hit.win; mdl = hit.model; }
+    if (hit) { who = hit.candidate; entry = hit; }
   }
-  document.getElementById('pm-modal').style.display = 'block';
+  // margin block: per-candidate when available, else the race-level one (general-modal shape)
+  const winBlk = entry ? entry.win : ex.win;
+  const margBlk = entry ? entry.margin : ex.margin;
+  const hasMargin = !!(margBlk && margBlk.feats && margBlk.feats.length);
+  // hide the switcher entirely when this build has no margin explanations to show
+  document.getElementById('pm-etabs').style.display = hasMargin ? 'flex' : 'none';
+  if (!hasMargin) pmExplainTab = 'win';
+  const blk = (pmExplainTab === 'margin') ? margBlk : winBlk;
+  if (!blk) return;
+  document.querySelectorAll('#pm-etabs .mv-etab').forEach(b =>
+    b.classList.toggle('active', b.dataset.petab === pmExplainTab));
+
   const ob = r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
   const lbl = r.state + (r.district ? '-' + r.district : '') + ' ' + ob + ' ' +
     (r.party==='DEM' ? 'Democratic' : 'Republican') + ' primary';
@@ -2123,10 +2158,13 @@ function pmOpenExplain(rid, candName){
   const isTop = (who === ex.candidate);
   document.getElementById('pm-esub').textContent =
     'Explaining ' + who + (isTop ? ' (predicted nominee)' : ' (not the model’s pick)')
-    + ' · top 10 drivers by SHAP value · blue pushes toward winning the nomination, red against';
+    + ' · top 10 drivers by SHAP value · blue pushes toward '
+    + (pmExplainTab === 'margin' ? 'a bigger winning margin' : 'winning the nomination')
+    + ', red against';
   const fmtPct = v => (100 * v).toFixed(0) + '%';
-  document.getElementById('pm-esummary').innerHTML =
-    `A generic primary candidate would start at <b>${fmtPct(blk.base)}</b>; the features below move ${ex.candidate} to <b>${fmtPct(blk.pred)}</b> nominee probability — the raw estimate; the table shows the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`;
+  document.getElementById('pm-esummary').innerHTML = (pmExplainTab === 'margin')
+    ? `A generic primary candidate starts at <b>${blk.base.toFixed(1)} pts</b>; the features below move ${who} to a predicted <b>${blk.pred.toFixed(1)} pt</b> margin over their best rival. Bars are directly in percentage points. (Held-out MAE is ~17 pts — primary margins are roughly twice as hard as general ones, so read this as "comfortable vs close", not a precise number.)`
+    : `A generic primary candidate would start at <b>${fmtPct(blk.base)}</b>; the features below move ${who} to <b>${fmtPct(blk.pred)}</b> nominee probability — the raw estimate; the table shows the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`;
   const feats = [...blk.feats].reverse();
   const wrap = (txt, w=52) => {
     const words = String(txt || '').split(' '); const lines = []; let cur = '';
@@ -2150,7 +2188,10 @@ function pmOpenExplain(rid, candName){
     margin: { t: 10, b: 40, l: 10, r: 30 },
     xaxis: { autorange: 'reversed', gridcolor: '#1e2433', color: '#64748b', zeroline: true,
              zerolinecolor: '#facc15', zerolinewidth: 1,
-             title: { text: 'impact on nomination odds (log-odds)', font: { size: 11 } } },
+             title: { text: (pmExplainTab === 'margin'
+                             ? 'impact on predicted margin (pts)'
+                             : 'impact on nomination odds (log-odds)'),
+                     font: { size: 11 } } },
     yaxis: { gridcolor: '#1e2433', color: '#cbd5e1', tickfont: { size: 11 }, automargin: true },
     font: { color: '#94a3b8' },
   }, {responsive: true, displayModeBar: false});
