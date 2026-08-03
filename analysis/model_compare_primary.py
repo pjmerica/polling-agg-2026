@@ -42,6 +42,11 @@ def _first_existing(*paths):
 DEFAULT_PREDS = _first_existing(
     os.path.join(REPO, "data", "processed", "model_primary_predictions_2026.csv"),
     os.path.join(MODEL_REPO, "primary_predictions_2026.csv"))
+# PRIMARY MARGIN model (2026-08-02), wired the same way the general tab wires
+# margin_predictions_2026.csv: a separate model, joined on race_id + candidate.
+DEFAULT_MARGIN_PREDS = _first_existing(
+    os.path.join(REPO, "data", "processed", "model_primary_margin_predictions_2026.csv"),
+    os.path.join(MODEL_REPO, "primary_margin_predictions_2026.csv"))
 
 OFFICE_FROM_CODE = {"SEN": "Senate", "H": "House", "GOV": "Governor"}
 
@@ -221,9 +226,18 @@ def _meta():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--preds", default=DEFAULT_PREDS)
+    ap.add_argument("--margin-preds", default=DEFAULT_MARGIN_PREDS)
     args = ap.parse_args()
     preds = pd.read_csv(args.preds)
     preds["cand_norm"] = preds["candidate"].map(norm_name)
+
+    # PRIMARY MARGIN predictions (optional - the tab still renders without them, exactly as
+    # the general tab does when margin_predictions_2026.csv is absent).
+    mpreds = (pd.read_csv(args.margin_preds)
+              if args.margin_preds and os.path.exists(args.margin_preds) else None)
+    if mpreds is not None:
+        mpreds["cand_norm"] = mpreds["candidate"].map(norm_name)
+        print(f"primary margin predictions loaded: {mpreds['race_id'].nunique()} races")
     markets = load_primary_markets(preds)     # Polymarket (fallback venue)
     kalshi = load_kalshi_primary_markets()    # Kalshi nominee markets (preferred)
     today = date.today().isoformat()
@@ -277,6 +291,24 @@ def main():
         unmatched_mkt = ([v["market_candidate"] for k, v in book.items()
                           if k not in set(g["cand_norm"])] if book else [])
         top = max(matched, key=lambda c: abs(c["edge"])) if matched else None
+        # PRIMARY MARGIN model (2026-08-02) - mirrors the general tab's model_margin_dem /
+        # margin_pick_name / models_agree trio. The margin regressor scores each candidate
+        # independently, so the meaningful output is its ARGMAX (who it thinks wins by most)
+        # and whether that agrees with the nominee ranker's pick. Disagreement is the same
+        # "no confident edge" signal the general tab surfaces as SPLIT.
+        m_margin = m_pick_name = m_agree = None
+        m_uncontested = None
+        if mpreds is not None:
+            mg = mpreds[mpreds["race_id"] == rid]
+            if len(mg):
+                best = mg.loc[mg["pred_margin"].idxmax()]
+                m_margin = round(float(best["pred_margin"]), 1)
+                m_pick_name = str(best["candidate"])
+                if "uncontested_field" in mg.columns:
+                    m_uncontested = bool(int(best["uncontested_field"]))
+                win_pick = g.loc[g["win_prob_norm"].idxmax(), "candidate"]
+                m_agree = bool(norm_name(m_pick_name) == norm_name(win_pick))
+
         races.append(dict(
             race_id=rid, state=g["state"].iloc[0], office=g["office"].iloc[0],
             district=str(g["district"].iloc[0]).split(".")[0].replace("nan", ""),
@@ -287,6 +319,10 @@ def main():
             book_sum=(round(book_sum, 3) if matched else None),
             unmatched_market_candidates=unmatched_mkt,
             max_abs_edge=(abs(top["edge"]) if top else 0.0),
+            model_margin=m_margin,              # predicted winning margin, pts
+            margin_pick_name=m_pick_name,       # who the MARGIN model thinks wins by most
+            models_agree=m_agree,               # margin pick == nominee-ranker pick?
+            margin_uncontested=m_uncontested,   # one polled candidate: margin extrapolated
             explain=explanations.get(rid),
             # raw win_prob summed across the field, before within-race normalization (model
             # repo's predict_primary.py; added 2026-07-22). A crowded weak-signal field can

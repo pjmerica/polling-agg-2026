@@ -2013,8 +2013,25 @@ function pmChart(rows){
   },{responsive:true,displayModeBar:false});
 }
 
+// PRIMARY MARGIN model (2026-08-02). Mirrors the general tab's margin column: predicted
+// winning margin in points for whoever the MARGIN model ranks first. Held-out MAE is ~17pts
+// (primary margins are ~2x harder than general ones - target std 40.8), so this is shown to
+// one decimal but should be read as "comfortable / close", not a precise number.
+//   * greyed + "~" when the field had only one polled candidate: poll_lead is 0 by
+//     construction there and the margin is extrapolated from level alone.
+//   * a SPLIT chip when the margin model's pick differs from the nominee model's - the same
+//     disagreement signal the general tab shows.
+function pmMarg(r){
+  if (r.model_margin == null) return '<span class="mv-muted">-</span>';
+  const v = r.model_margin.toFixed(1);
+  if (r.margin_uncontested)
+    return `<span class="mv-muted" title="Only one candidate in this field was polled, so there is no 'best other' to measure against - the margin is extrapolated from that candidate's own polling level. Treat as indicative only.">~${v}</span>`;
+  const split = r.models_agree === false
+    ? `<span class="mv-split" title="The margin model ranks ${r.margin_pick_name||'someone else'} first, while the nominee model picks a different candidate. Treat this race as unsettled.">⚠</span>` : '';
+  return `<b>${v}</b>${split}`;
+}
 const PM_COLS=[['label','Race'],['election_date','Primary'],['candidate','Candidate'],
-  ['n_polls','Polls'],['poll_avg','Poll avg'],['model','Model %'],['market','Market %'],['edge','Edge']];
+  ['n_polls','Polls'],['poll_avg','Poll avg'],['model','Model %'],['model_margin','Margin'],['market','Market %'],['edge','Edge']];
 const pmPct=v=>v==null?'<span class="mv-muted">-</span>':(100*v).toFixed(1);
 
 function pmTable(rows){
@@ -2036,6 +2053,7 @@ function pmTable(rows){
       <td class="${r.n_polls<3?'mv-lowpolls':''}">${r.n_polls}${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - the primary model is measurably overconfident below this. See the warning above the table.">▲</span>':''}</td>
       <td>${r.poll_avg==null?'<span class="mv-muted">-</span>':r.poll_avg}</td>
       <td><b>${pmPct(r.model)}</b></td>
+      <td>${pmMarg(r)}</td>
       <td>${pmPct(r.market)}${r.venue?'<span class="mv-muted" style="font-size:0.62rem;margin-left:4px">'+(r.venue==='kalshi'?'K':'P')+'</span>':''}</td>
       <td>${r.edge==null?'<span class="mv-muted">-</span>':`<span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span>`}</td>
       <td>${r.has_explain?'<button class="mv-explainbtn pm-explainbtn" data-rid="'+r.race_id+'">Explain</button>':''}</td>
