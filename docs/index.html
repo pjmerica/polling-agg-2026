@@ -379,7 +379,10 @@ tr:hover td { background: #1a2035; }
       <button class="mv-close" onclick="document.getElementById('mv-modal').style.display='none'">&times;</button>
       <h3 id="mv-etitle"></h3>
       <div class="mv-sub" id="mv-esub"></div>
-      <div class="mv-etabs">
+      <!-- id is REQUIRED: the primary modal reuses the .mv-etab class, so these selectors
+           must be scoped to this container or the two modals bind each other's buttons
+           (that bug shipped 2026-08-03 - the general modal showed only the margin block). -->
+      <div class="mv-etabs" id="mv-etabs">
         <button class="mv-etab active" data-etab="win">Winner model</button>
         <button class="mv-etab" data-etab="margin">Margin model</button>
       </div>
@@ -1903,7 +1906,7 @@ function mvOpenExplain(rid){
   document.getElementById('mv-modal').style.display = 'block';
   mvRenderExplain();
 }
-document.querySelectorAll('.mv-etab').forEach(b => b.onclick = () => {
+document.querySelectorAll('#mv-etabs .mv-etab').forEach(b => b.onclick = () => {
   mvExplainTab = b.dataset.etab; mvRenderExplain();
 });
 document.getElementById('mv-modal').onclick = e => {
@@ -1911,7 +1914,7 @@ document.getElementById('mv-modal').onclick = e => {
 };
 function mvRenderExplain(){
   const r = mvExplainRace, ex = r.explain, blk = ex[mvExplainTab];
-  document.querySelectorAll('.mv-etab').forEach(b =>
+  document.querySelectorAll('#mv-etabs .mv-etab').forEach(b =>
     b.classList.toggle('active', b.dataset.etab === mvExplainTab));
   const lbl = r.state + (r.district ? '-' + r.district : '') + ' ' +
     (r.office === 'Senate' ? 'SEN' : r.office === 'Governor' ? 'GOV' : 'H');
