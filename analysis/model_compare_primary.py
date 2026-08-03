@@ -58,10 +58,56 @@ OFFICE_FROM_CODE = {"SEN": "Senate", "H": "House", "GOV": "Governor"}
 # join, and the race then renders with market=null - looking exactly like "Kalshi has no
 # market for this race" when in fact the market exists and the names simply did not match.
 # Import the real one so the two can never diverge again.
+#
+# ...but the model repo is NOT always on disk. model-refresh.yml checks out both repos;
+# market-refresh.yml and refresh.yml check out only THIS one and still run this script (that
+# broke the 01:07Z market refresh on 2026-08-03 with ModuleNotFoundError: No module named
+# 'features'). So: import it when present, and fall back to a local copy that is kept
+# byte-identical to features.norm_name when it is not. The fallback is verified against the
+# real function whenever both are available - see the assert below, which turns a silent
+# re-drift into a loud failure on any run that CAN see the model repo.
+import re as _re  # noqa: E402
 import sys as _sys  # noqa: E402
+import unicodedata as _ud  # noqa: E402
+
+_APOS = r"\'‘’ʼʻ`´′"
+_DASH = r"\-‐‑‒–—―"
+_PUNCT_IN_WORD = _re.compile(rf"[{_APOS}\.]")
+_HYPHEN_JOIN = _re.compile(rf"\s*[{_DASH}]\s*")
+
+
+def _norm_name_local(s):
+    """Mirror of features.norm_name (model repo). Keep in sync - the assert below checks it."""
+    if s is None or (isinstance(s, float) and s != s):
+        return None
+    s = _ud.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower()
+    s = _HYPHEN_JOIN.sub("", s)
+    s = _PUNCT_IN_WORD.sub("", s)
+    s = _re.sub(r"\b(jr|sr|ii|iii|iv)\b", "", s)
+    s = _re.sub(r"[^a-z\s]", " ", s)
+    parts = [w for w in s.split() if w]
+    if not parts:
+        return None
+    last = parts[-1]
+    fi = parts[0][0] if parts[0] != last else ""
+    return f"{last} {fi}".strip()
+
+
 if MODEL_REPO not in _sys.path:
     _sys.path.insert(0, MODEL_REPO)
-from features import norm_name  # noqa: E402,F401
+try:
+    from features import norm_name  # noqa: E402
+    # Both available: prove the fallback still matches, so a future change to features.py
+    # cannot silently leave this copy behind (that drift is what this whole block fixes).
+    _probe = ["Abdul El-Sayed", "Debbie Mucarsel-Powell", "Beto O’Rourke", "Beto O'Rourke",
+              "Robert F. Kennedy Jr.", "Alexandria Ocasio-Cortez", "Andy Biggs"]
+    _bad = [n for n in _probe if norm_name(n) != _norm_name_local(n)]
+    assert not _bad, ("model_compare_primary._norm_name_local has drifted from "
+                      f"features.norm_name on: {_bad}")
+except ImportError:
+    # market-refresh.yml / refresh.yml: model repo not checked out. Use the mirror.
+    norm_name = _norm_name_local
+    print("note: model repo not on disk - using the local norm_name mirror")
 
 # Polymarket phrases candidate primary markets at least two ways:
 #   "Will Andy Biggs win the 2026 Arizona Governor Republican primary?"
