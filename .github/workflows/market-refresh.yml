@@ -63,10 +63,24 @@ jobs:
             echo "No changes."
           else
             git commit -m "market refresh: $(date -u +%Y-%m-%dT%H:%MZ)"
+            # docs/*.js are GENERATED. A bare `git pull --rebase` stops on a conflict
+            # in them and leaves the tree dirty, so every later attempt fails too (that
+            # killed both Daily refresh runs on 2026-08-03). Never merge-resolve a
+            # generated file: take either side to unstick the rebase, then REGENERATE.
+            CONFLICTABLE="docs/model_data.js docs/primary_model_data.js docs/arb_data.js"
             for i in 1 2 3; do
               if git push; then break; fi
               echo "Push rejected, rebasing on origin/master (attempt $i)…"
-              git pull --rebase origin master
+              if ! git pull --rebase origin master; then
+                git checkout --theirs $CONFLICTABLE 2>/dev/null || true
+                git add $CONFLICTABLE 2>/dev/null || true
+                GIT_EDITOR=true git rebase --continue || git rebase --abort
+              fi
+              python analysis/model_compare.py || true
+              python analysis/model_compare_primary.py || true
+              python scripts/arb_scanner.py || true
+              git add docs/ data/
+              git diff --cached --quiet || git commit -m "regen after rebase"
             done
           fi
 
