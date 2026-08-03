@@ -1915,7 +1915,7 @@ function mvRenderExplain(){
     'blue pushes toward the ' + (mvExplainTab === 'win' ? 'candidate winning' : 'candidate\u2019s margin') + ', red against';
   const fmtPct = v => (100 * v).toFixed(0) + '%';
   document.getElementById('mv-esummary').innerHTML = mvExplainTab === 'win'
-    ? `A generic race would start at <b>${fmtPct(blk.base)}</b>; the features below move ${ex.candidate} to <b>${fmtPct(blk.pred)}</b> win probability \u2014 the model's raw estimate for this candidate; the table's Model D% is the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`
+    ? `A generic race would start at <b>${fmtPct(blk.base)}</b>; the features below move ${who} to <b>${fmtPct(blk.pred)}</b> win probability \u2014 the model's raw estimate for this candidate; the table's Model D% is the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`
     : `Baseline margin <b>${blk.base > 0 ? '+' : ''}${blk.base.toFixed(1)} pts</b>; the features below move ${ex.candidate} to <b>${blk.pred > 0 ? '+' : ''}${blk.pred.toFixed(1)} pts</b> (positive = wins by that much).`;
   const feats = [...blk.feats].reverse();   // largest at top after reverse for plotly
   const wrap = (txt, w=52) => {               // word-wrap descriptions for the hover box
@@ -1984,7 +1984,20 @@ function pmRows(){
       rows.push({...c, race_id:r.race_id, label, party:r.party, office:r.office,
         election_date:r.election_date, partial_book:r.partial_book, venue:r.venue,
         low_confidence_field:r.low_confidence_field,
-        has_explain:(i===0 && !!r.explain),
+        // margin fields live on the RACE object (one margin per race), but this table renders
+        // one row per CANDIDATE - carry them down or pmMarg() sees undefined and every cell
+        // renders as the "-" placeholder. Shown only on the row of the candidate the margin
+        // model actually picks; the others get null so the column reads as one number per
+        // race rather than repeating the same value down the field.
+        model_margin:(c.candidate===r.margin_pick_name ? r.model_margin : null),
+        margin_pick_name:r.margin_pick_name,
+        models_agree:r.models_agree,
+        margin_uncontested:r.margin_uncontested,
+        // EVERY candidate now has a SHAP explanation (2026-08-03) - explain_primary.py
+        // was already computing SHAP for the whole field and discarding all but the
+        // front-runner. Fall back to the race-level block for the top row if an older
+        // explanations file (no per-candidate `candidates` array) is being served.
+        has_explain:(!!r.explain && (Array.isArray(r.explain.candidates) || i===0)),
         edge_abs:(c.edge==null?0:Math.abs(c.edge)), key:label+' '+c.candidate});
     });
   }
@@ -2056,11 +2069,11 @@ function pmTable(rows){
       <td>${pmMarg(r)}</td>
       <td>${pmPct(r.market)}${r.venue?'<span class="mv-muted" style="font-size:0.62rem;margin-left:4px">'+(r.venue==='kalshi'?'K':'P')+'</span>':''}</td>
       <td>${r.edge==null?'<span class="mv-muted">-</span>':`<span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span>`}</td>
-      <td>${r.has_explain?'<button class="mv-explainbtn pm-explainbtn" data-rid="'+r.race_id+'">Explain</button>':''}</td>
+      <td>${r.has_explain?'<button class="mv-explainbtn pm-explainbtn" data-rid="'+r.race_id+'" data-cand="'+encodeURIComponent(r.candidate)+'">Explain</button>':''}</td>
     </tr>`;}).join('');
   document.getElementById('pm-tbody').onclick = e => {
     const b = e.target.closest('.pm-explainbtn');
-    if (b) pmOpenExplain(b.dataset.rid);
+    if (b) pmOpenExplain(b.dataset.rid, b.dataset.cand ? decodeURIComponent(b.dataset.cand) : null);
   };
   document.querySelectorAll('#pm-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; pmSortDir=(pmSortCol===c)?-pmSortDir:-1; pmSortCol=c; renderPmTab();});
@@ -2089,17 +2102,28 @@ document.getElementById('pm-reliable').onchange=e=>{pmReliableOnly=e.target.chec
 document.querySelector('[data-tab="pmodel"]').addEventListener('click',()=>setTimeout(renderPmTab,0));
 
 // ── per-race SHAP explain modal (primary nominee model) ──
-function pmOpenExplain(rid){
+function pmOpenExplain(rid, candName){
   const r = PRIMARY_COMPARE.races.find(x => x.race_id === rid);
   if (!r || !r.explain) return;
-  const ex = r.explain, blk = ex.win;
+  const ex = r.explain;
+  // Per-candidate explanations (2026-08-03). `ex.candidates` is ordered by model probability
+  // and each entry carries its own SHAP block; `ex.win` remains the front-runner's block so
+  // an older explanations file still renders. If the requested candidate is not in the array
+  // (name mismatch), fall back to the headline rather than showing nothing.
+  let who = ex.candidate, blk = ex.win, mdl = null;
+  if (candName && Array.isArray(ex.candidates)) {
+    const hit = ex.candidates.find(c => c.candidate === candName);
+    if (hit) { who = hit.candidate; blk = hit.win; mdl = hit.model; }
+  }
   document.getElementById('pm-modal').style.display = 'block';
   const ob = r.office==='Senate'?'SEN':r.office==='Governor'?'GOV':'H';
   const lbl = r.state + (r.district ? '-' + r.district : '') + ' ' + ob + ' ' +
     (r.party==='DEM' ? 'Democratic' : 'Republican') + ' primary';
   document.getElementById('pm-etitle').textContent = 'Why the model predicts the ' + lbl;
+  const isTop = (who === ex.candidate);
   document.getElementById('pm-esub').textContent =
-    'Explaining ' + ex.candidate + ' (predicted nominee) · top 10 drivers by SHAP value · blue pushes toward winning the nomination, red against';
+    'Explaining ' + who + (isTop ? ' (predicted nominee)' : ' (not the model’s pick)')
+    + ' · top 10 drivers by SHAP value · blue pushes toward winning the nomination, red against';
   const fmtPct = v => (100 * v).toFixed(0) + '%';
   document.getElementById('pm-esummary').innerHTML =
     `A generic primary candidate would start at <b>${fmtPct(blk.base)}</b>; the features below move ${ex.candidate} to <b>${fmtPct(blk.pred)}</b> nominee probability — the raw estimate; the table shows the race-normalized version. (Bars are in log-odds; direction and relative size are what matter.)`;
