@@ -834,21 +834,42 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // Cleared when the user types in the search box or clicks "show all polls".
 let rawPinnedRaceId = null;
 let rawPinnedStateAbbrev = null;
+//   rawPinnedStage / rawPinnedParty — narrow a pinned race to ONE contest, set when
+//   arriving from a model tab's Polls cell (general -> stage 'general'; primary ->
+//   stage 'primary' + that row's party). Cleared alongside the other pins.
+let rawPinnedStage = null;
+let rawPinnedParty = null;
 
-function filterToRace(raceId) {
-  if (!raceId) return;
-  rawPinnedRaceId = raceId;
+// ONE place that drops every pin. Every clear-path calls this - adding a pin above
+// and forgetting one of the four clear sites would leave a stale contest filter
+// silently hiding polls.
+function clearRawPins() {
+  rawPinnedRaceId = null;
   rawPinnedStateAbbrev = null;
+  rawPinnedStage = null;
+  rawPinnedParty = null;
+}
+
+function filterToRace(raceId, contest) {
+  if (!raceId) return;
+  contest = contest || {};
+  clearRawPins();
+  rawPinnedRaceId = raceId;
+  rawPinnedStage = contest.stage || null;
+  rawPinnedParty = contest.party || null;
   resetRawSearchUI();
-  showPinnedBanner(`race <strong>${raceId}</strong>`);
+  const what = rawPinnedParty ? `${rawPinnedParty} primary`
+             : rawPinnedStage ? `${rawPinnedStage} election`
+             : 'race';
+  showPinnedBanner(`${what} <strong>${raceId}</strong>`);
   activateTab('raw');
   renderRawPolls();
 }
 
 function filterToState(stateAbbrev, stateName) {
   if (!stateAbbrev) return;
+  clearRawPins();
   rawPinnedStateAbbrev = stateAbbrev;
-  rawPinnedRaceId = null;
   resetRawSearchUI();
   const label = stateName ? `${stateName} (${stateAbbrev})` : stateAbbrev;
   showPinnedBanner(`<strong>${label}</strong> polls`);
@@ -885,8 +906,7 @@ function showPinnedBanner(subjectHtml) {
   b.innerHTML = `Showing only ${subjectHtml} · <a href="#" id="raw-clear-pin" style="color:#60a5fa;text-decoration:none">show all polls</a>`;
   document.getElementById('raw-clear-pin').addEventListener('click', e => {
     e.preventDefault();
-    rawPinnedRaceId = null;
-    rawPinnedStateAbbrev = null;
+    clearRawPins();
     b.remove();
     renderRawPolls();
   });
@@ -1448,6 +1468,19 @@ function rawFilter() {
     // that would let "WA" hit a pollster name or a candidate surname.
     if (rawPinnedRaceId && p.race_id !== rawPinnedRaceId) return false;
     if (rawPinnedStateAbbrev && p.state_abbrev !== rawPinnedStateAbbrev) return false;
+    // Contest pins, set when arriving from a model tab's Polls cell. A seat's race_id
+    // covers BOTH parties' primaries AND the general, so pinning the race alone shows
+    // far more polls than the model counted. These narrow to the one contest.
+    // rawPinnedStage matches the stage prefix so "primary" also keeps "primary runoff".
+    if (rawPinnedStage && !String(p.stage||'').startsWith(rawPinnedStage)) return false;
+    if (rawPinnedParty) {
+      // Keep any primary poll that tested at least one candidate of the pinned party.
+      // NOT "single-party only": an unopposed candidate (AZ-GOV DEM = Katie Hobbs alone)
+      // only ever appears in cross-party ballot tests, and requiring a pure DEM field
+      // dropped all 12 of her polls to zero.
+      const parties = (p.candidates||[]).map(c => c.party);
+      if (!parties.includes(rawPinnedParty)) return false;
+    }
     if (rawOffice !== 'ALL' && p.office !== rawOffice) return false;
     if (rawState !== 'ALL' && p.state_abbrev !== rawState) return false;
     if (rawPop !== 'ALL' && String(p.population||'').toLowerCase() !== rawPop) return false;
@@ -1536,8 +1569,7 @@ document.getElementById('raw-search').addEventListener('input', debounce(e => {
   // Typing in the search box clears any pinned filter so the user can
   // go back to free-text search without first hitting "show all polls".
   if (rawPinnedRaceId || rawPinnedStateAbbrev) {
-    rawPinnedRaceId = null;
-    rawPinnedStateAbbrev = null;
+    clearRawPins();
     const b = document.getElementById('raw-pinned-banner');
     if (b) b.remove();
   }
@@ -1549,8 +1581,7 @@ document.getElementById('raw-source').addEventListener('change', e => {
   // filters (which don't carry over meaningfully). Office is hidden
   // in 'other' mode via CSS toggled below.
   RAW_POLLS = (e.target.value === 'other') ? RAW_POLLS_OTHER : RAW_POLLS_RACES;
-  rawPinnedRaceId = null;
-  rawPinnedStateAbbrev = null;
+  clearRawPins();
   rawOffice = 'ALL';
   rawStage = 'ALL';
   document.getElementById('raw-office').value = 'ALL';
@@ -1761,8 +1792,11 @@ function plKey(r){
 // Jump to the Raw Polls tab pinned to this race. filterToRace() already keys on the
 // same "2026-H-TX-28" / "2026-SEN-MI" shape plKey() builds, and it clears the search,
 // office, state and recency filters so nothing hides the pinned race's polls.
-function plOpen(key){
-  if (key) filterToRace(key);
+// contest: {stage:'general'} from the general tab, {stage:'primary', party:'DEM'}
+// from the primary tab - so the pinned view shows the ONE contest the model scored,
+// not every poll ever taken for the seat.
+function plOpen(key, contest){
+  if (key) filterToRace(key, contest);
 }
 // Rendered when the "reliable only (4+ polls)" gate is switched OFF, i.e. the table is now
 // showing races the models are measurably worse at. Source for the numbers:
@@ -1893,7 +1927,7 @@ function mvTable(rows){
     const b = e.target.closest('.mv-explainbtn');
     if (b) { mvOpenExplain(b.dataset.rid); return; }
     const p = e.target.closest('.pollcell');
-    if (p) plOpen(p.dataset.plkey);
+    if (p) plOpen(p.dataset.plkey, {stage:'general'});
   };
   document.querySelectorAll('#mv-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; mvSortDir=(mvSortCol===c)?-mvSortDir:-1; mvSortCol=c; renderModelTab();});
@@ -2112,7 +2146,7 @@ function pmTable(rows){
     const b = e.target.closest('.pm-explainbtn');
     if (b) { pmOpenExplain(b.dataset.rid, b.dataset.cand ? decodeURIComponent(b.dataset.cand) : null); return; }
     const p = e.target.closest('.pollcell');
-    if (p) plOpen(p.dataset.plkey);
+    if (p) plOpen(p.dataset.plkey, {stage:'primary', party:p.dataset.plparty});
   };
   document.querySelectorAll('#pm-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; pmSortDir=(pmSortCol===c)?-pmSortDir:-1; pmSortCol=c; renderPmTab();});
