@@ -2053,6 +2053,10 @@ function pmRows(){
       // show the top 3 model candidates so the table stays readable.
       if (r.venue ? c.edge==null : i>=3) return;
       rows.push({...c, race_id:r.race_id, label, party:r.party, office:r.office,
+        // state/district are needed by plKey() to build the poll-drill-down race key.
+        // They live on the RACE object; without carrying them down the key came out as
+        // "2026-GOV-undefined" and the pinned view showed nothing.
+        state:r.state, district:r.district,
         election_date:r.election_date, partial_book:r.partial_book, venue:r.venue,
         low_confidence_field:r.low_confidence_field,
         // margin fields live on the RACE object (one margin per race), but this table renders
