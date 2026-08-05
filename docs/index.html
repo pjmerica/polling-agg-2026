@@ -334,6 +334,9 @@ tr:hover td { background: #1a2035; }
     #mv-modal h3 { color:#f1f5f9; font-size:1.05rem; margin-bottom:2px; }
     #mv-modal .mv-sub { color:#64748b; font-size:0.78rem; margin-bottom:12px; }
     #mv-modal .mv-close { position:absolute; top:12px; right:16px; background:none; border:none; color:#64748b; font-size:1.3rem; cursor:pointer; }
+    /* ---- poll drill-down: click the Polls cell to jump to Raw Polls for that race ---- */
+    .pollcell { cursor:pointer; text-decoration:underline dotted rgba(148,163,184,0.5); text-underline-offset:3px; }
+    .pollcell:hover { color:#8ea2ff; }
     .mv-etabs { display:flex; gap:0; margin-bottom:10px; border-bottom:1px solid #1e2433; }
     .mv-etab { padding:8px 18px; background:none; border:none; color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; }
     .mv-etab.active { color:#8ea2ff; border-bottom-color:#4f6ef7; }
@@ -390,6 +393,7 @@ tr:hover td { background: #1a2035; }
       <div id="mv-explain-chart" style="height:420px"></div>
     </div>
   </div>
+
 
   </div>
 </div>
@@ -1738,6 +1742,28 @@ renderPrimaries();
 // Threshold lives HERE, at module scope, so BOTH tab IIFEs can read it. (It was briefly
 // declared inside the general tab's IIFE, which made the primary tab's filter throw.)
 const RELIABLE_MIN_POLLS = 4;
+
+// ════════════════ POLL DRILL-DOWN (shared by both model tabs) ════════════════
+// Clicking the Polls cell jumps to Raw Polls pinned to that race. Declared at module
+// scope for the same reason RELIABLE_MIN_POLLS is - both tab IIFEs call it.
+//
+// The model tabs and the poll feeds use different race_id shapes. General rows already
+// carry market_race_id ("2026-H-TX-28"); primary rows must build it from parts.
+// Verified 2026-08-05: all 68 general + 67 primary keys resolve to >=1 raw poll.
+function plKey(r){
+  if (r.market_race_id) return r.market_race_id;
+  const o = r.office === 'Senate' ? 'SEN' : r.office === 'Governor' ? 'GOV' : 'H';
+  return o === 'H'
+    ? `2026-H-${r.state}-${String(r.district).padStart(2,'0')}`
+    : `2026-${o}-${r.state}`;
+}
+
+// Jump to the Raw Polls tab pinned to this race. filterToRace() already keys on the
+// same "2026-H-TX-28" / "2026-SEN-MI" shape plKey() builds, and it clears the search,
+// office, state and recency filters so nothing hides the pinned race's polls.
+function plOpen(key){
+  if (key) filterToRace(key);
+}
 // Rendered when the "reliable only (4+ polls)" gate is switched OFF, i.e. the table is now
 // showing races the models are measurably worse at. Source for the numbers:
 // analysis/poll_volume_breakpoint.ipynb in the model repo - expanding-window held-out
@@ -1854,7 +1880,7 @@ function mvTable(rows){
     return `<tr class="${r.models_agree===false?'mv-splitrow':''}${thin?' thin-row':''}">
       <td><span class="mv-badge ${ob}">${ob}</span><b>${r.state}${r.district?'-'+r.district:''}</b> <span class="mv-cand"><span class="mv-dem">${r.dem_name||'?'}${r.dem_display && r.dem_display!=='DEM' ? ' ('+r.dem_display[0]+')' : ''}</span> v <span class="mv-rep">${r.rep_name||'?'}</span></span>${r.redistricted?'<span class="mv-split" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="District redrawn in the 2025-26 mid-decade redistricting - prior-margin and incumbency fundamentals describe OLD boundaries. Extra suspicion warranted.">↺ REDRAWN</span>':''}${r.bias_fragile?'<span class="mv-split" style="background:rgba(250,204,21,0.15);color:#facc15" title="Pick flips under a +/-3pt national poll shift - poll errors are cycle-correlated, so treat as no-edge.">≈ FRAGILE</span>':''}${r.unresolved_field?'<span class="mv-split" style="background:rgba(167,139,250,0.15);color:#a78bfa" title="More than one same-party candidate still in the poll feed (leftover hypothetical primary matchups). Model % shown is the LEADING matchup only - treat the edge with suspicion until the field settles.">? FIELD</span>':''}${r.slot_market==='IND'?'<span class="mv-split" style="background:rgba(45,212,191,0.15);color:#2dd4bf" title="This candidate is an independent, so the market price shown is the INDEPENDENT-win market (not the Democratic-party market - that is a different event).">I MKT</span>':''}${split}</td>
       <td>${r.primary_date||'-'}</td>
-      <td class="${r.n_polls<5?'mv-lowpolls':''}">${r.n_polls}${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - below the reliability threshold. See the warning above the table.">▲</span>':''}</td>
+      <td class="${r.n_polls<5?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - below the reliability threshold. See the warning above the table.">▲</span>':''}</td>
       <td><b>${mvPct(r.model_dem)}</b></td>
       <td>${mvPct(r.market)}</td>
       <td><span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span></td>
@@ -1865,7 +1891,9 @@ function mvTable(rows){
     </tr>`;}).join('');
   document.getElementById('mv-tbody').onclick = e => {
     const b = e.target.closest('.mv-explainbtn');
-    if (b) mvOpenExplain(b.dataset.rid);
+    if (b) { mvOpenExplain(b.dataset.rid); return; }
+    const p = e.target.closest('.pollcell');
+    if (p) plOpen(p.dataset.plkey);
   };
   document.querySelectorAll('#mv-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; mvSortDir=(mvSortCol===c)?-mvSortDir:-1; mvSortCol=c; renderModelTab();});
@@ -2072,7 +2100,7 @@ function pmTable(rows){
       <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}${lc}</td>
       <td>${r.election_date||'-'}</td>
       <td>${r.candidate}</td>
-      <td class="${r.n_polls<3?'mv-lowpolls':''}">${r.n_polls}${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - the primary model is measurably overconfident below this. See the warning above the table.">▲</span>':''}</td>
+      <td class="${r.n_polls<3?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob} (${r.party})" data-plparty="${r.party}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - the primary model is measurably overconfident below this. See the warning above the table.">▲</span>':''}</td>
       <td>${r.poll_avg==null?'<span class="mv-muted">-</span>':r.poll_avg}</td>
       <td><b>${pmPct(r.model)}</b></td>
       <td>${pmMarg(r)}</td>
@@ -2082,7 +2110,9 @@ function pmTable(rows){
     </tr>`;}).join('');
   document.getElementById('pm-tbody').onclick = e => {
     const b = e.target.closest('.pm-explainbtn');
-    if (b) pmOpenExplain(b.dataset.rid, b.dataset.cand ? decodeURIComponent(b.dataset.cand) : null);
+    if (b) { pmOpenExplain(b.dataset.rid, b.dataset.cand ? decodeURIComponent(b.dataset.cand) : null); return; }
+    const p = e.target.closest('.pollcell');
+    if (p) plOpen(p.dataset.plkey);
   };
   document.querySelectorAll('#pm-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; pmSortDir=(pmSortCol===c)?-pmSortDir:-1; pmSortCol=c; renderPmTab();});
