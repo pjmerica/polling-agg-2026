@@ -74,14 +74,18 @@ STATE_ABBREV_MAP = {
 
 RETRY_CODES = {403, 408, 429, 500, 502, 503, 504}
 
-def _get(path: str, params: dict = None, max_retries: int = 6) -> dict:
+def _get(path: str, params: dict = None, max_retries: int = 10) -> dict:
     url = f"{KALSHI_BASE}{path}"
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{url}?{qs}"
-    # Backoff schedule: 5, 10, 20, 40, 60, 60s. Kalshi's WAF sometimes
-    # blocks for 30-60s after a burst of 403s; shorter backoffs blew
-    # through the budget without ever waiting long enough to clear.
+    # Backoff schedule: 5, 10, 20, 40, 60, 60, 60, 60, 60s (10 attempts, ~6.5 min of
+    # waiting). Kalshi's WAF sometimes blocks for 30-60s after a burst of 403s; shorter
+    # backoffs blew through the budget without ever waiting long enough to clear.
+    # Raised from 6 attempts 2026-08-05: Kalshi is the PREFERRED venue, so it is worth
+    # waiting several extra minutes rather than losing a refresh cycle's prices. Two runs
+    # in ~24h had exhausted the 6-attempt (~3 min) budget and failed the whole job.
+    # The 30-minute workflow timeout is the outer bound; this stays well inside it.
     for attempt in range(max_retries):
         req = urllib.request.Request(url, headers=HEADERS)
         try:

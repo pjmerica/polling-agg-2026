@@ -861,7 +861,17 @@ function filterToRace(raceId, contest) {
   const what = rawPinnedParty ? `${rawPinnedParty} primary`
              : rawPinnedStage ? `${rawPinnedStage} election`
              : 'race';
-  showPinnedBanner(`${what} <strong>${raceId}</strong>`);
+  // Reconciliation note. The pinned view lists RAW poll rows; the model's Polls column
+  // counts DISTINCT SURVEYS (pollster + end date) that survived its own filtering -
+  // stale-candidate drops, the dropped-out list, junk-answer removal. Those two numbers
+  // routinely differ (MI-GOV: 23 vs 27), and without saying so the drill-down reads as
+  // "the model ignored polls". contest.modelPolls is the count the user just clicked.
+  const note = (contest.modelPolls != null)
+    ? ` &middot; <span style="color:#64748b">model counts <strong>${contest.modelPolls}</strong> `
+      + `distinct survey${contest.modelPolls === 1 ? '' : 's'} after its own filtering; `
+      + `the rows below are every scraped poll</span>`
+    : '';
+  showPinnedBanner(`${what} <strong>${raceId}</strong>${note}`);
   activateTab('raw');
   renderRawPolls();
 }
@@ -1914,7 +1924,7 @@ function mvTable(rows){
     return `<tr class="${r.models_agree===false?'mv-splitrow':''}${thin?' thin-row':''}">
       <td><span class="mv-badge ${ob}">${ob}</span><b>${r.state}${r.district?'-'+r.district:''}</b> <span class="mv-cand"><span class="mv-dem">${r.dem_name||'?'}${r.dem_display && r.dem_display!=='DEM' ? ' ('+r.dem_display[0]+')' : ''}</span> v <span class="mv-rep">${r.rep_name||'?'}</span></span>${r.redistricted?'<span class="mv-split" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="District redrawn in the 2025-26 mid-decade redistricting - prior-margin and incumbency fundamentals describe OLD boundaries. Extra suspicion warranted.">↺ REDRAWN</span>':''}${r.bias_fragile?'<span class="mv-split" style="background:rgba(250,204,21,0.15);color:#facc15" title="Pick flips under a +/-3pt national poll shift - poll errors are cycle-correlated, so treat as no-edge.">≈ FRAGILE</span>':''}${r.unresolved_field?'<span class="mv-split" style="background:rgba(167,139,250,0.15);color:#a78bfa" title="More than one same-party candidate still in the poll feed (leftover hypothetical primary matchups). Model % shown is the LEADING matchup only - treat the edge with suspicion until the field settles.">? FIELD</span>':''}${r.slot_market==='IND'?'<span class="mv-split" style="background:rgba(45,212,191,0.15);color:#2dd4bf" title="This candidate is an independent, so the market price shown is the INDEPENDENT-win market (not the Democratic-party market - that is a different event).">I MKT</span>':''}${split}</td>
       <td>${r.primary_date||'-'}</td>
-      <td class="${r.n_polls<5?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - below the reliability threshold. See the warning above the table.">▲</span>':''}</td>
+      <td class="${r.n_polls<5?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-plnpolls="${r.n_polls}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - below the reliability threshold. See the warning above the table.">▲</span>':''}</td>
       <td><b>${mvPct(r.model_dem)}</b></td>
       <td>${mvPct(r.market)}</td>
       <td><span class="${r.edge>0?'mv-pos':'mv-neg'}">${r.edge>0?'+':''}${(100*r.edge).toFixed(1)}</span></td>
@@ -1927,7 +1937,7 @@ function mvTable(rows){
     const b = e.target.closest('.mv-explainbtn');
     if (b) { mvOpenExplain(b.dataset.rid); return; }
     const p = e.target.closest('.pollcell');
-    if (p) plOpen(p.dataset.plkey, {stage:'general'});
+    if (p) plOpen(p.dataset.plkey, {stage:'general', modelPolls:+p.dataset.plnpolls});
   };
   document.querySelectorAll('#mv-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; mvSortDir=(mvSortCol===c)?-mvSortDir:-1; mvSortCol=c; renderModelTab();});
@@ -2138,7 +2148,7 @@ function pmTable(rows){
       <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}${lc}</td>
       <td>${r.election_date||'-'}</td>
       <td>${r.candidate}</td>
-      <td class="${r.n_polls<3?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob} (${r.party})" data-plparty="${r.party}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - the primary model is measurably overconfident below this. See the warning above the table.">▲</span>':''}</td>
+      <td class="${r.n_polls<3?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-plnpolls="${r.n_polls}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob} (${r.party})" data-plparty="${r.party}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - the primary model is measurably overconfident below this. See the warning above the table.">▲</span>':''}</td>
       <td>${r.poll_avg==null?'<span class="mv-muted">-</span>':r.poll_avg}</td>
       <td><b>${pmPct(r.model)}</b></td>
       <td>${pmMarg(r)}</td>
@@ -2150,7 +2160,7 @@ function pmTable(rows){
     const b = e.target.closest('.pm-explainbtn');
     if (b) { pmOpenExplain(b.dataset.rid, b.dataset.cand ? decodeURIComponent(b.dataset.cand) : null); return; }
     const p = e.target.closest('.pollcell');
-    if (p) plOpen(p.dataset.plkey, {stage:'primary', party:p.dataset.plparty});
+    if (p) plOpen(p.dataset.plkey, {stage:'primary', party:p.dataset.plparty, modelPolls:+p.dataset.plnpolls});
   };
   document.querySelectorAll('#pm-thead th').forEach(th=>th.onclick=()=>{
     const c=th.dataset.col; pmSortDir=(pmSortCol===c)?-pmSortDir:-1; pmSortCol=c; renderPmTab();});

@@ -47,6 +47,15 @@ else:
 # fall back to whatever's already on disk.
 NON_FATAL = {"Wikipedia polls"}
 
+# INDEPENDENT SOURCES: one venue going down must not stop the others from being
+# scraped. These used to sys.exit() on the first failure, so a Kalshi 403 (its WAF
+# blocks past the full 5->60s retry budget a couple of times a week) meant Polymarket
+# was never scraped either and the dashboard held BOTH venues' prices until the next
+# run ~2h later. Now a failure here is recorded, the remaining steps still run, and
+# the run still exits non-zero at the end so CI shows red.
+DEFERRED_FAIL = {"Kalshi scraper", "Polymarket scraper"}
+
+failures = []
 for name, cmd in steps:
     print(f"\n{'='*60}\n{name}\n{'='*60}", flush=True)
     result = subprocess.run(cmd, cwd=str(ROOT))
@@ -54,7 +63,17 @@ for name, cmd in steps:
         if name in NON_FATAL:
             print(f"WARN: {name} failed with exit code {result.returncode} (non-fatal, continuing)", flush=True)
             continue
+        if name in DEFERRED_FAIL:
+            print(f"ERROR: {name} failed with exit code {result.returncode} "
+                  f"(continuing so the other venue still refreshes; run will exit non-zero)",
+                  flush=True)
+            failures.append((name, result.returncode))
+            continue
         print(f"ERROR: {name} failed with exit code {result.returncode}", flush=True)
         sys.exit(result.returncode)
+
+if failures:
+    print(f"\nFAILED: {', '.join(n for n, _ in failures)}", flush=True)
+    sys.exit(failures[0][1])
 
 print("\nAll done.", flush=True)
