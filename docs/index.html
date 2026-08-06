@@ -2143,9 +2143,10 @@ function pmTable(rows){
     const pchip=r.party==='DEM'?'<span class="mv-dem">(D)</span>':'<span class="mv-rep">(R)</span>';
     const pb=r.partial_book?'<span class="mv-split" title="The market book for this race sums to well under 100% - quotes are raw, not vig-normalized. Edges less reliable.">PARTIAL BOOK</span>':'';
     const lc=r.low_confidence_field?'<span class="mv-split" title="The model has no strong opinion about ANY candidate here (raw probabilities across the field sum to well under 1) - normalizing to 100% still picks a leader, but treat it as a best guess among weak options, not a confident pick.">WEAK FIELD</span>':'';
+    const st=r.stale_polling?`<span class="mv-split" style="background:rgba(249,115,22,0.15);color:#fb923c" title="Newest poll for this race is ${r.poll_age_days} days old. The model is scoring a snapshot of a field that may have changed since - candidates withdraw, new ones enter. This is the pattern behind the model's most confident misses (a withdrawn candidate held 99% in CT-Gov-REP off a 357-day-old survey).">STALE ${r.poll_age_days}d</span>`:'';
     const thin=(r.n_polls||0)<4;
     return `<tr class="${thin?'thin-row':''}">
-      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}${lc}</td>
+      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.label.replace(' '+ob,'').replace(' (D)','').replace(' (R)','')}</b> ${pchip}${pb}${lc}${st}</td>
       <td>${r.election_date||'-'}</td>
       <td>${r.candidate}</td>
       <td class="${r.n_polls<3?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-plnpolls="${r.n_polls}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob} (${r.party})" data-plparty="${r.party}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - the primary model is measurably overconfident below this. See the warning above the table.">▲</span>':''}</td>

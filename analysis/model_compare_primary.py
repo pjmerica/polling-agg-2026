@@ -380,6 +380,16 @@ def main():
                               if "field_confidence" in g.columns else None),
             low_confidence_field=bool(g["low_confidence_field"].iloc[0])
                                  if "low_confidence_field" in g.columns else False,
+            # Poll AGE, distinct from poll COUNT. A single poll from last week and a single
+            # poll from last September both read as n_polls=1, but only the second one lets
+            # the field change underneath the model - CT-Gov-REP scored a candidate who had
+            # withdrawn in May at 99% off a 357-day-old survey. stale_polling = no poll in
+            # the last 90 days.
+            poll_age_days=(int(g["poll_age_days"].iloc[0])
+                           if "poll_age_days" in g.columns
+                           and pd.notna(g["poll_age_days"].iloc[0]) else None),
+            stale_polling=bool(g["stale_polling"].iloc[0])
+                          if "stale_polling" in g.columns else False,
             candidates=sorted(cands, key=lambda c: -c["model"]),
         ))
     # market races first; within them thin-poll races (n_polls < 3) sort BELOW everything
