@@ -216,6 +216,11 @@ def process_office(df_raw: pd.DataFrame, office_type: str, today: date) -> pd.Da
                        .fillna("").astype(str).str.strip().str.lower()),
         "poll_id": df["poll_id"],
         "question_id": df["question_id"],
+        # Link to the poll's own source - the pollster's release, a PDF of the toplines,
+        # or the writeup that broke it. 100% populated on the 2026 slice. The dedicated
+        # url_topline / url_crosstab columns exist in the NYT schema but are entirely
+        # empty, so this general `url` is the only linkable source available.
+        "url": df.get("url", pd.Series("", index=df.index)).fillna(""),
     })
     return out
 

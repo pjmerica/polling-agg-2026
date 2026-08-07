@@ -335,6 +335,9 @@ tr:hover td { background: #1a2035; }
     #mv-modal .mv-sub { color:#64748b; font-size:0.78rem; margin-bottom:12px; }
     #mv-modal .mv-close { position:absolute; top:12px; right:16px; background:none; border:none; color:#64748b; font-size:1.3rem; cursor:pointer; }
     /* ---- poll drill-down: click the Polls cell to jump to Raw Polls for that race ---- */
+.poll-src { color:inherit; text-decoration:none; border-bottom:1px dotted rgba(148,163,184,0.45); }
+    .poll-src:hover { color:#8ea2ff; border-bottom-color:#8ea2ff; }
+    .poll-src-icon { font-size:0.7em; opacity:0.5; margin-left:3px; vertical-align:super; }
     .pollcell { cursor:pointer; text-decoration:underline dotted rgba(148,163,184,0.5); text-underline-offset:3px; }
     .pollcell:hover { color:#8ea2ff; }
     .mv-etabs { display:flex; gap:0; margin-bottom:10px; border-bottom:1px solid #1e2433; }
@@ -1179,7 +1182,9 @@ function renderPollDetail() {
     }).join('');
     return `<div class="poll-card${p.any_over50?' has-flag':''}">
       <div class="poll-header">
-        <div><div class="poll-pollster">${p.pollster}</div><div class="poll-meta">${p.end_date}${p.sample_size?' · n='+p.sample_size.toLocaleString():''}</div></div>
+        <div><div class="poll-pollster">${p.url
+          ? `<a href="${p.url}" target="_blank" rel="noopener noreferrer" class="poll-src" title="Open the source for this poll">${p.pollster}<span class="poll-src-icon">↗</span></a>`
+          : p.pollster}</div><div class="poll-meta">${p.end_date}${p.sample_size?' · n='+p.sample_size.toLocaleString():''}</div></div>
         <div class="poll-badges">
           <span class="mini-badge stage">${p.stage}</span>
           ${p.partisan?'<span class="mini-badge partisan">Partisan</span>':''}
@@ -1550,7 +1555,9 @@ function renderRawPolls() {
         <td style="white-space:nowrap;color:#cbd5e1">${p.end_date || '—'}${flag}</td>
         <td data-race-id="${p.race_id}" style="cursor:pointer" title="Show all polls for this race"><span class="badge ${p.office}">${p.office}</span> ${p.race_label}</td>
         <td><span class="mini-badge stage">${p.stage || '—'}</span>${p.partisan_lean ? ` <span class="mini-badge partisan" title="Pollster leans ${({D:'Democratic',R:'Republican',I:'Independent/nonpartisan'})[p.partisan_lean]||p.partisan_lean}">${p.partisan_lean}-lean</span>` : ''}${p.population ? ` <span class="mini-badge pop" title="${({lv:'Likely voters',rv:'Registered voters',a:'All adults',v:'Voters'})[p.population] || p.population}">${p.population.toUpperCase()}</span>` : ''}</td>
-        <td style="color:#e2e8f0">${p.pollster || '—'}</td>
+        <td style="color:#e2e8f0">${p.url
+          ? `<a href="${p.url}" target="_blank" rel="noopener noreferrer" class="poll-src" title="Open the source for this poll (pollster release, topline PDF, or writeup)">${p.pollster || '—'}<span class="poll-src-icon">↗</span></a>`
+          : (p.pollster || '—')}</td>
         <td style="color:#94a3b8">${p.sample_size ? p.sample_size.toLocaleString() : '—'}</td>
         <td><div class="raw-cands">${cands}</div></td>
       </tr>

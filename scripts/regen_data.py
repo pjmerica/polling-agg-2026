@@ -216,6 +216,10 @@ for race_id, rdf in _race_polls.groupby('race_id'):
             # surveyed population: LV likely voters / RV registered / A adults / V voters
             'population': (str(row0.get('population', '')).lower()
                            if str(row0.get('population', '')) not in ('nan', 'None') else ''),
+            # Link to the poll's own source (pollster release / topline PDF / writeup).
+            # NYT-sourced rows only - the Wikipedia scraper reads polling tables and does
+            # not parse their reference column, so those come through empty.
+            'url': (str(row0.get('url', '')) if str(row0.get('url', '')).startswith('http') else ''),
             'candidates': cands, 'any_over50': any(c['over50'] for c in cands),
         })
     poll_list.sort(key=lambda p: p['end_date_iso'], reverse=True)
@@ -286,6 +290,7 @@ if not other.empty:
             'end_date_iso': str(row0['end_date_iso']),
             'sample_size': int(row0['sample_size']) if str(row0['sample_size']) not in ('nan', '') else None,
             'partisan': str(row0['partisan']) if str(row0['partisan']) != 'nan' else '',
+            'url': (str(row0.get('url', '')) if str(row0.get('url', '')).startswith('http') else ''),
             'candidates': cands,
         })
 

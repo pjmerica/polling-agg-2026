@@ -474,6 +474,11 @@ def parse_poll_table(table, race_id: str, stage: str, default_party: str = "") -
                 "population": population,
                 "poll_id": poll_id,
                 "question_id": question_id,
+                # No per-poll source link: these are scraped from Wikipedia's polling
+                # TABLES, whose reference column is not parsed. Emitted empty so both
+                # feeds share one schema and the dedup/merge in predict.py does not have
+                # to special-case a missing column.
+                "url": "",
             })
 
     return rows_out
