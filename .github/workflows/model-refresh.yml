@@ -65,7 +65,9 @@ jobs:
 
       - name: Predict + explain + compare (all three models)
         working-directory: 'Polling prediction model'
-        run: python -u refresh_dashboard.py --no-feeds
+        # src/refresh_dashboard.py since the 2026-08-08 reorganisation. The repo also keeps
+        # a root-level shim at the old path, so this works against either checkout.
+        run: python -u src/refresh_dashboard.py --no-feeds
 
       - name: Commit and push predictions
         working-directory: 'Polling Agg/Polling agg and Prediction markets'
@@ -101,9 +103,18 @@ jobs:
               fi
               # our model outputs win; refresh_dashboard already copied them, but a
               # --theirs above may have clobbered them - recopy from the model checkout
-              cp ../../"Polling prediction model"/predictions_2026.csv \
+              # predictions moved into outputs/ on 2026-08-08. Try there first, then the
+              # legacy root path, so this loop works against EITHER layout of the model
+              # repo - the two repos are checked out independently and can sit at
+              # different commits while a change rolls out.
+              M='../../Polling prediction model'
+              cp "$M/outputs/predictions_2026.csv" \
+                 data/processed/model_predictions_2026.csv 2>/dev/null \
+                || cp "$M/predictions_2026.csv" \
                  data/processed/model_predictions_2026.csv 2>/dev/null || true
-              cp ../../"Polling prediction model"/primary_predictions_2026.csv \
+              cp "$M/outputs/primary_predictions_2026.csv" \
+                 data/processed/model_primary_predictions_2026.csv 2>/dev/null \
+                || cp "$M/primary_predictions_2026.csv" \
                  data/processed/model_primary_predictions_2026.csv 2>/dev/null || true
               python analysis/model_compare.py
               python analysis/model_compare_primary.py

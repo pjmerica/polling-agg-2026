@@ -25,6 +25,13 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 MODEL_REPO = os.path.join(REPO, "..", "..", "Polling prediction model")
+# The model repo reorganised on 2026-08-08: shared modules moved to src/ and generated
+# predictions to outputs/. Both spellings are searched so this repo keeps working against an
+# OLD checkout of the model repo too (the two repos are cloned separately by CI and can be at
+# different commits mid-rollout) - a missing path here fails SILENTLY into a fallback, which
+# is how the norm_name drift-assert quietly stopped running the first time.
+MODEL_SRC = os.path.join(MODEL_REPO, "src")
+MODEL_OUT = os.path.join(MODEL_REPO, "outputs")
 
 def _first_existing(*paths):
     for p in paths:
@@ -36,9 +43,11 @@ def _first_existing(*paths):
 # its own); the sibling model-repo outputs are the fallback for local runs.
 DEFAULT_PREDS = _first_existing(
     os.path.join(REPO, "data", "processed", "model_predictions_2026.csv"),
+    os.path.join(MODEL_OUT, "predictions_2026.csv"),
     os.path.join(MODEL_REPO, "predictions_2026.csv"))
 DEFAULT_MARGIN_PREDS = _first_existing(
     os.path.join(REPO, "data", "processed", "model_margin_predictions_2026.csv"),
+    os.path.join(MODEL_OUT, "margin_predictions_2026.csv"),
     os.path.join(MODEL_REPO, "margin_predictions_2026.csv"))
 
 OFFICE_CODE = {"Senate": "SEN", "House": "H", "Governor": "GOV"}

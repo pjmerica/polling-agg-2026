@@ -32,6 +32,13 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 MODEL_REPO = os.path.join(REPO, "..", "..", "Polling prediction model")
+# The model repo reorganised on 2026-08-08: shared modules moved to src/ and generated
+# predictions to outputs/. Both spellings are searched so this repo keeps working against an
+# OLD checkout of the model repo too (the two repos are cloned separately by CI and can be at
+# different commits mid-rollout) - a missing path here fails SILENTLY into a fallback, which
+# is how the norm_name drift-assert quietly stopped running the first time.
+MODEL_SRC = os.path.join(MODEL_REPO, "src")
+MODEL_OUT = os.path.join(MODEL_REPO, "outputs")
 
 def _first_existing(*paths):
     for p in paths:
@@ -41,11 +48,13 @@ def _first_existing(*paths):
 
 DEFAULT_PREDS = _first_existing(
     os.path.join(REPO, "data", "processed", "model_primary_predictions_2026.csv"),
+    os.path.join(MODEL_OUT, "primary_predictions_2026.csv"),
     os.path.join(MODEL_REPO, "primary_predictions_2026.csv"))
 # PRIMARY MARGIN model (2026-08-02), wired the same way the general tab wires
 # margin_predictions_2026.csv: a separate model, joined on race_id + candidate.
 DEFAULT_MARGIN_PREDS = _first_existing(
     os.path.join(REPO, "data", "processed", "model_primary_margin_predictions_2026.csv"),
+    os.path.join(MODEL_OUT, "primary_margin_predictions_2026.csv"),
     os.path.join(MODEL_REPO, "primary_margin_predictions_2026.csv"))
 
 OFFICE_FROM_CODE = {"SEN": "Senate", "H": "House", "GOV": "Governor"}
@@ -93,8 +102,9 @@ def _norm_name_local(s):
     return f"{last} {fi}".strip()
 
 
-if MODEL_REPO not in _sys.path:
-    _sys.path.insert(0, MODEL_REPO)
+for _cand in (MODEL_SRC, MODEL_REPO):      # src/ first (current), root second (legacy)
+    if os.path.isdir(_cand) and _cand not in _sys.path:
+        _sys.path.insert(0, _cand)
 try:
     from features import norm_name  # noqa: E402
     # Both available: prove the fallback still matches, so a future change to features.py
