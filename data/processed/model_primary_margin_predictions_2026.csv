@@ -553,7 +553,7 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_NY_House-7_DEM,NY,House,7,DEM,Vichal Kumar,2026-06-23,1,2,0.5,-24.05,-41.74515,0,4,0
 2026_NY_House-8_DEM,NY,House,8,DEM,Hakeem Jeffries,2026-06-23,1,1,72.0,51.0,64.16348,1,2,0
 2026_NY_House-8_DEM,NY,House,8,DEM,Chi Ossé,2026-06-23,1,1,21.0,-51.0,-39.48538,0,2,0
-2026_OH_Governor_DEM,OH,Governor,,DEM,Sherrod Brown,2026-05-05,4,20,59.0,14.799999999999997,69.47581,1,3,0
+2026_OH_Governor_DEM,OH,Governor,,DEM,Sherrod Brown,2026-05-05,4,20,59.0,14.799999999999997,68.49474,1,3,0
 2026_OH_Governor_DEM,OH,Governor,,DEM,Amy Acton,2026-05-05,20,20,44.2,-14.799999999999997,43.851376,0,3,0
 2026_OH_Governor_DEM,OH,Governor,,DEM,Tim Ryan,2026-05-05,8,20,35.125,-23.875,-0.029732764,0,3,0
 2026_OH_Governor_REP,OH,Governor,,REP,Vivek Ramaswamy,2026-05-05,25,25,55.04,25.04,49.79092,1,7,0
