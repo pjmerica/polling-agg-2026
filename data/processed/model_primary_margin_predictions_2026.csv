@@ -557,6 +557,8 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_NY_House-17_DEM,NY,House,17,DEM,Mike Sacks,2026-06-23,5,8,2.6,-27.775,-47.70793,0,6,0
 2026_NY_House-17_DEM,NY,House,17,DEM,John Cappello,2026-06-23,5,8,1.0,-29.375,-49.27393,0,6,0
 2026_NY_House-17_REP,NY,House,17,REP,Mike Lawler,2026-06-23,2,2,47.5,0.0,59.350887,1,1,1
+2026_NY_House-1_DEM,NY,House,1,DEM,Chris Gallant,2026-06-23,1,1,38.0,0.0,38.68303,1,1,1
+2026_NY_House-1_REP,NY,House,1,REP,Nick LaLota,2026-06-23,1,1,41.0,0.0,48.313816,1,1,1
 2026_NY_House-21_DEM,NY,House,21,DEM,Blake Gendebien,2026-06-23,2,2,43.5,0.0,41.42275,1,1,1
 2026_NY_House-21_REP,NY,House,21,REP,Anthony Constantino,2026-06-23,6,6,40.5,15.25,20.949055,1,2,0
 2026_NY_House-21_REP,NY,House,21,REP,Robert Smullen,2026-06-23,4,6,25.25,-15.25,-19.918825,0,2,0
