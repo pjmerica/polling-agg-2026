@@ -158,7 +158,7 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_FL_House-20_DEM,FL,House,20,DEM,Sheila Cherfilus-McCormick,2026-08-18,5,7,30.4,-12.600000000000001,-28.447382,0,6,0
 2026_FL_House-20_DEM,FL,House,20,DEM,Luther Campbell,2026-08-18,4,7,16.75,-26.25,-48.8204,0,6,0
 2026_FL_House-20_DEM,FL,House,20,DEM,Maisha Williams,2026-08-18,1,7,1.0,-42.0,-53.129845,0,6,0
-2026_FL_House-22_DEM,FL,House,22,DEM,PIa Dandiya,2026-08-18,2,2,47.5,0.0,49.967873,1,1,1
+2026_FL_House-22_DEM,FL,House,22,DEM,Pia Dandiya,2026-08-18,2,2,47.5,0.0,49.967873,1,1,1
 2026_FL_House-22_REP,FL,House,22,REP,Casey Askar,2026-08-18,2,3,31.55,1.75,16.932884,1,7,0
 2026_FL_House-22_REP,FL,House,22,REP,Belinda Keiser,2026-08-18,2,3,29.8,-1.75,-36.098995,0,7,0
 2026_FL_House-22_REP,FL,House,22,REP,Michale Carbonara,2026-08-18,1,3,11.4,-20.15,-45.451008,0,7,0
@@ -733,11 +733,11 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_SD_House-1_REP,SD,House,1,REP,James Bialota,2026-07-28,2,2,9.55,-50.099999999999994,-52.615772,0,2,0
 2026_SD_Senate_REP,SD,Senate,,REP,Mike Rounds,2026-07-28,2,2,46.0,28.0,52.281082,1,2,0
 2026_SD_Senate_REP,SD,Senate,,REP,Justin McNeal,2026-07-28,1,2,18.0,-28.0,-44.063255,0,2,0
-2026_TN_Governor_DEM,TN,Governor,,DEM,Jerri Green,2026-08-06,1,1,14.0,3.0,23.95107,1,5,0
-2026_TN_Governor_DEM,TN,Governor,,DEM,Carnita Atwater,2026-08-06,1,1,8.0,-6.0,-17.993235,0,5,0
-2026_TN_Governor_DEM,TN,Governor,,DEM,Kevin Lee McCants,2026-08-06,1,1,11.0,-3.0,-24.117973,0,5,0
-2026_TN_Governor_DEM,TN,Governor,,DEM,Tim Cyr,2026-08-06,1,1,3.0,-11.0,-31.840164,0,5,0
-2026_TN_Governor_DEM,TN,Governor,,DEM,Adam Kurtz,2026-08-06,1,1,2.0,-12.0,-32.02948,0,5,0
+2026_TN_Governor_DEM,TN,Governor,,DEM,Jerri Green,2026-08-06,2,2,21.0,10.0,24.429909,1,5,0
+2026_TN_Governor_DEM,TN,Governor,,DEM,Carnita Atwater,2026-08-06,1,2,8.0,-13.0,-27.848776,0,5,0
+2026_TN_Governor_DEM,TN,Governor,,DEM,Tim Cyr,2026-08-06,1,2,3.0,-18.0,-27.957058,0,5,0
+2026_TN_Governor_DEM,TN,Governor,,DEM,Kevin Lee McCants,2026-08-06,1,2,11.0,-10.0,-29.202755,0,5,0
+2026_TN_Governor_DEM,TN,Governor,,DEM,Adam Kurtz,2026-08-06,1,2,2.0,-19.0,-30.32803,0,5,0
 2026_TN_Governor_REP,TN,Governor,,REP,Marsha Blackburn,2026-08-06,14,14,53.300000000000004,37.09285714285714,16.63939,1,3,0
 2026_TN_Governor_REP,TN,Governor,,REP,John Rose,2026-08-06,14,14,16.20714285714286,-37.09285714285714,-15.705575,0,3,0
 2026_TN_Governor_REP,TN,Governor,,REP,Monty Fritts,2026-08-06,10,14,12.120000000000001,-41.18000000000001,-43.150856,0,3,0
