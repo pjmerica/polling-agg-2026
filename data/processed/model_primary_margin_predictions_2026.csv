@@ -629,8 +629,8 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_NV_Governor_REP,NV,Governor,,REP,Matthew Winterhawk,2026-06-09,1,11,7.0,-41.18181818181818,-56.442238,0,4,0
 2026_NV_Governor_REP,NV,Governor,,REP,Irina Hansen,2026-06-09,1,11,4.0,-44.18181818181818,-64.67157,0,4,0
 2026_NV_Governor_REP,NV,Governor,,REP,Jose Zalaya,2026-06-09,1,11,4.0,-44.18181818181818,-64.67157,0,4,0
-2026_NV_House-2_DEM,NV,House,2,DEM,Teresa Benitez-Thompson,2026-06-09,1,1,48.0,0.0,57.59168,1,1,1
-2026_NV_House-2_REP,NV,House,2,REP,David Flippo,2026-06-09,1,1,46.0,0.0,54.801727,1,1,1
+2026_NV_House-2_DEM,NV,House,2,DEM,Teresa Benitez-Thompson,2026-06-09,2,2,45.0,0.0,44.795574,1,1,1
+2026_NV_House-2_REP,NV,House,2,REP,David Flippo,2026-06-09,2,2,45.5,0.0,58.44387,1,1,1
 2026_NY_Governor_DEM,NY,Governor,,DEM,Kathy Hochul,2026-06-23,39,39,49.64102564102564,36.05011655011655,65.38833,1,3,0
 2026_NY_Governor_DEM,NY,Governor,,DEM,Ritchie Torres,2026-06-23,11,39,9.818181818181818,-39.82284382284382,-11.8954115,0,3,0
 2026_NY_Governor_DEM,NY,Governor,,DEM,Antonio Delgado,2026-06-23,22,39,13.590909090909092,-36.05011655011655,-41.625427,0,3,0
