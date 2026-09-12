@@ -94,7 +94,7 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_FL_Governor_DEM,FL,Governor,,DEM,Dayna Marie Foster,2026-08-18,4,25,6.425,-34.575,-49.776554,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Stephann Norman,2026-08-18,1,25,0.0,-41.0,-51.92844,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Thomas Fernandez,2026-08-18,2,25,2.8,-38.2,-53.151817,0,23,0
-2026_FL_Governor_DEM,FL,Governor,,DEM,Dotie Joseph,2026-08-18,1,25,4.0,-37.0,-54.696983,0,23,0
+2026_FL_Governor_DEM,FL,Governor,,DEM,Dotie Joseph,2026-08-18,1,25,4.0,-37.0,-54.522102,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Richard Dembinsky,2026-08-18,1,25,1.0,-40.0,-60.453907,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Faith Antonio,2026-08-18,1,25,1.1,-39.9,-62.226833,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Kenneth Norman,2026-08-18,1,25,1.5,-39.5,-62.226833,0,23,0
@@ -527,9 +527,9 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_MN_Governor_REP,MN,Governor,,REP,John Krhin,2026-08-11,2,13,2.85,-26.48333333333333,-47.28138,0,15,0
 2026_MN_Governor_REP,MN,Governor,,REP,Thomas Evanstad,2026-08-11,1,13,1.0,-28.333333333333332,-47.822777,0,15,0
 2026_MN_Governor_REP,MN,Governor,,REP,Raul Estrada,2026-08-11,2,13,1.55,-27.78333333333333,-49.73506,0,15,0
-2026_MN_Governor_REP,MN,Governor,,REP,Ross Nova,2026-08-11,1,13,1.7,-27.633333333333333,-54.4192,0,15,0
-2026_MN_Governor_REP,MN,Governor,,REP,Loner Blue,2026-08-11,1,13,1.7,-27.633333333333333,-54.846825,0,15,0
 2026_MN_Governor_REP,MN,Governor,,REP,Phillip Parrish,2026-08-11,4,13,18.15,-11.183333333333334,-55.36719,0,15,0
+2026_MN_Governor_REP,MN,Governor,,REP,Ross Nova,2026-08-11,1,13,1.7,-27.633333333333333,-55.385452,0,15,0
+2026_MN_Governor_REP,MN,Governor,,REP,Loner Blue,2026-08-11,1,13,1.7,-27.633333333333333,-55.813076,0,15,0
 2026_MN_Governor_REP,MN,Governor,,REP,Peggy Bennett,2026-08-11,3,13,11.166666666666666,-18.166666666666664,-57.02376,0,15,0
 2026_MN_Governor_REP,MN,Governor,,REP,Patrick Knight,2026-08-11,3,13,12.200000000000001,-17.133333333333333,-58.48459,0,15,0
 2026_MN_House-1_DEM,MN,House,1,DEM,Jake Johnson,2026-08-11,2,2,41.5,0.0,55.759098,1,1,1
