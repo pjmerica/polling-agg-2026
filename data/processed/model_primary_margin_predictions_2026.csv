@@ -97,7 +97,7 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_FL_Governor_DEM,FL,Governor,,DEM,Shevrin Jones,2026-08-18,2,26,3.0,-38.0,-28.066715,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Evelyn Castillo-Bach,2026-08-18,2,26,2.8,-38.2,-49.206215,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Dayna Marie Foster,2026-08-18,4,26,6.425,-34.575,-49.776554,0,23,0
-2026_FL_Governor_DEM,FL,Governor,,DEM,Stephann Norman,2026-08-18,1,26,0.0,-41.0,-52.364765,0,23,0
+2026_FL_Governor_DEM,FL,Governor,,DEM,Stephann Norman,2026-08-18,1,26,0.0,-41.0,-51.92844,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Thomas Fernandez,2026-08-18,2,26,2.8,-38.2,-53.508568,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Dotie Joseph,2026-08-18,1,26,4.0,-37.0,-54.696983,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Richard Dembinsky,2026-08-18,1,26,1.0,-40.0,-60.453907,0,23,0
@@ -107,7 +107,7 @@ race_id,state,office,district,party,candidate,election_date,n_polls,n_surveys,po
 2026_FL_Governor_DEM,FL,Governor,,DEM,Jessica Vernekar,2026-08-18,1,26,2.3,-38.7,-62.543488,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Charles Lewis,2026-08-18,1,26,0.7,-40.3,-62.85677,0,23,0
 2026_FL_Governor_DEM,FL,Governor,,DEM,Bill Slater,2026-08-18,1,26,0.5,-40.5,-62.85677,0,23,0
-2026_FL_Governor_DEM,FL,Governor,,DEM,Kevin Cichowski,2026-08-18,1,26,1.9,-39.1,-63.698284,0,23,0
+2026_FL_Governor_DEM,FL,Governor,,DEM,Kevin Cichowski,2026-08-18,1,26,1.9,-39.1,-63.523403,0,23,0
 2026_FL_Governor_REP,FL,Governor,,REP,Byron Donalds,2026-08-18,54,56,39.25,9.243749999999999,36.55502,1,24,0
 2026_FL_Governor_REP,FL,Governor,,REP,Matt Gaetz,2026-08-18,9,56,11.755555555555555,-27.494444444444447,2.04357,0,24,0
 2026_FL_Governor_REP,FL,Governor,,REP,Ashley Moody,2026-08-18,3,56,11.333333333333334,-27.916666666666664,0.47761834,0,24,0
