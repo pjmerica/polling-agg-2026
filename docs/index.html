@@ -1273,7 +1273,8 @@ function renderArbTable() {
   // Default sort: guaranteed first, then by raw_gap_pp desc
   rows = [...rows].sort((a, b) => {
     if (arbSortCol === 'raw_gap_pp' && arbSortDir === -1) {
-      if (a.arb_type !== b.arb_type) return a.arb_type === 'guaranteed' ? -1 : 1;
+      const rank = t => t === 'guaranteed' ? 0 : t === 'unverified' ? 1 : 2;
+      if (rank(a.arb_type) !== rank(b.arb_type)) return rank(a.arb_type) - rank(b.arb_type);
     }
     let av = a[arbSortCol] ?? 0, bv = b[arbSortCol] ?? 0;
     if (typeof av === 'string') av = av.toLowerCase(), bv = (bv||'').toLowerCase();
@@ -1288,12 +1289,19 @@ function renderArbTable() {
 
     // Arb type badge
     const isGuaranteed = r.arb_type === 'guaranteed';
-    const typeBadge = isGuaranteed
+    // 'unverified' = the basket math clears fees but the pair's own evidence
+    // (one leg effectively settled, rules text differs, or an implausibly
+    // large return) says the two legs may not be the same question.
+    const isUnverified = r.arb_type === 'unverified';
+    const showBasket = isGuaranteed || isUnverified;
+    const typeBadge = isUnverified
+      ? `<span title="Basket math shows locked profit, but this pair may not be the same question on both platforms - hover the verify badge for why. Check both legs before trading." style="background:rgba(251,146,60,0.15);color:#fb923c;border-radius:4px;padding:2px 6px;font-size:0.68rem;font-weight:700;cursor:help">? Unverified</span>`
+      : isGuaranteed
       ? `<span style="background:rgba(52,211,153,0.15);color:#34d399;border-radius:4px;padding:2px 6px;font-size:0.68rem;font-weight:700">★ Guaranteed</span>`
       : `<span style="background:rgba(148,163,184,0.1);color:#64748b;border-radius:4px;padding:2px 6px;font-size:0.68rem">One-sided</span>`;
 
     // Guaranteed return
-    const retCell = isGuaranteed && r.guaranteed_return_pct != null
+    const retCell = showBasket && r.guaranteed_return_pct != null
       ? `<span class="arb-gap-pos" style="font-weight:700">${r.guaranteed_return_pct.toFixed(1)}%</span>`
       : '<span style="color:#4a5568">—</span>';
 
@@ -1306,7 +1314,7 @@ function renderArbTable() {
       : '<span style="color:#4a5568">—</span>';
 
     // Stake ratio — show as dollar amounts for $100 total
-    const stakeCell = isGuaranteed && r.stake_a_dollars != null
+    const stakeCell = showBasket && r.stake_a_dollars != null
       ? `<span style="font-size:0.72rem;color:#94a3b8">${platLabel(pa)} <strong>$${r.stake_a_dollars.toFixed(2)}</strong> / ${platLabel(pb)} <strong>$${r.stake_b_dollars.toFixed(2)}</strong><br><span style="color:#34d399;font-size:0.68rem">+$${r.profit_dollars != null ? r.profit_dollars.toFixed(2) : '—'} profit</span></span>`
       : '<span style="color:#4a5568">—</span>';
 
@@ -1348,6 +1356,7 @@ function renderArbTable() {
       one_sided_a: 'one-sided book on A', one_sided_b: 'one-sided book on B',
       thin_depth_a: '<20 contracts tradeable on A', thin_depth_b: '<20 contracts tradeable on B',
       settled_one_side: 'one market is effectively settled while the other is not — resolution rules probably differ',
+      implausible_return: 'locked return above 15% — every such row in past audits was two different questions',
     };
     const reasons = (r.suspicion_reasons || []).map(k => {
       if (typeof k === 'string' && k.startsWith('criteria_warn')) {

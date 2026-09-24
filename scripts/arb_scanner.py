@@ -50,6 +50,11 @@ def _safe_read_csv(path, **kw):
         print(f"  WARNING: {path.name} is empty — treating as no data")
         return pd.DataFrame()
 
+# Sanity cap on a "guaranteed" return (return on capital, after fees). Every
+# guaranteed row above ~15% found in the 2026-09-23/24 audits (both repos) was
+# a mismatched pair; verified real ones were 0-5%. Above the cap -> unverified.
+MAX_PLAUSIBLE_RETURN_PCT = 15.0
+
 FEES = {
     # Conservative round-trip fee approximation per platform.
     # Kalshi taker fee tops out around 1% each way; Polymarket gas + fee
@@ -416,6 +421,26 @@ def compute_arb(prob_a, prob_b, fee_a, fee_b,
         })
 
     return result
+
+
+def _write_job_summary(arb):
+    """In GitHub Actions, list guaranteed / unverified rows in the job summary."""
+    import os
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path or arb.empty:
+        return
+    rows = arb[arb["arb_type"].isin(["guaranteed", "unverified"])]
+    lines = [f"### polling-agg arb: {int((arb['arb_type'] == 'guaranteed').sum())} guaranteed, "
+             f"{int((arb['arb_type'] == 'unverified').sum())} unverified of {len(arb)} pairs", "",
+             "| type | return % | pair | leg A | leg B | reasons |", "|---|---|---|---|---|---|"]
+    esc = lambda v: str(v or "").replace("|", "/")[:80]
+    for _, r in rows.iterrows():
+        rs = r.get("suspicion_reasons")
+        lines.append(f"| {r['arb_type']} | {r.get('guaranteed_return_pct')} | {r.get('pair')} | "
+                     f"{esc(r.get('question_a'))} | {esc(r.get('question_b'))} | "
+                     f"{esc(','.join(rs) if isinstance(rs, list) else '')} |")
+    with open(path, "a", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
 
 
 def _assert_scrape_freshness():
@@ -1693,14 +1718,17 @@ def run():
             lambda rs: list(rs) + ["settled_one_side"])
         crit = arb["suspicion_reasons"].apply(
             lambda rs: isinstance(rs, list) and any(str(x).startswith("criteria_warn") for x in rs))
-        down = (arb["arb_type"] == "guaranteed") & (sos | crit)
+        implausible = (arb["arb_type"] == "guaranteed") & (
+            pd.to_numeric(arb["guaranteed_return_pct"], errors="coerce") > MAX_PLAUSIBLE_RETURN_PCT)
+        arb.loc[implausible, "suspicion_reasons"] = arb.loc[implausible, "suspicion_reasons"].apply(
+            lambda rs: list(rs) + ["implausible_return"])
+        # 'unverified' keeps the basket math visible (stakes, return) but the
+        # dashboard never labels it locked profit.
+        down = (arb["arb_type"] == "guaranteed") & (sos | crit | implausible)
         if down.any():
-            print(f"Downgraded {int(down.sum())} guaranteed -> one-sided (settled one side / rules differ)")
-            arb.loc[down, "arb_type"] = "one-sided"
-            for c in ("guaranteed_return_pct", "stake_a_pct", "stake_b_pct", "stake_a_dollars",
-                      "stake_b_dollars", "profit_dollars", "annualized_return_pct"):
-                if c in arb.columns:
-                    arb.loc[down, c] = None
+            print(f"Downgraded {int(down.sum())} guaranteed -> unverified "
+                  f"(settled one side / rules differ / implausible return)")
+            arb.loc[down, "arb_type"] = "unverified"
         arb["suspicious"] = arb["suspicion_reasons"].apply(lambda rs: len(rs) > 0) | arb["suspicious"].fillna(False).astype(bool)
 
     guaranteed = arb[arb["arb_type"] == "guaranteed"]
@@ -1719,6 +1747,7 @@ def run():
 
     records = [{k: clean(v) for k, v in row.items()} for row in arb.to_dict(orient="records")]
 
+    _write_job_summary(arb)
     out = ROOT / "docs" / "arb_data.js"
     with open(out, "w") as f:
         f.write("const ARB = ")
