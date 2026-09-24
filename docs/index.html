@@ -1258,6 +1258,11 @@ function platLabel(p) {
   return `<span style="color:${colors[p]||'#94a3b8'};font-weight:700">${p.charAt(0).toUpperCase()+p.slice(1)}</span>`;
 }
 
+// Market titles are platform-supplied text — escape before inserting.
+function escArb(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function renderArbTable() {
   if (ARB.updated_at) {
     const d = new Date(ARB.updated_at);
@@ -1342,6 +1347,7 @@ function renderArbTable() {
       wide_spread_a: 'wide spread on A', wide_spread_b: 'wide spread on B',
       one_sided_a: 'one-sided book on A', one_sided_b: 'one-sided book on B',
       thin_depth_a: '<20 contracts tradeable on A', thin_depth_b: '<20 contracts tradeable on B',
+      settled_one_side: 'one market is effectively settled while the other is not — resolution rules probably differ',
     };
     const reasons = (r.suspicion_reasons || []).map(k => {
       if (typeof k === 'string' && k.startsWith('criteria_warn')) {
@@ -1373,8 +1379,8 @@ function renderArbTable() {
       <td>${marketCell}</td>
       <td>${r.office||''}</td>
       <td>${typeBadge}</td>
-      <td style="color:#94a3b8">${platLabel(pa)}${linkA} ${probAHtml}</td>
-      <td style="color:#94a3b8">${platLabel(pb)}${linkB} ${probBHtml}</td>
+      <td style="color:#94a3b8">${platLabel(pa)}${linkA} ${probAHtml}${r.question_a ? `<div style="font-size:0.64rem;color:#64748b;max-width:220px;line-height:1.3;margin-top:2px">${escArb(r.question_a)}</div>` : ''}</td>
+      <td style="color:#94a3b8">${platLabel(pb)}${linkB} ${probBHtml}${r.question_b ? `<div style="font-size:0.64rem;color:#64748b;max-width:220px;line-height:1.3;margin-top:2px">${escArb(r.question_b)}</div>` : ''}</td>
       <td style="color:#e2e8f0;font-weight:600">${rawStr}</td>
       <td class="${netCls}">${netStr}</td>
       <td>${tradeableCell}</td>
@@ -1929,7 +1935,7 @@ function mvTable(rows){
     const split=r.models_agree===false?`<span class="mv-split" title="Win model and margin model disagree - margin model picks ${r.margin_pick_name||'the other side'}. No edge.">\u26a0 SPLIT</span>`:'';
     const thin = (r.n_polls||0) < 4;
     return `<tr class="${r.models_agree===false?'mv-splitrow':''}${thin?' thin-row':''}">
-      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.state}${r.district?'-'+r.district:''}</b> <span class="mv-cand"><span class="mv-dem">${r.dem_name||'?'}${r.dem_display && r.dem_display!=='DEM' ? ' ('+r.dem_display[0]+')' : ''}</span> v <span class="mv-rep">${r.rep_name||'?'}</span></span>${r.redistricted?'<span class="mv-split" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="District redrawn in the 2025-26 mid-decade redistricting - prior-margin and incumbency fundamentals describe OLD boundaries. Extra suspicion warranted.">↺ REDRAWN</span>':''}${r.bias_fragile?'<span class="mv-split" style="background:rgba(250,204,21,0.15);color:#facc15" title="Pick flips under a +/-3pt national poll shift - poll errors are cycle-correlated, so treat as no-edge.">≈ FRAGILE</span>':''}${r.unresolved_field?'<span class="mv-split" style="background:rgba(167,139,250,0.15);color:#a78bfa" title="More than one same-party candidate still in the poll feed (leftover hypothetical primary matchups). Model % shown is the LEADING matchup only - treat the edge with suspicion until the field settles.">? FIELD</span>':''}${r.slot_market==='IND'?'<span class="mv-split" style="background:rgba(45,212,191,0.15);color:#2dd4bf" title="This candidate is an independent, so the market price shown is the INDEPENDENT-win market (not the Democratic-party market - that is a different event).">I MKT</span>':''}${split}</td>
+      <td><span class="mv-badge ${ob}">${ob}</span><b>${r.state}${r.district?'-'+r.district:''}</b> <span class="mv-cand"><span class="mv-dem">${r.dem_name||'?'}${r.dem_display && r.dem_display!=='DEM' ? ' ('+r.dem_display[0]+')' : ''}</span> v <span class="mv-rep">${r.rep_name||'?'}</span></span>${r.redistricted?'<span class="mv-split" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="District redrawn in the 2025-26 mid-decade redistricting - prior-margin and incumbency fundamentals describe OLD boundaries. Extra suspicion warranted.">↺ REDRAWN</span>':''}${r.bias_fragile?'<span class="mv-split" style="background:rgba(250,204,21,0.15);color:#facc15" title="Pick flips under a +/-3pt national poll shift - poll errors are cycle-correlated, so treat as no-edge.">≈ FRAGILE</span>':''}${r.unresolved_field?'<span class="mv-split" style="background:rgba(167,139,250,0.15);color:#a78bfa" title="More than one same-party candidate still in the poll feed (leftover hypothetical primary matchups). Model % shown is the LEADING matchup only - treat the edge with suspicion until the field settles.">? FIELD</span>':''}${r.missing_slot?`<span class="mv-split" style="background:rgba(248,113,113,0.15);color:#f87171" title="The model has no ${r.missing_slot==='REP'?'Republican':'Democratic'} candidate for this race (no polls with one), but the markets price that party as live. The model % is renormalized against nobody, so no edge is shown.">NO ${r.missing_slot} IN MODEL</span>`:''}${r.slot_market==='IND'?'<span class="mv-split" style="background:rgba(45,212,191,0.15);color:#2dd4bf" title="This candidate is an independent, so the market price shown is the INDEPENDENT-win market (not the Democratic-party market - that is a different event).">I MKT</span>':''}${split}</td>
       <td>${r.primary_date||'-'}</td>
       <td class="${r.n_polls<5?'mv-lowpolls':''}"><span class="pollcell" data-plkey="${plKey(r)}" data-plnpolls="${r.n_polls}" data-pllabel="${r.state}${r.district?'-'+r.district:''} ${ob}" title="Click to see every poll scraped for this race">${r.n_polls}</span>${thin?'<span class="thin-flag" title="Fewer than 4 distinct surveys - below the reliability threshold. See the warning above the table.">▲</span>':''}</td>
       <td><b>${mvPct(r.model_dem)}</b></td>

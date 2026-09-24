@@ -30,6 +30,12 @@ from datetime import datetime, timezone
 ROOT = Path(__file__).parent.parent
 RAW = ROOT / "data" / "raw"
 
+import sys as _sys_path
+_sys_path.path.insert(0, str(ROOT))
+# Shared with pred-arbitrage (identical copies; keep in sync).
+from utils.election_shapes import is_derivative, party_win_side
+from utils.links import polymarket_url as _pm_deep_url
+
 
 def _safe_read_csv(path, **kw):
     """Read a CSV defensively. Returns an empty DataFrame if the file is
@@ -57,20 +63,26 @@ FEES = {
 }
 
 # URL templates
-def kalshi_url(series_ticker):
+def kalshi_url(series_ticker, event_ticker=None):
+    """kalshi.com/markets/{series}/{event}. The series-only form made
+    Kalshi's SPA pick an ARBITRARY event when a series holds several
+    (pred-arb incident 2026-06-22: an NH-01 row landed on NH-02)."""
     if pd.isna(series_ticker) or not series_ticker:
         return None
-    return f"https://kalshi.com/markets/{series_ticker}"
+    s = str(series_ticker).lower()
+    if event_ticker is not None and not pd.isna(event_ticker) and str(event_ticker):
+        return f"https://kalshi.com/markets/{s}/{str(event_ticker).lower()}"
+    return f"https://kalshi.com/markets/{s}"
 
 def predictit_url(market_id):
     if pd.isna(market_id) or not market_id:
         return None
     return f"https://www.predictit.org/markets/detail/{int(market_id)}"
 
-def polymarket_url(slug):
-    if pd.isna(slug) or not slug:
-        return None
-    return f"https://polymarket.com/event/{slug}"
+def polymarket_url(event_slug, market_slug=None):
+    """Deep link to the exact market (/event/{event}/{market}); the
+    event-only form opened a page listing every market in the event."""
+    return _pm_deep_url(event_slug, market_slug)
 
 
 # ── loaders ──────────────────────────────────────────────────────────────────
@@ -81,18 +93,28 @@ def load_kalshi_general():
     if df.empty or "race_id" not in df.columns or "implied_prob" not in df.columns:
         return pd.DataFrame()
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
+    # race_id comes from the SERIES ticker; Kalshi's SENATELA-26 event is
+    # titled "Kentucky Senate winner?" (their ticker is wrong), which paired
+    # Kentucky prices with other venues' Louisiana markets. Drop rows whose
+    # own title names a different state.
+    title_state = df.get("event_title", df["market_title"]).fillna("").astype(str)         + " " + df["market_title"].fillna("").astype(str)
+    ok = [race_id_agrees_with_title(rid, t) for rid, t in zip(df["race_id"], title_state)]
+    if not all(ok):
+        print(f"  Kalshi: dropped {ok.count(False)} rows whose title names a different state than the ticker")
+    df = df[ok].copy()
 
-    dem_mask = df["market_title"].str.contains(
-        r"Democrat(?:ic)?s?\s+win|Will Democrat(?:ic)?s?\s+win", case=False, na=False
-    ) & ~df["market_title"].str.contains("nominee|primary|nominate", case=False, na=False)
-    rep_mask = df["market_title"].str.contains(
-        r"Republican(?:s)?\s+win|Will Republican(?:s)?\s+win", case=False, na=False
-    ) & ~df["market_title"].str.contains("nominee|primary|nominate", case=False, na=False)
+    # Allowlist (2026-09-24): plain "party wins the race" titles only —
+    # see utils/election_shapes.py (shared with pred-arbitrage).
+    side = df["market_title"].map(party_win_side)
+    dem_mask = side.eq("dem")
+    rep_mask = side.eq("rep")
 
     cols = ["implied_prob", "open_interest", "volume", "series_ticker", "market_ticker", "market_title",
-            "yes_bid", "yes_ask", "close_time"]
+            "yes_bid", "yes_ask", "close_time", "event_ticker"]
     if "market_ticker" not in df.columns:
         df["market_ticker"] = None
+    if "event_ticker" not in df.columns:
+        df["event_ticker"] = None
     for c in ("yes_bid", "yes_ask", "close_time", "expected_expiration_time"):
         if c not in df.columns:
             df[c] = None
@@ -119,6 +141,8 @@ def load_kalshi_general():
         "yes_bid": "kalshi_dem_bid",
         "yes_ask": "kalshi_dem_ask",
         "close_time": "kalshi_close_time",
+        "market_title": "kalshi_dem_title",
+        "event_ticker": "kalshi_event_ticker",
     })
 
     rep = df[rep_mask].groupby("race_id").apply(best, include_groups=False).reset_index()
@@ -129,10 +153,12 @@ def load_kalshi_general():
     })
 
     merged = dem[["race_id", "kalshi_dem", "kalshi_oi", "kalshi_volume", "kalshi_series_ticker",
-                  "kalshi_dem_ticker", "kalshi_dem_bid", "kalshi_dem_ask", "kalshi_close_time"]].merge(
+                  "kalshi_dem_ticker", "kalshi_dem_bid", "kalshi_dem_ask", "kalshi_close_time",
+                  "kalshi_dem_title", "kalshi_event_ticker"]].merge(
         rep[["race_id", "kalshi_rep", "kalshi_rep_ticker"]], on="race_id", how="inner"
     )
-    merged["kalshi_url"] = merged["kalshi_series_ticker"].apply(kalshi_url)
+    merged["kalshi_url"] = [kalshi_url(s, e) for s, e in
+                            zip(merged["kalshi_series_ticker"], merged["kalshi_event_ticker"])]
     return merged
 
 
@@ -142,13 +168,15 @@ def load_predictit_general():
     if df.empty or "race_id" not in df.columns or "implied_prob" not in df.columns:
         return pd.DataFrame()
     df = df[df["race_id"].notna() & df["implied_prob"].notna()].copy()
-    df = df[df["contract_name"].str.strip().isin(["Democratic", "Republican"])].copy()
+    df = df[df["contract_name"].str.strip().isin(["Democratic", "Republican"])
+            & ~df["market_name"].map(is_derivative)].copy()
     for c in ("best_buy_no", "date_end"):
         if c not in df.columns:
             df[c] = None
 
     dem = df[df["contract_name"].str.strip() == "Democratic"][
-        ["race_id", "implied_prob", "best_buy_yes", "best_sell_yes", "best_buy_no", "date_end", "market_id"]
+        ["race_id", "implied_prob", "best_buy_yes", "best_sell_yes", "best_buy_no", "date_end", "market_id",
+         "market_name"]
     ].rename(columns={"implied_prob": "pi_dem", "best_buy_yes": "pi_dem_buy",
                       "best_sell_yes": "pi_dem_sell", "best_buy_no": "pi_dem_buy_no",
                       "date_end": "pi_date_end"})
@@ -159,6 +187,7 @@ def load_predictit_general():
 
     merged = dem.merge(rep, on="race_id", how="outer")
     merged["pi_url"] = merged["market_id"].apply(predictit_url)
+    merged["pi_dem_question"] = merged["market_name"].fillna("").astype(str) + " — Democratic"
     return merged
 
 
@@ -172,28 +201,27 @@ def load_polymarket_general():
     df["implied_prob"] = pd.to_numeric(df["implied_prob"], errors="coerce")
     df = df.dropna(subset=["implied_prob"])
 
-    q = df["question"].str.lower()
-    df["is_dem"] = q.str.contains(r"democrat|democratic", na=False) & ~q.str.contains(r"republican", na=False)
-    df["is_rep"] = q.str.contains(r"republican", na=False) & ~q.str.contains(r"democrat|democratic", na=False)
-    df = df[~q.str.contains("nominee|primary|nominate|advance", na=False)]
+    # Allowlist (2026-09-24): only plain "party wins the race" questions.
+    # The old "question mentions democrat" test accepted Polymarket's
+    # margin-of-victory buckets ("...win the 2026 Rhode Island Senate
+    # election by 45% or more?"); on 2026-09-24 ALL THREE guaranteed arbs
+    # on this dashboard (56-81%) were PredictIt "which party wins" vs a
+    # margin bucket, with links opening the margin event.
+    side = df["question"].map(party_win_side)
+    df["is_dem"] = side.eq("dem")
+    df["is_rep"] = side.eq("rep")
 
-    # Prefer new event_slug column if present; fall back to condition_id for legacy CSVs.
-    slug_col = "event_slug" if "event_slug" in df.columns else ("url_slug" if "url_slug" in df.columns else None)
-    if slug_col is None:
-        df["_slug"] = df.get("condition_id", "")
-    else:
-        df["_slug"] = df[slug_col].fillna("").astype(str)
-        # Fallback to market_slug when event_slug is blank
-        if "market_slug" in df.columns:
-            mask = df["_slug"].eq("")
-            df.loc[mask, "_slug"] = df.loc[mask, "market_slug"].fillna("").astype(str)
+    # Deep link to the priced market, not the multi-market event page.
+    df["_slug"] = [polymarket_url(e, m) or "" for e, m in
+                   zip(df.get("event_slug", pd.Series(index=df.index)),
+                       df.get("market_slug", pd.Series(index=df.index)))]
 
     for c in ("yes_token_id", "no_token_id", "best_bid", "best_ask", "end_date"):
         if c not in df.columns:
             df[c] = None
 
     keep = ["race_id", "implied_prob", "liquidity", "volume", "_slug", "yes_token_id",
-            "no_token_id", "best_bid", "best_ask", "end_date"]
+            "no_token_id", "best_bid", "best_ask", "end_date", "question"]
     dem = df[df["is_dem"]][keep].copy()
     rep = df[df["is_rep"]][keep].copy()
 
@@ -208,7 +236,7 @@ def load_polymarket_general():
             "volume": "pm_volume", "_slug": "pm_dem_slug",
             "yes_token_id": "pm_dem_token", "no_token_id": "pm_dem_no_token",
             "best_bid": "pm_dem_bid", "best_ask": "pm_dem_ask",
-            "end_date": "pm_end_date",
+            "end_date": "pm_end_date", "question": "pm_dem_question",
         })
 
     if not rep.empty:
@@ -222,7 +250,7 @@ def load_polymarket_general():
         return pd.DataFrame()
 
     dem_cols = ["race_id", "pm_dem", "pm_liq", "pm_volume", "pm_dem_slug", "pm_dem_token",
-                "pm_dem_no_token", "pm_dem_bid", "pm_dem_ask", "pm_end_date"]
+                "pm_dem_no_token", "pm_dem_bid", "pm_dem_ask", "pm_end_date", "pm_dem_question"]
     result = dem[dem_cols] if not dem.empty else pd.DataFrame(columns=dem_cols)
     if not rep.empty:
         result = result.merge(rep[["race_id", "pm_rep", "pm_rep_slug", "pm_rep_token"]], on="race_id", how="outer")
@@ -237,14 +265,9 @@ def load_polymarket_general():
     else:
         result = result.iloc[0:0].copy()
 
-    # Prefer dem slug for the URL; fall back to rep slug.
-    if "pm_rep_slug" in result.columns:
-        result["pm_url"] = result["pm_dem_slug"].where(
-            result["pm_dem_slug"].notna() & (result["pm_dem_slug"] != ""),
-            result["pm_rep_slug"],
-        ).apply(polymarket_url)
-    else:
-        result["pm_url"] = result["pm_dem_slug"].apply(polymarket_url)
+    # _slug already holds the Dem market's deep link — the Dem token is the
+    # leg this pair's quotes (and fetch_depth) refer to.
+    result["pm_url"] = result["pm_dem_slug"]
     return result
 
 
@@ -337,6 +360,7 @@ def compute_arb(prob_a, prob_b, fee_a, fee_b,
         "stake_b_dollars": None,
         "profit_dollars": None,
         "stake_note": None,
+        "yes_leg": None,
         # Audit fields: what you'd actually pay, and whether it's live data.
         "fillable_ask_a": round(ask_a_f, 4),
         "fillable_ask_b": round(ask_b_f, 4),
@@ -365,21 +389,27 @@ def compute_arb(prob_a, prob_b, fee_a, fee_b,
                     "yes_side": yes_side, "no_side": no_side}
 
     if best is not None:
-        # Stake split proportional to inverse cost so both outcomes pay
-        # the same total (per $100 deployed).
-        inv_yes = 1 / best["pay_yes"]
-        inv_no = 1 / best["pay_no"]
-        s_yes = inv_yes / (inv_yes + inv_no)
-        s_no = inv_no / (inv_yes + inv_no)
+        # A hedge holds the SAME NUMBER of contracts on both legs, so each
+        # leg's dollars are proportional to its PRICE. The old inverse-cost
+        # split (1/price) was exactly backwards: for "YES 1.2c + NO 4c" it
+        # put $77 on the 1.2c leg and $23 on the 4c leg — 6,400 vs 575
+        # contracts, not a hedge (fixed 2026-09-24; same bug fixed in
+        # pred-arbitrage 2026-09-23).
+        cost = best["pay_yes"] + best["pay_no"]
+        s_yes, s_no = best["pay_yes"] / cost, best["pay_no"] / cost
         sA, sB = (s_yes, s_no) if best["yes_side"] == "a" else (s_no, s_yes)
+        # Return on capital: $100 buys 100/cost baskets netting best["net"]
+        # each after fees.
+        ret = best["net"] / cost
         result.update({
             "arb_type": "guaranteed",
-            "guaranteed_return_pct": round(best["net"] * 100, 2),
+            "yes_leg": best["yes_side"],
+            "guaranteed_return_pct": round(ret * 100, 2),
             "stake_a_pct": round(sA * 100, 1),
             "stake_b_pct": round(sB * 100, 1),
             "stake_a_dollars": round(sA * 100, 2),
             "stake_b_dollars": round(sB * 100, 2),
-            "profit_dollars": round(best["net"] * 100, 2),
+            "profit_dollars": round(ret * 100, 2),
             # Caller substitutes {yes_platform}/{no_platform} with names.
             "stake_note": (f"Buy YES on {{{best['yes_side']}}} at {best['pay_yes']*100:.1f}c "
                            f"+ Buy NO on {{{best['no_side']}}} at {best['pay_no']*100:.1f}c"),
@@ -630,6 +660,16 @@ def _race_id_from(state: str | None, office: str | None, district: str | None) -
     return f"2026-{office}-{state}"
 
 
+def race_id_agrees_with_title(race_id, title) -> bool:
+    """False when a ticker-derived race_id names a different state than
+    the market's own title (Kalshi SENATELA-26 = "Kentucky Senate winner?").
+    Titles with no parseable state get the benefit of the doubt."""
+    if not isinstance(race_id, str) or race_id.count("-") < 2:
+        return True
+    state, _, _ = _extract_state_office(title)
+    return state is None or race_id.split("-")[2] == state
+
+
 def _canonical_last_name(name: str) -> str | None:
     if not isinstance(name, str):
         return None
@@ -748,7 +788,7 @@ def load_primary_candidates():
                 "candidate_name": name,
                 "platform": "kalshi",
                 "prob": float(r["implied_prob"]),
-                "url": kalshi_url(r.get("series_ticker")),
+                "url": kalshi_url(r.get("series_ticker"), r.get("event_ticker")),
                 "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
                 "oi": pd.to_numeric(r.get("open_interest"), errors="coerce"),
                 "market_id": r.get("market_ticker"),
@@ -829,7 +869,7 @@ def load_primary_candidates():
                 "candidate_name": name,
                 "platform": "polymarket",
                 "prob": float(r["implied_prob"]),
-                "url": polymarket_url(slug),
+                "url": polymarket_url(slug, r.get("market_slug")),
                 "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
                 "oi": pd.to_numeric(r.get("liquidity"), errors="coerce"),
                 "market_id": r.get("yes_token_id"),
@@ -898,7 +938,7 @@ def load_general_candidates():
         )
         for _, r in k.iterrows():
             title = str(r["market_title"])
-            if _GEN_CAND_EXCLUDE.search(title):
+            if _GEN_CAND_EXCLUDE.search(title) or is_derivative(title):
                 continue
             m = pat.match(title.strip())
             if not m:
@@ -923,7 +963,7 @@ def load_general_candidates():
                 "candidate_name": name,
                 "platform": "kalshi",
                 "prob": float(r["implied_prob"]),
-                "url": kalshi_url(r.get("series_ticker")),
+                "url": kalshi_url(r.get("series_ticker"), r.get("event_ticker")),
                 "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
                 "oi": pd.to_numeric(r.get("open_interest"), errors="coerce"),
                 "market_id": r.get("market_ticker"),
@@ -947,7 +987,7 @@ def load_general_candidates():
         slug_col = "event_slug" if "event_slug" in pm.columns else ("market_slug" if "market_slug" in pm.columns else None)
         for _, r in pm.iterrows():
             title = str(r.get("question", ""))
-            if _GEN_CAND_EXCLUDE.search(title):
+            if _GEN_CAND_EXCLUDE.search(title) or is_derivative(title):
                 continue
             m = pat.match(title.strip())
             if not m:
@@ -976,7 +1016,7 @@ def load_general_candidates():
                 "candidate_name": name,
                 "platform": "polymarket",
                 "prob": float(r["implied_prob"]),
-                "url": polymarket_url(slug),
+                "url": polymarket_url(slug, r.get("market_slug")),
                 "volume": pd.to_numeric(r.get("volume"), errors="coerce"),
                 "oi": pd.to_numeric(r.get("liquidity"), errors="coerce"),
                 "market_id": r.get("yes_token_id"),
@@ -1322,6 +1362,7 @@ def run():
                 "volume_a": r.get("kalshi_volume"), "volume_b": None,
                 "market_id_a": r.get("kalshi_dem_ticker"),
                 "market_id_b": None,
+                "question_a": r.get("kalshi_dem_title"), "question_b": r.get("pi_dem_question"),
             },
         )
         if row:
@@ -1349,6 +1390,7 @@ def run():
                     "market_id_a": r.get("kalshi_dem_ticker"),
                     "market_id_b": r.get("pm_dem_token"),
                     "market_no_id_b": r.get("pm_dem_no_token"),
+                    "question_a": r.get("kalshi_dem_title"), "question_b": r.get("pm_dem_question"),
                 },
             )
             if row:
@@ -1375,6 +1417,7 @@ def run():
                     "market_id_a": None,
                     "market_id_b": r.get("pm_dem_token"),
                     "market_no_id_b": r.get("pm_dem_no_token"),
+                    "question_a": r.get("pi_dem_question"), "question_b": r.get("pm_dem_question"),
                 },
             )
             if row:
@@ -1601,7 +1644,9 @@ def run():
             drop_mask = arb["_scrut"].apply(lambda s: bool(s) and s.get("action") == "drop")
             n_drop = int(drop_mask.sum())
             if n_drop:
-                print(f"Dropped {n_drop} pairs after rules-text scrutiny (criteria mismatch)")
+                print(f"Dropped {n_drop} pairs after rules-text scrutiny (manual excludes):")
+                for _, d in arb[drop_mask].iterrows():
+                    print(f"  - [{d['_scrut'].get('reason')}] {d.get('label')} {d.get('pair')}")
             arb = arb[~drop_mask].copy()
             def merge_scrut(row):
                 s = row.get("_scrut")
@@ -1615,6 +1660,48 @@ def run():
             arb = arb.drop(columns=["_scrut"])
     else:
         print("No depth file found yet — run scripts/fetch_depth.py to populate it.")
+
+    # Downgrade guaranteed → one-sided when the pair's own evidence says
+    # the two legs may not be the same question (2026-09-24, ported from
+    # pred-arbitrage):
+    #   settled_one_side — one leg's live mid ≥93¢/≤7¢ while the other is
+    #     undecided, or both decided in OPPOSITE directions: the rules
+    #     differ (window, definition or source), so it isn't a hedge.
+    #   criteria_warn   — rules text looked different (scrutiny).
+    if "suspicion_reasons" not in arb.columns:
+        arb["suspicion_reasons"] = [[] for _ in range(len(arb))]
+
+    def _mid(row, side):
+        b, a = row.get(f"depth_{side}_best_bid"), row.get(f"depth_{side}_best_ask")
+        if b is not None and a is not None and pd.notna(b) and pd.notna(a):
+            return (float(b) + float(a)) / 2
+        p = row.get(f"prob_{side}")
+        if p is None or pd.isna(p):
+            p = row.get(f"{row.get('platform_' + side)}_dem")
+        return float(p) if p is not None and pd.notna(p) else None
+
+    def _settled_one_side(row):
+        ma, mb = _mid(row, "a"), _mid(row, "b")
+        if ma is None or mb is None:
+            return False
+        settled = lambda m: m >= 0.93 or m <= 0.07
+        return ((settled(ma) != settled(mb)) and abs(ma - mb) >= 0.20) or abs(ma - mb) >= 0.86
+
+    if len(arb):
+        sos = arb.apply(_settled_one_side, axis=1).astype(bool)
+        arb.loc[sos, "suspicion_reasons"] = arb.loc[sos, "suspicion_reasons"].apply(
+            lambda rs: list(rs) + ["settled_one_side"])
+        crit = arb["suspicion_reasons"].apply(
+            lambda rs: isinstance(rs, list) and any(str(x).startswith("criteria_warn") for x in rs))
+        down = (arb["arb_type"] == "guaranteed") & (sos | crit)
+        if down.any():
+            print(f"Downgraded {int(down.sum())} guaranteed -> one-sided (settled one side / rules differ)")
+            arb.loc[down, "arb_type"] = "one-sided"
+            for c in ("guaranteed_return_pct", "stake_a_pct", "stake_b_pct", "stake_a_dollars",
+                      "stake_b_dollars", "profit_dollars", "annualized_return_pct"):
+                if c in arb.columns:
+                    arb.loc[down, c] = None
+        arb["suspicious"] = arb["suspicion_reasons"].apply(lambda rs: len(rs) > 0) | arb["suspicious"].fillna(False).astype(bool)
 
     guaranteed = arb[arb["arb_type"] == "guaranteed"]
     profitable = arb[arb["profitable"]]

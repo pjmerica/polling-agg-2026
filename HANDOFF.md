@@ -196,7 +196,10 @@ in order:
    that survived (1).
 4. **Rules-text scrutiny** (`scripts/scrutiny.py`) — for any pair with
    raw gap > 30pp, fetches both markets' resolution rules and computes a
-   text similarity score. <50 dropped, 50–75 tagged `criteria_warn`.
+   text similarity score. <75 tagged `criteria_warn` (and a guaranteed pair
+   is downgraded). Low scores no longer DROP pairs (2026-09-24): Kalshi and
+   Polymarket boilerplate differs so much that identical questions score
+   5-13. Only `excluded_pairs.json` entries are dropped.
    Plus a hand-curated `data/processed/excluded_pairs.json` for known
    criteria mismatches (Iran nuclear deal is the only entry today;
    Kalshi requires a signed agreement w/ enrichment limits + sanctions
@@ -407,6 +410,14 @@ docs/                  GitHub Pages site. Tracked.
 
 ## Do not
 
+- **Pick an election market leg by "the title mentions Democrat".** Use
+  `utils/election_shapes.party_win_side` (identical copy in pred-arbitrage).
+  Polymarket lists margin-of-victory buckets, "within 5%", "closest race"
+  and governor+Senate combo markets under the same race; substring matching
+  made them the Dem-win leg (3 fake 56-81% arbs + a wrong AK-Sen model
+  comparison, 2026-09-24).
+- **Size stakes by inverse price.** A hedge buys equal CONTRACTS on both
+  legs, so dollars are proportional to price (`compute_arb`, 2026-09-24).
 - **Add Claude as co-author on commits.** Plain commits only.
 - **Revert Kalshi to v1.** Endpoints stopped returning markets weeks ago.
 - **Touch `scrapers/fivethirtyeight.py`.** 538 shut down. Stub stays

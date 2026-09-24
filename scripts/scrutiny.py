@@ -174,8 +174,13 @@ def scrutinize(pairs, threshold_pp=30):
             out[key] = {"criteria_score": None, "action": "warn", "reason": "rules_unavailable"}
             continue
         score = similarity(ra, rb)
+        # Low similarity WARNS, never drops (2026-09-24, same change as
+        # pred-arbitrage). Kalshi and Polymarket write rules in unrelated
+        # boilerplate: identical questions score 5-13, so "drop < 50" hid
+        # every >30pp pair whether or not the rules actually differed.
+        # arb_scanner downgrades a warned guaranteed pair instead.
         if score < HARD_THRESHOLD:
-            out[key] = {"criteria_score": score, "action": "drop", "reason": "criteria_mismatch"}
+            out[key] = {"criteria_score": score, "action": "warn", "reason": "criteria_mismatch"}
         elif score < SOFT_THRESHOLD:
             out[key] = {"criteria_score": score, "action": "warn", "reason": "criteria_warn"}
         else:

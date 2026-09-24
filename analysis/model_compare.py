@@ -17,6 +17,9 @@ import argparse
 import json
 import os
 import re
+import sys as _sys
+_sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.election_shapes import party_win_side
 from datetime import date
 
 import numpy as np
@@ -159,7 +162,12 @@ def load_party_markets(path, title_col):
         df = df[df["status"].astype(str).str.lower().eq("active")]
     if "closed" in df.columns:
         df = df[~df["closed"].astype(bool)]
-    is_party = df[title_col].astype(str).str.match(PARTY_RX)
+    # PARTY_RX alone also matched Polymarket's governor+Senate COMBO markets
+    # ("Will Democrats win the Texas Governor election and Republicans win the
+    # Texas Senate election?", race_id 2026-SEN-TX) — a different event. The
+    # shared classifier (utils/election_shapes.py, also used by the Arb
+    # Scanner) requires exactly one party mention and no margin/combo wording.
+    is_party = df[title_col].astype(str).str.match(PARTY_RX)         & df[title_col].map(party_win_side).notna()
     is_ind = df[title_col].astype(str).str.match(IND_RX)
     df = df[is_party | is_ind]
     df["party"] = np.where(
@@ -422,10 +430,23 @@ def main():
             poly_dem=p_slot,
             poly_volume=(p.get("DEM", {}).get("volume") or 0) + (p.get("REP", {}).get("volume") or 0),
         )
+        # Missing-slot guard (2026-09-24): the single-party fallback above is
+        # for genuine same-party finals (top-two D-v-D). When the model simply
+        # has NO candidate for a party the markets price as live (> 5%), it's a
+        # poll-coverage gap: OK-Sen had one Dem poll and no Rep, so model_dem
+        # renormalized to 1.0 against Kalshi REP 97.5% — a fake +98-pt "biggest
+        # edge". Blank the edges and flag the row instead.
+        missing_party = "REP" if r_top is None else ("DEM" if d_top is None else None)
+        row["missing_slot"] = None
+        if missing_party:
+            quotes = [q for q in ((kr, pr_) if missing_party == "REP" else (kd, pdm)) if q is not None]
+            if quotes and max(quotes) > 0.05:
+                row["missing_slot"] = missing_party
         for venue in ("kalshi", "poly"):
             mv = row[f"{venue}_dem"]
             row[f"edge_{venue}"] = (round(model_dem - mv, 4)
-                                    if (mv is not None and model_dem is not None) else None)
+                                    if (mv is not None and model_dem is not None
+                                        and not row["missing_slot"]) else None)
 
         # --- margin model + models-agree flag + Kalshi margin-of-victory comparison ---
         row["model_margin_dem"] = None
