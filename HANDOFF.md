@@ -1,6 +1,6 @@
 # Handoff — Polling Aggregator & Prediction Markets
 
-**Last updated:** 2026-07-03
+**Last updated:** 2026-09-24
 **Status:** Live dashboard at https://pjmerica.github.io/polling-agg-2026/.
 GitHub Actions runs the full pipeline twice daily (12:00 + 00:00 UTC) and a
 fast markets-only loop every 2h on odd hours at :30 (`market-refresh.yml`),
@@ -14,6 +14,16 @@ both pushing refreshed `docs/*.js` back to master. Pages auto-redeploys.
 
 If you're picking this up cold, read this top-to-bottom once. The
 "Gotchas" section is where most of the weeks-of-pain debugging lives.
+
+> **2026-09-24 update — read this first.** The Arb Scanner and Model vs Markets tabs were audited and fixed alongside pred-arbitrage (its `MATCHING_REVIEW.md` has the full diagnosis). CHANGELOG "Unreleased" (2026-09-24) has every change. Anything below that conflicts with this is stale.
+>
+> - **Party legs** (all three general loaders + `analysis/model_compare.py`) go through `utils/election_shapes.party_win_side`, an allowlist shared with pred-arb. Substring matching had made Polymarket margin-of-victory buckets the Dem leg: all 3 live "guaranteed" arbs (56–81%) were fake, and AK-Sen on the model tab was priced off a governor+Senate combo.
+> - **Stakes are proportional to price** (equal contracts on both legs). The inverse-odds split was backwards. Return and profit are per $ staked.
+> - **Kalshi race_id** (from the series ticker) must agree with the state in the title: `SENATELA-26` is the Kentucky race.
+> - **Links:** Kalshi uses `/markets/{series}/{event}`; Polymarket uses `/event/{event}/{market}`. Each leg's question is stored and shown.
+> - **`unverified` tier:** a guaranteed basket is downgraded when one leg is effectively settled, when the rules text looks different (scrutiny now warns and never drops), or when the return is above 15%.
+> - **Model tab missing-slot guard:** no edge is shown when the model lacks a candidate for a party the markets price above 5% (OK-Sen had shown +98 pts).
+> - **`tests/test_arb_regressions.py`** runs in refresh.yml and market-refresh.yml before the pipeline. The scanner writes guaranteed/unverified rows to the Actions job summary.
 
 ---
 

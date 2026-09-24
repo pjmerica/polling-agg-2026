@@ -29,7 +29,13 @@ daily (**12:00 + 00:00 UTC** — 08:00 and 20:00 ET) and:
 3. Filters out fake "arbs" caused by broken books, stale prices, mismatched
    resolution criteria, and 3-way race partition errors. The
    `scripts/scrutiny.py` module fetches each market's resolution rules for
-   any pair > 30pp gap and drops pairs whose criteria diverge.
+   any pair > 30pp gap and flags pairs whose rules text looks different.
+   Election party legs must pass a shared allowlist
+   (`utils/election_shapes.py`), so margin-of-victory, "within 5%" and
+   combo markets are never treated as "party wins". A basket that looks
+   too good (one leg already settled, rules differ, or > 15% return) is
+   shown as **Unverified**, never Guaranteed. Regression tests (`tests/`)
+   run before every refresh.
 4. Commits the refreshed `docs/*.js` data feeds back to master.
 
 GitHub Pages auto-redeploys from `/docs`. Cron is best-effort — actual

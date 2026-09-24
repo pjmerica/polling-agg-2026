@@ -44,6 +44,16 @@ This is a working document. As issues get fixed, move them out of the
 **To-do** section at the bottom and into the **Done** section, with the
 commit hash so we can find what changed.
 
+> **2026-09-24 update — read this first.** The Arb Scanner and Model vs Markets tabs were audited and fixed alongside pred-arbitrage (its `MATCHING_REVIEW.md` has the full diagnosis). CHANGELOG "Unreleased" (2026-09-24) has every change. Anything below that conflicts with this is stale.
+>
+> - **Party legs** (all three general loaders + `analysis/model_compare.py`) go through `utils/election_shapes.party_win_side`, an allowlist shared with pred-arb. Substring matching had made Polymarket margin-of-victory buckets the Dem leg: all 3 live "guaranteed" arbs (56–81%) were fake, and AK-Sen on the model tab was priced off a governor+Senate combo.
+> - **Stakes are proportional to price** (equal contracts on both legs). The inverse-odds split was backwards. Return and profit are per $ staked.
+> - **Kalshi race_id** (from the series ticker) must agree with the state in the title: `SENATELA-26` is the Kentucky race.
+> - **Links:** Kalshi uses `/markets/{series}/{event}`; Polymarket uses `/event/{event}/{market}`. Each leg's question is stored and shown.
+> - **`unverified` tier:** a guaranteed basket is downgraded when one leg is effectively settled, when the rules text looks different (scrutiny now warns and never drops), or when the return is above 15%.
+> - **Model tab missing-slot guard:** no edge is shown when the model lacks a candidate for a party the markets price above 5% (OK-Sen had shown +98 pts).
+> - **`tests/test_arb_regressions.py`** runs in refresh.yml and market-refresh.yml before the pipeline. The scanner writes guaranteed/unverified rows to the Actions job summary.
+
 ---
 
 ## Major design decisions (not bugs — for context)
@@ -196,7 +206,7 @@ Untracked. Local-only experimentation.
 3. **Bare/broad exception blocks** — 7 found in audit, all narrowed or
    noted in this pass. Future refactor: replace `except Exception:`
    that swallow with `print(..., file=sys.stderr)` calls.
-4. **No tests anywhere.** Cron is the only safety net. Even a single
+4. **Tests — partly done 2026-09-24:** `tests/test_arb_regressions.py` (16 arb cases) runs in CI. Still no scraper/poll smoke test. Even a single
    `tests/test_smoke.py` that runs each scraper's first 5 rows through
    the matcher would catch shape regressions.
 

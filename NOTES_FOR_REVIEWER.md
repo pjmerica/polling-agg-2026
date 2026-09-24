@@ -13,6 +13,16 @@ the only user; no auth, no PII, no user-provided input flows through
 the pipeline. Failure modes are bounded: at worst the live dashboard
 shows a stale snapshot.
 
+> **2026-09-24 update — read this first.** The Arb Scanner and Model vs Markets tabs were audited and fixed alongside pred-arbitrage (its `MATCHING_REVIEW.md` has the full diagnosis). CHANGELOG "Unreleased" (2026-09-24) has every change. Anything below that conflicts with this is stale.
+>
+> - **Party legs** (all three general loaders + `analysis/model_compare.py`) go through `utils/election_shapes.party_win_side`, an allowlist shared with pred-arb. Substring matching had made Polymarket margin-of-victory buckets the Dem leg: all 3 live "guaranteed" arbs (56–81%) were fake, and AK-Sen on the model tab was priced off a governor+Senate combo.
+> - **Stakes are proportional to price** (equal contracts on both legs). The inverse-odds split was backwards. Return and profit are per $ staked.
+> - **Kalshi race_id** (from the series ticker) must agree with the state in the title: `SENATELA-26` is the Kentucky race.
+> - **Links:** Kalshi uses `/markets/{series}/{event}`; Polymarket uses `/event/{event}/{market}`. Each leg's question is stored and shown.
+> - **`unverified` tier:** a guaranteed basket is downgraded when one leg is effectively settled, when the rules text looks different (scrutiny now warns and never drops), or when the return is above 15%.
+> - **Model tab missing-slot guard:** no edge is shown when the model lacks a candidate for a party the markets price above 5% (OK-Sen had shown +98 pts).
+> - **`tests/test_arb_regressions.py`** runs in refresh.yml and market-refresh.yml before the pipeline. The scanner writes guaranteed/unverified rows to the Actions job summary.
+
 ---
 
 ## What this project is, in one paragraph
@@ -55,6 +65,8 @@ drifted — see "Cross-repo drift" below.
 ---
 
 ## ⚠ Most important thing to know before reviewing
+
+**(Stale since 2026-07-03:** the pred-arb ports in the table below all landed on 2026-07-03 (real-ASK basket math, freshness guard, last_price, NO-token books, past-date filters). See AGENT_EXECUTION_NOTES.md "What was implemented" and the 2026-09-24 block above.)
 
 **This repo is missing several real improvements that landed in the
 sibling pred-arbitrage repo on 2026-06-21.** Those changes fix bugs
