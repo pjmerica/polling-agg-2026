@@ -35,6 +35,35 @@ _sys_path.path.insert(0, str(ROOT))
 # Shared with pred-arbitrage (identical copies; keep in sync).
 from utils.election_shapes import is_derivative, party_win_side
 from utils.links import polymarket_url as _pm_deep_url
+from utils.fees import leg_fee, kalshi_spec, polymarket_spec, predictit_spec, FEE_SAFETY_MARGIN
+
+_FEE_SPECS = None
+
+
+def _fee_spec(platform, market_id):
+    """Real fee parameters for one market leg (utils/fees.py, 2026-09-24).
+    None -> the flat FLAT_FALLBACK fee (CSV scraped before this change, or
+    a market the API gave no schedule for)."""
+    global _FEE_SPECS
+    if platform == "predictit":
+        return predictit_spec()
+    if _FEE_SPECS is None:
+        _FEE_SPECS = {}
+        try:
+            k = pd.read_csv(RAW / "kalshi_markets.csv", usecols=lambda c: c in ("market_ticker", "fee_multiplier"))
+            if "fee_multiplier" in k.columns:
+                for t, m in zip(k["market_ticker"], k["fee_multiplier"]):
+                    _FEE_SPECS[("kalshi", str(t))] = kalshi_spec(m)
+            p = pd.read_csv(RAW / "polymarket_markets.csv", dtype={"yes_token_id": str},
+                            usecols=lambda c: c in ("yes_token_id", "fee_rate"))
+            if "fee_rate" in p.columns:
+                for t, r in zip(p["yes_token_id"], p["fee_rate"]):
+                    _FEE_SPECS[("polymarket", str(t))] = polymarket_spec(r)
+        except Exception as e:
+            print(f"  WARN: fee lookup failed ({e}); flat fallback fees")
+    if market_id is None or (isinstance(market_id, float) and market_id != market_id):
+        return None
+    return _FEE_SPECS.get((platform, str(market_id)))
 
 
 def _safe_read_csv(path, **kw):
@@ -319,7 +348,8 @@ def get_race_meta():
 def compute_arb(prob_a, prob_b, fee_a, fee_b,
                 bid_a=None, ask_a=None, bid_b=None, ask_b=None,
                 no_ask_a=None, no_ask_b=None,
-                no_ask_a_real=False, no_ask_b_real=False):
+                no_ask_a_real=False, no_ask_b_real=False,
+                leg_fees=None):
     """
     Returns arb type, guaranteed return, and stake ratios for the basket
     Buy YES on one platform + Buy NO on the other.
@@ -388,7 +418,15 @@ def compute_arb(prob_a, prob_b, fee_a, fee_b,
     for pay_yes, pay_no, yes_side, no_side, is_real in directions:
         if not (0 < pay_yes < 1 and 0 < pay_no < 1):
             continue
-        net = (1.0 - (pay_yes + pay_no)) - fee_a - fee_b
+        if leg_fees is not None:
+            # Real per-leg taker fees at the price each leg trades
+            # (utils/fees.py), plus a per-basket safety margin.
+            pl = {"a": (leg_fees[0], leg_fees[1]), "b": (leg_fees[2], leg_fees[3])}
+            fees = (leg_fee(*pl[yes_side], pay_yes) + leg_fee(*pl[no_side], pay_no)
+                    + FEE_SAFETY_MARGIN)
+        else:
+            fees = fee_a + fee_b
+        net = (1.0 - (pay_yes + pay_no)) - fees
         if net > MIN_NET_RETURN and is_real and (best is None or net > best["net"]):
             best = {"net": net, "pay_yes": pay_yes, "pay_no": pay_no,
                     "yes_side": yes_side, "no_side": no_side}
@@ -540,11 +578,14 @@ def make_pair(race_id, label, state, office,
         action = f"Buy Dem on {platform_a.title()}, Sell Dem on {platform_b.title()}"
         higher = platform_b
 
+    _ex = extra or {}
     arb_math = compute_arb(
         prob_a, prob_b, FEES[platform_a], FEES[platform_b],
         bid_a=bid_a, ask_a=ask_a, bid_b=bid_b, ask_b=ask_b,
         no_ask_a=no_ask_a, no_ask_b=no_ask_b,
         no_ask_a_real=no_ask_a_real, no_ask_b_real=no_ask_b_real,
+        leg_fees=(platform_a, _fee_spec(platform_a, _ex.get("market_id_a")),
+                  platform_b, _fee_spec(platform_b, _ex.get("market_id_b"))),
     )
     arb_math = _finalize_stake_note(arb_math, platform_a, platform_b)
     arb_math.update(_settle_fields(settle_a, settle_b, arb_math.get("guaranteed_return_pct")))
@@ -1162,6 +1203,7 @@ def general_candidate_pairs(meta_df):
                     no_ask_a=_safe_num(ra.get("no_ask")), no_ask_b=_safe_num(rb.get("no_ask")),
                     no_ask_a_real=ra.get("no_ask_real") is True,
                     no_ask_b_real=rb.get("no_ask_real") is True,
+                    leg_fees=(pa, _fee_spec(pa, ra.get("market_id")), pb, _fee_spec(pb, rb.get("market_id"))),
                 )
                 arb_math = _finalize_stake_note(arb_math, pa, pb)
                 arb_math.update(_settle_fields(ra.get("settle"), rb.get("settle"),
@@ -1276,6 +1318,7 @@ def primary_pairs(meta_df):
                     no_ask_a=_safe_num(ra.get("no_ask")), no_ask_b=_safe_num(rb.get("no_ask")),
                     no_ask_a_real=ra.get("no_ask_real") is True,
                     no_ask_b_real=rb.get("no_ask_real") is True,
+                    leg_fees=(pa, _fee_spec(pa, ra.get("market_id")), pb, _fee_spec(pb, rb.get("market_id"))),
                 )
                 arb_math = _finalize_stake_note(arb_math, pa, pb)
                 arb_math.update(_settle_fields(ra.get("settle"), rb.get("settle"),
@@ -1581,6 +1624,8 @@ def run():
                 bid_b=legs["b"][0], ask_b=legs["b"][1],
                 no_ask_a=legs["a"][2], no_ask_b=legs["b"][2],
                 no_ask_a_real=legs["a"][3], no_ask_b_real=legs["b"][3],
+                leg_fees=(pa_, _fee_spec(pa_, row.get("market_id_a")),
+                          pb_, _fee_spec(pb_, row.get("market_id_b"))),
             )
             am = _finalize_stake_note(am, pa_, pb_)
             am.update(_settle_fields(row.get("settle_a"), row.get("settle_b"),

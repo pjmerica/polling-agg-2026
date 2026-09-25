@@ -325,6 +325,8 @@ def run(delay: float = 0.2):
     print(f"  Found {len(series_list)} election-related series")
     # ticker -> title map; also the membership filter for the bulk sweep.
     series_titles = {s["ticker"]: s.get("title", "") for s in series_list}
+    # Fee schedule per series (utils/fees.py: taker fee = 0.07 x multiplier x P(1-P)).
+    series_fees = {s["ticker"]: (s.get("fee_type"), s.get("fee_multiplier")) for s in series_list}
 
     print("Fetching all open events (bulk cursor pagination)...")
     events = fetch_all_open_events()
@@ -340,6 +342,7 @@ def run(delay: float = 0.2):
         title = series_titles[ticker]
         for market in event.get("markets", []):
             row = parse_market_row(event, market, ticker, title)
+            row["fee_type"], row["fee_multiplier"] = series_fees.get(ticker, (None, None))
             # Drop markets whose trading close is already past — Kalshi
             # leaves a large share of expired markets flagged "open".
             ct = row.get("close_time")

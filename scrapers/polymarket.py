@@ -345,6 +345,10 @@ def parse_market(m: dict) -> dict:
         "closed": m.get("closed"),
         "market_type": m.get("marketType"),
         "liquidity": m.get("liquidity"),
+        # Taker fee rate (utils/fees.py: fee = rate x p x (1-p) per share);
+        # 0 when fees are disabled, blank when the API omits the schedule.
+        "fee_rate": (0.0 if m.get("feesEnabled") is False
+                     else (m.get("feeSchedule") or {}).get("rate")),
         "volume": m.get("volume"),
         "best_ask": m.get("bestAsk"),
         "best_bid": m.get("bestBid"),

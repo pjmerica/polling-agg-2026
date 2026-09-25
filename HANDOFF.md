@@ -238,6 +238,21 @@ The 2% number is still conservative but stops burying real arbs under
 fake-fee math. PredictIt stays at 12% (5% on profits + 5% on
 withdrawals, applied per-leg).
 
+**Real per-leg fees (2026-09-24/25).** The guaranteed-basket math no
+longer uses the flat numbers above. `utils/fees.py` (identical copy in
+pred-arbitrage) charges each leg its platform's published taker fee at
+the price it trades, plus a 0.5¢ per-basket margin:
+
+| Platform | Taker fee | Where the parameters come from |
+|---|---|---|
+| Kalshi | 0.07 × multiplier × P(1−P) | `fee_multiplier` per series, from `/series` |
+| Polymarket | rate × p(1−p) | each market's `feeSchedule.rate` when `feesEnabled`; politics is 0.04 |
+| PredictIt | 10% of profit + 5% withdrawal | no API; conservative model |
+
+- The scrapers store `fee_type`/`fee_multiplier` (Kalshi) and `fee_rate` (Polymarket).
+- `compute_arb(..., leg_fees=...)` applies them.
+- Unknown parameters fall back to the flat `FEES` numbers, which now only drive the display-level Net gap.
+
 When changing this number: update the `FEES` dict, the dashboard
 explainer text in `docs/index.html` (search "Net gap subtracts"), and
 note the rationale in this file. Don't hard-code fees anywhere else.
@@ -402,6 +417,7 @@ docs/                  GitHub Pages site. Tracked.
   claim.
 
 **Resolution-criteria divergence**
+- **Party-win markets (verified 2026-09-25).** Kalshi resolves on the party of the person SWORN IN or inaugurated for the 2027 term. Polymarket resolves on the winner of the November election. They differ only if the winner dies, withdraws, switches party or the result is overturned before January. The risk is rare but real; treat party-win "guaranteed" baskets as near-certain, not certain.
 - Same-topic markets can have different resolution criteria. Iran
   nuclear deal: Kalshi requires a signed agreement WITH specific
   enrichment limits + sanctions relief; Polymarket accepts any publicly

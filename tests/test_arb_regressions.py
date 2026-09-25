@@ -96,3 +96,27 @@ def test_kalshi_url_pins_event():
 def test_polymarket_url_deep_links_market():
     assert arb.polymarket_url("ev", "mk") == "https://polymarket.com/event/ev/mk"
     assert arb.polymarket_url("ev", float("nan")) == "https://polymarket.com/event/ev"
+
+
+# ── real per-leg fees (2026-09-24) ─────────────────────────────────────────
+
+from utils.fees import leg_fee, kalshi_spec, polymarket_spec, predictit_spec, FEE_SAFETY_MARGIN
+
+
+def test_fee_formulas():
+    assert abs(100 * leg_fee("polymarket", polymarket_spec(0.07), 0.5) - 1.75) < 1e-9   # Polymarket docs example
+    assert abs(leg_fee("kalshi", kalshi_spec(1), 0.5) - 0.0175) < 1e-9
+    assert abs(leg_fee("predictit", predictit_spec(), 0.4) - 0.11) < 1e-9
+    assert leg_fee("kalshi", None, 0.5) == 0.02                                          # unknown -> flat
+
+
+def test_compute_arb_real_fees_clear_a_thin_basket():
+    kw = dict(bid_a=0.41, ask_a=0.43, bid_b=0.55, ask_b=0.57,
+              no_ask_a=0.58, no_ask_a_real=True, no_ask_b=0.53, no_ask_b_real=True)
+    flat = arb.compute_arb(0.43, 0.56, 0.02, 0.02, **kw)
+    real = arb.compute_arb(0.43, 0.56, 0.02, 0.02, **kw,
+                           leg_fees=("kalshi", kalshi_spec(1), "polymarket", polymarket_spec(0.04)))
+    assert flat["arb_type"] == "one-sided"            # 4c gross vs 4c flat fees
+    assert real["arb_type"] == "guaranteed"           # real fees ~2.2c + 0.5c margin
+    fees = 0.07 * 0.43 * 0.57 + 0.04 * 0.53 * 0.47 + FEE_SAFETY_MARGIN
+    assert abs(real["guaranteed_return_pct"] - 100 * (0.04 - fees) / 0.96) < 0.01
