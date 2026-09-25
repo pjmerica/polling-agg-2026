@@ -198,6 +198,12 @@ _mp = _safe_read_csv(ROOT / 'data/processed/model_predictions_2026.csv')
 if not _mp.empty:
     _mp['dem'] = _mp['party'].astype(str).str.upper().str.startswith('DEM')
     _dem = (_mp[_mp['dem']].groupby('race_id')['win_prob_norm'].sum())
+    # only races where the model has BOTH a DEM and a REP candidate: with one party missing
+    # (nominee never polled, e.g. OK-Sen, FL-2) the Dem prob is renormalized against nobody
+    # and reads ~100% - the same missing-slot case the Model-vs-Markets tab blanks. Those
+    # races fall back to the market price.
+    _both = _mp.groupby('race_id')['party'].agg(lambda s: {'DEM', 'REP'} <= set(s.astype(str).str.upper()))
+    _dem = _dem[_dem.index.isin(_both[_both].index)]
     # model race_id is '2026_ME_Senate' / '2026_NC_House-1'; agg uses '2026-GOV-CA' etc.
     OFF = {'Senate': 'SEN', 'House': 'H', 'Governor': 'GOV'}
     def to_agg_id(mid):
