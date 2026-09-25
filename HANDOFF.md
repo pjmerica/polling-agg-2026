@@ -23,7 +23,7 @@ If you're picking this up cold, read this top-to-bottom once. The
 > - **Links:** Kalshi uses `/markets/{series}/{event}`; Polymarket uses `/event/{event}/{market}`. Each leg's question is stored and shown.
 > - **`unverified` tier:** a guaranteed basket is downgraded when one leg is effectively settled, when the rules text looks different (scrutiny now warns and never drops), or when the return is above 15%.
 > - **Model tab missing-slot guard:** no edge is shown when the model lacks a candidate for a party the markets price above 5% (OK-Sen had shown +98 pts).
-> - **`tests/test_arb_regressions.py`** runs in refresh.yml and market-refresh.yml before the pipeline. The scanner writes guaranteed/unverified rows to the Actions job summary.
+> - **`tests/test_arb_regressions.py`** runs in refresh.yml and market-refresh.yml before the pipeline, and **`tests/dash_smoke.js`** runs the dashboard JS against the fresh data after it, before the commit step (a runtime exception fails the run). The scanner writes guaranteed/unverified rows to the Actions job summary.
 
 ---
 
