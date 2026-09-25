@@ -134,3 +134,38 @@ from scrapers.polymarket import infer_race_id as pm_race_id
 ])
 def test_polymarket_race_id_rejects_other_cycles(q, rid):
     assert pm_race_id(q) == rid
+
+
+# 2026-09-25: other offices and multi-state combos are not party-win legs.
+@pytest.mark.parametrize("title", [
+    "Will the Democratic Party candidate win the 2026 Vermont Lieutenant Governor election?",
+    "Will the Democratic party win the Lt. Gov race in Alabama?",
+    "Will the Democratic party win the Attorney General race in Arizona?",
+    "Will the Democrats win the Arizona Secretary of State race in 2026?",
+    "Will Democrats win the Texas, Michigan, and Maine Senate seats?",
+    "Will Democrats win the governorships of Pennsylvania, Michigan, Wisconsin, Georgia, Arizona, AND Nevada?",
+])
+def test_party_win_rejects_other_offices_and_combos(title):
+    assert party_win_side(title) is None
+
+
+def test_party_win_west_virginia_is_one_state():
+    assert party_win_side("Will the Democrats win the West Virginia Senate race in 2026?") == "dem"
+
+
+def test_polymarket_loader_keeps_every_equivalent_dem_market(tmp_path, monkeypatch):
+    # 2026-09-25: the winner event and the margin event both list a plain
+    # "Democratic candidate wins" market; both must be paired (AR-Gov traded
+    # at 2.7c vs 0.25c and the liquidity pick flipped between runs).
+    rows = [
+        {"race_id": "2026-GOV-AR", "question": "Will the Democrats win the Arkansas governor race in 2026?",
+         "implied_prob": 0.027, "liquidity": 13000, "volume": 1, "event_slug": "ar-winner", "market_slug": "ar-dem"},
+        {"race_id": "2026-GOV-AR", "question": "Will the Democratic Party candidate win the 2026 Arkansas gubernatorial election?",
+         "implied_prob": 0.0025, "liquidity": 13100, "volume": 1, "event_slug": "ar-mov", "market_slug": "ar-mov-dem"},
+        {"race_id": "2026-GOV-AR", "question": "Will the Republicans win the Arkansas governor race in 2026?",
+         "implied_prob": 0.97, "liquidity": 13000, "volume": 1, "event_slug": "ar-winner", "market_slug": "ar-rep"},
+    ]
+    pd.DataFrame(rows).to_csv(tmp_path / "polymarket_markets.csv", index=False)
+    monkeypatch.setattr(arb, "RAW", tmp_path)
+    out = arb.load_polymarket_general()
+    assert sorted(out["pm_dem"]) == [0.0025, 0.027]
