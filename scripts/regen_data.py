@@ -138,7 +138,49 @@ else:
     print(f"Polls after parse + dedup: {len(polls)}")
 
 # ── data.js ──
-agg = _safe_read_csv(ROOT / 'data/processed/aggregated.csv').fillna('')
+# One row per race on the real 2026 ballot (utils/races.py), rebuilt every run (2026-09-25).
+# This used to read data/processed/aggregated.csv, written by analysis/aggregator.py - which
+# run_all.py never calls, so every market number on the Dashboard tab was frozen at
+# 2026-04-14. It also averaged EVERY market touching a race (Dem-win and Rep-win contracts,
+# nominee and margin markets, raw poll shares) into one "probability", and let off-cycle
+# markets create 31 races that are not on the 2026 ballot (2025 NJ-Gov, 2028 PA-Sen, ...).
+# The market fallback is now the Model-vs-Markets tab's vetted party-winner price
+# (utils/election_shapes allowlist, vig-normalized per venue, averaged across venues).
+from utils.races import ALL_RACES_2026
+from analysis.model_compare import load_party_markets, norm_pair
+
+def _venue_dem(book):
+    d = book.get('DEM', {}).get('prob'); r = book.get('REP', {}).get('prob')
+    if d is not None:
+        return norm_pair(d, r)
+    return (1.0 - r) if r is not None else None
+
+_books = {}
+for _name, _csv, _col in [('kalshi', 'kalshi_markets.csv', 'market_title'),
+                          ('polymarket', 'polymarket_markets.csv', 'question')]:
+    _p = ROOT / 'data' / 'raw' / _csv
+    _books[_name] = load_party_markets(_p, _col) if _p.exists() else {}
+_n_polls = (polls[polls['stage'].astype(str).str.lower().eq('general')]
+            .groupby('race_id')['poll_id'].nunique().to_dict()) if not polls.empty else {}
+_now = pd.Timestamp.now(tz='UTC').isoformat()
+_rows = []
+for race in ALL_RACES_2026:
+    rid = race.race_id
+    quotes = {v: _venue_dem(b[rid]) for v, b in _books.items() if rid in b}
+    quotes = {v: q for v, q in quotes.items() if q is not None}
+    srcs = list(quotes) + (['nyt'] if _n_polls.get(rid) else [])
+    _rows.append({
+        'race_id': rid, 'state': race.state, 'state_abbrev': race.state_abbrev,
+        'office': race.office, 'district': (int(race.district) if race.district else ''),
+        'incumbent_party': race.incumbent_party or '', 'incumbent_name': race.incumbent_name or '',
+        'implied_prob_avg': (round(float(np.mean(list(quotes.values()))), 4) if quotes else ''),
+        'n_sources': len(quotes) + int(_n_polls.get(rid, 0)),
+        'sources': '|'.join(srcs),
+        'updated_at': _now,
+    })
+agg = pd.DataFrame(_rows)
+print(f"  data.js: {len(agg)} races, fresh party-market price for "
+      f"{int((agg['implied_prob_avg'] != '').sum())}")
 def label(row):
     if row['office'] == 'H':
         d = str(row['district'])
@@ -163,9 +205,13 @@ if not _mp.empty:
         if len(p) < 3:
             return None
         yr, st, off = p[0], p[1], p[2]
+        if off.endswith('-S') and OFF.get(off[:-2]) in ('SEN', 'GOV'):   # 2026_FL_Senate-S
+            return f"{yr}-{OFF[off[:-2]]}-{st}-S"
+        # House is 'House-1' (one '_' field), not 'House_1': the old `p[3]` branch never
+        # fired, so none of the model's ~100 House races reached this tab (fixed 2026-09-25)
+        if off.startswith('House-'):
+            return f"{yr}-H-{st}-{int(off.split('-')[1]):02d}"
         code = OFF.get(off)
-        if off == 'House' and len(p) > 3:
-            return f"{yr}-H-{st}-{int(p[3]):02d}"
         return f"{yr}-{code}-{st}" if code else None
     model_dem = {to_agg_id(rid): round(float(v), 4) for rid, v in _dem.items()}
     agg['model_dem_prob'] = agg['race_id'].map(model_dem)
@@ -236,6 +282,8 @@ for race_id, rdf in _race_polls.groupby('race_id'):
     office = parts[1]; sa = parts[2]
     district = parts[3] if len(parts) > 3 and office == 'H' else ''
     lbl = f"{sa}-{district}" if office == 'H' else f"{sa} {office}"
+    if parts[0] != '2026':      # off-cycle archive (2025 NJ/VA-Gov, 2028 PA-Sen): say so
+        lbl += f" {parts[0]}"
     n_over50 = sum(1 for p in poll_list if p['any_over50'])
     # n_general = distinct GENERAL-stage surveys (what the model uses); n_polls = every
     # poll shown in the browser (incl. primary/jungle/single-candidate).

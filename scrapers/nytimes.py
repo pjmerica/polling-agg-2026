@@ -85,22 +85,31 @@ def infer_race_id(row: pd.Series, office_type: str) -> str | None:
     NYT 'state' column uses 2-letter abbreviations (e.g. 'PA', 'FL').
     NYT 'office_type' is 'U.S. Senate', 'U.S. House', or 'Governor'.
     NYT 'seat_number' is district number for House races.
+
+    The year prefix is the poll's own 'cycle' (2026-09-25). It used to be hardcoded 2026,
+    so the feed's 2025 NJ/VA governor polls became '2026-GOV-NJ'/'2026-GOV-VA' (races
+    already decided in Nov 2025, then scored live by the model), 2028 PA-Sen polls became a
+    '2026-SEN-PA' race that does not exist, and 2028 NC-Gov polls likewise.
     """
     state = str(row.get("state", "")).strip().upper()
     if state not in VALID_STATE_ABBREVS and state != "US":
         return None
+    try:
+        year = int(float(row.get("cycle")))
+    except (TypeError, ValueError):
+        year = 2026
 
     if office_type == "senate":
-        if state == "FL":
+        if year == 2026 and state == "FL":
             return "2026-SEN-FL-S"  # Special (Rubio vacancy)
-        if state == "OH":
+        if year == 2026 and state == "OH":
             # OH special and regular both exist; stage can disambiguate
             # For now map all OH senate polls to special (Vance vacancy is the main race)
             return "2026-SEN-OH-S"
-        return f"2026-SEN-{state}" if state in VALID_STATE_ABBREVS else None
+        return f"{year}-SEN-{state}" if state in VALID_STATE_ABBREVS else None
 
     if office_type == "governor":
-        return f"2026-GOV-{state}" if state in VALID_STATE_ABBREVS else None
+        return f"{year}-GOV-{state}" if state in VALID_STATE_ABBREVS else None
 
     if office_type == "house":
         seat = str(row.get("seat_number", "")).strip()
@@ -110,7 +119,7 @@ def infer_race_id(row: pd.Series, office_type: str) -> str | None:
             district = str(int(float(seat))).zfill(2)
         except (ValueError, TypeError):
             return None
-        return f"2026-H-{state}-{district}"
+        return f"{year}-H-{state}-{district}"
 
     return None
 

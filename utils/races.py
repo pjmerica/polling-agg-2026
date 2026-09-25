@@ -133,10 +133,6 @@ SENATE_RACES_2026 = [
          incumbent_party="D", incumbent_name="Jon Ossoff",
          primary_date="2026-05-19"),
 
-    # Hawaii — incumbent running
-    Race("2026-SEN-HI", 2026, "SEN", "Hawaii", "HI",
-         incumbent_party="D", incumbent_name="Brian Schatz",
-         primary_date="2026-08-08"),
 
     # Idaho — incumbent running (Jim Risch, Class II)
     Race("2026-SEN-ID", 2026, "SEN", "Idaho", "ID",
@@ -281,11 +277,6 @@ SENATE_RACES_2026 = [
          incumbent_party="D", incumbent_name="Mark Warner",
          primary_date="2026-08-04"),
 
-    # Washington — open seat (Murray retiring)
-    Race("2026-SEN-WA", 2026, "SEN", "Washington", "WA",
-         incumbent_party="D", incumbent_name="Patty Murray",
-         open_seat=True, open_reason="retiring",
-         primary_date="2026-08-04"),
 
     # West Virginia — incumbent running (Shelley Moore Capito, Class II)
     Race("2026-SEN-WV", 2026, "SEN", "West Virginia", "WV",
@@ -398,11 +389,6 @@ GOVERNOR_RACES_2026 = [
          open_seat=True, open_reason="term-limited",
          primary_date="2026-08-04"),
 
-    # Kentucky — open (Andy Beshear term-limited)
-    Race("2026-GOV-KY", 2026, "GOV", "Kentucky", "KY",
-         incumbent_party="D", incumbent_name="Andy Beshear",
-         open_seat=True, open_reason="term-limited",
-         primary_date="2026-05-19"),
 
     # Maine — open (Janet Mills term-limited)
     Race("2026-GOV-ME", 2026, "GOV", "Maine", "ME",
@@ -432,10 +418,6 @@ GOVERNOR_RACES_2026 = [
          open_seat=True, open_reason="retiring",
          primary_date="2026-08-11"),
 
-    # Missouri — incumbent running (Mike Kehoe)
-    Race("2026-GOV-MO", 2026, "GOV", "Missouri", "MO",
-         incumbent_party="R", incumbent_name="Mike Kehoe",
-         primary_date="2026-08-04"),
 
     # Nebraska — incumbent running (Jim Pillen)
     Race("2026-GOV-NE", 2026, "GOV", "Nebraska", "NE",
@@ -452,11 +434,6 @@ GOVERNOR_RACES_2026 = [
          incumbent_party="R", incumbent_name="Kelly Ayotte",
          primary_date="2026-09-08"),
 
-    # New Jersey — open (Phil Murphy term-limited; general Nov 2026 but primary June 2026)
-    Race("2026-GOV-NJ", 2026, "GOV", "New Jersey", "NJ",
-         incumbent_party="D", incumbent_name="Phil Murphy",
-         open_seat=True, open_reason="term-limited",
-         primary_date="2026-06-02"),
 
     # New Mexico — open (Michelle Lujan Grisham term-limited)
     Race("2026-GOV-NM", 2026, "GOV", "New Mexico", "NM",
