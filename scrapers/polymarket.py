@@ -43,6 +43,12 @@ HEADERS = DEFAULT_HEADERS
 ELECTION_KEYWORDS = [
     "senate", "senator", "governor", "gubernatorial",
     "house seat", "congressional district", "congress",
+    # 2026-09-25: Polymarket's margin-of-victory events word House races
+    # "...win the 2026 PA-02 House election?"; none of the above matched,
+    # so ~400 House margin events (and the plain party-candidate market in
+    # each) were never scraped. Buckets are still rejected downstream by
+    # utils/election_shapes.party_win_side.
+    "house election", "house race",
     "win the seat", "2026 midterm", "2026 election",
     "control the senate", "control the house",
     "balance of power",
@@ -205,6 +211,31 @@ def _fetch_events_for_tag(tag_slug: str, limit: int = 100) -> list[dict]:
     return events
 
 
+def _fetch_all_events_keyset():
+    """All active events, 500 per page; None on any failure (same as
+    pred-arbitrage's fetch_all_events_keyset)."""
+    events, seen, cursor = [], set(), None
+    while True:
+        params = {"limit": 500, "active": "true", "closed": "false"}
+        if cursor:
+            params["after_cursor"] = cursor
+        try:
+            data = _get("/events/keyset", params)
+        except Exception as e:
+            print(f"  keyset page failed ({e}); falling back to tag queries")
+            return None
+        page = (data or {}).get("events") or []
+        new = [e for e in page if e.get("id") not in seen]
+        if page and not new:
+            print("  keyset cursor did not advance; falling back to tag queries")
+            return None
+        seen.update(e.get("id") for e in new)
+        events.extend(new)
+        cursor = (data or {}).get("next_cursor")
+        if not cursor or not page:
+            return events
+
+
 def fetch_all_active_markets(limit: int = 100) -> list[dict]:
     """
     Fetch active Polymarket events via per-tag queries; flatten into markets.
@@ -217,10 +248,19 @@ def fetch_all_active_markets(limit: int = 100) -> list[dict]:
     seen_event_ids = set()
     seen_market_ids = set()
 
-    for tag in TAG_SLUGS:
-        batch = _fetch_events_for_tag(tag, limit)
+    # 2026-09-25: every active event via /events/keyset (param
+    # `after_cursor`; works — the June probe never tried that name), then
+    # the keyword sieve below. The per-tag windows missed 435 race-tagged
+    # events, mostly the margin-of-victory events that carry the plain
+    # "Democratic/Republican Party candidate wins" markets. Falls back to
+    # the tag queries if keyset fails or its cursor stops advancing.
+    keyset = _fetch_all_events_keyset()
+    sources = [("keyset", keyset)] if keyset is not None else \
+        [(tag, _fetch_events_for_tag(tag, limit)) for tag in TAG_SLUGS]
+
+    for tag, batch in sources:
         new = [e for e in batch if e.get("id") not in seen_event_ids]
-        print(f"  tag={tag}: {len(batch)} events ({len(new)} new)")
+        print(f"  {tag}: {len(batch)} events ({len(new)} new)")
         for event in new:
             seen_event_ids.add(event.get("id"))
             event_slug = event.get("slug", "") or ""
