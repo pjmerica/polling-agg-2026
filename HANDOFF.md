@@ -249,7 +249,7 @@ the price it trades, plus a 0.5¢ per-basket margin:
 | Polymarket | rate × p(1−p) | each market's `feeSchedule.rate` when `feesEnabled`; politics is 0.04 |
 | PredictIt | 10% of profit + 5% withdrawal | no API; conservative model |
 
-- The scrapers store `fee_type`/`fee_multiplier` (Kalshi) and `fee_rate` (Polymarket).
+- The scrapers store `fee_type`/`fee_multiplier` (Kalshi, with event-level overrides from `/events/fee_changes` applied) and `fee_rate` (Polymarket).
 - `compute_arb(..., leg_fees=...)` applies them.
 - Unknown parameters fall back to the flat `FEES` numbers, which now only drive the display-level Net gap.
 

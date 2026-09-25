@@ -316,6 +316,33 @@ def parse_market_row(event: dict, market: dict, series_ticker: str, series_title
     }
 
 
+def fetch_event_fee_overrides() -> dict:
+    """{event_ticker: (fee_type, fee_multiplier)} for event-level fee
+    overrides already in effect (GET /events/fee_changes, public). Same
+    logic as pred-arbitrage's scraper; see utils/fees.py."""
+    from datetime import datetime as _dt, timezone as _tz
+    now = _dt.now(_tz.utc).isoformat()
+    latest, cursor = {}, None
+    for _ in range(50):
+        params = {"limit": "1000"}
+        if cursor:
+            params["cursor"] = cursor
+        try:
+            data = _get("/events/fee_changes", params)
+        except Exception as e:
+            print(f"  WARN: event fee overrides unavailable ({e})")
+            break
+        rows = data.get("event_fee_changes", [])
+        for r in rows:
+            ts = r.get("scheduled_ts") or ""
+            if ts and ts <= now and ts >= latest.get(r["event_ticker"], ("",))[0]:
+                latest[r["event_ticker"]] = (ts, r.get("fee_type_override"), r.get("fee_multiplier_override"))
+        cursor = data.get("cursor")
+        if not cursor or not rows:
+            break
+    return {ev: (ft, fm) for ev, (_, ft, fm) in latest.items() if ft is not None and fm is not None}
+
+
 def run(delay: float = 0.2):
     """Fetch all Kalshi election markets and save to data/raw/kalshi_markets.csv."""
     RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -327,6 +354,7 @@ def run(delay: float = 0.2):
     series_titles = {s["ticker"]: s.get("title", "") for s in series_list}
     # Fee schedule per series (utils/fees.py: taker fee = 0.07 x multiplier x P(1-P)).
     series_fees = {s["ticker"]: (s.get("fee_type"), s.get("fee_multiplier")) for s in series_list}
+    event_fees = fetch_event_fee_overrides()   # event-level overrides win over the series fee
 
     print("Fetching all open events (bulk cursor pagination)...")
     events = fetch_all_open_events()
@@ -342,7 +370,8 @@ def run(delay: float = 0.2):
         title = series_titles[ticker]
         for market in event.get("markets", []):
             row = parse_market_row(event, market, ticker, title)
-            row["fee_type"], row["fee_multiplier"] = series_fees.get(ticker, (None, None))
+            row["fee_type"], row["fee_multiplier"] = (event_fees.get(event.get("event_ticker"))
+                                                      or series_fees.get(ticker, (None, None)))
             # Drop markets whose trading close is already past — Kalshi
             # leaves a large share of expired markets flagged "open".
             ct = row.get("close_time")
