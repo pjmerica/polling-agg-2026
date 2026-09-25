@@ -120,3 +120,17 @@ def test_compute_arb_real_fees_clear_a_thin_basket():
     assert real["arb_type"] == "guaranteed"           # real fees ~2.2c + 0.5c margin
     fees = 0.07 * 0.43 * 0.57 + 0.04 * 0.53 * 0.47 + FEE_SAFETY_MARGIN
     assert abs(real["guaranteed_return_pct"] - 100 * (0.04 - fees) / 0.96) < 0.01
+
+
+# 2026-09-25: other cycles and Mexico's Baja California got 2026 US ids.
+from scrapers.polymarket import infer_race_id as pm_race_id
+
+
+@pytest.mark.parametrize("q, rid", [
+    ("Will the Democrats win the Kentucky governor race in 2027?", None),
+    ("Will Juan Carlos Hank win the 2027 Baja California Governor Election?", None),
+    ("Will Roxana Higuera win the 2027 Baja California Sur Governor Election?", None),
+    ("Will the Democrats win the Maine Senate race in 2026?", "2026-SEN-ME"),
+])
+def test_polymarket_race_id_rejects_other_cycles(q, rid):
+    assert pm_race_id(q) == rid

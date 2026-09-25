@@ -80,6 +80,14 @@ def infer_race_id(question: str) -> str | None:
     """Map a Polymarket question to a canonical race_id."""
     q = question.lower()
 
+    # 2026-09-25: a different cycle ("Kentucky governor race in 2027") or
+    # Mexico's Baja California (Sur) got 2026 US ids (2026-GOV-KY,
+    # 2026-GOV-CA). Same guard as pred-arb's title_is_2026_us_race.
+    if "baja california" in q:
+        return None
+    if "2026" not in q and re.search(r"\b20(?:2[7-9]|[3-9]\d)\b", q):
+        return None
+
     # Skip control/balance-of-power questions
     if any(k in q for k in ["control the", "balance of power", "how many seats", "which party will win the"]):
         return None
