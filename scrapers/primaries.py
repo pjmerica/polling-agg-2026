@@ -406,6 +406,63 @@ def run():
             r["state_abbrev"], r["date_iso"], r["description"]
         )
 
+    # MERGE with the published calendar (2026-09-25). Ballotpedia drops a primary once it has
+    # happened, so a scrape in late September parses only the last few (MA/NH/RI/DE) - and
+    # used to REPLACE the whole calendar with them, emptying the Primaries tab of every past
+    # primary. Rows are keyed (state, date, description); today's scrape wins on a clash, and
+    # a past row the calendar no longer lists is kept.
+    docs_path = Path(__file__).parent.parent / "docs" / "primaries_data.js"
+    if docs_path.exists():
+        try:
+            txt = docs_path.read_text(encoding="utf-8")
+            prior = json.loads(txt[txt.index("=") + 1:].rstrip().rstrip(";"))
+            key = lambda r: (r.get("state_abbrev"), r.get("date_iso"), r.get("description"))
+            seen = {key(r) for r in races}
+            kept = [r for r in prior.get("races", []) if key(r) not in seen]
+            if kept:
+                print(f"  merged {len(kept)} previously published rows the calendar no longer lists")
+            races = sorted(races + kept, key=lambda r: (r.get("date_iso") or "", r.get("state_abbrev") or ""))
+        except Exception as e:
+            print(f"  WARN: could not merge prior {docs_path.name} ({e}); writing today's rows only")
+
+    # BACKFILL states whose primary predates the first scrape (2026-09-25): collection began
+    # mid-June, so March-June primaries (TX, NC, AR, MS, IL, OH, IN, GA, PA, ...) were never
+    # recorded. Their dates come from utils/races.py (validated against the calendar) and each
+    # row says it was backfilled.
+    try:
+        import sys as _s
+        _s.path.insert(0, str(Path(__file__).parent.parent))
+        from utils.races import ALL_RACES_2026, STATE_ABBREVS
+        name_of = {v: k for k, v in STATE_ABBREVS.items()}
+        have = {r.get("state_abbrev") for r in races}
+        first = {}
+        for r in ALL_RACES_2026:
+            if r.primary_date and r.state_abbrev not in have:
+                first[r.state_abbrev] = min(first.get(r.state_abbrev, "9999"), r.primary_date)
+        first.setdefault("IN", "2026-05-05") if "IN" not in have else None
+        acc = Path(__file__).parent.parent / "data" / "processed" / "primary_calendar_2026.json"
+        recorded = json.loads(acc.read_text(encoding="utf-8")) if acc.exists() else {}
+        for st, dt in first.items():
+            t = types.get(st, {})
+            races.append({
+                "date_iso": dt, "state": name_of.get(st, st), "state_abbrev": st,
+                "office": "MIXED",
+                "description": f"{name_of.get(st, st)} statewide primary election "
+                               f"(backfilled - before the calendar was first scraped)",
+                "ballotpedia_url": f"https://ballotpedia.org/{name_of.get(st, st).replace(' ', '_')}_elections,_2026",
+                "primary_type": t.get("type"), "primary_type_detail": t.get("type_detail"),
+                "electoral_system": t.get("electoral_system", "FPTP"),
+                # only a runoff date the calendar actually RECORDED for this state (the
+                # accumulator keeps each state's latest date); compute_runoff_date's generic
+                # rules gave TX May 5 (real: May 26) and LA Dec 5 - never guess, leave blank
+                "runoff_date_iso": (recorded.get(st) if recorded.get(st, "") > dt else None),
+            })
+        if first:
+            print(f"  backfilled {len(first)} states from utils/races.py: {sorted(first)}")
+        races = sorted(races, key=lambda r: (r.get("date_iso") or "", r.get("state_abbrev") or ""))
+    except Exception as e:
+        print(f"  WARN: backfill from utils/races.py skipped ({e})")
+
     data = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "source_urls": [CALENDAR_URL, PRIMARY_TYPES_URL],
