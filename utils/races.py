@@ -121,10 +121,11 @@ SENATE_RACES_2026 = [
          incumbent_party="D", incumbent_name="Chris Coons",
          primary_date="2026-09-15"),
 
-    # Florida — SPECIAL ELECTION (Rubio resigned Jan 2025)
+    # Florida — SPECIAL ELECTION (Rubio resigned Jan 2025). Ashley Moody was APPOINTED to the
+    # seat (Jan 2025) and is running, so it is not an open seat (fixed 2026-09-25).
     Race("2026-SEN-FL-S", 2026, "SEN", "Florida", "FL",
-         incumbent_party="R", incumbent_name=None,
-         open_seat=True, open_reason="rubio-resigned-secretary-of-state",
+         incumbent_party="R", incumbent_name="Ashley Moody",
+         open_reason="rubio-resigned-secretary-of-state; appointed incumbent running",
          special=True, primary_date="2026-08-18",
          general_date="2026-11-03"),
 
@@ -230,10 +231,11 @@ SENATE_RACES_2026 = [
          open_seat=True, open_reason="retiring",
          primary_date="2026-03-03"),
 
-    # Ohio — SPECIAL ELECTION (Vance resigned Jan 2025 to become VP)
+    # Ohio — SPECIAL ELECTION (Vance resigned Jan 2025 to become VP). Jon Husted was APPOINTED
+    # to the seat (Jan 2025) and is running, so it is not an open seat (fixed 2026-09-25).
     Race("2026-SEN-OH-S", 2026, "SEN", "Ohio", "OH",
-         incumbent_party="R", incumbent_name=None,
-         open_seat=True, open_reason="vance-resigned-vp",
+         incumbent_party="R", incumbent_name="Jon Husted",
+         open_reason="vance-resigned-vp; appointed incumbent running",
          special=True, primary_date="2026-05-05",
          general_date="2026-11-03"),
 
@@ -404,7 +406,7 @@ GOVERNOR_RACES_2026 = [
     # Massachusetts — incumbent running (Maura Healey)
     Race("2026-GOV-MA", 2026, "GOV", "Massachusetts", "MA",
          incumbent_party="D", incumbent_name="Maura Healey",
-         primary_date="2026-09-03"),
+         primary_date="2026-09-01"),
 
     # Michigan — open (Gretchen Whitmer term-limited)
     Race("2026-GOV-MI", 2026, "GOV", "Michigan", "MI",
@@ -450,13 +452,13 @@ GOVERNOR_RACES_2026 = [
     Race("2026-GOV-OH", 2026, "GOV", "Ohio", "OH",
          incumbent_party="R", incumbent_name="Mike DeWine",
          open_seat=True, open_reason="term-limited",
-         primary_date="2026-08-04"),
+         primary_date="2026-05-05"),
 
     # Oklahoma — open (Kevin Stitt term-limited)
     Race("2026-GOV-OK", 2026, "GOV", "Oklahoma", "OK",
          incumbent_party="R", incumbent_name="Kevin Stitt",
          open_seat=True, open_reason="term-limited",
-         primary_date="2026-06-24"),
+         primary_date="2026-06-16"),
 
     # Oregon — incumbent running (Tina Kotek)
     Race("2026-GOV-OR", 2026, "GOV", "Oregon", "OR",

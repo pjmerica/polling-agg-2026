@@ -55,6 +55,9 @@ DEFAULT_MARGIN_PREDS = _first_existing(
 
 OFFICE_CODE = {"Senate": "SEN", "House": "H", "Governor": "GOV"}
 
+# states whose general election can carry several candidates of ONE party (top-two / AK top-four)
+TOP_N_STATES = {"CA", "WA", "AK"}
+
 STATE_ABBR = {
     'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA','Colorado':'CO',
     'Connecticut':'CT','Delaware':'DE','District of Columbia':'DC','Florida':'FL','Georgia':'GA',
@@ -265,6 +268,24 @@ def decided_primary_states(today=None):
                 accum[st] = max(accum.get(st, ""), dt)
         with open(accum_path, "w", encoding="utf-8") as f:
             json.dump(accum, f, indent=0, sort_keys=True)
+    # SEED from utils/races.py (2026-09-25): the accumulator only started after the spring
+    # primaries had already rolled off Ballotpedia's calendar, so AR, IL, IN, LA, MS and OH
+    # were never recorded - and every race in them (OH-Sen special, OH-Gov, AR-Sen, MS-Sen...)
+    # was silently left off this tab as "primary not decided". A state missing from the
+    # accumulator takes its latest primary_date from the canonical race list.
+    try:
+        from utils.races import ALL_RACES_2026
+        seed = {}
+        for r in ALL_RACES_2026:
+            if r.primary_date:
+                seed[r.state_abbrev] = max(seed.get(r.state_abbrev, ""), r.primary_date)
+        # Indiana has no 2026 Senate/Governor race to carry a date; its primary is fixed by
+        # statute (first Tuesday after the first Monday in May).
+        seed.setdefault("IN", "2026-05-05")
+        for st, dt in seed.items():
+            accum.setdefault(st, dt)
+    except Exception as e:  # never let the seed break the tab
+        print(f"  (primary-date seed from utils/races.py skipped: {e})")
     today = today or date.today().isoformat()
     return {st for st, dt in accum.items() if dt < today}, accum
 
@@ -356,6 +377,13 @@ def main():
         st = g["state"].iloc[0]
         if st not in decided:
             continue
+        # Louisiana HOUSE (2026-09-25): after Louisiana v. Callais the state suspended its May
+        # House primaries and moved them to a JUNGLE first round on Nov 3 with a Dec 12 runoff.
+        # There are no nominees; the "general" polls are crowded first-round fields (LA-6: a
+        # Democrat leads a split GOP field at 19%), so a win probability from them is not
+        # comparable to a who-wins-the-seat market. LA's Senate race (spring party primary) stays.
+        if st == "LA" and g["office"].iloc[0] == "House":
+            continue
         mrid = market_race_id(g.iloc[0])
         dem = g[g["party"] == "DEM"]
         rep = g[g["party"] == "REP"]
@@ -369,15 +397,26 @@ def main():
         r_top = rep.loc[rep["win_prob"].idxmax()] if len(rep) else None
         dp = float(d_top["win_prob"]) if d_top is not None else None
         rp = float(r_top["win_prob"]) if r_top is not None else None
-        if dp is not None and rp is not None:
+        # TOP-TWO / TOP-FOUR states (CA, WA; AK top-four): after the primary, several
+        # same-party candidates are REAL co-candidates on the November ballot, not leftover
+        # hypotheticals - so the party's chance is the SUM of its candidates' (2026-09-25).
+        # Before this, a D-v-D race (CA-7 Matsui v Vang, CA-11, CA-34) showed the LEADING
+        # Democrat's 53-76% as P(Dem wins) against markets correctly at ~100%.
+        multi_ok = st in TOP_N_STATES
+        if multi_ok and (len(dem) or len(rep)):
+            dsum = float(dem["win_prob_norm"].sum()) if len(dem) else 0.0
+            rsum = float(rep["win_prob_norm"].sum()) if len(rep) else 0.0
+            model_dem = dsum / (dsum + rsum) if (dsum + rsum) > 0 else None
+        elif dp is not None and rp is not None:
             model_dem = dp / (dp + rp) if (dp + rp) > 0 else None
         elif dp is not None:
-            model_dem = float(d_top["win_prob_norm"])   # no Rep in field (e.g. top-two D-v-D)
+            # no Rep polled: every Dem in the field is a Dem - their chances add up
+            model_dem = float(dem["win_prob_norm"].sum())
         elif rp is not None:
-            model_dem = 1.0 - float(r_top["win_prob_norm"])
+            model_dem = 1.0 - float(rep["win_prob_norm"].sum())
         else:
             model_dem = None
-        unresolved = bool(len(dem) > 1 or len(rep) > 1)
+        unresolved = bool((len(dem) > 1 or len(rep) > 1) and not multi_ok)
         dem_display = (d_top["display_party"] if d_top is not None
                        and "display_party" in dem.columns else "DEM")
         # the model's "Dem slot" is really an independent (e.g. Osborn): the party-level
