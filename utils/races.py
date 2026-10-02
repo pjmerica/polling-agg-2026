@@ -254,9 +254,11 @@ SENATE_RACES_2026 = [
          incumbent_party="D", incumbent_name="Jack Reed",
          primary_date="2026-09-08"),
 
-    # South Carolina — incumbent running
+    # South Carolina — Lindsey Graham won the June 9 primary and died July 11; his sister
+    # Darline Graham was appointed interim senator and won the Aug 25 special-primary runoff
+    # over Ralph Norman (52.4-47.6), so she is the incumbent AND the nominee (2026-10-02).
     Race("2026-SEN-SC", 2026, "SEN", "South Carolina", "SC",
-         incumbent_party="R", incumbent_name="Lindsey Graham",
+         incumbent_party="R", incumbent_name="Darline Graham",
          primary_date="2026-06-09"),
 
     # South Dakota — incumbent running (Mike Rounds, Class II)
