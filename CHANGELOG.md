@@ -15,6 +15,7 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[3aefb8a]` races.py: SC-Sen incumbent Darline Graham (2026-10-02) - Lindsey Graham won the June 9 primary and died July 11; his sister was appointed interim senator and won the Aug 25 special-primary runoff over Ralph Norman (52.4-47.6).
 - `[9cc05bf]` Primaries tab: merge instead of replace, backfill spring primaries (2026-09-25) - a late-season Ballotpedia scrape (4 rows) replaced the whole calendar; the tab had been frozen at 07-15. Rows now merge; 19 March-June states backfilled from utils/races.py (labelled); runoff dates only where recorded. 32 -> 51 rows.
 - `[af84d6a]` Model tab: spring-primary states restored (AR/IL/IN/LA/MS/OH were never 'decided', so OH-Sen, OH-Gov, AR-Sen, MS-Sen were missing; 135 -> 150 races), top-two/top-four party chance = sum of the party's candidates (CA D-v-D races read 53-76% instead of ~100%), Louisiana House excluded (Nov 3 jungle + Dec 12 runoff, no nominees); races.py: FL-S/OH-S appointed incumbents running (Moody, Husted), three contradictory primary dates fixed (2026-09-25).
 - `[0a965e3]` redistricted_2026: drop VA (map voided 2026-05-08), mark MO contested (SCOTUS pending) (2026-09-25). Same day, model repo `aefe06f`: staleness + cross-source audit (approval/generic-ballot/sentiment gaps filled through September, FEC legal-name and special-race joins, bio carry-forward, majority party tag); all four models retrained.
