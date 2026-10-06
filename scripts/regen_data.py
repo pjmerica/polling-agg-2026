@@ -204,6 +204,18 @@ if not _mp.empty:
     # races fall back to the market price.
     _both = _mp.groupby('race_id')['party'].agg(lambda s: {'DEM', 'REP'} <= set(s.astype(str).str.upper()))
     _dem = _dem[_dem.index.isin(_both[_both].index)]
+    # TOP-TWO same-party finals (CA/WA, 2026-10-06): two or more candidates of ONE party and
+    # none of the other is a D-v-D / R-v-R November ballot (CA-7 Matsui v Vang, CA-11, CA-34;
+    # CA-40 Kim v Calvert), so the party outcome is certain - 1.0 / 0.0, not a market fallback.
+    _pp = _mp[_mp['party'].astype(str).str.upper().isin(['DEM', 'REP'])]
+    _pc = _pp.groupby(['race_id', 'party']).size().unstack(fill_value=0)
+    for _c in ('DEM', 'REP'):
+        if _c not in _pc.columns:
+            _pc[_c] = 0
+    _tt = _pc.index.str.contains(r'^2026_(CA|WA)_')
+    _dem = pd.concat([_dem,
+                      pd.Series(1.0, index=_pc.index[_tt & (_pc['DEM'] >= 2) & (_pc['REP'] == 0)]),
+                      pd.Series(0.0, index=_pc.index[_tt & (_pc['REP'] >= 2) & (_pc['DEM'] == 0)])])
     # model race_id is '2026_ME_Senate' / '2026_NC_House-1'; agg uses '2026-GOV-CA' etc.
     OFF = {'Senate': 'SEN', 'House': 'H', 'Governor': 'GOV'}
     def to_agg_id(mid):
@@ -220,6 +232,12 @@ if not _mp.empty:
         code = OFF.get(off)
         return f"{yr}-{code}-{st}" if code else None
     model_dem = {to_agg_id(rid): round(float(v), 4) for rid, v in _dem.items()}
+    # Louisiana HOUSE (2026-10-06, same rule as analysis/model_compare.py): after Louisiana v.
+    # Callais the House races are an all-party JUNGLE round on Nov 3 with a Dec 12 runoff, so
+    # the polls are split first-round fields, not a nominee matchup. LA-6 read 69% Dem from a
+    # Democrat leading a split GOP field in a seat redrawn for Republicans (markets ~7%).
+    # Market price instead. LA's Senate race (spring party primaries) keeps the model.
+    model_dem = {k: v for k, v in model_dem.items() if not str(k).startswith('2026-H-LA-')}
     agg['model_dem_prob'] = agg['race_id'].map(model_dem)
     # the tab reads implied_prob_avg — point it at the model where we have it
     agg['market_prob_avg'] = agg['implied_prob_avg']      # keep the old number, labeled
