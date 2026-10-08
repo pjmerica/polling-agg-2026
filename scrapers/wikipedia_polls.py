@@ -302,6 +302,10 @@ def stable_id(*parts) -> str:
     return hashlib.md5(s.encode("utf-8")).hexdigest()[:24]
 
 
+_NOT_A_STAGE = re.compile(r"post-primary|pre-primary|eliminated in (the )?primar|lost in (the )?primar"
+                          r"|defeated in (the )?primar")
+
+
 def infer_section_context(header_text: str) -> tuple[str, str]:
     """Read a section heading like 'Republican primary' or 'Democratic
     primary runoff' and return (stage, party). Stage is one of
@@ -316,6 +320,12 @@ def infer_section_context(header_text: str) -> tuple[str, str]:
     if not header_text:
         return ("", "")
     h = header_text.lower()
+    # sub-headings that MENTION a primary without starting one (2026-10-07): "Post-primary
+    # endorsements" sits inside the General election section on most pages and flipped every
+    # general poll table after it to stage='primary' (VA-Sen Warner v Mizusawa, NC-11 Balkcom v
+    # Ager never reached the model); "Eliminated in primary" is a candidate list.
+    if _NOT_A_STAGE.search(h):
+        return ("", "")
     party = ""
     if "republican" in h: party = "REP"
     elif "democratic" in h or "democrat" in h: party = "DEM"
@@ -437,7 +447,11 @@ def parse_poll_table(table, race_id: str, stage: str, default_party: str = "") -
         # Stable IDs derived from race + pollster + date so the same poll
         # gets the same ID across runs (lets the archive merge dedupe).
         poll_id = stable_id("wiki", race_id, pollster, end_date_iso)
-        question_id = stable_id("wiki", race_id, pollster, end_date_iso, "q")
+        # one question per MATCHUP TABLE (2026-10-07): a poll that tests Warner against three
+        # Republicans fills three tables, and keying on pollster+date alone merged them into
+        # one question (and the scrape-level dedup then kept only the first Warner number).
+        question_id = stable_id("wiki", race_id, pollster, end_date_iso, "q",
+                                "|".join(sorted(candidate_party)))
 
         # One CSV row per candidate column. NYT's nyt_polls.csv shape is
         # one row per (poll × candidate).
@@ -510,8 +524,11 @@ def scrape_house_state(state_abbrev: str) -> list[dict]:
                 current_district = int(m.group(1))
                 current_stage, current_party = "general", ""
             s, p = infer_section_context(text)
-            if s: current_stage = s
-            if p: current_party = p
+            # a stage heading starts a new context: its party (or none, for "General
+            # election") replaces the previous one - otherwise the "Independents" heading
+            # before it tagged every general-election column IND (2026-10-07)
+            if s: current_stage, current_party = s, p
+            elif p: current_party = p
         elif el.name == "table" and current_district is not None:
             classes = el.get("class", []) or []
             if "wikitable" not in classes:
@@ -540,8 +557,8 @@ def _scrape_state_race(url: str, race_id: str) -> list[dict]:
     for el in soup.find_all(["h2", "h3", "h4", "table"]):
         if el.name in ("h2", "h3", "h4"):
             s, p = infer_section_context(el.get_text(" ", strip=True))
-            if s: current_stage = s
-            if p: current_party = p
+            if s: current_stage, current_party = s, p   # see the House walker
+            elif p: current_party = p
             # No party-bearing keywords means this is a non-partisan
             # section heading (e.g. "Campaign", "Endorsements") — only
             # reset stage if it ALSO had no stage match, otherwise we'd
@@ -702,8 +719,8 @@ def run():
         return
 
     df = pd.DataFrame(all_rows)
-    # Dedup within this scrape on (race_id, poll_id, candidate).
-    df = df.drop_duplicates(subset=["race_id", "poll_id", "candidate"], keep="first")
+    # Dedup within this scrape on (race_id, question_id, candidate) - per matchup, not per poll
+    df = df.drop_duplicates(subset=["race_id", "question_id", "candidate"], keep="first")
     df.to_csv(out_path, index=False)
     print(f"\nSaved {len(df)} rows to {out_path}")
     print(f"Coverage: {df['race_id'].nunique()} races, "
