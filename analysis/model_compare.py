@@ -537,6 +537,14 @@ def main():
         json.dump(payload, f)
         f.write(";\n")
     print(f"wrote {out}: {len(rows)} comparable races")
+    # forecast page data (docs/predictions.html, 2026-10-08) - built here so every CI path that
+    # regenerates model_data.js regenerates it too. Never allowed to break the compare itself.
+    try:
+        _sys.path.insert(0, os.path.join(REPO, "scripts"))
+        import build_forecast
+        build_forecast.build(rows, payload.get("predictions_as_of"), payload.get("polls_as_of"))
+    except Exception as e:  # noqa: BLE001
+        print(f"WARNING: forecast page data not rebuilt: {type(e).__name__}: {e}")
     if rows:
         top = rows[0]
         print("biggest edge:", top["race_id"], "model_dem", round(top["model_dem"], 3),

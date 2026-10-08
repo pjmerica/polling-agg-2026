@@ -76,7 +76,7 @@ jobs:
             # way). Generated files must never be merge-resolved - take EITHER side to
             # get the rebase moving, then REGENERATE them from source, which is the only
             # correct content. Same approach model-refresh.yml has used since 2026-07-18.
-            CONFLICTABLE="docs/model_data.js docs/primary_model_data.js docs/arb_data.js"
+            CONFLICTABLE="docs/model_data.js docs/primary_model_data.js docs/forecast_data.js docs/arb_data.js"
             for i in 1 2 3; do
               if git push; then break; fi
               echo "Push rejected, rebasing on origin/master (attempt $i)…"
