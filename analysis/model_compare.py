@@ -405,8 +405,10 @@ def main():
         multi_ok = st in TOP_N_STATES
         if multi_ok and (len(dem) or len(rep)):
             dsum = float(dem["win_prob_norm"].sum()) if len(dem) else 0.0
-            rsum = float(rep["win_prob_norm"].sum()) if len(rep) else 0.0
-            model_dem = dsum / (dsum + rsum) if (dsum + rsum) > 0 else None
+            # share of the WHOLE field, not D/(D+R) (2026-10-08): with an independent as the
+            # real opponent (CA-6 Kiley) D/(D+R) had no R side and read 100% Dem
+            tot = float(g["win_prob_norm"].sum())
+            model_dem = dsum / tot if tot > 0 else None
         elif dp is not None and rp is not None:
             model_dem = dp / (dp + rp) if (dp + rp) > 0 else None
         elif dp is not None:
