@@ -8,15 +8,19 @@ prediction-market prices — into one view. Published at
 
 Six tabs:
 
-- **Dashboard** — per-race summary with implied probability and source counts.
+- **Model vs Markets (General)** and **(Primary)** — the polling model's probability next to
+  Kalshi / Polymarket for each race, with the edge.
 - **Poll Explorer** — per-race detail with the underlying polls.
 - **Raw Polls** — every individual poll. Click a row to filter to that race only.
-- **Polling vs Markets** — where polling disagrees with prediction-market prices.
 - **Arb Scanner** — cross-platform price mismatches across Kalshi / Polymarket / PredictIt,
   with stake sizing and tradeable depth.
 - **Primaries** — 2026 primary calendar from Ballotpedia, with primary type
   (open/closed/jungle/etc), voting method (FPTP/Runoff/RCV), races on ballot,
   and runoff date if applicable.
+
+Plus a separate **Forecast** page ([predictions.html](https://pjmerica.github.io/polling-agg-2026/predictions.html)):
+the model's prediction for every polled race, with every candidate, projected margin, rating,
+polling-miss stress test and a per-race explainer of the factors behind the number.
 
 ## How it works
 

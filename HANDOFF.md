@@ -1,6 +1,6 @@
 # Handoff — Polling Aggregator & Prediction Markets
 
-**Last updated:** 2026-09-24
+**Last updated:** 2026-10-08
 **Status:** Live dashboard at https://pjmerica.github.io/polling-agg-2026/.
 GitHub Actions runs the full pipeline twice daily (12:00 + 00:00 UTC) and a
 fast markets-only loop every 2h on odd hours at :30 (`market-refresh.yml`),
@@ -11,6 +11,14 @@ both pushing refreshed `docs/*.js` back to master. Pages auto-redeploys.
 > returns, freshness guard, 2h market cadence. Read
 > `AGENT_EXECUTION_NOTES.md` "What was implemented" for the full delta;
 > sections below are updated but that file is the authoritative record.
+
+> **2026-10-08 update - read this first.** CHANGELOG "Unreleased" has each commit.
+>
+> - **Forecast page** `docs/predictions.html` (+ `docs/forecast_data.js`): the model's prediction for every polled race, all candidates (independents included), margins, ratings, polling-miss stress test, market price and per-race explainer. Data built by `scripts/build_forecast.py`, called at the end of `analysis/model_compare.py`; both workflows commit it and regenerate it on push conflicts. Test: `tests/test_build_forecast.py`.
+> - **Wikipedia scraper** (`scrapers/wikipedia_polls.py`): the "Post-primary endorsements" sub-heading inside General election sections tagged ~3,000 general polls as primary (general rows 239 -> 3,291); stage headings now reset party context; `question_id` includes the matchup's candidate set. Test: `tests/test_wikipedia_polls.py`. After any parser change check the stage counts in `data/raw/wikipedia_polls.csv`.
+> - **Louisiana House** is an all-party Nov 3 round with a Dec 12 runoff (post-Callais) - the Dashboard and Model-vs-Markets use the market price there. LA Senate had normal party primaries.
+> - **Top-two / top-four party chance** = the party's share of the whole field (an independent opponent such as Kiley in CA-6 used to make it read 100% Dem); same-party finals (CA D-v-D) read 1.0 / 0.0 on the Dashboard.
+> - Model-side changes (ranked-choice handling, Louisiana jungle data, dedup fixes, experience levels with 3.5 = appointed federal) are in the model repo's `docs/HANDOFF.md`.
 
 If you're picking this up cold, read this top-to-bottom once. The
 "Gotchas" section is where most of the weeks-of-pain debugging lives.
@@ -35,10 +43,10 @@ dashboard:
 
 | Tab | What it shows |
 |---|---|
-| **Dashboard** | Per-race summary with implied probability, polling, and source count. |
+| **Model vs Markets (General / Primary)** | The polling model's probability next to Kalshi / Polymarket for each race, with the edge. |
 | **Poll Explorer** | Per-race detail view with the underlying polls and aggregate. |
 | **Raw Polls** | Every individual poll. Click a row to filter to that race only. |
-| **Polling vs Markets** | Where polling disagrees with prediction-market prices. |
+| **Forecast** (`predictions.html`, separate page) | The model's prediction for every polled race with explainers (2026-10-08). |
 | **Arb Scanner** | Cross-platform price mismatches across Kalshi / Polymarket / PredictIt, with stake sizing and tradeable depth. |
 | **Primaries** | 2026 primary calendar from Ballotpedia. Includes type (open/closed/jungle/etc), voting method (FPTP/Runoff/RCV), races on ballot, and runoff date if applicable. |
 
@@ -231,6 +239,11 @@ into `docs/arb_data.js` so the frontend pulls the same numbers):
 | Kalshi | 2% |
 | Polymarket | 2% |
 | PredictIt | 12% |
+
+> **Superseded 2026-09-24 for guaranteed baskets:** basket math uses REAL per-leg fees from
+> `utils/fees.py` (Kalshi 0.07 x multiplier x P(1-P); Polymarket rate x p(1-p); PredictIt 10% of
+> profit + 5% withdrawal; plus a 0.5c margin). The flat `FEES` dict below is still used only for
+> the one-sided "net gap" display and the midpoint math, and is exported to `arb_data.js`.
 
 Bumped down from 3% / 3% on 2026-06-18 — Kalshi and Polymarket both
 cap around 1% each way in practice (Kalshi taker, Polymarket gas + fee).
