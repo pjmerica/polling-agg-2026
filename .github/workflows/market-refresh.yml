@@ -62,6 +62,13 @@ jobs:
       # Run the dashboard's JS against the freshly generated data in a DOM
       # stub; if the page would throw, fail BEFORE committing so the live
       # site keeps its last good snapshot.
+      # Link check (2026-10-10, same tool as pred-arbitrage): rebuild every
+      # arb leg's URL from the platform API by the priced ID (PredictIt rows
+      # without a contract id: by market name) and repair any that differ.
+      - name: Verify and repair market links
+        continue-on-error: true
+        run: python tools/linkcheck.py docs/arb_data.js --fix --pages --summary "$GITHUB_STEP_SUMMARY"
+
       - name: Dashboard smoke test
         run: node tests/dash_smoke.js docs
 
