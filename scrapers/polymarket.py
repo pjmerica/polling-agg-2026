@@ -255,6 +255,12 @@ def fetch_all_active_markets(limit: int = 100) -> list[dict]:
     # "Democratic/Republican Party candidate wins" markets. Falls back to
     # the tag queries if keyset fails or its cursor stops advancing.
     keyset = _fetch_all_events_keyset()
+    # 2026-10-10: a sharp drop means the keyset API changed; don't publish a
+    # shrunken universe silently. ~19k active events on 2026-10-10.
+    if keyset is not None and len(keyset) < 10000:
+        raise SystemExit(f"Polymarket keyset returned {len(keyset)} events (< 10000); aborting")
+    if keyset is None:
+        print("::warning::Polymarket keyset pagination failed; using the per-tag queries (capped at 2000 each)")
     sources = [("keyset", keyset)] if keyset is not None else \
         [(tag, _fetch_events_for_tag(tag, limit)) for tag in TAG_SLUGS]
 

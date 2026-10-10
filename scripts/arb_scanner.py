@@ -83,6 +83,8 @@ def _safe_read_csv(path, **kw):
 # guaranteed row above ~15% found in the 2026-09-23/24 audits (both repos) was
 # a mismatched pair; verified real ones were 0-5%. Above the cap -> unverified.
 MAX_PLAUSIBLE_RETURN_PCT = 15.0
+# Nov 3 2026 general election -> Jan 2027 swearing-in (see the settling block).
+ELECTION_SETTLING = ("2026-11-03", "2027-01-31")
 
 FEES = {
     # Conservative round-trip fee approximation per platform.
@@ -1776,12 +1778,27 @@ def run():
             lambda rs: list(rs) + ["implausible_return"])
         # 'unverified' keeps the basket math visible (stakes, return) but the
         # dashboard never labels it locked profit.
-        down = (arb["arb_type"] == "guaranteed") & (sos | crit | implausible)
+        # Election resolution window (2026-10-10, same as pred-arbitrage):
+        # between election day and swearing-in Kalshi pays on who takes
+        # office, Polymarket on the certified result; recounts and disputes
+        # live there. Baskets stay visible (not 'suspicious') but are never
+        # called guaranteed in that window.
+        _today = datetime.now(timezone.utc).date().isoformat()
+        in_window = ELECTION_SETTLING[0] <= _today <= ELECTION_SETTLING[1]
+        settling = (arb["arb_type"] == "guaranteed") & in_window
+        if settling.any():
+            arb.loc[settling, "suspicion_reasons"] = arb.loc[settling, "suspicion_reasons"].apply(
+                lambda rs: list(rs) + ["election_settling"])
+            arb.loc[settling, "action"] = ("ELECTION SETTLING - Kalshi pays on who takes office, Polymarket on the "
+                                           "certified result; recounts or disputes can split them. "
+                                           + arb.loc[settling, "action"].fillna("").astype(str))
+        down = (arb["arb_type"] == "guaranteed") & (sos | crit | implausible | settling)
         if down.any():
             print(f"Downgraded {int(down.sum())} guaranteed -> unverified "
-                  f"(settled one side / rules differ / implausible return)")
+                  f"(settled one side / rules differ / implausible return / election settling)")
             arb.loc[down, "arb_type"] = "unverified"
-        arb["suspicious"] = arb["suspicion_reasons"].apply(lambda rs: len(rs) > 0) | arb["suspicious"].fillna(False).astype(bool)
+        arb["suspicious"] = arb["suspicion_reasons"].apply(
+            lambda rs: any(x != "election_settling" for x in rs)) | arb["suspicious"].fillna(False).astype(bool)
 
     guaranteed = arb[arb["arb_type"] == "guaranteed"]
     profitable = arb[arb["profitable"]]
