@@ -13,7 +13,8 @@ name: Market refresh
 
 on:
   schedule:
-    - cron: '30 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
+    # :41 (2026-10-11): GitHub ran the :30 slots ~5x/day instead of 12.
+    - cron: '41 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
   workflow_dispatch:
 
 # Same group as refresh.yml: a market run queues behind a full run instead
@@ -28,6 +29,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+      issues: write           # tools/health.py keeps one "Board health" issue in sync
     steps:
       - uses: actions/checkout@v5
 
@@ -108,3 +110,14 @@ jobs:
         run: |
           echo "::error::model_compare.py failed — the Model vs Markets tab is serving STALE data"
           exit 1
+
+      # Board health (2026-10-11, same tool as pred-arbitrage): one GitHub
+      # issue listing what needs a human (stale board, repaired links,
+      # held-back baskets). Opens/closes itself; runs even if a step failed.
+      - name: Board health issue
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 3
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/health.py --stale-hours 8 --issue --summary "$GITHUB_STEP_SUMMARY"
