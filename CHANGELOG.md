@@ -15,7 +15,7 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` health: don't list baskets held back only by a decided rule (2026-10-13) — synced from pred-arbitrage. From Nov 3 every election basket carries `election_settling` until January (as `window_mismatch` baskets do indefinitely), which would have kept the Board health issue open for months with nothing to act on.
+- `[408809f5]` health: don't list baskets held back only by a decided rule (2026-10-13) — synced from pred-arbitrage. From Nov 3 every election basket carries `election_settling` until January (as `window_mismatch` baskets do indefinitely), which would have kept the Board health issue open for months with nothing to act on.
 - `[1c1ac1ec]` autonomy: board-health issue; market refresh at :41 (2026-10-11) — `tools/health.py` (same tool as pred-arbitrage) runs last in market-refresh.yml and refresh.yml and keeps one GitHub issue, 'Board health: needs attention', in sync: opened when the board goes >8 h without a refresh, links had to be repaired, a page doesn't show the priced market, or profitable baskets are held back; closed when it clears. The market refresh moves from :30 to :41 on odd hours: GitHub ran the :30 slots ~5x/day instead of 12.
 - `[57858eae]` ci: link check capped at 4 min; Kalshi page circuit breaker (2026-10-11) — synced from pred-arbitrage, where the uncapped step ran 12 min against kalshi.com rate limits and cancelled a publish.
 - `[abb0b7a0]` linkcheck: synced with pred-arbitrage (2026-10-11) — Kalshi series page check under `--pages`; backs off on 429s; unfetchable pages count as unchecked, not wrong.
