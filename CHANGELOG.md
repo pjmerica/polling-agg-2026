@@ -15,6 +15,7 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[pending]` health: baskets held back by `basis_risk_direction` are a decided rule too (2026-10-14) - synced from pred-arbitrage.
 - `[1a478e33]` linkcheck: synced from pred-arbitrage (2026-10-14) - Kalshi series from the event ticker's prefix (API-confirmed for basket legs only, cache saved as it grows), parallel API reads and Polymarket page checks, page circuit breaker. pred-arb's link check had run past its 4-minute cap.
 - `[55048b43]` health: a held-back basket with `window_mismatch` is never listed, even with other flags (2026-10-13) - synced from pred-arbitrage; YES on the narrower window is never a hedge, so there is nothing to review.
 - `[408809f5]` health: don't list baskets held back only by a decided rule (2026-10-13) — synced from pred-arbitrage. From Nov 3 every election basket carries `election_settling` until January (as `window_mismatch` baskets do indefinitely), which would have kept the Board health issue open for months with nothing to act on.
