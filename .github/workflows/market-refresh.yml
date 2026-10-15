@@ -61,6 +61,14 @@ jobs:
           python analysis/model_compare.py
           python analysis/model_compare_primary.py
 
+      # Dashboard tab data (docs/data.js): fresh market fallback + the latest committed model
+      # probabilities (2026-10-15). Only the daily full refresh rebuilt it, so the Dashboard
+      # tab lagged both the markets and every model refresh by up to a day. Raw polls are
+      # committed, so this rebuilds the poll browser from the same files.
+      - name: Rebuild dashboard data
+        continue-on-error: true
+        run: python scripts/regen_data.py
+
       # Run the dashboard's JS against the freshly generated data in a DOM
       # stub; if the page would throw, fail BEFORE committing so the live
       # site keeps its last good snapshot.
@@ -79,7 +87,10 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ docs/arb_data.js docs/model_data.js docs/primary_model_data.js
+          # forecast_data.js is rebuilt by model_compare.py (the forecast page's market column)
+          # and data.js by regen_data.py - both were regenerated here but never committed
+          git add data/ docs/arb_data.js docs/model_data.js docs/primary_model_data.js \
+                  docs/forecast_data.js docs/data.js
           if git diff --cached --quiet; then
             echo "No changes."
           else
@@ -88,7 +99,7 @@ jobs:
             # in them and leaves the tree dirty, so every later attempt fails too (that
             # killed both Daily refresh runs on 2026-08-03). Never merge-resolve a
             # generated file: take either side to unstick the rebase, then REGENERATE.
-            CONFLICTABLE="docs/model_data.js docs/primary_model_data.js docs/arb_data.js"
+            CONFLICTABLE="docs/model_data.js docs/primary_model_data.js docs/arb_data.js docs/forecast_data.js docs/data.js"
             for i in 1 2 3; do
               if git push; then break; fi
               echo "Push rejected, rebasing on origin/master (attempt $i)…"
@@ -100,6 +111,7 @@ jobs:
               python analysis/model_compare.py || true
               python analysis/model_compare_primary.py || true
               python scripts/arb_scanner.py || true
+              python scripts/regen_data.py || true
               git add docs/ data/
               git diff --cached --quiet || git commit -m "regen after rebase"
             done
