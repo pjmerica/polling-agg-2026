@@ -15,6 +15,7 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[65bdb9b4]` workflows: Dashboard data.js rebuilt on every market AND model refresh; forecast_data.js committed by the market refresh (2026-10-15) - only the daily full refresh ran regen_data.py, so the Dashboard tab showed the previous model's Dem probabilities for up to a day (VA-2 58% there vs 68% on Model vs Markets), and the market refresh regenerated the forecast page's market column but never committed it.
 - `[34c3c571]` health: baskets held back by `basis_risk_direction` are a decided rule too (2026-10-14) - synced from pred-arbitrage.
 - `[1a478e33]` linkcheck: synced from pred-arbitrage (2026-10-14) - Kalshi series from the event ticker's prefix (API-confirmed for basket legs only, cache saved as it grows), parallel API reads and Polymarket page checks, page circuit breaker. pred-arb's link check had run past its 4-minute cap.
 - `[55048b43]` health: a held-back basket with `window_mismatch` is never listed, even with other flags (2026-10-13) - synced from pred-arbitrage; YES on the narrower window is never a hedge, so there is nothing to review.
