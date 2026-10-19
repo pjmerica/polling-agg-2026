@@ -15,7 +15,7 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` linkcheck: look up closed Polymarket markets too (2026-10-19) - synced from pred-arbitrage (4e66f98). Gamma's `/markets?clob_token_ids=` leaves closed markets out, so legs of games that ended since the last scrape read as 'no longer in the API' (303 on pred-arb's board in one evening). Missing tokens get a second `closed=true` pass; their links are verified and counted as closed, not unresolved.
+- `[137a5be2]` linkcheck: look up closed Polymarket markets too (2026-10-19) - synced from pred-arbitrage (4e66f98). Gamma's `/markets?clob_token_ids=` leaves closed markets out, so legs of games that ended since the last scrape read as 'no longer in the API' (303 on pred-arb's board in one evening). Missing tokens get a second `closed=true` pass; their links are verified and counted as closed, not unresolved.
 - `[65bdb9b4]` workflows: Dashboard data.js rebuilt on every market AND model refresh; forecast_data.js committed by the market refresh (2026-10-15) - only the daily full refresh ran regen_data.py, so the Dashboard tab showed the previous model's Dem probabilities for up to a day (VA-2 58% there vs 68% on Model vs Markets), and the market refresh regenerated the forecast page's market column but never committed it.
 - `[34c3c571]` health: baskets held back by `basis_risk_direction` are a decided rule too (2026-10-14) - synced from pred-arbitrage.
 - `[1a478e33]` linkcheck: synced from pred-arbitrage (2026-10-14) - Kalshi series from the event ticker's prefix (API-confirmed for basket legs only, cache saved as it grows), parallel API reads and Polymarket page checks, page circuit breaker. pred-arb's link check had run past its 4-minute cap.
