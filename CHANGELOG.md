@@ -15,6 +15,7 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[7b5acaec]` Dashboard: Our Forecast tab - model win probability for every race (2026-10-20) - user asked for a tab with just the model's win % per race, no markets. Reads forecast_data.js (same data as predictions.html): rating pill (same tiers as the forecast page), a Dem-left / Rep-right probability bar, Dem / Rep / Other columns, office + rating filters, search and sort; race names deep-link to the predictions.html explainer.
 - `[137a5be2]` linkcheck: look up closed Polymarket markets too (2026-10-19) - synced from pred-arbitrage (4e66f98). Gamma's `/markets?clob_token_ids=` leaves closed markets out, so legs of games that ended since the last scrape read as 'no longer in the API' (303 on pred-arb's board in one evening). Missing tokens get a second `closed=true` pass; their links are verified and counted as closed, not unresolved.
 - `[65bdb9b4]` workflows: Dashboard data.js rebuilt on every market AND model refresh; forecast_data.js committed by the market refresh (2026-10-15) - only the daily full refresh ran regen_data.py, so the Dashboard tab showed the previous model's Dem probabilities for up to a day (VA-2 58% there vs 68% on Model vs Markets), and the market refresh regenerated the forecast page's market column but never committed it.
 - `[34c3c571]` health: baskets held back by `basis_risk_direction` are a decided rule too (2026-10-14) - synced from pred-arbitrage.
