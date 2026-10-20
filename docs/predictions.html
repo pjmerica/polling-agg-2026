@@ -177,6 +177,7 @@ a:hover { text-decoration: underline; }
     <option value="all">All ratings</option>
     <option value="comp">Competitive (tossup / lean)</option>
     <option value="toss">Tossups only</option>
+    <option value="nontoss">Non-tossups (favorite 60%+)</option>
     <option value="D">Democrat favored</option>
     <option value="R">Republican favored</option>
     <option value="O">Independent / other favored</option>
@@ -368,6 +369,7 @@ a:hover { text-decoration: underline; }
     if (state.office !== 'all') rs = rs.filter(r => r.office === state.office);
     if (state.rating === 'comp') rs = rs.filter(r => r._rt.tier === 'Tossup' || r._rt.tier === 'Lean');
     else if (state.rating === 'toss') rs = rs.filter(r => r._rt.tier === 'Tossup');
+    else if (state.rating === 'nontoss') rs = rs.filter(r => r._rt.tier !== 'Tossup');
     else if (['D', 'R'].includes(state.rating)) rs = rs.filter(r => r._rt.side === state.rating);
     else if (state.rating === 'O') rs = rs.filter(r => r._rt.side === 'I');
     if (state.q) rs = rs.filter(r => r._search.includes(state.q));

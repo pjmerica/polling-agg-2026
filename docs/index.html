@@ -221,6 +221,45 @@ tr:hover td { background: #1a2035; }
 .match-race  { display: inline-block; background: rgba(167,139,250,0.12); color: #a78bfa; border-radius: 4px; padding: 2px 6px; font-size: 0.66rem; font-weight: 700; }
 .match-prim  { display: inline-block; background: rgba(250,204,21,0.14);  color: #facc15; border-radius: 4px; padding: 2px 6px; font-size: 0.66rem; font-weight: 700; }
 .match-fuzz  { display: inline-block; background: rgba(96,165,250,0.10);  color: #60a5fa; border-radius: 4px; padding: 2px 6px; font-size: 0.66rem; font-weight: 700; }
+
+/* ════════════════════════════════════════
+   PHONES (2026-10-20): one-row scrolling tab bar, 12-14px gutters, filter labels kept with their
+   control, wide tables scroll inside their own box instead of pushing the page sideways
+   ════════════════════════════════════════ */
+html, body { overflow-x: hidden; }
+.tabs { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn { white-space: nowrap; flex-shrink: 0; }
+#tab-primaries select { background: #1e2433; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 5px 8px; font-size: 0.8rem; }
+@media (max-width: 700px) {
+  #tab-primaries > div:first-child { padding: 12px 14px 6px !important; }
+  #tab-primaries .filter-group { flex-wrap: wrap; }
+  #tab-primaries .filter-group label { flex: 1 1 100%; display: flex; justify-content: space-between; align-items: center; }
+  #tab-primaries table { display: block; overflow-x: auto; }
+  header { padding: 14px 14px 0; gap: 8px; }
+  header h1 { font-size: 1.15rem; }
+  .tab-btn { padding: 10px 13px; font-size: 0.78rem; }
+  .controls, .mismatch-controls, .raw-controls, .stat-bar { padding: 12px 14px; }
+  #table-section, #raw-table-wrap { padding-left: 14px; padding-right: 14px; }
+  #raw-count { padding-left: 14px; }
+  /* label + control pairs on a two-column grid; checkbox labels and lone controls span both */
+  .mismatch-controls, .raw-controls { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 10px; }
+  .mismatch-controls > label:has(input[type=checkbox]), .raw-controls > label:has(input[type=checkbox]) { grid-column: 1 / -1; }
+  .mismatch-controls select, .mismatch-controls input, .raw-controls select, .raw-controls input { width: 100%; min-width: 0; }
+  .mismatch-controls > :not(label) + :not(label), .raw-controls > :not(label) + :not(label) { grid-column: 2; }
+  .mismatch-controls input[type=checkbox], .raw-controls input[type=checkbox] { width: auto; }
+  /* status / meta lines and buttons get their own full row (a long line in the label column
+     stretched it and pushed every dropdown off-screen) */
+  .mismatch-controls > span, .mismatch-controls > div, .mismatch-controls > button,
+  .raw-controls > span, .raw-controls > div, .raw-controls > button { grid-column: 1 / -1; margin-left: 0 !important; }
+  .controls { gap: 8px 10px; }
+  .filter-group { flex: 1 1 140px; }
+  .filter-group select { flex: 1; min-width: 0; }
+  .stat-bar { gap: 14px; justify-content: space-between; }
+  .stat .val { font-size: 1.3rem; }
+  .mm-table, .raw-table, #arb-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #mv-modal .mv-panel { top: 2%; width: 96vw; max-height: 94vh; padding: 14px 14px; }
+}
 </style>
 </head>
 <body>
@@ -328,26 +367,49 @@ tr:hover td { background: #1a2035; }
     .fc-sub { font-size:0.7rem; color:#64748b; margin-top:2px; }
     .fc-pill { display:inline-block; padding:2px 9px; border-radius:99px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
     .fc-split { display:flex; height:22px; border-radius:5px; overflow:hidden; min-width:260px; background:#1e2433; }
+    .fc-split > div + div { box-shadow: inset 2px 0 0 #0f1117; }   /* seam between segments (same-party races) */
     .fc-split > div { display:flex; align-items:center; padding:0 6px; font-size:0.68rem; font-weight:700; color:#0b0e14; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .fc-num { font-weight:700; font-variant-numeric:tabular-nums; text-align:right; }
     .fc-d { color:#60a5fa; } .fc-r { color:#f87171; } .fc-o { color:#c4b5fd; } .fc-muted { color:#4a5568; }
     .fc-note { padding:0 28px 6px; font-size:0.72rem; color:#64748b; }
     #fc-search { width:220px; background:#1e2433; border:1px solid #2d3748; color:#e2e8f0; border-radius:6px; padding:6px 10px; font-size:0.84rem; }
+    .fc-explain { text-decoration:none; display:inline-block; }
+    /* phones: each race is a card - name + rating, full-width bar, then Dem / Rep / Other + Explain */
+    @media (max-width: 700px) {
+      #fc-wrap { padding:0 12px 32px !important; }
+      #fc-search { width:100%; }
+      #fc-table thead { display:none; }
+      #fc-table, #fc-table tbody { display:block; width:100%; }
+      #fc-table tr { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px 6px; align-items:center;
+                     padding:12px 12px; margin-bottom:10px; background:#141927; border:1px solid #1e2433; border-radius:10px; }
+      #fc-table tr:hover td { background:none; }
+      #fc-table td { padding:0; border:none; }
+      #fc-table td.fc-race { grid-column:1 / 4; }
+      #fc-table td.fc-rt { grid-column:4; justify-self:end; }
+      #fc-table td.fc-bar { grid-column:1 / -1; }
+      #fc-table .fc-split { min-width:0; height:24px; }
+      #fc-table td.fc-num { text-align:left; font-size:0.85rem; }
+      #fc-table td.fc-num::before { content:attr(data-l); display:block; font-size:0.62rem; font-weight:600; color:#64748b;
+                                    text-transform:uppercase; letter-spacing:0.05em; }
+      #fc-table td.fc-none { visibility:hidden; }
+      #fc-table td.fc-ex { justify-self:end; }
+      #fc-table .fc-explain { padding:6px 12px; font-size:0.75rem; }
+    }
   </style>
   <div class="controls">
     <div class="filter-group"><label>Office</label>
       <select id="fc-office"><option value="">All</option><option>Senate</option><option>Governor</option><option>House</option></select></div>
     <div class="filter-group"><label>Rating</label>
-      <select id="fc-rating"><option value="">All</option><option value="Tossup">Tossup</option><option value="Lean">Lean</option><option value="Likely">Likely</option><option value="Safe">Safe</option></select></div>
+      <select id="fc-rating"><option value="">All</option><option value="Tossup">Tossups only</option><option value="NonTossup">Non-tossups (60%+)</option><option value="Lean">Lean</option><option value="Likely">Likely</option><option value="Safe">Safe</option></select></div>
     <div class="filter-group"><label>Sort</label>
       <select id="fc-sort"><option value="close">Closest first</option><option value="state">State</option><option value="dem">Dem win % (high first)</option><option value="rep">Rep win % (high first)</option></select></div>
     <div class="filter-group"><input id="fc-search" type="text" placeholder="Search race or candidate..."></div>
   </div>
   <div class="stat-bar" id="fc-stats"></div>
   <p class="fc-note" id="fc-asof"></p>
-  <div style="padding:0 28px 40px; overflow-x:auto;">
+  <div id="fc-wrap" style="padding:0 28px 40px; overflow-x:auto;">
     <table id="fc-table">
-      <thead><tr><th>Race</th><th>Rating</th><th>Win probability</th><th style="text-align:right">Dem</th><th style="text-align:right">Rep</th><th style="text-align:right">Other</th></tr></thead>
+      <thead><tr><th>Race</th><th>Rating</th><th>Win probability</th><th style="text-align:right">Dem</th><th style="text-align:right">Rep</th><th style="text-align:right">Other</th><th></th></tr></thead>
       <tbody id="fc-body"></tbody>
     </table>
   </div>
@@ -362,6 +424,9 @@ tr:hover td { background: #1a2035; }
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pct = v => (v * 100).toFixed(0) + '%';
   const ord = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+  // surname for bar labels, skipping Jr./III ('Rob Bresnahan Jr.' read 'Jr.')
+  const lastName = n => { const w = String(n).replace(/\(.*?\)/g, '').trim().split(/\s+/)
+    .filter(x => !/^(jr|sr|ii|iii|iv)\.?,?$/i.test(x)); return (w[w.length - 1] || n).replace(/,$/, ''); };
   const AT_LARGE = new Set(['AK', 'DE', 'ND', 'SD', 'VT', 'WY']);
   const raceName = r => r.office === 'House'
     ? (AT_LARGE.has(r.state) ? r.state_name + ' At-Large' : `${r.state_name} ${ord(+r.district)}`) : r.state_name;
@@ -389,7 +454,7 @@ tr:hover td { background: #1a2035; }
     const q = document.getElementById('fc-search').value.trim().toLowerCase();
     const sort = document.getElementById('fc-sort').value;
     let rows = races.filter(r => (!office || r.office === office)
-      && (!rf || rating(r).tier === rf)
+      && (!rf || (rf === 'NonTossup' ? rating(r).tier !== 'Tossup' : rating(r).tier === rf))
       && (!q || (raceName(r) + ' ' + raceSub(r) + ' ' + r.state + ' ' + r.cands.map(c => c.name).join(' ')).toLowerCase().includes(q)));
     const KEYS = {
       close: r => Math.abs((r.cands[0].win || 0) - 0.5),
@@ -417,19 +482,22 @@ tr:hover td { background: #1a2035; }
       const segs = r.cands.filter(c => (c.win || 0) >= 0.005)
         .slice().sort((a, b) => side(a) - side(b) || (b.win || 0) - (a.win || 0)).map(c =>
         `<div style="width:${(c.win * 100).toFixed(2)}%;background:${col(c.party)}" title="${esc(c.name)} (${ab(c.party)}) ${pct(c.win)}">` +
-        `${c.win >= 0.12 ? esc(c.name.split(' ').slice(-1)[0]) + ' ' + pct(c.win) : ''}</div>`).join('');
+        `${c.win >= 0.12 ? esc(lastName(c.name)) + ' ' + pct(c.win) : ''}</div>`).join('');
       const cell = (v, cls) => v >= 0.005 ? `<span class="${cls}">${pct(v)}</span>` : '<span class="fc-muted">-</span>';
-      return `<tr><td class="fc-race"><a href="predictions.html#${encodeURIComponent(r.id)}" title="Open the forecast explainer">${esc(raceName(r))}</a>` +
+      const href = `predictions.html#${encodeURIComponent(r.id)}`;
+      return `<tr><td class="fc-race"><a href="${href}" title="Open the forecast explainer">${esc(raceName(r))}</a>` +
         `<div class="fc-sub">${esc(raceSub(r))}</div></td>` +
-        `<td><span class="fc-pill" style="${pillCss(rt)}">${rt.label}</span></td>` +
-        `<td><div class="fc-split">${segs}</div></td>` +
-        `<td class="fc-num">${cell(d, 'fc-d')}</td><td class="fc-num">${cell(rp, 'fc-r')}</td><td class="fc-num">${cell(o, 'fc-o')}</td></tr>`;
-    }).join('') || '<tr><td colspan="6" class="fc-muted">No races match.</td></tr>';
+        `<td class="fc-rt"><span class="fc-pill" style="${pillCss(rt)}">${rt.label}</span></td>` +
+        `<td class="fc-bar"><div class="fc-split">${segs}</div></td>` +
+        `<td class="fc-num" data-l="Dem">${cell(d, 'fc-d')}</td><td class="fc-num" data-l="Rep">${cell(rp, 'fc-r')}</td>` +
+        `<td class="fc-num fc-oth${o >= 0.005 ? '' : ' fc-none'}" data-l="Other">${cell(o, 'fc-o')}</td>` +
+        `<td class="fc-ex"><a class="mv-explainbtn fc-explain" href="${href}" title="Why the model says this: the factors behind the number">Explain</a></td></tr>`;
+    }).join('') || '<tr><td colspan="7" class="fc-muted">No races match.</td></tr>';
 
     const asof = String(FORECAST.predictions_as_of || '').slice(0, 10);
     document.getElementById('fc-asof').textContent =
       `Model win probability for every race with polling (${races.length} races). Predictions as of ${asof || 'n/a'}, polls through ${FORECAST.polls_as_of || 'n/a'}. ` +
-      `Click a race for the explainer. Rating: leader at 95%+ Safe, 80%+ Likely, 60%+ Lean, else Tossup.`;
+      `Explain opens the factors behind each number. Rating: leader at 95%+ Safe, 80%+ Likely, 60%+ Lean, else Tossup.`;
   }
   ['fc-office', 'fc-rating', 'fc-sort'].forEach(id => document.getElementById(id).addEventListener('change', render));
   document.getElementById('fc-search').addEventListener('input', render);
@@ -943,6 +1011,9 @@ function partyBadge(party) {
 // ════════════════════════════════════════════════
 function activateTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  // phones: the tab bar scrolls sideways - bring the chosen tab into view
+  const btn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
+  if (btn && btn.scrollIntoView) btn.scrollIntoView({ inline: 'center', block: 'nearest' });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'dashboard') renderAll();
@@ -2115,6 +2186,19 @@ document.getElementById('mv-reliable').onchange=e=>{mvReliableOnly=e.target.chec
 document.querySelector('[data-tab="model"]').addEventListener('click',()=>setTimeout(renderModelTab,0));
 renderModelTab();   // default-active tab (2026-07-16): render at load, not first click
 
+// explain-chart y labels: one line on desktop; on phones the label wraps at ~22 chars and the
+// value drops to its own line, or the long labels ate the narrow plot (2026-10-20)
+function explainLabel(f) {
+  const val = f.val === null || f.val === undefined ? '' : String(f.val);
+  if (typeof window === 'undefined' || !(window.innerWidth < 600))
+    return f.label + (val ? '  =  ' + val : '');
+  const lines = [''];
+  String(f.label).split(' ').forEach(w => {
+    if ((lines[lines.length - 1] + ' ' + w).trim().length > 22 && lines[lines.length - 1]) lines.push(w);
+    else lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w).trim();
+  });
+  return lines.join('<br>') + (val ? '<br>= ' + val : '');
+}
 // ── per-race SHAP explain modal ──
 let mvExplainRace = null, mvExplainTab = 'win';
 function mvOpenExplain(rid){
@@ -2157,7 +2241,7 @@ function mvRenderExplain(){
   Plotly.react('mv-explain-chart', [{
     type: 'bar', orientation: 'h',
     x: feats.map(f => f.shap),
-    y: feats.map(f => f.label + (f.val === null ? '' : '  =  ' + f.val)),
+    y: feats.map(explainLabel),
     customdata: feats.map(f => wrap(f.desc)),
     marker: { color: feats.map(f => f.shap > 0 ? '#3b82f6' : '#ef4444'), opacity: 0.85 },
     hovertemplate: '<b>%{y}</b><br>SHAP: %{x:+.3f}<br><br>' +
@@ -2169,7 +2253,7 @@ function mvRenderExplain(){
              zerolinecolor: '#facc15', zerolinewidth: 1,
              title: { text: mvExplainTab === 'win' ? 'impact on win odds (log-odds)' : 'impact on margin (pts)',
                       font: { size: 11, color: '#4a5568' } } },
-    yaxis: { color: '#cbd5e1', tickfont: { size: 11 }, automargin: true },
+    yaxis: { color: '#cbd5e1', tickfont: { size: window.innerWidth < 600 ? 10 : 11 }, automargin: true },
     font: { color: '#94a3b8' }, bargap: 0.25,
   }, { responsive: true, displayModeBar: false });
 }
@@ -2406,7 +2490,7 @@ function pmRenderExplain(){
   Plotly.react('pm-explain-chart', [{
     type: 'bar', orientation: 'h',
     x: feats.map(f => f.shap),
-    y: feats.map(f => f.label + (f.val === null ? '' : '  =  ' + f.val)),
+    y: feats.map(explainLabel),
     customdata: feats.map(f => wrap(f.desc)),
     marker: { color: feats.map(f => f.shap > 0 ? '#3b82f6' : '#ef4444'), opacity: 0.85 },
     hovertemplate: '<b>%{y}</b><br>SHAP: %{x:+.3f}<br><br>' +
@@ -2420,7 +2504,7 @@ function pmRenderExplain(){
                              ? 'impact on predicted margin (pts)'
                              : 'impact on nomination odds (log-odds)'),
                      font: { size: 11 } } },
-    yaxis: { gridcolor: '#1e2433', color: '#cbd5e1', tickfont: { size: 11 }, automargin: true },
+    yaxis: { gridcolor: '#1e2433', color: '#cbd5e1', tickfont: { size: window.innerWidth < 600 ? 10 : 11 }, automargin: true },
     font: { color: '#94a3b8' },
   }, {responsive: true, displayModeBar: false});
 }
