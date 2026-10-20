@@ -162,5 +162,13 @@
   "polymarket:42200861349127624830531769887465625664332564761208067308674538299681162633408": {
     "text": "Will the Democratic Party win the UT-02 House seat? This market will resolve according to the party of the candidate who wins the UT-02 congressional district seat in the U.S. House of Representatives in the 2026 midterm elections. The midterm elections will take place on November 3, 2026.\n\n\u200b\u200bA candidate's party will be determined by their ballot-listed or otherwise identifiable affiliation with that party at the time all of the 2026 House elections are conclusively called by this market's resolution sources. A candidate without a ballot-listed affiliation to either the Democrat or Republican parties will be considered a member of one of these parties based on the party with which they most recently expressed their intent to caucus at the time all of the House elections are conclusively called by this market's resolution sources.\n\nThis market will resolve based on the result of the election as indicated by a consensus of credible reporting. If there is ambiguity, this market will resolve based solely on the official results as reported by the United States government, specifically the Federal Election Commission (https://www.fec.gov/).",
     "fetched_at": 1790621040.7278452
+  },
+  "kalshi:KXGOVKYNOMR-27-RHAR": {
+    "text": "Will Rick Hardin be the Republican nominee for Governor in Kentucky? If Rick Hardin wins the nomination for the Republican Party to contest the 2027 Kentucky Governorship, then the market resolves to Yes. This market is eligible for accelerated determination after a consensus of media organizations project the winner. See full rules for details.\n\nIf the nominee is not listed, every market resolves to No.",
+    "fetched_at": 1792501158.4920044
+  },
+  "polymarket:57306369068183830269381241940994404078095288690893371226076883309997549902491": {
+    "text": "Will Rick Hardin be the Republican nominee for Kentucky Governor? This market will resolve according to the winner of the Republican nomination to contest the Kentucky governorship in 2027. The Republican primary is scheduled to take place on May 18, 2027. \n\nIf no nominee is announced by November 2, 2027, 11:59PM ET, this market will resolve to \"Other\".\n\nThe resolution source for this market will be the first official announcement of the results from the Kentucky Republican Party; however, an overwhelming consensus of credible reporting may suffice.",
+    "fetched_at": 1792501158.6043525
   }
 }
