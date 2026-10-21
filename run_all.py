@@ -45,7 +45,9 @@ else:
 # Steps that are best-effort supplements rather than critical sources.
 # A failure here logs a warning and continues; downstream steps will
 # fall back to whatever's already on disk.
-NON_FATAL = {"Wikipedia polls"}
+# PredictIt (2026-10-21): a minor venue (few election markets, 10% fee) - its outage stopped the
+# whole daily refresh, polls included. Without it the arb scan just has no PredictIt legs.
+NON_FATAL = {"Wikipedia polls", "PredictIt scraper"}
 
 # INDEPENDENT SOURCES: one venue going down must not stop the others from being
 # scraped. These used to sys.exit() on the first failure, so a Kalshi 403 (its WAF
@@ -61,6 +63,10 @@ for name, cmd in steps:
     result = subprocess.run(cmd, cwd=str(ROOT))
     if result.returncode != 0:
         if name in NON_FATAL:
+            if name == "PredictIt scraper":
+                stale = ROOT / "data" / "raw" / "predictit_markets.csv"
+                if stale.exists():
+                    stale.unlink()   # never price PredictIt legs off an older scrape
             print(f"WARN: {name} failed with exit code {result.returncode} (non-fatal, continuing)", flush=True)
             continue
         if name in DEFERRED_FAIL:
