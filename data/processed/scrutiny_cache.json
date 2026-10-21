@@ -194,5 +194,13 @@
   "polymarket:39318069783125624621216612785930349359263516684617742253932277905566489092794": {
     "text": "Will Daniel Cameron be the Republican nominee for Kentucky Governor? This market will resolve according to the winner of the Republican nomination to contest the Kentucky governorship in 2027. The Republican primary is scheduled to take place on May 18, 2027. \n\nIf no nominee is announced by November 2, 2027, 11:59PM ET, this market will resolve to \"Other\".\n\nThe resolution source for this market will be the first official announcement of the results from the Kentucky Republican Party; however, an overwhelming consensus of credible reporting may suffice.",
     "fetched_at": 1792549086.7469356
+  },
+  "kalshi:KXGOVKYNOMR-27-SMAD": {
+    "text": "Will Savannah Maddox be the Republican nominee for Governor in Kentucky? If Savannah Maddox wins the nomination for the Republican Party to contest the 2027 Kentucky Governorship, then the market resolves to Yes. This market is eligible for accelerated determination after a consensus of media organizations project the winner. See full rules for details.\n\nIf the nominee is not listed, every market resolves to No.",
+    "fetched_at": 1792552812.5817757
+  },
+  "polymarket:46098245740177143394127611221140108046390614435085213281545528826417016861390": {
+    "text": "Will Savannah Maddox be the Republican nominee for Kentucky Governor? This market will resolve according to the winner of the Republican nomination to contest the Kentucky governorship in 2027. The Republican primary is scheduled to take place on May 18, 2027. \n\nIf no nominee is announced by November 2, 2027, 11:59PM ET, this market will resolve to \"Other\".\n\nThe resolution source for this market will be the first official announcement of the results from the Kentucky Republican Party; however, an overwhelming consensus of credible reporting may suffice.",
+    "fetched_at": 1792552812.697268
   }
 }
