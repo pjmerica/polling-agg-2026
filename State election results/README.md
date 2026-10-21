@@ -1,0 +1,67 @@
+# State election results
+
+Goal: simulate how election night unfolds in the competitive 2026 Governor/Senate races
+(`competitive_races.md`): which counties report when, with what kind of ballots, so that
+early returns can be read correctly ("Talarico +6 at 8:15 ET with Harris early vote in"
+means X) and projected to a final result.
+
+## Layout
+
+| Path | What |
+|---|---|
+| `STATE_BY_STATE.md` | **Start here.** State-by-state guide to how and when votes come in, checked against primary sources (built by `scripts/build_state_guide.py` from `scripts/state_guide_template.md`) |
+| `SWINGS.md` | How far the count moved after polls close in 345 races, 2020-2026: biggest swings, comebacks, late movers, early vs Election Day splits, 2020 county detail, 2026 primaries (built by `scripts/swing_analysis.py` + `scripts/build_swings_report.py`) |
+| `competitive_races.md` | The races (model favorite at 75% or less), from `docs/forecast_data.js` |
+| `reports/Vote count timing in close 2026 races.md` | Rules and history per state: poll closes, ballot order, deadlines, RCV, recounts, past call times |
+| `research_notes/` | Sourced notes behind the report |
+| `scripts/fetch_nyt_history.py` | NYT results JSON for 2020/2022/2024 (9 states): final county results (2022/24 split by vote type) and a statewide count timeline |
+| `scripts/fetch_wayback_2020.py` | County-by-county count over election week 2020, from Internet Archive captures of NYT's national file (one per 10 min where captured) |
+| `scripts/capture_live.py` | Records NYT's 2026 files every 2 minutes on election night (every county, every change) |
+| `scripts/watch_sources.py` | Searches news feeds for AP "What to expect" pieces and county results schedules -> `sources/watch_log.csv` |
+| `sources/README.md` | Every source on when/how each state reports (AP 2026 editions, official documents, county schedules) |
+| `state_curves.md` | Share counted and visible margin by hour after poll close, per state, 2020-2024 |
+| `data/raw/` | Downloads (not committed; includes AP article texts, which are copyright) |
+
+## Scheduled tasks on this PC (Windows Task Scheduler)
+
+| Task | When | What |
+|---|---|---|
+| `StateResults-SourceWatch` | 8 a.m. and 6 p.m. daily, Oct 22 - Nov 3 | `watch_sources.py` (log: `sources/watch.log`) |
+| `StateResults-SlugCheck` | 9 a.m. daily, Oct 28 - Nov 3 | `capture_live.py --once`: confirms NYT's Nov 3 file names (log: `data/raw/live/capture.log`) |
+| `StateResults-ElectionNight` | Nov 3 6:30 p.m. ET to Nov 6 noon | `capture_live.py`, every 2 minutes |
+| `StateResults-LateCount` | Nov 6 noon to Nov 25 | `capture_live.py`, every 30 minutes (AK count days, ME RCV) |
+
+The PC must be on (tasks are set to wake it from sleep, not from shutdown).
+Remove them after the election: `Get-ScheduledTask -TaskName "StateResults-*" | Unregister-ScheduledTask -Confirm:$false`.
+
+## Data we have, and what is missing
+
+| Source | Unit | Timing detail | Vote type |
+|---|---|---|---|
+| NYT 2020 race files | county (final) | statewide timeline, hundreds of points | absentee vs total per county |
+| Wayback 2020 national file | **county, over time** | captures ~10-60 min apart on election night | absentee vs total |
+| NYT 2022 race files | county / Maine town (final) | statewide timeline (votes, expected-vote %) | GA, MI, OH: mail / early / Election Day per county |
+| NYT 2024 race files | county / Maine town (final) | statewide timeline with "advance" vs total | GA, TX: full split per county; IA, TX pres: advance vs Election Day |
+| NYT 2026 primaries | county | statewide timeline | as above; current laws (MI Aug 4 saved) |
+
+County-level timing for 2022 and 2024 does not survive publicly: state result sites (Clarity etc.)
+keep only the latest version, and archive captures of the NYT race files are a handful per race.
+2020 is the only year with real county timing; 2022/2024 give the statewide pace and the
+early-vs-Election-Day mix. Nov 3, 2026 is recorded by `capture_live.py`.
+
+## Simulator design (to build)
+
+Per state, per county (Maine: town), per vote type (early in person / mail / Election Day / late):
+
+1. **Expected 2026 vote**: 2022/2024 turnout by county and vote type, scaled by 2026
+   early-vote returns and the model's turnout.
+2. **Expected lean**: county vote-type lean from 2022/2024, shifted so the statewide result
+   matches a draw from our forecast (`docs/forecast_data.js` margin and its error), with
+   correlated county errors.
+3. **Release schedule**: when each county releases each vote type, from the 2020 county
+   timing, the 2022/2024/2026 statewide timelines, and each state's rules (GA early vote by
+   8 p.m.; IA absentee board batch by 10 p.m. CT; AK absentees Nov 10/13/18; ME RCV; MI Wayne last).
+4. **Monte Carlo**: thousands of election nights -> at each clock time, the distribution of the
+   visible margin, the leader, % counted, and P(current leader wins).
+5. **Live mode**: on Nov 3, condition on what has actually reported (from `capture_live.py`)
+   and project the remaining vote.
