@@ -101,6 +101,11 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
             ))
         c = mk.get(rid, {})
         mkt = [v for v in (c.get("kalshi_dem"), c.get("poly_dem")) if v is not None]
+        # same-party top two (California top-two D-v-D / R-v-R): the party market prices "a
+        # Democrat wins" (~99%) and says nothing about WHICH one, so it is no comparison for
+        # either candidate (2026-10-20: CA-7 showed "Markets: Vang 98%" against Matsui)
+        if len(cands) >= 2 and cands[0]["party"] == cands[1]["party"] and cands[0]["party"] in ("DEM", "REP"):
+            mkt = []
         notes = []
         if st == "LA" and off == "House":
             notes.append(NOTES["LA_House"])

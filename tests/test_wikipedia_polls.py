@@ -51,3 +51,24 @@ def test_general_tables_after_post_primary_heading_stay_general(monkeypatch):
     # two matchup tables from one poll are two questions; Warner keeps both numbers
     assert len({r["question_id"] for r in rows}) == 2
     assert sum(r["candidate"] == "Mark Warner" for r in rows) == 2
+
+
+def test_top_two_field_polls_are_primary():
+    """WA-3 2026: a pre-primary 3-candidate field poll is a primary poll; a pre-primary
+    head-to-head stays general; Alaska (top-four general) is untouched (2026-10-20)."""
+    import pandas as pd
+    import wikipedia_polls as W
+    rows = []
+    for q, cands, date, rid in [
+        ("field", ["John Braun", "Marie Gluesenkamp Perez", "Brent Hennrich", "Undecided"], "11/12/25", "2026-H-WA-03"),
+        ("h2h", ["John Braun", "Marie Gluesenkamp Perez", "Undecided"], "7/10/26", "2026-H-WA-03"),
+        ("after", ["John Braun", "Marie Gluesenkamp Perez", "Other"], "9/27/26", "2026-H-WA-03"),
+        ("ak", ["Mary Peltola", "Dan Sullivan", "Other A", "Other B"], "5/1/26", "2026-SEN-AK"),
+    ]:
+        rows += [dict(race_id=rid, question_id=q, candidate=c, end_date=date, stage="general") for c in cands]
+    out = W.retag_top_two_primaries(pd.DataFrame(rows))
+    stage = out.groupby("question_id")["stage"].first()
+    assert stage["field"] == "primary"
+    assert stage["h2h"] == "general"
+    assert stage["after"] == "general"
+    assert stage["ak"] == "general"

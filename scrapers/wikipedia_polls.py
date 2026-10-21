@@ -659,6 +659,35 @@ def scrape_approval() -> list[dict]:
     return rows
 
 
+# top-two states (CA, WA): every candidate runs in one primary, and Wikipedia files those field
+# polls under the race's "General election" heading. Actual election days (not the calendar's
+# decided-on dates: CA reads 06-16 there for a June 2 primary). Alaska is left out: its general
+# has FOUR candidates, so a crowded poll there can be a general poll.
+TOP_TWO_PRIMARY_2026 = {"CA": "2026-06-02", "WA": "2026-08-04"}
+_NOT_A_CANDIDATE = re.compile(r"generic|other|undecided|someone else|not sure|unsure|would not vote|"
+                              r"wouldn't vote|refused|none of", re.I)
+
+
+def retag_top_two_primaries(df: pd.DataFrame) -> pd.DataFrame:
+    """In a top-two state the general has exactly two candidates, so a pre-primary question
+    naming THREE or more real candidates is a primary (field) poll (2026-10-20: WA-3's Gravis
+    Nov-2025 field poll, Braun 33 / Perez 24 / Hennrich 14, reached the model as a general poll;
+    NYT tags it 'primary'). Head-to-heads asked before the primary stay general."""
+    if df.empty or "end_date" not in df:
+        return df
+    st = df["race_id"].astype(str).str.extract(r"^2026-(?:H|SEN|GOV)-([A-Z]{2})", expand=False)
+    cut = pd.to_datetime(st.map(TOP_TWO_PRIMARY_2026))
+    end = pd.to_datetime(df["end_date"], errors="coerce", format="mixed")
+    real = ~df["candidate"].astype(str).str.contains(_NOT_A_CANDIDATE)
+    n_real = real.groupby([df["race_id"], df["question_id"]]).transform("sum")
+    hit = cut.notna() & end.notna() & (end < cut) & (df["stage"] == "general") & (n_real >= 3)
+    if hit.any():
+        print(f"  top-two/top-four states: {int(hit.sum())} pre-primary rows retagged general -> primary "
+              f"({df.loc[hit, 'race_id'].nunique()} races)")
+    df.loc[hit, "stage"] = "primary"
+    return df
+
+
 def run():
     RAW.mkdir(parents=True, exist_ok=True)
     out_path = RAW / "wikipedia_polls.csv"
@@ -721,6 +750,7 @@ def run():
     df = pd.DataFrame(all_rows)
     # Dedup within this scrape on (race_id, question_id, candidate) - per matchup, not per poll
     df = df.drop_duplicates(subset=["race_id", "question_id", "candidate"], keep="first")
+    df = retag_top_two_primaries(df)
     df.to_csv(out_path, index=False)
     print(f"\nSaved {len(df)} rows to {out_path}")
     print(f"Coverage: {df['race_id'].nunique()} races, "

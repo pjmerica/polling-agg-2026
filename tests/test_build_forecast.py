@@ -28,3 +28,14 @@ def test_forecast_keeps_every_candidate(tmp_path, monkeypatch):
     if ca6 is not None and any("Kiley" in c["name"] for c in ca6["cands"]):
         dem = sum(c["win"] for c in ca6["cands"] if c["party"] == "DEM")
         assert dem < 0.99, "independent opponent dropped from the race"
+
+
+def test_same_party_race_has_no_market(tmp_path, monkeypatch):
+    """California top-two D-v-D / R-v-R: the party market prices 'a Democrat wins' (~99%), not
+    which one, so the forecast must not show it against either candidate (2026-10-20: CA-7 read
+    'Markets: Vang 98%')."""
+    monkeypatch.setattr(B, "OUT", str(tmp_path / "forecast_data.js"))
+    for r in B.build()["races"]:
+        c = r["cands"]
+        if len(c) >= 2 and c[0]["party"] == c[1]["party"] and c[0]["party"] in ("DEM", "REP"):
+            assert r["market"] is None, r["id"]
