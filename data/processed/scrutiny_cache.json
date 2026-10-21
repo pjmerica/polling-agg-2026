@@ -178,5 +178,13 @@
   "polymarket:4619954786848672924358603621249441949867510027397807551432814600739971568281": {
     "text": "Will Thomas Massie be the Republican nominee for Kentucky Governor? This market will resolve according to the winner of the Republican nomination to contest the Kentucky governorship in 2027. The Republican primary is scheduled to take place on May 18, 2027. \n\nIf no nominee is announced by November 2, 2027, 11:59PM ET, this market will resolve to \"Other\".\n\nThe resolution source for this market will be the first official announcement of the results from the Kentucky Republican Party; however, an overwhelming consensus of credible reporting may suffice.",
     "fetched_at": 1792535985.8847926
+  },
+  "kalshi:KXGOVKYNOMR-27-JCOM": {
+    "text": "Will James Comer be the Republican nominee for Governor in Kentucky? If James Comer wins the nomination for the Republican Party to contest the 2027 Kentucky Governorship, then the market resolves to Yes. This market is eligible for accelerated determination after a consensus of media organizations project the winner. See full rules for details.\n\nIf the nominee is not listed, every market resolves to No.",
+    "fetched_at": 1792548075.167713
+  },
+  "polymarket:38557921492914818932123255826859190255837748339675365995977965000764947273838": {
+    "text": "Will James Comer be the Republican nominee for Kentucky Governor? This market will resolve according to the winner of the Republican nomination to contest the Kentucky governorship in 2027. The Republican primary is scheduled to take place on May 18, 2027. \n\nIf no nominee is announced by November 2, 2027, 11:59PM ET, this market will resolve to \"Other\".\n\nThe resolution source for this market will be the first official announcement of the results from the Kentucky Republican Party; however, an overwhelming consensus of credible reporting may suffice.",
+    "fetched_at": 1792548075.273422
   }
 }
