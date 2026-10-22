@@ -19,7 +19,8 @@ OUT = os.path.join(HERE, "..", "data", "raw", "wayback_2020")
 TARGET = "static01.nyt.com/elections-assets/2020/data/api/2020-11-03/national-map-page/national/president.json"
 CDX = ("https://web.archive.org/cdx/search/cdx?url=" + TARGET +
        "&from=20201103230000&to=20201110235959&fl=timestamp,statuscode&collapse=timestamp:11")
-STATES = {"alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan"}
+STATES = {"alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
+          "nevada", "oregon"}
 COUNTY_KEYS = ["fips", "name", "votes", "absentee_votes", "results", "results_absentee", "eevp",
                "tot_exp_vote", "reporting", "precincts", "last_updated", "absentee_count_progress"]
 RACE_KEYS = ["state_slug", "votes", "absentee_votes", "eevp", "tot_exp_vote", "precincts_reporting",
@@ -54,7 +55,9 @@ def main():
     for n, ts in enumerate(stamps, 1):
         path = os.path.join(OUT, f"{ts}.json")
         if os.path.exists(path):
-            continue
+            with open(path, encoding="utf-8") as f:
+                if STATES <= set(json.load(f)["states"]):
+                    continue  # already has every state; re-fetch only when states were added
         try:
             data = json.loads(get(f"https://web.archive.org/web/{ts}id_/https://{TARGET}"))
         except Exception as e:

@@ -1,7 +1,7 @@
-# How far the count moves after polls close: nine states, 2020-2026
+# How far the count moves after polls close: eleven states, 2020-2026
 
-*Built 2026-10-21 by `scripts/build_swings_report.py`. Every table is generated from NYT's
-minute-by-minute results timelines (345 races: 256 contested general-election races
+*Built 2026-10-21 by `scripts/build_swings_report.py`; Nevada and Oregon added 2026-10-22. Every table is generated from NYT's
+minute-by-minute results timelines (406 races: 293 contested general-election races
 2020-2024, plus 2026 primaries, runoffs and specials) and Internet Archive copies of NYT's 2020
 county results. No number in a table was typed by hand.*
 
@@ -12,9 +12,9 @@ county results. No number in a table was typed by hand.*
 - **Move after 2 h** = final margin minus the margin 2 hours after the state's main poll close.
   - Positive: the count moved toward the Democrat/independent after that point.
   - Negative: toward the Republican.
-- **Poll close used (ET):** GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00, AK midnight.
+- **Poll close used (ET):** GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00, NV 10:00, OR 11:00, AK midnight.
   - "6 am" means 6 am ET the morning after, roughly the end of election-night counting.
-- **What's included:** every statewide office, House seat and ballot measure NYT covered in these nine states, not only Governor and Senate.
+- **What's included:** every statewide office, House seat and ballot measure NYT covered in these eleven states, not only Governor and Senate.
   More races means more examples of how each state's counties report.
 - **Caveats:**
   1. **2020 was a record mail year.** Its late swings (Michigan, Georgia, Alaska) were larger than 2022/2024.
@@ -39,6 +39,8 @@ county results. No number in a table was typed by hand.*
 | **Michigan** | Biggest **two-way** swings: 2020 +21 toward D; 2024 Senate D early, R overnight, D at the end | **Up to +7 (2020)**, +2 (2022), ~0 (2024) | Wayne/Detroit and other big counties report late |
 | **Maine** | +5 to +8 toward the non-Republican after 2 h | **0 to −3 back toward R after 6 am** | Big towns (Portland, Cumberland County) report through the night; small rural towns last |
 | **Texas** | Smallest: −1 to −3.4 after 2 h | Under 0.5 | 62-79% is counted in the first one or two hours (early vote) |
+| **Nevada** | Nothing posts until ~11:50 pm-1 am ET. The first big drop leaned D in 2020 and 2022 (2022 Senate +12.6 with 44% in), then Election Day votes moved it to R by morning (−2.7) | **Toward D in 17 of 18 races 2020-2024**, every statewide one (median +3.2 in 2022, +1.8 in 2020 and 2024) | Election Day drop-offs and late mail, mostly Clark County, counted Wed-Sat |
+| **Oregon** | First release at 11 pm ET holds 55-84% of the vote; 2022 then moved toward R overnight (Governor Kotek +9.8 → +1.1) | **+1.0 (2022) and +0.5 (2024) median toward D; −1.5 in 2020** | Election Day drop-box ballots, counted Wed-Fri |
 | **Alaska** | (Polls close at midnight ET) | **+16 (2020), +2 to +3 (2022/2024) toward D** | Mail ballots are counted Nov 10-18 |
 
 ## 2. Pace and typical move, by state and year
@@ -71,6 +73,12 @@ Median over every contested general-election race in that state and year.
 | Nebraska | 2020 | 2 | 34% / 49% / 62% / 88% | -12.8 | -8.7 | +0.1 | 1 of 2 |
 | Nebraska | 2022 | 7 | 39% / 50% / 74% / 96% | -13.0 | -6.9 | +1.1 | 6 of 7 |
 | Nebraska | 2024 | 8 | 32% / 47% / 59% / 95% | -15.3 | -7.0 | +0.4 | 6 of 8 |
+| Nevada | 2020 | 1 | - / 0% / 0% / 85% | - | +85.9 | +1.8 | 1 of 1 |
+| Nevada | 2022 | 11 | - / - / - / 82% | - | - | +3.2 | 0 of 0 |
+| Nevada | 2024 | 6 | - / - / - / 87% | - | - | +1.8 | 0 of 0 |
+| Oregon | 2020 | 2 | 82% / 84% / 82% / 90% | -3.2 | -3.2 | -1.5 | 0 of 2 |
+| Oregon | 2022 | 8 | 55% / 63% / 55% / 71% | +1.7 | +1.3 | +1.0 | 0 of 8 |
+| Oregon | 2024 | 9 | 65% / 68% / 65% / 77% | +0.8 | +0.4 | +0.5 | 0 of 9 |
 | Alaska | 2020 | 2 | - / - / - / 37% | - | - | +16.0 | 0 of 0 |
 | Alaska | 2022 | 2 | - / 56% / - / 77% | - | +6.1 | +2.2 | 2 of 2 |
 | Alaska | 2024 | 2 | - / 30% / - / 73% | - | +4.1 | +2.6 | 1 of 2 |
@@ -157,6 +165,16 @@ Up to five per state, largest move after 2 h first.
 | 2024 House 2 | 70.9% / +2.5 | 76.4% / +1.2 | 94.0% / -2.4 | -1.9 | **-4.4** | +0.5 |
 | 2022 House 2 | 67.4% / +0.0 | 77.4% / -1.7 | 93.4% / -4.4 | -2.7 | **-2.7** | +1.7 |
 
+**Oregon**
+
+| Race | 2 h after close: counted / margin | Midnight ET | 6 am ET | Final | Move after 2 h | Move after 6 am |
+|---|---|---|---|---|---|---|
+| 2022 House 5 | 58.3% / -5.6 | 57.5% / -5.1 | 69.0% / -4.5 | -2.1 | **+3.5** | +2.4 |
+| 2024 House 4 | 73.3% / +10.5 | 73.3% / +10.5 | 82.3% / +8.9 | +7.8 | **-2.7** | -1.1 |
+| 2022 Governor | 62.8% / +1.0 | 52.6% / +0.9 | 73.4% / +1.1 | +3.4 | **+2.4** | +2.4 |
+| 2022 House 4 | 72.9% / +9.8 | 32.7% / -0.0 | 85.1% / +8.1 | +7.5 | **-2.3** | -0.7 |
+| 2022 Senate | 63.0% / +13.3 | 59.8% / +14.5 | 73.5% / +13.1 | +14.9 | **+1.7** | +1.8 |
+
 **Alaska**
 
 | Race | 2 h after close: counted / margin | Midnight ET | 6 am ET | Final | Move after 2 h | Move after 6 am |
@@ -218,6 +236,7 @@ General elections only. "Ahead for good" is when the eventual winner took the le
 | Nebraska 2024 Initiative | NE-I-83084-NE-2024-11-05 | For (50.1%) | For (61.4%) | Against +2.0 | 11-06 01:26 (79.6% in) |
 | Nebraska 2024 President (district 1) | NE-G-P-CD_1-2024-11-05 | Harris (44.1%) | Trump (55.7%) | Trump +13.0 | 11-05 23:20 (52.7% in) |
 | Nebraska 2024 Senate | NE-G-S-2024-11-05 | Osborn (50.1%) | Fischer (61.4%) | Fischer +6.7 | 11-05 23:25 (57.1% in) |
+| Oregon 2022 House 4 | OR-G-H-4-2022-11-08 | Hoyle (72.9%) | Skarlatos (32.7%) | Hoyle +7.5 | 11-09 00:02 (72.9% in) |
 | Alaska 2022 Senate [RCV, 1st round] | AK-G-S-2022-11-08 | Tshibaka (55.8%) | - (-%) | Murkowski +0.8 | 11-18 22:08 (98.6% in) |
 | Alaska 2024 Measure | AK-I-83139-AK-2024-11-05 | Yes (30.4%) | - (-%) | No +0.2 | 11-18 19:01 (97.8% in) |
 
@@ -236,6 +255,7 @@ Patterns:
 | Alaska 2020 President | 36.8% | -26.7 | -10.1 | **+16.6** |
 | Alaska 2020 Senate | 37.3% | -28.0 | -12.7 | **+15.3** |
 | Michigan 2024 House 12 | 68.5% | +55.4 | +44.2 | **-11.2** |
+| Nevada 2022 House 2 | 71.8% | -29.5 | -21.9 | **+7.5** |
 | Michigan 2020 Senate | 80.1% | -5.6 | +1.7 | **+7.3** |
 | Michigan 2020 President | 81.9% | -4.3 | +2.8 | **+7.1** |
 | Iowa 2024 House 4 | 87.3% | -40.5 | -34.4 | **+6.1** |
@@ -243,13 +263,26 @@ Patterns:
 | Michigan 2022 House 3 | 88.4% | +8.3 | +12.9 | **+4.6** |
 | Michigan 2022 House 6 | 86.2% | +27.4 | +31.8 | **+4.4** |
 | Michigan 2024 House 4 | 92.8% | -15.7 | -11.7 | **+4.0** |
+| Nevada 2022 Attorney General | 83.5% | +4.3 | +7.9 | **+3.6** |
+| Nevada 2022 Senate | 82.2% | -2.7 | +0.8 | **+3.5** |
 | Michigan 2022 House 8 | 93.4% | +6.8 | +10.3 | **+3.5** |
+| Nevada 2022 Secretary of State | 82.3% | -1.1 | +2.3 | **+3.4** |
 | Maine 2020 President | 73.1% | +12.3 | +9.1 | **-3.2** |
+| Nevada 2022 Governor | 82.2% | -4.7 | -1.5 | **+3.2** |
+| Nevada 2022 Lieutenant Governor | 82.3% | -6.9 | -3.7 | **+3.2** |
+| Nevada 2022 House 3 | 86.9% | +0.8 | +4.0 | **+3.2** |
 | Alaska 2024 House 1 [RCV, 1st round] | 73.3% | -5.0 | -2.0 | **+2.9** |
+| Nevada 2022 Controller | 82.4% | -7.0 | -4.1 | **+2.9** |
+| Nevada 2024 House 2 | 83.2% | -21.9 | -19.0 | **+2.9** |
+| Nevada 2022 Treasurer | 82.3% | -1.1 | +1.7 | **+2.8** |
 | Michigan 2022 House 4 | 95.7% | -14.6 | -11.9 | **+2.7** |
+| Nevada 2022 House 1 | 87.4% | +2.9 | +5.6 | **+2.7** |
 | Maine 2020 Senate | 69.7% | -5.9 | -8.6 | **-2.7** |
 | Maine 2024 House 1 | 71.4% | +24.8 | +22.3 | **-2.6** |
 | Georgia 2020 President | 94.4% | -2.2 | +0.2 | **+2.4** |
+| Oregon 2022 House 1 | 68.0% | +33.6 | +36.0 | **+2.4** |
+| Oregon 2022 House 5 | 69.0% | -4.5 | -2.1 | **+2.4** |
+| Oregon 2022 Governor | 73.4% | +1.1 | +3.4 | **+2.4** |
 | Michigan 2022 Governor | 93.4% | +8.2 | +10.5 | **+2.3** |
 | Michigan 2022 Secretary of State | 93.4% | +11.6 | +13.9 | **+2.3** |
 | Michigan 2022 Attorney General | 93.5% | +6.3 | +8.6 | **+2.3** |
@@ -262,14 +295,28 @@ Patterns:
 | Georgia 2020 Senate | 94.5% | -3.9 | -1.8 | **+2.1** |
 | Maine 2024 President (district 1) | 71.3% | +23.9 | +21.8 | **-2.1** |
 | Michigan 2024 House 10 | 92.3% | -8.1 | -6.1 | **+2.0** |
+| Nevada 2024 House 3 | 90.1% | +0.8 | +2.7 | **+2.0** |
+| Nevada 2024 House 1 | 90.6% | +5.6 | +7.5 | **+1.9** |
 | Michigan 2022 House 7 | 96.9% | +3.5 | +5.4 | **+1.9** |
+| Oregon 2024 Attorney General | 77.2% | +7.0 | +8.9 | **+1.9** |
 | Maine 2024 President | 73.2% | +8.8 | +6.9 | **-1.8** |
+| Oregon 2022 Senate | 73.5% | +13.1 | +14.9 | **+1.8** |
+| Oregon 2024 President | 76.4% | +12.6 | +14.4 | **+1.8** |
+| Nevada 2020 President | 84.9% | +0.6 | +2.4 | **+1.8** |
 | Nebraska 2020 Senate | 84.6% | -40.1 | -38.3 | **+1.8** |
+| Oregon 2024 Secretary of State | 77.1% | +10.8 | +12.6 | **+1.8** |
 | Nebraska 2022 House 2 | 93.4% | -4.4 | -2.7 | **+1.7** |
+| Nevada 2022 House 4 | 86.5% | +3.1 | +4.8 | **+1.7** |
+| Nevada 2024 Senate | 86.6% | -0.1 | +1.6 | **+1.7** |
 | Maine 2024 President (district 2) | 73.3% | -7.9 | -9.5 | **-1.6** |
+| Nevada 2024 President | 86.5% | -4.7 | -3.1 | **+1.6** |
 | Nebraska 2020 President | 92.1% | -17.5 | -19.1 | **-1.6** |
+| Oregon 2020 President | 90.4% | +17.6 | +16.1 | **-1.5** |
+| Oregon 2020 Senate | 90.6% | +19.1 | +17.6 | **-1.5** |
 
-- **Only Alaska and Michigan** show large, repeated post-election-night moves. Georgia 2020 and Maine show 2-3 pts. One isolated case: Iowa 2024 House 4 moved 6 pts in a race decided by 34.
+- **Alaska, Michigan and Nevada** show large, repeated post-election-night moves. Georgia 2020, Maine and Oregon 2022 show 2-3 pts. One isolated case: Iowa 2024 House 4 moved 6 pts in a race decided by 34.
+- **Nevada moved toward Democrats after election night in every statewide race 2020-2024** (17 of 18 races; the exception is 2024 House 4, −1.1): 2022 Senate +3.5 (Cortez Masto went ahead on the Saturday), 2022 Governor +3.2 (Lombardo held on by 1.5), 2024 Senate +1.7, 2024 President +1.6, 2020 President +1.8.
+- **Oregon's late count leaned Democratic in 2022 and 2024 (+1.8 to +2.4 in the top races) but Republican in 2020 (−1.5).**
 - **Alaska's moves are toward Democrats** (mail ballots).
 - **Maine's late moves are toward Republicans:** the last towns to report are small and rural.
 - **Michigan 2024 House 12 (Detroit area)** moved 11 pts *less* Democratic after 6 am.
@@ -314,6 +361,10 @@ Computed from Internet Archive copies of NYT's county file, roughly hourly overn
 | Iowa | 6 am ET | under 0.5% | - | - | 5:52 AM |
 | Nebraska | midnight ET | 29% | -44.1 | Douglas 5.1% (-10); Lancaster 2.7% (-23); Scotts Bluff 1.6% (-44); Platte 1.6% (-56) | 12:00 AM |
 | Nebraska | 6 am ET | 4% | -31.7 | Platte 1.6% (-56); Douglas 1.2% (+8); Sarpy 0.2% (-35); Dakota 0.2% (-45) | 5:52 AM |
+| Nevada | midnight ET | 100% | +2.7 | Clark 68.4% (+10); Washoe 18.6% (+5); Douglas 2.5% (-29); Lyon 2.2% (-41) | 12:00 AM |
+| Nevada | 6 am ET | 11% | +20.1 | Clark 8.5% (+27); Washoe 1.2% (+11); Douglas 0.4% (-31); Nye 0.2% (-37) | 5:52 AM |
+| Oregon | midnight ET | 16% | +0.2 | Clackamas 3.7% (-11); Washington 3.6% (+20); Multnomah 2.8% (+47); Marion 1.5% (-14) | 12:00 AM |
+| Oregon | 6 am ET | 8% | -0.9 | Clackamas 3.7% (-11); Washington 1.7% (+24); Marion 1.1% (-14); Deschutes 0.4% (-17) | 5:52 AM |
 
 - **Michigan:**
   - Half the 2020 vote was counted after midnight, breaking Biden +16.
@@ -324,6 +375,8 @@ Computed from Internet Archive copies of NYT's county file, roughly hourly overn
   - After midnight it was mostly Douglas County (Lawrence, +39 Biden), which had reported nothing by midnight.
   - Rural counties outweighed it, so the late vote still went Trump +23.
 - **Nebraska:** rural counties that hadn't reported (Platte, Scotts Bluff) made the post-midnight vote Trump +44. Omaha's (Douglas) late votes were slightly Republican that year.
+- **Nevada:** almost nothing had posted by midnight ET (the first handful of votes came at 11:53 pm). The 11% still out at 6 am broke **Biden +20**, mostly Clark County (+27). That is the multi-day late-mail tail.
+- **Oregon:** the 16% counted after midnight split about evenly (+0.2), and the last 8% after 6 am leaned slightly Republican (−0.9; Clackamas and Marion). That matches Oregon's 2020 late move toward Republicans; 2022 and 2024 went the other way.
 
 ## 8. 2026 primaries, runoffs and specials (this year's rules)
 
@@ -380,6 +433,12 @@ Computed from Internet Archive copies of NYT's county file, roughly hourly overn
 | Iowa | 2026-06-02 | Governor | IA-R-G-2026-06-02 | 34.4 / 90.8 / 99.6 / 100.0 | Lahn +0.8 | 0.82 | 21:19 (12.5%) |
 | Iowa | 2026-06-02 | U.S. Senate | IA-R-S-2026-06-02 | 33.7 / 92.7 / 99.5 / 99.9 | Hinson +48.4 | 49.2 | 21:19 (13.0%) |
 | Nebraska | 2026-05-12 | U.S. House | NE-D-H-2-2026-05-12 | 64.1 / 70.0 / 87.0 / 88.8 | Powell +2.4 **(comeback)** | -0.71 | 23:46 (86.9%) |
+| Oregon | 2026-05-19 | Governor | OR-D-G-2026-05-19 | 60.4 / 61.3 / 60.4 / 72.9 | Kotek +80.5 | 81.1 | 23:00 (49.3%) |
+| Oregon | 2026-05-19 | U.S. House | OR-D-H-3-2026-05-19 | 61.3 / 61.9 / 61.3 / 73.1 | Dexter +80.9 | 83.67 | 23:00 (57.6%) |
+| Oregon | 2026-05-19 | U.S. Senate | OR-D-S-2026-05-19 | 60.1 / 60.9 / 60.1 / 72.5 | Merkley +87.0 | 87.3 | 23:00 (49.2%) |
+| Oregon | 2026-05-19 | Measure | OR-I-83580-OR-2026-05-19 | 60.3 / 61.3 / 60.3 / 73.0 | No +66.0 | 66.36 | 23:00 (45.8%) |
+| Oregon | 2026-05-19 | Governor | OR-R-G-2026-05-19 | 61.9 / 63.2 / 61.9 / 75.3 | Drazan +7.5 | 10.84 | 23:00 (42.8%) |
+| Oregon | 2026-05-19 | U.S. Senate | OR-R-S-2026-05-19 | 62.2 / 63.6 / 62.2 / 75.8 | Smith +2.4 | 3.59 | 23:00 (43.2%) |
 
 What 2026 shows:
 - **Fast states stayed fast.**

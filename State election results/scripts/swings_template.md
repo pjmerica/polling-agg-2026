@@ -1,6 +1,6 @@
-# How far the count moves after polls close: nine states, 2020-2026
+# How far the count moves after polls close: eleven states, 2020-2026
 
-*Built 2026-10-21 by `scripts/build_swings_report.py`. Every table is generated from NYT's
+*Built 2026-10-21 by `scripts/build_swings_report.py`; Nevada and Oregon added 2026-10-22. Every table is generated from NYT's
 minute-by-minute results timelines ({{N_RACES}} races: {{N_GENERAL}} contested general-election races
 2020-2024, plus 2026 primaries, runoffs and specials) and Internet Archive copies of NYT's 2020
 county results. No number in a table was typed by hand.*
@@ -12,9 +12,9 @@ county results. No number in a table was typed by hand.*
 - **Move after 2 h** = final margin minus the margin 2 hours after the state's main poll close.
   - Positive: the count moved toward the Democrat/independent after that point.
   - Negative: toward the Republican.
-- **Poll close used (ET):** GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00, AK midnight.
+- **Poll close used (ET):** GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00, NV 10:00, OR 11:00, AK midnight.
   - "6 am" means 6 am ET the morning after, roughly the end of election-night counting.
-- **What's included:** every statewide office, House seat and ballot measure NYT covered in these nine states, not only Governor and Senate.
+- **What's included:** every statewide office, House seat and ballot measure NYT covered in these eleven states, not only Governor and Senate.
   More races means more examples of how each state's counties report.
 - **Caveats:**
   1. **2020 was a record mail year.** Its late swings (Michigan, Georgia, Alaska) were larger than 2022/2024.
@@ -39,6 +39,8 @@ county results. No number in a table was typed by hand.*
 | **Michigan** | Biggest **two-way** swings: 2020 +21 toward D; 2024 Senate D early, R overnight, D at the end | **Up to +7 (2020)**, +2 (2022), ~0 (2024) | Wayne/Detroit and other big counties report late |
 | **Maine** | +5 to +8 toward the non-Republican after 2 h | **0 to −3 back toward R after 6 am** | Big towns (Portland, Cumberland County) report through the night; small rural towns last |
 | **Texas** | Smallest: −1 to −3.4 after 2 h | Under 0.5 | 62-79% is counted in the first one or two hours (early vote) |
+| **Nevada** | Nothing posts until ~11:50 pm-1 am ET. The first big drop leaned D in 2020 and 2022 (2022 Senate +12.6 with 44% in), then Election Day votes moved it to R by morning (−2.7) | **Toward D in 17 of 18 races 2020-2024**, every statewide one (median +3.2 in 2022, +1.8 in 2020 and 2024) | Election Day drop-offs and late mail, mostly Clark County, counted Wed-Sat |
+| **Oregon** | First release at 11 pm ET holds 55-84% of the vote; 2022 then moved toward R overnight (Governor Kotek +9.8 → +1.1) | **+1.0 (2022) and +0.5 (2024) median toward D; −1.5 in 2020** | Election Day drop-box ballots, counted Wed-Fri |
 | **Alaska** | (Polls close at midnight ET) | **+16 (2020), +2 to +3 (2022/2024) toward D** | Mail ballots are counted Nov 10-18 |
 
 ## 2. Pace and typical move, by state and year
@@ -80,7 +82,9 @@ Patterns:
 
 {{LATE_MOVERS}}
 
-- **Only Alaska and Michigan** show large, repeated post-election-night moves. Georgia 2020 and Maine show 2-3 pts. One isolated case: Iowa 2024 House 4 moved 6 pts in a race decided by 34.
+- **Alaska, Michigan and Nevada** show large, repeated post-election-night moves. Georgia 2020, Maine and Oregon 2022 show 2-3 pts. One isolated case: Iowa 2024 House 4 moved 6 pts in a race decided by 34.
+- **Nevada moved toward Democrats after election night in every statewide race 2020-2024** (17 of 18 races; the exception is 2024 House 4, −1.1): 2022 Senate +3.5 (Cortez Masto went ahead on the Saturday), 2022 Governor +3.2 (Lombardo held on by 1.5), 2024 Senate +1.7, 2024 President +1.6, 2020 President +1.8.
+- **Oregon's late count leaned Democratic in 2022 and 2024 (+1.8 to +2.4 in the top races) but Republican in 2020 (−1.5).**
 - **Alaska's moves are toward Democrats** (mail ballots).
 - **Maine's late moves are toward Republicans:** the last towns to report are small and rural.
 - **Michigan 2024 House 12 (Detroit area)** moved 11 pts *less* Democratic after 6 am.
@@ -112,6 +116,8 @@ Computed from Internet Archive copies of NYT's county file, roughly hourly overn
   - After midnight it was mostly Douglas County (Lawrence, +39 Biden), which had reported nothing by midnight.
   - Rural counties outweighed it, so the late vote still went Trump +23.
 - **Nebraska:** rural counties that hadn't reported (Platte, Scotts Bluff) made the post-midnight vote Trump +44. Omaha's (Douglas) late votes were slightly Republican that year.
+- **Nevada:** almost nothing had posted by midnight ET (the first handful of votes came at 11:53 pm). The 11% still out at 6 am broke **Biden +20**, mostly Clark County (+27). That is the multi-day late-mail tail.
+- **Oregon:** the 16% counted after midnight split about evenly (+0.2), and the last 8% after 6 am leaned slightly Republican (−0.9; Clackamas and Marion). That matches Oregon's 2020 late move toward Republicans; 2022 and 2024 went the other way.
 
 ## 8. 2026 primaries, runoffs and specials (this year's rules)
 

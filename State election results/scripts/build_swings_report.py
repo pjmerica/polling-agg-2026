@@ -15,9 +15,9 @@ import statistics as st
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-ORDER = ["GA", "OH", "MI", "TX", "KS", "ME", "IA", "NE", "AK"]
+ORDER = ["GA", "OH", "MI", "TX", "KS", "ME", "IA", "NE", "NV", "OR", "AK"]
 NAMES = {"GA": "Georgia", "OH": "Ohio", "MI": "Michigan", "TX": "Texas", "KS": "Kansas", "ME": "Maine",
-         "IA": "Iowa", "NE": "Nebraska", "AK": "Alaska"}
+         "IA": "Iowa", "NE": "Nebraska", "AK": "Alaska", "NV": "Nevada", "OR": "Oregon"}
 REP = ("gop", "rep", "republican")
 
 
@@ -175,7 +175,8 @@ def county_2020(only=None):
     points = [("midnight ET", dt.datetime(2020, 11, 4, 5, 0, tzinfo=utc)), ("6 am ET", dt.datetime(2020, 11, 4, 11, 0, tzinfo=utc))]
     out = ["| State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |",
            "|---|---|---|---|---|---|"]
-    for state in (only or ["georgia", "ohio", "michigan", "texas", "kansas", "maine", "iowa", "nebraska"]):
+    for state in (only or ["georgia", "ohio", "michigan", "texas", "kansas", "maine", "iowa", "nebraska",
+                           "nevada", "oregon"]):
         fin, _ = state_at(state, snaps[-1][0])
         tot = sum(c["votes"] or 0 for c in fin.values())
         for lab, when in points:

@@ -17,7 +17,8 @@ OUT = os.path.join(HERE, "..", "data", "raw", "nyt")
 BASE = "https://static01.nyt.com/elections-assets/"
 UA = {"User-Agent": "Mozilla/5.0"}
 
-STATES = ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan"]
+STATES = ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
+          "nevada", "oregon"]
 
 # year -> (url template, race slugs). Slugs that don't exist for a state 404 and are skipped.
 YEARS = {

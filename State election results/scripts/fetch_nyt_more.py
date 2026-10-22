@@ -19,7 +19,7 @@ UA = {"User-Agent": "Mozilla/5.0"}
 PREFIXES = ["static01.nyt.com/elections-assets/2022/data/2022-11-08/",
             "static01.nyt.com/elections-assets/pages/data/2024-11-05/",
             "static01.nyt.com/elections-assets/pages/data/2026-"]
-STATES = "alaska|georgia|ohio|kansas|texas|nebraska|maine|iowa|michigan"
+STATES = "alaska|georgia|ohio|kansas|texas|nebraska|maine|iowa|michigan|nevada|oregon"
 KEEP = re.compile(rf"results-({STATES})[a-z0-9-]*\.json$")
 SKIP = re.compile(r"state-(senate|house)|mayor|county-judge")
 
@@ -40,9 +40,11 @@ def get(url, timeout=180, tries=1):
 
 
 def file_list():
-    if os.path.exists(LIST):
-        return open(LIST).read().split()
-    urls = set()
+    cached = open(LIST).read().split() if os.path.exists(LIST) else []
+    # the cache only holds the states listed when it was built; re-query when a state was added
+    if cached and all(re.search(rf"results-{s}", "\n".join(cached)) for s in STATES.split("|")):
+        return cached
+    urls = set(cached)
     for p in PREFIXES:
         cdx = f"https://web.archive.org/cdx/search/cdx?url={p}&matchType=prefix&fl=original&collapse=urlkey&limit=20000"
         for line in get(cdx, tries=5).decode().splitlines():

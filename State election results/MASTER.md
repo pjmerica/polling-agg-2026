@@ -1,12 +1,13 @@
 # Election night, Nov 3, 2026: master guide
 
 *One file to read through. It covers the competitive Governor and Senate races (our model's favorite at 75% or
-less) in nine states: how each state counts and reports, when results arrive, how far the count has moved in
+less): 13 races in eleven states. For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
 past elections, and where that creates opportunities as results come in.*
 
 *Built by `scripts/build_master.py` from `STATE_BY_STATE.md` (rules, checked against primary sources)
-and the swings analysis (345 races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
-generated from data. Model and market numbers are from 2026-10-21 evening; they move daily.*
+and the swings analysis (406 races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
+generated from data. Model numbers: forecast run of 2026-10-22 18:05 UTC. Market numbers: 2026-10-22 22:52 UTC refresh. They move daily. Nevada, Oregon and Texas Governor were added on
+Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%.*
 
 **Contents**
 1. The states at a glance
@@ -22,22 +23,24 @@ generated from data. Model and market numbers are from 2026-10-21 evening; they 
 
 Listed in poll-closing order.
 
-| # | State | Competitive race(s) | Model favorite (win %) | Market (Oct 21) | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
+| # | State | Competitive race(s) | Model favorite (win %) | Market, same candidate | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Georgia | Governor | Bottoms (D) 55.2% vs Jackson (R) | Bottoms 54% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
-| 2 | Ohio | Governor; Senate (special) | Acton (D) 57.4% vs Ramaswamy (R); Brown (D) 64.2% vs Husted (R) | Acton 77%; Brown 69% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
-| 3 | Michigan | Senate | El-Sayed (D) 76.3% vs Rogers (R) (now just above the 75% cut; was 73.0% this morning) | El-Sayed 69% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
-| 4 | Texas | Senate | Talarico (D) 65.0% vs Paxton (R) | Talarico 67% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat for the first 15-35 min, then Republican | Election night; AP calls no statewide race before 9 pm |
-| 5 | Kansas | Senate | Marshall (R) 60.0% vs Hamilton (D) | Marshall 61% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
-| 6 | Maine | Senate (ranked-choice) | Jackson (D) 69.1% vs Collins (R) | Jackson 65% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
-| 7 | Iowa | Senate | Hinson (R) 71.6% vs Turek (D) | Hinson 57% | 9:00 pm | 9:02-9:12 pm (10:13 pm in 2020) | Democrat until ~10:00-11:30 pm | Election night |
-| 8 | Nebraska | Senate | Ricketts (R) 68.1% vs Osborn (I); no Democrat on the ballot | Ricketts 71% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
-| 9 | Alaska | Senate (ranked-choice) | Peltola (D) 50.6% vs Sullivan (R) | Peltola 75% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
+| 1 | Georgia | Governor | Bottoms (D) 55.0% vs Jackson (R) | Bottoms 61% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
+| 2 | Ohio | Governor; Senate (special) | Acton (D) 54.9% vs Ramaswamy (R); Brown (D) 59.6% vs Husted (R) | Acton 84%; Brown 69% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
+| 3 | Michigan | Senate | El-Sayed (D) 63.4% vs Rogers (R) | El-Sayed 70% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
+| 4 | Texas | Senate; Governor | Talarico (D) 55.0% vs Paxton (R); Abbott (R) 74.0% vs Hinojosa (D) | Talarico 67%; Abbott 68% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat for the first 15-35 min, then Republican | Election night; AP calls no statewide race before 9 pm |
+| 5 | Kansas | Senate | Marshall (R) 58.8% vs Hamilton (D) | Marshall 62% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
+| 6 | Maine | Senate (ranked-choice) | Jackson (D) 71.6% vs Collins (R) | Jackson 66% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
+| 7 | Iowa | Senate | Hinson (R) 68.2% vs Turek (D) | Hinson 57% | 9:00 pm | 9:02-9:12 pm (10:13 pm in 2020) | Democrat until ~10:00-11:30 pm | Election night |
+| 8 | Nebraska | Senate | Ricketts (R) 62.2% vs Osborn (I); no Democrat on the ballot | Ricketts 74% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
+| 9 | Nevada | Governor | Lombardo (R) 69.5% vs Ford (D) | Lombardo 34% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
+| 10 | Oregon | Governor | Kotek (D) 70.1% vs Drazan (R) | Kotek 83% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
+| 11 | Alaska | Senate (ranked-choice) | Peltola (D) 51.9% vs Sullivan (R) | Peltola 75% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
 
 Notes on the table:
-- **Market column:** where the market priced the other candidate, it shows 100 minus that price, so it is the favorite's chance.
+- **Market column:** the market's chance for the model's favorite (where the market priced the other candidate, 100 minus that price). Under 50% means the market favors the other candidate: Nevada.
 - **"Who usually leads early"** comes from the history tables below, not from rules.
-- **Near the 75% cut:** Oregon Gov (77.3%), Nevada Gov (78.8%) and Texas Gov (79.1%) are just outside it; see `competitive_races.md`.
+- **The cut moves with the model.** The audit's retrain (Oct 22) brought Nevada, Oregon and Texas Governor under 75%; Texas Governor is the closest to the line. See `competitive_races.md`.
 
 ---
 
@@ -59,13 +62,33 @@ count moves more precisely than the market does, and from acting faster.*
 
 | Rank | State | Why | Main risks |
 |---|---|---|---|
-| **1** | **Michigan Senate** | Best combination of all five (detail below) | Late batches aren't always Democratic: the 2026 primary narrowed late against El-Sayed (6.3 → 0.9), and 2024's late move was ~0. Model now 76%, so the race may not be that close. |
-| **2** | **Maine Senate** | Slow count, liquid market, a repeating intra-night pattern, and ranked-choice complications (detail below) | No live state feed; towns report piecemeal to AP. The ranked-choice count resolves ~8-10 days later, and the first-round leader can lose (2026 primary). |
-| **3** | **Kansas, Nebraska, Iowa: fade the early Democratic/independent lead** | The **most consistent direction** in the data (detail below). All three settle **on election night**, so money turns over quickly. | Thinner markets (Kansas ~2.2M Kalshi contracts; Nebraska not on Kalshi in our data). 2026's early vote may be more Democratic than before, so early leads may be bigger, and so may the fade. Most likely already priced in by sharp traders. |
-| Special case | **Alaska Senate** | **Biggest model-market disagreement** (detail below) | Settles only after Nov 18 (ranked-choice count), possibly later with a recount, so money is tied up for weeks. The model's poll inputs in Alaska are thin. |
-| Avoid during the count | **Texas, Georgia, Ohio** | Count fast: Texas ~62-79% counted in the first hour or two; Georgia and Ohio 93-99% by midnight. | Little time for mispricing. The Ohio Governor model-market gap (model 57% vs market 77% for Acton) is a **pre-election** disagreement, not a live-count one. |
+| **1** | **Nevada Governor** | The longest window and the most consistent late direction in the data. Close races are decided Wednesday to Saturday, and the post-election-night count moved toward the Democrat in every statewide race since 2020. It's also the biggest model-market disagreement (detail below). | 2024's tail was about half of 2022's. Clark's new print-and-scan ballots are untested at general-election turnout. Thinner market than Michigan or Maine. First numbers only at ~1-2 am ET. |
+| **2** | **Michigan Senate** | Long window, repeating order and liquid (detail below) | Late batches aren't always Democratic: the 2026 primary narrowed late against El-Sayed (6.3 → 0.9), and 2024's late move was ~0. |
+| **3** | **Maine Senate** | Slow count, liquid market, a repeating intra-night pattern, and ranked-choice complications (detail below) | No live state feed; towns report piecemeal to AP. The ranked-choice count resolves ~8-10 days later, and the first-round leader can lose (2026 primary). |
+| **4** | **Kansas, Nebraska, Iowa: fade the early Democratic/independent lead** | The **most consistent election-night direction** in the data (detail below). All three settle **on election night**, so money turns over quickly. | Thinner markets (Kansas ~2.2M Kalshi contracts; Nebraska not on Kalshi in our data). 2026's early vote may be more Democratic than before, so early leads may be bigger, and so may the fade. Most likely already priced in by sharp traders. |
+| Special case | **Alaska Senate** | Big model-market disagreement (detail below) | Settles only after Nov 18 (ranked-choice count), possibly later with a recount, so money is tied up for weeks. The model's poll inputs in Alaska are thin. |
+| Special case | **Oregon Governor** | Nevada's mirror image: Kotek's numbers look **worst** at the end of election night (detail below) | The market already prices Kotek 83%, and it's thin (Kalshi ~130K contracts; Polymarket ~$113K liquidity, Oct 19). Only interesting if election night shows Drazan ahead or Kotek's price drops. |
+| Avoid during the count | **Texas (Senate and Governor), Georgia, Ohio** | They count fast: Texas ~62-79% counted in the first hour or two; Georgia and Ohio 93-99% by midnight. | Little time for mispricing. The Ohio Governor gap (model Acton 54.9%, market Acton 84%) is a **pre-election** disagreement, not a live-count one. |
 
-**1. Michigan Senate** (El-Sayed D vs Rogers R; model El-Sayed 76.3%, market 69%)
+**1. Nevada Governor** (Lombardo R vs Ford D; model Lombardo 69.5%, market Lombardo 34%, so the market favors Ford)
+- **Long window:**
+  - Nothing posts until the last voter in line has voted. First votes came at 11:53 pm-12:55 am ET in 2020-2024, and the first big drop at ~1-2 am.
+  - Election Day drop-offs (54,000-57,000 in Clark in 2022/2024) are counted Wednesday to Saturday, and more than 100,000 ballots were left after election night each time.
+  - AP called every close statewide race since 2020 on day 3 or 4.
+- **Repeating direction:**
+  - After election night, the count moved toward the Democrat in every statewide race since 2020: 2022 Senate +3.5, 2022 Governor +3.2, 2020 President +1.8, 2024 Senate +1.7, 2024 President +1.6.
+  - In votes, about 24,000-31,000 in the two Senate races.
+- **Lead changes:**
+  - 2022 Senate: Laxalt led from ~4 am Wednesday until Cortez Masto went ahead at 9:14 pm ET Saturday.
+  - 2024 Senate: the lead traded twice overnight before Rosen pulled ahead for good.
+- **Liquidity:** ~1.07M contracts traded on Kalshi; ~$378K liquidity on Polymarket (Oct 19). That is less than Michigan or Maine, but tradeable.
+- **The trade it suggests:**
+  - Lombardo's numbers look their best on Wednesday morning, when Election Day in-person votes are in and the drop-offs aren't.
+  - If the price moves toward him then, the count still to come has favored the Democrat every time.
+  - The research puts the line at **~25,000-30,000 votes (about 2-2.5 points)**: a smaller Lombardo lead on Wednesday morning is at risk, a larger one should hold.
+  - Watch Clark's and Washoe's counts of Election Day drop-offs, and whether the Secretary of State again publishes outstanding ballots by county.
+
+**2. Michigan Senate** (El-Sayed D vs Rogers R; model El-Sayed 63.4%, market El-Sayed 70%)
 - **Long window:** only 46-50% is counted by midnight ET in every recent general. The 2024 Senate race was called at 3:12 pm the next day.
 - **Repeating order:** Wayne County (Detroit) and the other big counties report late.
   - 2020: the 18% counted after 6 am went Biden +35, almost all Wayne.
@@ -73,35 +96,44 @@ count moves more precisely than the market does, and from acting faster.*
   - 2024 Senate: Slotkin led until 10:44 pm, Rogers led overnight, Slotkin retook it at 7:31 am.
   - 2020 Senate: James led until Wednesday afternoon.
   - Prices swing hardest at those moments.
-- **Liquid:** ~3.3M contracts traded on Kalshi; ~$577k liquidity on Polymarket (as of Oct 19-20).
+- **Liquid:** ~3.3M contracts traded on Kalshi; ~$577K liquidity on Polymarket (as of Oct 19-20).
 
-**2. Maine Senate** (Jackson D vs Collins R; model Jackson 69.1%, market 65%)
+**3. Maine Senate** (Jackson D vs Collins R; model Jackson 71.6%, market Jackson 66%)
 - **Slow:** only 29-63% is counted by midnight ET.
 - **Repeating pattern:** in every race we have, the count moved 5-8 pts toward the non-Republican after the first two hours, then 0-3 pts back after 6 am.
 - **Liquid:** ~4.4M Kalshi contracts; ~$2.3M Polymarket volume.
 - **Ranked-choice wrinkle:** if no one tops 50% of *all* ballots (blanks count against the leader), the ranked-choice count decides about a week later, a second chance for prices to be wrong.
 
-**3. Kansas, Nebraska, Iowa**
+**4. Kansas, Nebraska, Iowa**
 - **Kansas:** in 2022 **every** race moved 5+ pts toward Republicans after 2 hours (median 19). Governor Kelly's +20 became a 2.2-point win.
 - **Nebraska:** Osborn led by **18** at 9:00 pm in 2024 and lost by 6.7. The lead changed at about 11:25 pm, and the race was called at 12:06 am.
 - **Iowa:** the first-hour margin moved a median 13-29 pts by the end.
 
 **Special case: Alaska Senate** (Peltola D vs Sullivan R)
-- **The disagreement:** our model says 50.6% Peltola; the market says **75%**.
-- **What the count pattern implies:** Sullivan should lead on election night, and mail counted Nov 10-18 has moved the margin 2-3 pts toward Democrats (16 in 2020). That pattern **agrees with the market's direction**.
+- **The disagreement:** our model says Peltola 51.9%; the market says Peltola 75%.
+- **What the count pattern implies:** Sullivan should lead on election night. Mail counted Nov 10-18 has moved the margin 2-3 pts toward Democrats (16 in 2020). That pattern **agrees with the market's direction**.
 - **The trade it suggests:** if Sullivan's election-night lead pushes the market toward him, that may be a better entry for a Peltola position than today.
+
+**Special case: Oregon Governor** (Kotek D vs Drazan R; model Kotek 70.1%, market Kotek 83%)
+- **The first release** at 11 pm ET holds most of the vote and showed Kotek's high point in 2022 (+9.8). By 1 am she was down to +1.0.
+- **Wednesday to Friday** (Multnomah and Washington Election Day drop-offs) took her back to +3.7 by Friday midday; the final was +3.4.
+- **The rule of thumb:** a Drazan lead under ~2 points at the end of election night is at real risk, and a Kotek lead should grow.
 
 ### Practical cautions
 
 - **Settlement rules differ by platform** (see `AGENTS.md`):
   - Kalshi election markets resolve on who is **sworn in**; Polymarket resolves on who **wins**.
-  - Ranked-choice counts (Alaska Nov 18, Maine about a week later), recounts (automatic in Georgia's governor race at 0.5% or less, Michigan at 0.1%, Ohio at 0.25%, Nebraska at 1% of the leader's vote) and late mail (Alaska, Texas to Nov 4, Kansas to Nov 6) all delay settlement.
+  - These all delay settlement:
+    - ranked-choice counts (Alaska Nov 18, Maine about a week later);
+    - recounts: automatic in Georgia's governor race at 0.5% or less, Michigan at 0.1%, Ohio at 0.25%, Oregon at 0.2%, and Nebraska at 1% of the leader's vote. Nevada recounts only on demand, by Dec 1;
+    - late mail: Alaska, Oregon to Nov 10, Nevada to Nov 7, Kansas to Nov 6, Texas to Nov 4.
+  - Nevada's statewide canvass is Nov 24. Oregon's governor result is never certified by the Secretary of State; the House Speaker publishes it before the 2027 Legislature.
 - **Fees are real per leg** (`utils/fees.py`). Small edges disappear.
 - **The tools that make this usable are already set up:**
-  - The election-night recorder (`capture_live.py`) saves every county every 2 minutes from 6:30 pm ET.
+  - The election-night recorder (`capture_live.py`) saves every county every 2 minutes from 6:30 pm ET. It now includes Nevada, Oregon and Texas Governor, and keeps running for three weeks.
   - The next step is the simulator in the README, which turns "X% counted, these counties out" into a projected final.
   - Without the simulator, the tables in this file are rules of thumb.
-- **2026 differs from history:** new laws (Michigan pre-processing, Georgia's 8 pm rule, Ohio's ended grace period) and a more Democratic early vote. Expect the patterns, not the exact sizes.
+- **2026 differs from history:** new laws (Michigan pre-processing, Georgia's 8 pm rule, Ohio's ended grace period), Clark County's new ballots, slower USPS postmarks (Oregon rejected 13% of its late mail in May for late postmarks) and a more Democratic early vote. Expect the patterns, not the exact sizes.
 
 ---
 
@@ -115,14 +147,16 @@ count moves more precisely than the market does, and from acting faster.*
 
 | State | Firm rule | Source |
 |---|---|---|
-| All 9 | No results before polls close (Michigan, Maine, Georgia, Iowa, Nebraska and Texas statutes checked; Ohio by directive) | Statutes ✔ |
+| All 11 | No results before polls close (Michigan, Maine, Georgia, Iowa, Nebraska, Texas, Nevada and Oregon statutes checked; Ohio by directive) | Statutes ✔ |
+| Nevada | No mail-ballot results until **all polling places are closed and all votes cast**: voters in line at 7 pm PT still vote, so the first results wait for the last one. Mail counting **must finish by day 7, Tue Nov 10** | [NRS 293.269935, 293.269931, 293.305](https://www.leg.state.nv.us/NRS/NRS-293.html) ✔ |
+| Oregon | Nothing before 8 pm local; drop sites open until at least 8 pm; mailed ballots postmarked by Nov 3 count through **Tue Nov 10** | [ORS 260.705](https://www.oregonlegislature.gov/bills_laws/ors/ors260.html), [254.470](https://www.oregonlegislature.gov/bills_laws/ors/ors254.html) ✔ |
 | Georgia | Early-vote and pre-Monday absentee results **must be reported by 8:00 pm** or within 1 hour of the county's last poll closing | SB 189 ✔ |
 | Ohio | Each county must **upload absentee totals by 8:00 pm**, then update at assigned intervals until done | Directive 2026-22 ✔ |
 | Iowa | Absentee boards staffed to finish **by 10:00 pm CT**; each county's absentee result is released only when complete | Iowa Code 53.23 ✔ |
 | Texas | Counting may not stop once begun; results due **within 24 hours** of polls closing | SOS 2022 ✔ |
 | Alaska | Count days **Nov 10, 13, 18**; ranked-choice tabulation after the day-15 count; first results "anticipated" 8:45-9:00 pm Alaska time | Media Packet ✔ |
 | Maine | Town returns due **within 2 business days**; ranked-choice count only after all towns' ballots reach Augusta | §711 ✔ |
-| All 9 | Canvass and certification deadlines (see each state) | Statutes ✔ |
+| All 11 | Canvass and certification deadlines (see each state) | Statutes ✔ |
 
 **Even these slip.**
 - Harris County missed Texas's 24-hour deadline in March 2022 ✔.
@@ -133,7 +167,8 @@ count moves more precisely than the market does, and from acting faster.*
 - **Firm only to the extent the county keeps to them.**
   - Sedgwick County's "Wednesday afternoon" update for drop-box ballots ✔.
   - Douglas County, NE's past release schedule (8:00, 8:45, 9:45, 10:45, 11:45 pm CT; search-summary only ○).
-- **Not published yet:** no large county in these nine states has posted a Nov 3, 2026 schedule.
+- **Published for Nov 3:** Multnomah, Washington and Clackamas counties in Oregon (section 12) ◐. Washoe County (Reno) says it posts by noon and 5 pm PT each day after the election ○.
+- **Not published yet:** the large counties in the other nine states, and Clark County (Las Vegas).
 - **Historical habit, not plans:** AP's previews describe what counties have done before ("tend to release ... in the first vote update").
 
 **Tier 3: history.**
@@ -147,16 +182,34 @@ count moves more precisely than the market does, and from acting faster.*
 1. **The first batch is mostly early and mail votes**: in Georgia (required by law), Ohio, Texas, Kansas, Iowa and
    Nebraska (AP 2026 previews ✔). Where those votes lean Democratic, the Democrat leads early and the lead shrinks
    as Election Day precincts report. The size of the shrink is in each state's table.
-2. **Michigan and Alaska run the other way at the end.** Michigan's largest counties (Wayne/Detroit above all)
-   report late. Alaska counts most mail ballots days later.
+2. **Michigan, Alaska, Nevada and Oregon run the other way at the end.**
+   - Michigan's largest counties (Wayne/Detroit above all) report late.
+   - Alaska counts most mail ballots days later.
+   - Nevada and Oregon count late mail and Election Day drop-offs for days. From the end of election night to the
+     final count, Nevada moved 1.6-3.5 points toward the Democrat in every top race of 2020-2024. Oregon's 2022
+     Governor race went from Kotek +1.0 to +3.4, though Oregon 2020 moved 1.3 points the other way.
 3. **Maine is slow because ~500 towns report separately.** Only 29-63% was counted by midnight in 2020-2024.
    The late towns have moved the count 4-8 points toward the non-Republican after the first two hours in every
    race we have.
-4. **This year, early Democratic leads may be bigger than usual**: the early electorate is more Democratic
-   than in 2024 (Ohio: CNN, Oct 11 ○; Maine: Democrats 53% of returned absentees, Oct 17 ◐). Don't read an
-   inflated early lead as a landslide.
-5. **Mail-ballot deadlines.** Only Alaska (10 days), Texas (to 5 pm Nov 4) and Kansas (3 days) count domestic
-   mail ballots that arrive after Election Day. The Supreme Court left those deadlines to the states in
+4. **This year, early Democratic leads may be bigger than usual.** The early electorate is more Democratic than
+   in 2024, so don't read an inflated early lead as a landslide. Early-vote numbers so far:
+
+   | State | What's known | Source |
+   |---|---|---|
+   | Ohio | The early electorate is about 27 points more Democratic than at the same point in 2024. Early in-person voting is at 72% of 2024's pace, mail at 25%. | CNN, Oct 11 ○ |
+   | Maine | 101,777 absentee ballots returned, 53% from Democrats. | Oct 17 ◐ |
+   | Michigan | More than **440,000 ballots returned by Oct 13** (6% of active voters); about **2.08 million absentee ballots requested**, up 20% on 2022. | [MI SoS release, Oct 13](https://www.michigan.gov/sos/resources/news/2026/10/13/three-weeks-before-election-day-6-percent-of-voters-have-already-cast-their-ballot) ✔ |
+   | Georgia | First-day early voting (Oct 13) set a midterm record: 188,667 in person, against 134,962 in 2022. | [Fox 5](https://www.fox5atlanta.com/news/georgia-early-voting-sets-record-more-than-188k-voters) ○ |
+
+   On the other side, Democratic mail-ballot requests are down sharply in some states, because of worry about the
+   USPS (NBC/Penn early-vote analysis, Oct 9 ○). That could shrink the mail share of the first batch.
+5. **Mail-ballot deadlines.** Five of the eleven states count domestic mail ballots that arrive after Election
+   Day, if postmarked by it:
+   - Alaska: 10 days.
+   - Oregon: 7 days, to Tue Nov 10.
+   - Nevada: to 5 pm PT Sat Nov 7; ballots with no readable postmark to Fri Nov 6.
+   - Kansas: 3 days.
+   - Texas: to 5 pm Nov 4. The Supreme Court left those deadlines to the states in
    *Watson v. RNC*, June 29, 2026 ✔. The executive order restricting USPS ballot delivery is frozen for
    Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, Sept 15 ✔.
 
@@ -165,7 +218,7 @@ count moves more precisely than the market does, and from acting faster.*
 # 4. State by state
 
 In poll-closing order. Each state has three parts:
-- rules and how results get reported, checked against primary sources: ✔ re-read today, ◐ read by a researcher, ○ secondary;
+- rules and how results get reported, checked against primary sources: ✔ re-read, ◐ read by a researcher, ○ secondary;
 - generated history tables;
 - the swing data for that state.
 
@@ -173,7 +226,7 @@ In poll-closing order. Each state has three parts:
 
 **Race.**
 - Keisha Lance Bottoms (D) vs Rick Jackson (R); open seat.
-- Model: Bottoms 55.2%. Market: Bottoms 54%.
+- Model: Bottoms 55.0%. Market: Bottoms 61%.
 - Ballot: two candidates. The Libertarian Party failed to qualify for the 2026 ballot (its petition drive fell short in July: [AJC](https://www.ajc.com/politics/2026/07/libertarians-wont-be-on-the-ballot-in-georgia-meaning-likely-no-runoffs/), [WABE](https://www.wabe.org/georgia-libertarians-end-efforts-to-get-on-2026-general-election-ballot/) ○). Only write-ins could add a third name, so runoff risk is close to zero.
 - A majority is required. A general-election runoff, if needed, is **Tue Dec 1** ✔ ([georgia.gov](https://georgia.gov/events/2026-12-01/election-day-general-election-runoff)).
 
@@ -212,7 +265,7 @@ What the curves show (`state_curves.md`):
 
 | Date | Event |
 |---|---|
-| Fri Nov 6 | Military/overseas ballots due ✔; provisional and cure deadlines are also this week (exact date not verified) |
+| Fri Nov 6 | Military/overseas ballots due ✔; county registrars must decide every provisional ballot "not later than three days following the ... election" ✔ ([O.C.G.A. 21-2-419(c)(1)](https://codes.findlaw.com/ga/title-21-elections/ga-code-sect-21-2-419/)) |
 | Mon Nov 9, 5 pm | County certification ✔ ([Cobb Courier](https://cobbcountycourier.com/2026/10/which-comes-first-after-election-day-certification-or-a-recount/)) |
 | within 2 business days of Nov 9 | **If the Governor margin is 0.5% or less, the Secretary of State must order a full hand recount in every county**, with no request needed ✔ (law signed June 25, 2026, [Fox 5](https://www.fox5atlanta.com/news/georgia-election-bill-deadlines-new-law-delays-ballot-qr-code-removal); [Cobb Courier](https://cobbcountycourier.com/2026/10/which-comes-first-after-election-day-certification-or-a-recount/)). U.S. Senate recounts still need a request. |
 | Fri Nov 20 | State certification (17 days after) ✔ |
@@ -297,8 +350,8 @@ What the curves show (`state_curves.md`):
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 57.4% | Acton 77% |
-| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 64.2% | Brown 69% |
+| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 54.9% | Acton 84% |
+| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 59.6% | Brown 69% |
 
 **Rules for Nov 3**
 - **Deadlines and ballot processing:**
@@ -399,7 +452,7 @@ What the curves show:
 
 **Race.**
 - Abdul El-Sayed (D) vs Mike Rogers (R); open seat.
-- Model: El-Sayed 76.3% (73.0% this morning, so now just above the 75% cut). Market: El-Sayed 69%.
+- Model: El-Sayed 63.4%. Market: El-Sayed 70%.
 - In the Aug 4 primary El-Sayed led Stevens 48.5-47.5 with 96% counted on Wednesday morning, and AP called it just before 10 am Wednesday ✔ ([FOX 2 via Fox 4](https://www.fox4news.com/news/abdul-el-sayed-projected-defeat-haley-stevens-democratic-senate-primary-race.amp)).
 
 **Rules for Nov 3**
@@ -519,11 +572,16 @@ What the curves show:
 
 ---
 
-## Texas: Senate
+## Texas: Senate and Governor
 
-**Race.**
-- James Talarico (D) vs Ken Paxton (R); open seat. Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27).
-- Model: Talarico 65.0%. Market: Talarico 67%.
+**Races.**
+
+| Race | Candidates | Model | Market |
+|---|---|---|---|
+| Senate (open) | James Talarico (D) vs Ken Paxton (R). Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27). | Talarico 55.0% | Talarico 67% |
+| Governor | Greg Abbott (R, incumbent) vs Gina Hinojosa (D) | Abbott 74.0% | Abbott 68% |
+
+Both races are on the same ballot and counted together, so everything below applies to both.
 
 **Rules for Nov 3**
 - **Polls and early counting:**
@@ -573,7 +631,7 @@ What the curves show:
 - One odd point: in 2020 NYT recorded first votes at 7:34 pm ET, before polls closed at 8 pm ET. It was a few hundred votes, probably an early county post. Treat 8:00 pm as the real start.
 
 **What to expect** (inference):
-- If Talarico leads by more than ~4 points at 8:30 pm with most early votes in, he is in good shape.
+- If Talarico leads by more than ~4 points at 8:30 pm with most early votes in, he is in good shape. The same arithmetic applies to Hinojosa against Abbott; in 2022 O'Rourke led only until 8:37 pm and lost by 10.9.
 - If he leads by less, the Election Day vote can erase it.
 - A margin under ~2 points likely pushes the call past midnight. Late mail (to Nov 4) and provisionals matter only within ~0.5 points.
 
@@ -658,12 +716,12 @@ What the curves show:
 
 **Race.**
 - Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates.
-- Model: Marshall 60.0%. Market: Marshall 61%.
+- Model: Marshall 58.8%. Market: Marshall 62%.
 
 **Rules for Nov 3**
 - **Polls:**
   - Polls close 7 pm Central (8:00 pm ET) in most of the state.
-  - The Mountain-time counties close at 6 pm MT by default, 7 pm MT at the latest, so 8:00-9:00 pm ET ✔ ([K.S.A. 25-106](https://www.ksrevisor.gov/statutes/chapters/ch25/025_001_0006.html)).
+  - The four Mountain-time counties (KSN ○; usually listed as Greeley, Hamilton, Sherman and Wallace, not officially confirmed here) close at 6 pm MT by default, 7 pm MT at the latest, so 8:00-9:00 pm ET ✔ ([K.S.A. 25-106](https://www.ksrevisor.gov/statutes/chapters/ch25/025_001_0006.html)).
 - **The 3-day mail grace period is back for Nov 3** ✔:
   - The 2025 law (SB 4) that ended it was blocked by a Douglas County judge on July 16, 2026.
   - The Court of Appeals refused to suspend that order on July 27, and the Kansas Supreme Court declined emergency review ([KCTV5](https://www.kctv5.com/2026/07/31/kansas-supreme-court-upholds-mail-ballot-grace-period-ahead-primary-election/)).
@@ -761,7 +819,7 @@ What the curves show:
 
 **Race and ballot.**
 - Troy Jackson (D) vs Susan Collins (R, incumbent).
-- Model: Jackson 69.1%. Market: Jackson 65%.
+- Model: Jackson 71.6%. Market: Jackson 66%.
 - Only Collins and Jackson are printed on the ballot.
 - **Six declared write-in candidates make this a ranked-choice race** ✔ (Spectrum News, Aug 26): Andrews, Olson, Oswald, Steinberger, Turcotte, Webb.
 - Votes for an undeclared write-in, such as Graham Platner (who withdrew July 10), count as blank ✔.
@@ -889,7 +947,7 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 
 **Race.**
 - Ashley Hinson (R) vs Josh Turek (D); open seat after Ernst retired ✔ (AP Jun 2026).
-- Model: Hinson 71.6%. Market: Hinson 57%. The market is much less sure than the model.
+- Model: Hinson 68.2%. Market: Hinson 57%. The market is much less sure than the model.
 
 **Rules for Nov 3 ✔**
 - **Polls and deadlines:**
@@ -998,7 +1056,7 @@ What the curves show:
   - The state Democratic Party voted not to fill the vacancy; party chair Jane Kleeb endorsed Osborn (Ballotpedia, Nebraska Examiner, WOWT ○).
   - Before the primary, Burbank said she would back Osborn if she had no path to victory.
   - Our forecast data also has no Democrat.
-- Model: Ricketts 68.1%. Market: Ricketts 71%.
+- Model: Ricketts 62.2%. Market: Ricketts 74%.
 
 **Rules for Nov 3 ✔**
 - **Polls:** close 8 pm Central and 7 pm Mountain, so **9:00 pm ET everywhere** ([Neb. Rev. Stat. 32-908](https://nebraskalegislature.gov/laws/statutes.php?statute=32-908)).
@@ -1089,11 +1147,305 @@ What the curves show:
 
 ---
 
-## Alaska: Senate (ranked-choice)
+## Nevada: Governor
 
 **Race.**
-- Mary Peltola (D) vs Dan Sullivan (R, incumbent), with other top-four finishers on the ballot.
-- Model: Peltola 50.6%, the closest race on our list. Market: Peltola 75%.
+- Joe Lombardo (R, incumbent) vs Aaron D. Ford (D, attorney general). Also on the ballot: Danielle Ford (no party) and the "None of these candidates" line ◐ ([Clark County Fall 2026 newsletter](https://www.clarkcountynv.gov/adobe/assets/urn:aaid:aem:228bc80b-da3b-42da-bc72-25cce75470d1/original/as/cced-newsletter-fall2026.pdf)).
+- Model: Lombardo 69.5%. Market: Lombardo 34%. **The market favors Ford; the model favors Lombardo.** That is the largest model-market disagreement on this list.
+- "None of these candidates" votes are posted in every result but never decide the winner; only votes for named candidates count ✔ ([NRS 293.269](https://www.leg.state.nv.us/NRS/NRS-293.html)). The researcher found no majority or runoff rule, so it's a plurality race ◐.
+- No Senate race in Nevada this year. NV-1, NV-3 and the down-ballot statewide races come out of the same county batches.
+- Latest public poll found: Noble Predictive Insights (Oct 7-13) Lombardo 40, Ford 37, 23% undecided ○ ([KTNV](https://www.ktnv.com/news/new-poll-shows-lombardo-has-slight-lead-in-2026-governor-matchup)).
+
+**Rules for Nov 3 ✔** ([NRS chapter 293](https://www.leg.state.nv.us/NRS/NRS-293.html), revised 9/9/2026, re-read 2026-10-22)
+- **Polls:**
+  - Open 7 am-7 pm PT, so they close at **10:00 pm ET** (293.273).
+  - Voters in line at 7 pm still vote (293.305).
+- **Nothing is released until everyone has voted.** "No voting results of mail ballots may be released until all polling places are closed and all votes have been cast on the day of the election"; releasing them early is a misdemeanor (293.269935(3)).
+  - So the first numbers wait for the last voter in line anywhere in the state.
+  - Clark County: results are "available ... after the Nevada Secretary of State has indicated all statewide voting has finished" ◐ ([Clark 2026 election page](https://www.clarkcountynv.gov/government/departments/elections/26g-info)).
+- **Mail ballots** (293.269921):
+  - Dropped off by poll close, or postmarked by Election Day and received by **5 pm PT Sat Nov 7** (8 pm ET).
+  - No readable postmark: received by **5 pm PT Fri Nov 6**.
+- **Other deadlines:**
+  - Signature cure by **5 pm PT Mon Nov 9**, the 6th day (293.269927(6)).
+  - Mail counting may start 15 days before (Mon Oct 19) and **must be finished by the 7th day after, Tue Nov 10** (293.269931).
+  - Provisional ballots are never in the election-night results. Envelopes stay sealed until 8 am Wed Nov 4, and voter ID is due **5 pm Fri Nov 6** (293.3085). Same-day registrants vote provisionally ◐ ([Clark 2026 dates](https://www.clarkcountynv.gov/adobe/assets/urn:aaid:aem:a5950eb8-cb6d-404e-a533-b4856da8aa86/original/as/2026-dates.pdf)).
+- **Canvass and recount:**
+  - County canvass by the 10th day, **Fri Nov 13** (293.387).
+  - Statewide canvass by the Supreme Court justices on the 4th Tuesday, **Tue Nov 24** (293.395).
+  - **No automatic recount** (none found by the researcher ◐). A defeated candidate may demand one, prepaying the cost, within 3 working days of the canvass (293.403). That's **5 pm Tue Dec 1** after the Thanksgiving and Family Day holidays ◐ (Clark's calendar).
+  - A recount must start within 5 days of the demand and finish within 5 days of starting (293.405).
+- **What changed since 2024:**
+  - Nothing in the counting rules: 2022 and 2024 ran on the same clock (AB 321, 2021). 2020 did not; it had a 7-day mail window ○.
+  - 2025 bills on voter ID and stricter mail deadlines were vetoed ○ ([Nevada Independent](https://thenevadaindependent.com/article/how-different-will-nevadas-elections-look-in-2026)).
+  - The state Supreme Court upheld counting no-postmark ballots on Oct 28, 2024 ○. *Watson v. RNC* keeps the 4-day window for federal races too ✔.
+  - New: Clark County in-person voters mark on a device, print a paper ballot and scan it ◐. Officials expect fewer unclear marks to adjudicate. It was first used statewide in the June 2026 primary, so it's untested at general-election turnout ○.
+
+**How results are reported.**
+- 16 counties plus Carson City. **Clark (Las Vegas) cast 69% of the 2020 vote** ◐ (AP 2020 preview). It was 66% of the 2026 early ballots by Oct 20, with Washoe (Reno) 21% and the rural counties 13% ○ ([Nevada Independent](https://thenevadaindependent.com/article/the-early-voting-blog-2026-general)).
+- **Election night:**
+  - The first release is early in-person votes plus mail processed before Election Day.
+  - Election Day in-person votes come overnight; Clark's 2024 overnight update came at 1:32 am PT ○.
+- **Election Day drop-offs are not counted on election night.** "Clark is not counting drop boxes tonight," a Secretary of State spokeswoman said in 2022 ○. Clark's Election Day drop-off pile was about 54,000-57,000 in 2022 and 2024 ○.
+- **Ballots left after election night:**
+  - 2022: more than 144,000 in Clark and Washoe 18 hours after polls closed ○.
+  - 2024: about 112,000 on Wednesday, including about 12,000 Clark ballots needing cures ○.
+- **After election night:**
+  - Washoe posts "by noon and 5 p.m. each day" PT (3 pm and 8 pm ET) ○ ([This Is Reno](https://thisisreno.com/2026/10/washoe-voting-mail-ballot-delays/)).
+  - Clark has no 2026 schedule yet. In 2024 it posted "by 8 p.m." PT (11 pm ET) Thursday to Saturday; the decisive 2022 Saturday drop came at about 9:15 pm ET ○.
+  - After the June 2026 primary the Secretary of State published each county's outstanding ballots ○. If it does so again in November, that is the best live gauge of what's left.
+
+**History** (generated from NYT data)
+
+| Year | Race | First votes (ET) | Counted by midnight ET | Who led, and when the lead changed (ET) | Called (ET) | Final |
+|---|---|---|---|---|---|---|
+| 2020 | President | 11:53 pm | 0% | Trump led first; Biden ahead Wed 1:32 am (58% in) | Nov 7 (NYT) | Biden (D) +2.4 |
+| 2022 | Governor | Wed 12:41 am | 0% | Sisolak led first; Lombardo ahead Wed 3:35 am (73% in) | Nov 11 (AP) | Lombardo (R) +1.5 |
+| 2022 | Senate | Wed 12:41 am | 0% | Cortez Masto led first; Laxalt ahead Wed 3:57 am (76% in); Cortez Masto ahead Nov 12 (97% in) | Nov 12 (AP) | Cortez Masto (D) +0.8 |
+| 2024 | President | (timeline starts 8:00 pm) | 0% | Trump led first (timeline ends 5:40 am Wed) | Nov 9 (AP) | Trump (R) +3.1 |
+| 2024 | Senate | Wed 12:54 am | 0% | Brown led first; Rosen ahead Wed 1:02 am (69% in); Brown ahead Wed 1:44 am (71% in); Rosen ahead Nov 7 (92% in) | Nov 9 (AP) | Rosen (D) +1.6 |
+
+What the curves show:
+
+| Race | End of election night (6 am ET) | Final | Move after election night |
+|---|---|---|---|
+| 2022 Senate | Laxalt +2.7 (82% in) | Cortez Masto +0.8 | +3.5 toward D. She took the lead for good at 9:14 pm ET Saturday, with 97% counted |
+| 2022 Governor | Lombardo +4.7 | Lombardo +1.5 | +3.2 toward D |
+| 2024 Senate | Brown +0.1 (87% in) | Rosen +1.6 | +1.7 toward D; Rosen led for good from 2:47 am ET Thursday (Wednesday night in Nevada) |
+| 2024 President | Trump +4.7 | Trump +3.1 | +1.6 toward D |
+| 2020 President | Biden +0.6 (85% in) | Biden +2.4 | +1.8 toward D |
+
+- First votes came 11:53 pm-12:55 am ET in 2020-2024. The first big drop (44-78% of the vote) came around 1-2 am.
+- In 2022 that drop leaned Democratic (Senate +12.6 with 44% in), and Election Day votes pulled it to Laxalt by about 4 am. In 2024 it was about even.
+- **Every statewide race since 2020, and 17 of 18 races overall, moved toward the Democrat after election night** (`SWINGS.md`). In votes, the tail moved the Senate margin by about 27,000-31,000 in 2022 and 24,000-25,000 in 2024 (report).
+- AP called the close races on day 3 or 4: 2020 President Sat 12:13 pm; 2022 Governor Fri evening; 2022 Senate Sat night; 2024 Senate and President 12:15 am Sat ◐.
+
+**After election night** (PT; ET is 3 hours later)
+
+| Date | Event |
+|---|---|
+| Wed Nov 4, 8 am | Provisional envelopes may be opened |
+| Wed-Sat | Clark's Election Day drop-offs and late mail; Washoe at noon and 5 pm each day |
+| Fri Nov 6, 5 pm | Deadline for mail with no readable postmark, and for provisional voters' ID |
+| Sat Nov 7, 5 pm | Deadline for postmarked mail |
+| Mon Nov 9, 5 pm | Signature cure deadline; cured ballots post Tue-Thu (7,000-12,000 in Clark in 2022/2024 ○) |
+| Tue Nov 10 | Mail count must be finished |
+| Fri Nov 13 | County canvass, including provisionals |
+| Tue Nov 24 | Statewide canvass (Supreme Court) |
+| Tue Dec 1, 5 pm | Recount demand deadline |
+
+**What to expect** (inference):
+- Nothing before ~11:50 pm ET; the first meaningful numbers around 1-2 am ET.
+- The first big drop mixes Republican-leaning early in-person votes with Democratic-leaning mail, so it may be close or lean Ford.
+- Election Day in-person votes overnight should lean Lombardo. **His numbers will look best on Wednesday morning.**
+- The Wednesday-Saturday count (Election Day drop-offs, late mail, cures) should lean Ford. Expect a move somewhere between 2024's ~1.7 and 2022's ~3.5 points.
+- **A Lombardo lead under ~25,000-30,000 votes (about 2-2.5 points) on Wednesday morning is at risk; a larger one should hold** (report's estimate from the 2022 and 2024 tails).
+- Expect AP on Friday or Saturday. Inside ~1 point, wait for the Nov 9 cure deadline or the Nov 13 canvass.
+
+### The swing data: Nevada
+
+#### How fast it counts and how far it moves (all contested general-election races, median)
+
+| State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
+|---|---|---|---|---|---|---|---|
+| Nevada | 2020 | 1 | - / 0% / 0% / 85% | - | +85.9 | +1.8 | 1 of 1 |
+| Nevada | 2022 | 11 | - / - / - / 82% | - | - | +3.2 | 0 of 0 |
+| Nevada | 2024 | 6 | - / - / - / 87% | - | - | +1.8 | 0 of 0 |
+
+#### Races that moved 1.5+ pts after 6 am ET
+
+| Race | Counted at 6 am ET | Margin at 6 am | Final | Move after 6 am |
+|---|---|---|---|---|
+| Nevada 2022 House 2 | 71.8% | -29.5 | -21.9 | **+7.5** |
+| Nevada 2022 Attorney General | 83.5% | +4.3 | +7.9 | **+3.6** |
+| Nevada 2022 Senate | 82.2% | -2.7 | +0.8 | **+3.5** |
+| Nevada 2022 Secretary of State | 82.3% | -1.1 | +2.3 | **+3.4** |
+| Nevada 2022 Governor | 82.2% | -4.7 | -1.5 | **+3.2** |
+| Nevada 2022 Lieutenant Governor | 82.3% | -6.9 | -3.7 | **+3.2** |
+| Nevada 2022 House 3 | 86.9% | +0.8 | +4.0 | **+3.2** |
+| Nevada 2022 Controller | 82.4% | -7.0 | -4.1 | **+2.9** |
+| Nevada 2024 House 2 | 83.2% | -21.9 | -19.0 | **+2.9** |
+| Nevada 2022 Treasurer | 82.3% | -1.1 | +1.7 | **+2.8** |
+| Nevada 2022 House 1 | 87.4% | +2.9 | +5.6 | **+2.7** |
+| Nevada 2024 House 3 | 90.1% | +0.8 | +2.7 | **+2.0** |
+| Nevada 2024 House 1 | 90.6% | +5.6 | +7.5 | **+1.9** |
+| Nevada 2020 President | 84.9% | +0.6 | +2.4 | **+1.8** |
+| Nevada 2022 House 4 | 86.5% | +3.1 | +4.8 | **+1.7** |
+| Nevada 2024 Senate | 86.6% | -0.1 | +1.6 | **+1.7** |
+| Nevada 2024 President | 86.5% | -4.7 | -3.1 | **+1.6** |
+
+#### Where the late vote came from (2020, county detail)
+
+| State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
+|---|---|---|---|---|---|
+| Nevada | midnight ET | 100% | +2.7 | Clark 68.4% (+10); Washoe 18.6% (+5); Douglas 2.5% (-29); Lyon 2.2% (-41) | 12:00 AM |
+| Nevada | 6 am ET | 11% | +20.1 | Clark 8.5% (+27); Washoe 1.2% (+11); Douglas 0.4% (-31); Nye 0.2% (-37) | 5:52 AM |
+
+
+---
+
+## Oregon: Governor
+
+**Race.**
+- Tina Kotek (D, incumbent; also the Working Families nominee) vs Christine Drazan (R; also the Libertarian nominee), a rematch of 2022. Pacific Green nominee Brett Smith is the only other name ○ ([Wikipedia](https://en.wikipedia.org/wiki/2026_Oregon_gubernatorial_election)).
+- Model: Kotek 70.1%. Market: Kotek 83%.
+- In 2022 Kotek won by 66,727 votes (3.4 points) while independent Betsy Johnson took 8.6%. Smith polls 3-6%, so this year is closer to a two-way race ○.
+- Recent polls: Kotek 46-44 (Oregonian/DHM) and 46-42 (GBAO, a Kotek internal), after three polls with Drazan ahead by 1-4 ○ ([OPB, Oct 8](https://www.opb.org/article/2026/10/08/new-polls-kotek-may-lead/)).
+
+**Rules for Nov 3 ✔** ([ORS chapter 254](https://www.oregonlegislature.gov/bills_laws/ors/ors254.html), 2025 edition, re-read 2026-10-22)
+- **Everyone votes by mail.** Drop sites stay open until at least 8 pm PT, **11:00 pm ET** (254.470(1)). Most of Malheur County is on Mountain time and closes at 10:00 pm ET ○.
+- **Results:**
+  - No tally may be made public before 8 pm ([ORS 260.705](https://www.oregonlegislature.gov/bills_laws/ors/ors260.html)).
+  - Each county must post to the state results site at least once between 8 pm and midnight PT (11 pm-3 am ET), and after Election Day "as frequently as possible" ◐ ([OAR 165-007-0550](https://www.law.cornell.edu/regulations/oregon/Or-Admin-Code-SS-165-007-0550)).
+  - No count of ballots remaining is required.
+- **Mail:**
+  - A mailed ballot counts if it arrives by 8 pm Election Day, or if its postal indicator shows it was mailed by Election Day and it arrives **within 7 calendar days, by Tue Nov 10** (254.470(6)(e)).
+  - A ballot with no or an unreadable postmark counts as mailed on Election Day if it arrives by Nov 10 (254.470(8)).
+- **Processing:** counties may open envelopes and scan ballots as they arrive (254.478); nothing is released before 8 pm.
+- **Deadlines:**
+  - Signature cure by the 21st day, **Tue Nov 24** (254.431).
+  - County abstracts by the 27th day, **Mon Nov 30** (254.545). Multnomah, Washington and Clackamas plan to certify that day ◐.
+  - The Secretary of State canvasses every office **except Governor** by Dec 10 (254.555). The governor's returns go to the House Speaker, who opens and publishes them before the 2027 Legislature ◐ (Oregon Constitution, Art. V §4).
+- **Automatic recount** if the top two are within one-fifth of 1% of their combined vote ✔ ([ORS 258.280](https://www.oregonlegislature.gov/bills_laws/ors/ors258.html)): about 3,800-4,000 votes this year (2022: 3,535) ◐.
+- **The live risk is the post office.** Since a December 2025 USPS rule, a postmark can come a day or more after mailing. In the May 2026 primary Oregon rejected **7,314 grace-period ballots (13.1%) for late postmarks**, up from 9.5% in 2024 ◐ (Oregon SOS). The Secretary of State is urging voters to mail by Oct 27 or use a drop box ○.
+
+**How results are reported.**
+- 36 counties. State site: results.oregonvotes.gov; most counties also post on their own sites.
+- **The first release, just after 11 pm ET, is mostly ballots received through about Monday** ◐ (AP 2024 preview). 55-82% of the final vote was counted within an hour of the close in 2020-2024 (NYT data).
+- **Election Day drop-offs are a quarter of the vote** (2024: 568,046 ballots, 24.6%), more in Multnomah (31.9%) and Washington (30.8%) ◐. They're counted Wednesday to Friday after signature checks.
+- **2026 county schedules** ◐ (PT; ET +3 hours):
+
+  | County | Election night | Wed Nov 4-Fri Nov 6 | Later |
+  |---|---|---|---|
+  | Multnomah (Portland) | 8:00 pm, 10:00 pm, midnight | Daily at 6 pm | Thu Nov 12 (after the postmark deadline), Wed Nov 25 (cures), Mon Nov 30 (certify) |
+  | Washington | 8:00 pm, 10:00 pm, midnight | **Wednesday and Friday only**, 4 pm | Fridays Nov 13, 20, 27; certify Nov 30 |
+  | Clackamas | 8:00 pm, 9:30 pm, 11:30 pm | Daily at 5 pm ("tentative") | Nov 10, 17, 25 |
+
+  Lane and Marion haven't published schedules.
+- **Clackamas is the slow county:** about 65,000 ballots were left at the end of Wednesday in 2024 ◐.
+- **The postmarked tail is small:** 13,596 ballots (0.6%) in 2024, against 34,442 (1.7%) in 2022 ◐.
+
+**History** (generated from NYT data)
+
+| Year | Race | First votes (ET) | Counted by midnight ET | Who led, and when the lead changed (ET) | Called (ET) | Final |
+|---|---|---|---|---|---|---|
+| 2020 | President | 11:07 pm | 82% | Biden led first | 11:00 pm (NYT) | Biden (D) +16.1 |
+| 2020 | Senate | 11:07 pm | 83% | Merkley led first | 11:01 pm (NYT) | Merkley (D) +17.6 |
+| 2022 | Governor | 11:03 pm | 53% | Kotek led first | Nov 10 (AP) | Kotek (D) +3.4 |
+| 2022 | Senate | 11:03 pm | 60% | Wyden led first | 11:46 pm (AP) | Wyden (D) +14.9 |
+| 2024 | President | (timeline starts 8:00 pm) | 65% | Harris led first (timeline ends 5:40 am Wed) | 11:23 pm (AP) | Harris (D) +14.4 |
+
+What the curves show:
+- **2022 Governor:**
+  - Kotek was +9.8 in the first release at 11:03 pm ET (34% in) and +1.1 at the end of election night (73% in).
+  - The Wednesday-Friday count added +2.4 (she reached +3.7 by Friday midday ○), and the final was +3.4.
+  - AP called it Thu Nov 10, about 9:00-9:30 pm ET, with 85% counted ○. The Oregonian and OPB projected it late Wednesday morning ○.
+- **2022 Senate and 2024 President** moved +1.8 toward the Democrat after election night; **2020 moved −1.5**.
+- **Later ballots were more Democratic by registration in 2024:** D+8.5 among ballots received through Monday morning, D+11.0 through Election Day evening, D+14.3 for the last drop-offs and **D+17.7 for post-Election Day mail** ◐ (researcher's tally of the SOS daily return reports).
+- **Close House races:** OR-5 2022 was called on day 5 and OR-6 2022 on day 6; OR-5 2024 took until day 9 ○.
+
+**After election night**
+
+| Date | Event |
+|---|---|
+| Wed Nov 4-Fri Nov 6, 7-9 pm ET | Election Day drop-offs: Washington Wednesday and Friday at 7 pm ET, Clackamas daily at 8 pm, Multnomah daily at 9 pm |
+| Tue Nov 10 | Postmarked mail deadline; Clackamas update |
+| Thu Nov 12 | Multnomah's postmark-deadline update |
+| Tue Nov 24 | Signature cure deadline |
+| Mon Nov 30 | County abstracts and certification |
+
+**What to expect** (inference):
+- Kotek will very likely lead the 11 pm ET first release. As in 2022, her margin may shrink through the night.
+- The Wednesday-Friday count, dominated by Multnomah and Washington drop-offs, should widen a Kotek margin by about 1-2.5 points. **Her numbers will look worst at the end of election night.**
+- **A Drazan lead under ~2 points at the end of election night is at real risk.**
+- Late in the week, Clackamas or Marion batches can shave a few tenths, as between Friday and the final count in 2022.
+- A 2022-like race is callable Wednesday or Thursday. Inside ~1 point, wait for the Nov 10 postmark deadline and Multnomah's Nov 12 update.
+- Washington County, which posts only Wednesday and Friday, is the biggest blind spot.
+- The Oregonian and OPB have projected 1-6 days before AP, and prices may move on them.
+
+### The swing data: Oregon
+
+#### How fast it counts and how far it moves (all contested general-election races, median)
+
+| State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
+|---|---|---|---|---|---|---|---|
+| Oregon | 2020 | 2 | 82% / 84% / 82% / 90% | -3.2 | -3.2 | -1.5 | 0 of 2 |
+| Oregon | 2022 | 8 | 55% / 63% / 55% / 71% | +1.7 | +1.3 | +1.0 | 0 of 8 |
+| Oregon | 2024 | 9 | 65% / 68% / 65% / 77% | +0.8 | +0.4 | +0.5 | 0 of 9 |
+
+#### Biggest moves in competitive races
+
+**Oregon**
+
+| Race | 2 h after close: counted / margin | Midnight ET | 6 am ET | Final | Move after 2 h | Move after 6 am |
+|---|---|---|---|---|---|---|
+| 2022 House 5 | 58.3% / -5.6 | 57.5% / -5.1 | 69.0% / -4.5 | -2.1 | **+3.5** | +2.4 |
+| 2024 House 4 | 73.3% / +10.5 | 73.3% / +10.5 | 82.3% / +8.9 | +7.8 | **-2.7** | -1.1 |
+| 2022 Governor | 62.8% / +1.0 | 52.6% / +0.9 | 73.4% / +1.1 | +3.4 | **+2.4** | +2.4 |
+| 2022 House 4 | 72.9% / +9.8 | 32.7% / -0.0 | 85.1% / +8.1 | +7.5 | **-2.3** | -0.7 |
+| 2022 Senate | 63.0% / +13.3 | 59.8% / +14.5 | 73.5% / +13.1 | +14.9 | **+1.7** | +1.8 |
+
+
+#### Races that moved 1.5+ pts after 6 am ET
+
+| Race | Counted at 6 am ET | Margin at 6 am | Final | Move after 6 am |
+|---|---|---|---|---|
+| Oregon 2022 House 1 | 68.0% | +33.6 | +36.0 | **+2.4** |
+| Oregon 2022 House 5 | 69.0% | -4.5 | -2.1 | **+2.4** |
+| Oregon 2022 Governor | 73.4% | +1.1 | +3.4 | **+2.4** |
+| Oregon 2024 Attorney General | 77.2% | +7.0 | +8.9 | **+1.9** |
+| Oregon 2022 Senate | 73.5% | +13.1 | +14.9 | **+1.8** |
+| Oregon 2024 President | 76.4% | +12.6 | +14.4 | **+1.8** |
+| Oregon 2024 Secretary of State | 77.1% | +10.8 | +12.6 | **+1.8** |
+| Oregon 2020 President | 90.4% | +17.6 | +16.1 | **-1.5** |
+| Oregon 2020 Senate | 90.6% | +19.1 | +17.6 | **-1.5** |
+
+#### Where the late vote came from (2020, county detail)
+
+| State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
+|---|---|---|---|---|---|
+| Oregon | midnight ET | 16% | +0.2 | Clackamas 3.7% (-11); Washington 3.6% (+20); Multnomah 2.8% (+47); Marion 1.5% (-14) | 12:00 AM |
+| Oregon | 6 am ET | 8% | -0.9 | Clackamas 3.7% (-11); Washington 1.7% (+24); Marion 1.1% (-14); Deschutes 0.4% (-17) | 5:52 AM |
+
+#### 2026 primaries, runoffs and specials
+
+| State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
+|---|---|---|---|---|---|---|---|
+| Oregon | 2026-05-19 | Governor | OR-D-G-2026-05-19 | 60.4 / 61.3 / 60.4 / 72.9 | Kotek +80.5 | 81.1 | 23:00 (49.3%) |
+| Oregon | 2026-05-19 | U.S. House | OR-D-H-3-2026-05-19 | 61.3 / 61.9 / 61.3 / 73.1 | Dexter +80.9 | 83.67 | 23:00 (57.6%) |
+| Oregon | 2026-05-19 | U.S. Senate | OR-D-S-2026-05-19 | 60.1 / 60.9 / 60.1 / 72.5 | Merkley +87.0 | 87.3 | 23:00 (49.2%) |
+| Oregon | 2026-05-19 | Measure | OR-I-83580-OR-2026-05-19 | 60.3 / 61.3 / 60.3 / 73.0 | No +66.0 | 66.36 | 23:00 (45.8%) |
+| Oregon | 2026-05-19 | Governor | OR-R-G-2026-05-19 | 61.9 / 63.2 / 61.9 / 75.3 | Drazan +7.5 | 10.84 | 23:00 (42.8%) |
+| Oregon | 2026-05-19 | U.S. Senate | OR-R-S-2026-05-19 | 62.2 / 63.6 / 62.2 / 75.8 | Smith +2.4 | 3.59 | 23:00 (43.2%) |
+
+
+---
+
+## Alaska: Senate (ranked-choice)
+
+**Race and ballot ✔** ([Ballotpedia, Sept 14](https://news.ballotpedia.org/2026/09/14/alaska-voters-to-decide-on-the-second-u-s-senate-general-election-using-ranked-choice-voting/); [Wikipedia](https://en.wikipedia.org/wiki/2026_United_States_Senate_election_in_Alaska))
+- Four names on the Nov 3 ballot (ranked-choice):
+  - Mary Peltola (D)
+  - **Dan S. Sullivan** (R, incumbent)
+  - **Daniel J. Sullivan Jr.**, a Petersburg resident registered Republican with no relation to the incumbent. The Division of Elections' sample ballot lists him as "Sullivan, Daniel J. Jr." with no party.
+  - Gerald Heikes (R), who advanced after the fourth-place finisher, David Leslie (D), withdrew before the Aug 31 deadline.
+- **Aug 18 top-four primary:**
+
+  | Candidate | Share | Votes |
+  |---|---|---|
+  | Peltola | 49.5% | 82,244 |
+  | Dan S. Sullivan | 41.4% | 68,726 |
+  | Daniel J. Sullivan Jr. | 2.5% | 4,107 |
+  | Leslie | 1.1% | 1,850 |
+  | Heikes | 1.1% | 1,741 |
+
+  Peltola led by 8.1 points in an all-party primary.
+- Model: Peltola 51.9%, the closest race on our list. Market: Peltola 75%.
+- **Why the second Sullivan matters on election night** (inference):
+  - Votes for the second Sullivan and for Heikes are first-round votes that are not the incumbent's.
+  - They make it less likely that anyone tops 50% of first choices, so the ranked-choice count on Nov 18 is more likely.
+  - Their second choices should mostly transfer to the incumbent, so a first-round Peltola lead can shrink in the final round.
+  - Results feeds show **two "Sullivan" lines**. Read them by candidate ID, never by name (our recorder stores NYT's candidate IDs).
 
 **Rules for Nov 3 ✔** ([2026 General Media Packet](https://www.elections.alaska.gov/doc/mp/2026/MediaPacket-2026-General.%20V3.pdf); [counting page](https://www.elections.alaska.gov/ballot-counting-process/counting-system-and-schedule/))
 - Polls close 8 pm Alaska time, which is **midnight ET**. One Aleutian polling place closes 1:00 am ET (AP Aug 2026).
@@ -1212,6 +1564,12 @@ What the curves show:
 | Nebraska | 2020 | 2 | 34% / 49% / 62% / 88% | -12.8 | -8.7 | +0.1 | 1 of 2 |
 | Nebraska | 2022 | 7 | 39% / 50% / 74% / 96% | -13.0 | -6.9 | +1.1 | 6 of 7 |
 | Nebraska | 2024 | 8 | 32% / 47% / 59% / 95% | -15.3 | -7.0 | +0.4 | 6 of 8 |
+| Nevada | 2020 | 1 | - / 0% / 0% / 85% | - | +85.9 | +1.8 | 1 of 1 |
+| Nevada | 2022 | 11 | - / - / - / 82% | - | - | +3.2 | 0 of 0 |
+| Nevada | 2024 | 6 | - / - / - / 87% | - | - | +1.8 | 0 of 0 |
+| Oregon | 2020 | 2 | 82% / 84% / 82% / 90% | -3.2 | -3.2 | -1.5 | 0 of 2 |
+| Oregon | 2022 | 8 | 55% / 63% / 55% / 71% | +1.7 | +1.3 | +1.0 | 0 of 8 |
+| Oregon | 2024 | 9 | 65% / 68% / 65% / 77% | +0.8 | +0.4 | +0.5 | 0 of 9 |
 | Alaska | 2020 | 2 | - / - / - / 37% | - | - | +16.0 | 0 of 0 |
 | Alaska | 2022 | 2 | - / 56% / - / 77% | - | +6.1 | +2.2 | 2 of 2 |
 | Alaska | 2024 | 2 | - / 30% / - / 73% | - | +4.1 | +2.6 | 1 of 2 |
@@ -1256,19 +1614,29 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 | Nebraska: "Burbank withdrew and endorsed Osborn" (report) | She withdrew July 17. The state party (chair Jane Kleeb) endorsed Osborn and declined to replace her. Burbank had said she'd back him if she had no path. |
 | Kansas recounts: request-only, the requester pays (report) | Request-only, but in a general election decided by 0.5% or less the state pays and no bond is needed (K.S.A. 25-3107). |
 | Kansas 2020 Senate "AP call shortly after 10 pm" (report) | NYT's own call was 10:58 pm; AP's exact time is still unconfirmed. |
+| Nevada, Oregon and Texas Governor "just outside the 75% cut" (this guide, Oct 21) | The model audit's retrain (Oct 22) put all three inside it. They're now covered: sections 6, 11 and 12. |
+| Nevada "no automatic recount" vs Oregon (report) | Confirmed in both statutes: Nevada recounts only on demand (NRS 293.403); Oregon recounts automatically at 0.2% (ORS 258.280) ✔. |
 
 **Also corrected later:**
 - Maine's first-round leader *can* lose the ranked-choice count: the 2026 Democratic governor primary went to Pingree after Shah led round one.
 - Ranked-choice races are now measured on first-round votes in the swing data.
-- Michigan's model probability moved from 73.0% to 76.3% on Oct 21, just above the 75% cut.
+- Michigan's model probability moved from 73.0% to 76.3% on Oct 21, just above the 75% cut. On Oct 22 it fell to 63.4% after the model audit fixed duplicated and mismatched poll inputs and the model was retrained (`model_audit/MODEL_AUDIT.md`).
 
 ### Still unconfirmed
 
 - **Not out yet:**
-  - AP's Nov 3 "What to expect" previews. The watcher is checking twice a day.
-  - Every county's posting schedule for Nov 3. None of the large counties has published one.
+  - AP's Nov 3 "What to expect" previews, including Nevada's and Oregon's (Oregon's 2024 edition came Oct 25). The watcher is checking twice a day.
+  - Most counties' posting schedules for Nov 3. Exceptions: Multnomah, Washington and Clackamas (Oregon) and Washoe (Nevada) have published theirs; Clark County (Nevada) has not.
+- **Nevada:**
+  - Whether the Secretary of State will again publish each county's outstanding ballots, as after the June primary.
+  - How Clark's new print-and-scan ballots perform at general-election turnout.
+  - Several facts rest on search-result summaries, because nvsos.gov and the Review-Journal block scripts (marked ○).
+- **Oregon:**
+  - Lane and Marion county schedules.
+  - Which parts of Malheur County keep Pacific time.
+  - When the House Speaker will publish the governor result (it's never certified by the Secretary of State).
 - **Ohio's Nov 3 directive (2026-48):** its full text, including which counties report every 15 minutes, could not be downloaded. ohiosos.gov blocks scripts.
-- **Georgia:** the exact provisional/cure deadline.
+- **Georgia:** voters' own deadline to fix an absentee or provisional problem (the county's 3-day decision deadline, Nov 6, is confirmed).
 - **Alaska:** the western Aleutian poll-close time in ET; the AP preview says 1 am ET.
 - **Kansas:** whether the Secretary of State takes the grace-period case further before Nov 3.
 - **Turnout by vote method** this year in each state. It controls how big the early leads will be.
@@ -1281,7 +1649,8 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 | Statutes and official calendars | Linked inline above |
 | NYT results files 2020-2024 | `data/raw/nyt/` |
 | Rebuilding the history tables | `py "State election results/scripts/build_state_guide.py"` |
-| Full research report with all citations | `reports/Vote count timing in close 2026 races.md` |
+| Full research report with all citations | `reports/Vote count timing in close 2026 races.md` (nine states) and `reports/Vote count timing Nevada and Oregon.md` (Oct 22) |
+| Nevada and Oregon statutes re-read 2026-10-22 | [NRS ch. 293](https://www.leg.state.nv.us/NRS/NRS-293.html) (revised 9/9/2026); [ORS ch. 254](https://www.oregonlegislature.gov/bills_laws/ors/ors254.html), [258](https://www.oregonlegislature.gov/bills_laws/ors/ors258.html), [260](https://www.oregonlegislature.gov/bills_laws/ors/ors260.html) (2025 edition) |
 
 **Market liquidity figures:** pred-arb's `data/raw/kalshi_markets.csv` and `polymarket_markets.csv`, fetched 2026-10-19/20.
 **Swing data:** `SWINGS.md`, `data/processed/swings.csv`.

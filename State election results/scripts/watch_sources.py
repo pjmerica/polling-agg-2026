@@ -24,12 +24,14 @@ LOG = os.path.join(SRC, "watch_log.csv")
 ALERT = os.path.join(SRC, "NEW_AP_GENERAL.md")
 UA = {"User-Agent": "Mozilla/5.0"}
 
-STATES = ["Alaska", "Georgia", "Ohio", "Kansas", "Texas", "Nebraska", "Maine", "Iowa", "Michigan"]
+STATES = ["Alaska", "Georgia", "Ohio", "Kansas", "Texas", "Nebraska", "Maine", "Iowa", "Michigan",
+          "Nevada", "Oregon"]
 # Largest / slowest-reporting jurisdictions (see the report), for results-schedule announcements
 COUNTIES = ["Fulton County Georgia", "DeKalb County Georgia", "Franklin County Ohio", "Cuyahoga County",
             "Detroit", "Wayne County Michigan", "Oakland County Michigan", "Harris County", "Dallas County",
             "Tarrant County", "Johnson County Kansas", "Sedgwick County", "Douglas County Nebraska",
-            "Lancaster County Nebraska", "Polk County Iowa", "Portland Maine"]
+            "Lancaster County Nebraska", "Polk County Iowa", "Portland Maine",
+            "Clark County Nevada", "Washoe County", "Multnomah County", "Washington County Oregon"]
 
 QUERIES = [f'"AP Decision Notes" "what to expect" {s}' for s in STATES]
 QUERIES += [f'"{c}" election results November 3 release update' for c in COUNTIES]

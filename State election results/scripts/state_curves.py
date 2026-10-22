@@ -25,7 +25,8 @@ PROC = os.path.join(ROOT, "data", "processed")
 # Main poll close, ET (EST, UTC-5, in 2020/2022/2024/2026), as hours after 7 p.m. ET.
 # Later-closing parts (MI UP, TX El Paso, KS west) are ignored; AK = 8 p.m. AKST.
 CLOSE_ET = {"georgia": 19.0, "ohio": 19.5, "michigan": 20.0, "texas": 20.0, "kansas": 20.0,
-            "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "alaska": 24.0}
+            "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "nevada": 22.0, "oregon": 23.0,
+            "alaska": 24.0}
 CHECKPOINTS = [0.5, 1, 1.5, 2, 3, 4, 5, 6, 9, 15, 24, 48]  # hours after poll close
 REP = {"republican", "gop", "rep"}
 ELECTION_DAY = {2020: dt.date(2020, 11, 3), 2022: dt.date(2022, 11, 8), 2024: dt.date(2024, 11, 5)}

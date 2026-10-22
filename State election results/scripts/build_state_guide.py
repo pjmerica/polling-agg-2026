@@ -14,6 +14,7 @@ import datetime as dt
 import glob
 import json
 import os
+import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
@@ -134,10 +135,65 @@ def history(state):
     return "\n".join(lines)
 
 
+DOCS = os.path.join(ROOT, "..", "docs")
+PARTY = {"DEM": "D", "REP": "R", "IND": "I"}
+SUFFIX = {"jr.", "jr", "sr.", "ii", "iii", "iv"}
+
+
+def surname(name):
+    words = [w for w in name.split() if w.lower() not in SUFFIX]
+    return words[-1] if words else name
+
+
+def forecast():
+    """The forecast page's data (docs/forecast_data.js): model win chances plus its market column."""
+    s = open(os.path.join(DOCS, "forecast_data.js"), encoding="utf-8").read()
+    return json.loads(s[s.index("=") + 1:].strip().rstrip(";"))
+
+
+def fill_numbers(text, data=None):
+    """Model and market numbers come from the published forecast, never typed:
+    {{MODEL:<race id>}} 'Bottoms 55.0%' (the model's favorite), {{MARKET:<race id>}} the market's
+    chance for that same candidate, {{MATCHUP:<race id>}} 'Bottoms (D) 55.0% vs Jackson (R)',
+    {{ASOF}} the model run and market refresh times."""
+    data = data or forecast()
+    races = {r["id"]: r for r in data["races"]}
+
+    def fav(rid):
+        r = races[rid]
+        return r, sorted(r["cands"], key=lambda c: -(c.get("win") or 0))
+
+    def model(m):
+        r, c = fav(m.group(1))
+        return f"{surname(c[0]['name'])} {100 * c[0]['win']:.1f}%"
+
+    def market(m):
+        r, c = fav(m.group(1))
+        mk = r.get("market")
+        if not mk or mk.get("prob") is None:
+            return "no market"
+        p = mk["prob"] if mk["name"] == c[0]["name"] else 1 - mk["prob"]
+        return f"{surname(c[0]['name'])} {100 * p:.0f}%"
+
+    def matchup(m):
+        r, c = fav(m.group(1))
+        a, b = c[0], c[1]
+        return (f"{surname(a['name'])} ({PARTY.get(a['party'], a['party'])}) {100 * a['win']:.1f}% vs "
+                f"{surname(b['name'])} ({PARTY.get(b['party'], b['party'])})")
+
+    asof = (f"Model numbers: forecast run of {data['predictions_as_of'][:16].replace('T', ' ')} UTC. "
+            f"Market numbers: {data['generated_at'][:16].replace('T', ' ')} UTC refresh.")
+    text = re.sub(r"\{\{MODEL:([\w-]+)\}\}", model, text)
+    text = re.sub(r"\{\{MARKET:([\w-]+)\}\}", market, text)
+    text = re.sub(r"\{\{MATCHUP:([\w-]+)\}\}", matchup, text)
+    return text.replace("{{ASOF}}", asof)
+
+
 def main():
     tmpl = open(os.path.join(HERE, "state_guide_template.md"), encoding="utf-8").read()
-    out = tmpl
-    for state in ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan"]:
+    out = fill_numbers(tmpl)
+    for state in ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
+                  "nevada", "oregon"]:
         out = out.replace("{{HISTORY:%s}}" % state, history(state))
     assert "{{" not in out, "unfilled token in template"
     with open(os.path.join(ROOT, "STATE_BY_STATE.md"), "w", encoding="utf-8") as f:

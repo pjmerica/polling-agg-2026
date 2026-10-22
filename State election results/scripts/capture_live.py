@@ -41,6 +41,9 @@ RACES = {
     "ME-Sen": ["maine-us-senate"],
     "IA-Sen": ["iowa-us-senate"],
     "MI-Sen": ["michigan-us-senate"],
+    "NV-Gov": ["nevada-governor"],
+    "OR-Gov": ["oregon-governor"],
+    "TX-Gov": ["texas-governor"],
 }
 
 

@@ -20,7 +20,7 @@ import build_swings_report as sw
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 SLUG = {"georgia": "GA", "ohio": "OH", "michigan": "MI", "texas": "TX", "kansas": "KS",
-        "maine": "ME", "iowa": "IA", "nebraska": "NE", "alaska": "AK"}
+        "maine": "ME", "iowa": "IA", "nebraska": "NE", "alaska": "AK", "nevada": "NV", "oregon": "OR"}
 
 
 def guide_sections():
@@ -72,6 +72,7 @@ def main():
     out = re.sub(r"\{\{GUIDE:(\w+)\}\}", guide, tmpl)
     out = re.sub(r"\{\{STATE:(\w+)\}\}", state, out)
     out = out.replace("{{PACE_ALL}}", sw.state_pace(rows)).replace("{{EARLY_EDAY}}", sw.early_eday(rows))
+    out = build_state_guide.fill_numbers(out).replace("{{N_RACES}}", str(len(rows)))
     assert "{{" not in out, "unfilled token"
     with open(os.path.join(ROOT, "MASTER.md"), "w", encoding="utf-8") as f:
         f.write(out)
