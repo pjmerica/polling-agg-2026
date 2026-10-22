@@ -72,3 +72,17 @@ def test_top_two_field_polls_are_primary():
     assert stage["h2h"] == "general"
     assert stage["after"] == "general"
     assert stage["ak"] == "general"
+
+
+def test_bipartisan_pollster_pair_has_no_sponsor():
+    """A pollster PAIR tagged with both parties is a bipartisan poll (2026-10-21): the Fox News
+    poll "Beacon Research (D)/ Shaw & Co. Research (R)" was stored as R-sponsored from its
+    trailing tag, AARP's "Fabrizio Ward (R)/ Impact Research (D)" as D. Same-party pairs and
+    single tags keep their party."""
+    assert W.clean_pollster("Beacon Research (D)/ Shaw & Co. Research (R)") == ("Beacon Research (D)/ Shaw & Co. Research", "")
+    assert W.clean_pollster("Fabrizio Ward (R)/ Impact Research (D)")[1] == ""
+    assert W.clean_pollster("Hart Research Associates (D)/ Public Opinion Strategies (R)")[1] == ""
+    assert W.clean_pollster("GBAO (D)/ Third Way (D)")[1] == "D"
+    assert W.clean_pollster("InsiderAdvantage (R)/ Rosetta Stone (R)")[1] == "R"
+    assert W.clean_pollster("Mercury Public Affairs (D)") == ("Mercury Public Affairs", "D")
+    assert W.clean_pollster("Emerson College") == ("Emerson College", "")

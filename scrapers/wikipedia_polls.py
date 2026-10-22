@@ -262,6 +262,13 @@ def clean_pollster(text: str) -> tuple[str, str]:
     if m:
         partisan = m.group(1).upper()[0]  # 'R', 'D', 'I'
         text = text[:m.start()].strip()
+    # A pollster PAIR tagged with both parties is a bipartisan poll, not a sponsored one
+    # (2026-10-21): "Beacon Research (D)/ Shaw & Co. Research (R)" is the Fox News poll and was
+    # stored as R-sponsored from its trailing tag; "Fabrizio Ward (R)/ Impact Research (D)" (AARP)
+    # as D; "Hart Research Associates (D)/ Public Opinion Strategies (R)" (NBC) as R.
+    inner = {t.upper()[0] for t in re.findall(r"\(([DR]|DEM|REP)\)", text, re.IGNORECASE)}
+    if partisan in ("D", "R") and inner and (inner | {partisan}) >= {"D", "R"}:
+        partisan = ""
     return (text, partisan)
 
 
