@@ -9,7 +9,8 @@ means X) and projected to a final result.
 
 | Path | What |
 |---|---|
-| `STATE_BY_STATE.md` | **Start here.** State-by-state guide to how and when votes come in, checked against primary sources (built by `scripts/build_state_guide.py` from `scripts/state_guide_template.md`) |
+| `MASTER.md` | **Start here.** The one file to read: states at a glance, betting assessment, then per state the rules, history and swing data (built by `scripts/build_master.py`, which also rebuilds STATE_BY_STATE.md) |
+| `STATE_BY_STATE.md` | State-by-state guide to how and when votes come in, checked against primary sources (built by `scripts/build_state_guide.py` from `scripts/state_guide_template.md`) |
 | `SWINGS.md` | How far the count moved after polls close in 345 races, 2020-2026: biggest swings, comebacks, late movers, early vs Election Day splits, 2020 county detail, 2026 primaries (built by `scripts/swing_analysis.py` + `scripts/build_swings_report.py`) |
 | `competitive_races.md` | The races (model favorite at 75% or less), from `docs/forecast_data.js` |
 | `reports/Vote count timing in close 2026 races.md` | Rules and history per state: poll closes, ballot order, deadlines, RCV, recounts, past call times |

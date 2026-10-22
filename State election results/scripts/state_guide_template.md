@@ -1,7 +1,7 @@
 # How the votes come in: state-by-state guide for Nov 3, 2026
 
 *Covers the competitive Governor and Senate races (model favorite at 75% or less) in nine states.
-Written 2026-10-21. Model numbers: forecast run of 2026-10-21 18:08 UTC. Market numbers: 19:39 UTC refresh.
+Written 2026-10-21. Model numbers: forecast run of 2026-10-21 22:26 UTC. Market numbers: 22:46 UTC refresh.
 All times are Eastern (ET). Daylight saving time ends Nov 1, so ET means EST (UTC-5).*
 
 **How each fact was checked**
@@ -19,13 +19,13 @@ Listed in poll-closing order.
 
 | # | State | Competitive race(s) | Model favorite (win %) | Market (Oct 21) | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Georgia | Governor | Bottoms (D) 55.2% vs Jackson (R) | Bottoms 53% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
-| 2 | Ohio | Governor; Senate (special) | Acton (D) 56.5% vs Ramaswamy (R); Brown (D) 62.8% vs Husted (R) | Acton 77%; Brown 68% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
-| 3 | Michigan | Senate | El-Sayed (D) 73.0% vs Rogers (R) | El-Sayed 69% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
-| 4 | Texas | Senate | Talarico (D) 64.1% vs Paxton (R) | Talarico 66% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat for the first 15-35 min, then Republican | Election night; AP calls no statewide race before 9 pm |
+| 1 | Georgia | Governor | Bottoms (D) 55.2% vs Jackson (R) | Bottoms 54% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
+| 2 | Ohio | Governor; Senate (special) | Acton (D) 57.4% vs Ramaswamy (R); Brown (D) 64.2% vs Husted (R) | Acton 77%; Brown 69% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
+| 3 | Michigan | Senate | El-Sayed (D) 76.3% vs Rogers (R) (now just above the 75% cut; was 73.0% this morning) | El-Sayed 69% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
+| 4 | Texas | Senate | Talarico (D) 65.0% vs Paxton (R) | Talarico 67% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat for the first 15-35 min, then Republican | Election night; AP calls no statewide race before 9 pm |
 | 5 | Kansas | Senate | Marshall (R) 60.0% vs Hamilton (D) | Marshall 61% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
-| 6 | Maine | Senate (ranked-choice) | Jackson (D) 69.1% vs Collins (R) | Jackson 64% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
-| 7 | Iowa | Senate | Hinson (R) 71.7% vs Turek (D) | Hinson 57% | 9:00 pm | 9:02-9:12 pm (10:13 pm in 2020) | Democrat until ~10:00-11:30 pm | Election night |
+| 6 | Maine | Senate (ranked-choice) | Jackson (D) 69.1% vs Collins (R) | Jackson 65% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
+| 7 | Iowa | Senate | Hinson (R) 71.6% vs Turek (D) | Hinson 57% | 9:00 pm | 9:02-9:12 pm (10:13 pm in 2020) | Democrat until ~10:00-11:30 pm | Election night |
 | 8 | Nebraska | Senate | Ricketts (R) 68.1% vs Osborn (I); no Democrat on the ballot | Ricketts 71% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
 | 9 | Alaska | Senate (ranked-choice) | Peltola (D) 50.6% vs Sullivan (R) | Peltola 75% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
 
@@ -94,7 +94,7 @@ Notes on the table:
 
 **Race.**
 - Keisha Lance Bottoms (D) vs Rick Jackson (R); open seat.
-- Model: Bottoms 55.2%. Market: Bottoms 53%.
+- Model: Bottoms 55.2%. Market: Bottoms 54%.
 - Ballot: two candidates. The Libertarian Party failed to qualify for the 2026 ballot (its petition drive fell short in July: [AJC](https://www.ajc.com/politics/2026/07/libertarians-wont-be-on-the-ballot-in-georgia-meaning-likely-no-runoffs/), [WABE](https://www.wabe.org/georgia-libertarians-end-efforts-to-get-on-2026-general-election-ballot/) ○). Only write-ins could add a third name, so runoff risk is close to zero.
 - A majority is required. A general-election runoff, if needed, is **Tue Dec 1** ✔ ([georgia.gov](https://georgia.gov/events/2026-12-01/election-day-general-election-runoff)).
 
@@ -147,8 +147,8 @@ What the curves show (`state_curves.md`):
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 56.5% | Acton 77% |
-| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 62.8% | Brown 68% |
+| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 57.4% | Acton 77% |
+| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 64.2% | Brown 69% |
 
 **Rules for Nov 3**
 - **Deadlines and ballot processing:**
@@ -197,7 +197,7 @@ What the curves show:
 
 **Race.**
 - Abdul El-Sayed (D) vs Mike Rogers (R); open seat.
-- Model: El-Sayed 73.0%. Market: El-Sayed 69%.
+- Model: El-Sayed 76.3% (73.0% this morning, so now just above the 75% cut). Market: El-Sayed 69%.
 - In the Aug 4 primary El-Sayed led Stevens 48.5-47.5 with 96% counted on Wednesday morning, and AP called it just before 10 am Wednesday ✔ ([FOX 2 via Fox 4](https://www.fox4news.com/news/abdul-el-sayed-projected-defeat-haley-stevens-democratic-senate-primary-race.amp)).
 
 **Rules for Nov 3**
@@ -243,7 +243,7 @@ What the curves show:
 
 **Race.**
 - James Talarico (D) vs Ken Paxton (R); open seat. Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27).
-- Model: Talarico 64.1%. Market: Talarico 66%.
+- Model: Talarico 65.0%. Market: Talarico 67%.
 
 **Rules for Nov 3**
 - **Polls and early counting:**
@@ -346,7 +346,7 @@ What the curves show:
 
 **Race and ballot.**
 - Troy Jackson (D) vs Susan Collins (R, incumbent).
-- Model: Jackson 69.1%. Market: Jackson 64%.
+- Model: Jackson 69.1%. Market: Jackson 65%.
 - Only Collins and Jackson are printed on the ballot.
 - **Six declared write-in candidates make this a ranked-choice race** ✔ (Spectrum News, Aug 26): Andrews, Olson, Oswald, Steinberger, Turcotte, Webb.
 - Votes for an undeclared write-in, such as Graham Platner (who withdrew July 10), count as blank ✔.
@@ -413,7 +413,7 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 
 **Race.**
 - Ashley Hinson (R) vs Josh Turek (D); open seat after Ernst retired ✔ (AP Jun 2026).
-- Model: Hinson 71.7%. Market: Hinson 57%. The market is much less sure than the model.
+- Model: Hinson 71.6%. Market: Hinson 57%. The market is much less sure than the model.
 
 **Rules for Nov 3 ✔**
 - **Polls and deadlines:**
