@@ -23,6 +23,7 @@ means X) and projected to a final result.
 | `scripts/fetch_wayback_2020.py` | County-by-county count over election week 2020, from Internet Archive captures of NYT's national file (one per 10 min where captured) |
 | `scripts/county_benchmarks.py` | County benchmarks: each county's share of the statewide vote (2022) and its expected two-party share at any statewide result (uniform swing on recent results), early/mail vs Election Day where NYT split every county (GA, TX, IA), 2020 reporting speed, and a backtest on every 2022/2024 race -> `data/processed/county_benchmarks.json/.csv`, `county_backtest.csv` |
 | `scripts/early_vote.py` | Ballots already cast, from the UF Election Lab tracker -> `data/processed/early_vote_2026.csv` and the guide's section 2c (rerun to refresh) |
+| `scripts/census_blocs.py` | Demographic voting blocs from the Census Bureau's ACS 2020-2024 county estimates (via Census Reporter; api.census.gov now needs a key): each county's bloc, how each bloc voted 2020-2024, its 2020->2024 shift against the state's, and what it needs in 2026 -> `data/processed/census_units.csv`, `bloc_results.csv`, `census_blocs.json` |
 | `scripts/capture_live.py` | Records NYT's 2026 files every 2 minutes on election night (every county, every change), for all 13 races |
 | `scripts/watch_sources.py` | Searches news feeds for AP "What to expect" pieces and county results schedules -> `sources/watch_log.csv` |
 | `sources/README.md` | Every source on when/how each state reports (AP 2026 editions, official documents, county schedules) |
@@ -52,6 +53,7 @@ Remove them after the election: `Get-ScheduledTask -TaskName "StateResults-*" | 
 | NYT 2026 primaries | county | statewide timeline | as above; current laws (MI Aug 4 saved) |
 | Alaska Division of Elections precinct files, 2022/2024 | precinct -> House district (final) | none | Election Day / absentee / early rows per district (`data/raw/ak_doe/`, downloaded by `county_benchmarks.py`) |
 | UF Election Lab early-vote tracker | state (daily) | one file per day in `data/raw/early_vote/` | mail returned, early in person, voters' registered party |
+| Census ACS 2020-2024 5-year (Census Reporter API) | county; Alaska House district | none | demographics only: race/ethnicity (B03002), education (B15003), income (B19013), in `data/raw/census/` |
 
 County-level timing for 2022 and 2024 does not survive publicly: state result sites (Clarity etc.)
 keep only the latest version, and archive captures of the NYT race files are a handful per race.
@@ -65,6 +67,7 @@ After a model refresh or new early-vote numbers, in this order (from the repo ro
 ```
 py "State election results/scripts/early_vote.py"
 py "State election results/scripts/county_benchmarks.py"
+py "State election results/scripts/census_blocs.py"
 py "State election results/scripts/build_competitive.py"
 py "State election results/scripts/build_master.py"
 py "State election results/scripts/build_election_night.py"

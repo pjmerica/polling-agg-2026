@@ -26,6 +26,8 @@ def test_counties_cover_each_state():
         assert all(math.isfinite(c["L"]) and c["w"] > 0 for c in cs), r["id"]
         # early/mail splits come as a set
         assert all(("a" in c) == ("la" in c) == ("le" in c) for c in cs), r["id"]
+        # every county has a census voting bloc (State election results/scripts/census_blocs.py)
+        assert all(c.get("bl") for c in cs), r["id"]
 
 
 def test_page_has_a_table_for_every_race():

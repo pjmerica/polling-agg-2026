@@ -8,7 +8,7 @@ past elections, and where that creates opportunities as results come in.*
 and the swings analysis (406 races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
 generated from data. Model numbers: forecast run of 2026-10-23 03:37 UTC. Market numbers: 2026-10-23 08:54 UTC refresh. They move daily. Nevada, Oregon and Texas Governor were added on
 Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%. County benchmarks, ballots
-already cast and the Oct 23 open-item checks were added on Oct 23.*
+already cast, census voting blocs and the Oct 23 open-item checks were added on Oct 23.*
 
 *The same guide is a page on the dashboard, [election-night.html](https://pjmerica.github.io/polling-agg-2026/election-night.html).
 There the model and market numbers update with each forecast run, and every county table has a slider for the
@@ -18,8 +18,8 @@ statewide result plus a box that turns a county's finished result into an implie
 1. The states at a glance
 2. Which state is the best opportunity as results come in
 3. What is certain and what isn't, ballots already cast, patterns across states
-4. State by state: rules, how results come in, history, swing data, county benchmarks
-5. Cross-state tables, including how reliable county benchmarks have been
+4. State by state: rules, how results come in, history, swing data, county benchmarks, census voting blocs
+5. Cross-state tables, including how reliable county benchmarks have been and how each bloc moved 2020-2024
 6. Corrections, open questions, sources
 
 ---
@@ -289,11 +289,28 @@ How to read it:
 
 # 4. State by state
 
-In poll-closing order. Each state has four parts:
+In poll-closing order. Each state has five parts:
 - rules and how results get reported, checked against primary sources: ✔ re-read, ◐ read by a researcher, ○ secondary;
 - generated history tables;
 - the swing data for that state;
 - **county benchmarks**: each county's expected share of the statewide vote, and what each candidate needs there for a statewide tie or a 3-point win either way. Uniform swing on recent results, explained in each table's notes (`scripts/county_benchmarks.py`).
+- **voting blocs**: counties grouped by demographics, how each group voted in 2020-2024 and what it needs to give in 2026 (`scripts/census_blocs.py`).
+
+**How the voting blocs are built.** The demographics are the Census Bureau's latest county estimates, the American Community Survey 2020-2024, which cover every county (Alaska: every House district). Each county goes to the **first** bloc it fits:
+
+| # | Bloc | Rule |
+|---|---|---|
+| 1 | Hispanic-majority | Hispanic 50%+ |
+| 2 | Black 35%+, large counties | Black 35%+ and 150,000+ people |
+| 3 | Black 35%+, smaller counties | Black 35%+, under 150,000 people |
+| 4 | Native 25%+ | American Indian / Alaska Native 25%+ |
+| 5 | College-educated | 40%+ of adults 25+ hold a bachelor's degree |
+| 6 | Big diverse metros | 400,000+ people and under 60% non-Hispanic white |
+| 7 | White, non-college | 70%+ non-Hispanic white, under 30% with a degree |
+| 8 | Everything else | none of the above |
+
+- These are places, not people: a "Hispanic-majority" county's swing mixes its Hispanic and non-Hispanic voters. The tables show which way places like that moved, not how any group of voters did.
+- The 2026 rows sum the county benchmarks by bloc. On election night, compare a bloc's finished counties with its line.
 
 ## Georgia: Governor
 
@@ -445,6 +462,42 @@ What the curves show (`state_curves.md`):
 | Coweta | 1.6% | R +34.1 | **32.9%** (Jackson +34.2) | 34.5% (Jackson +31.0) | 31.3% (Jackson +37.4) | Jackson +25.7 / Jackson +46.1 (58% early/mail) | 75% / 100% |
 | Fayette | 1.5% | R +3.2 | **48.5%** (Jackson +3.1) | 50.3% (Bottoms +0.6) | 46.6% (Jackson +6.7) | Bottoms +4.4 / Jackson +19.6 (69% early/mail) | 94% / 94% |
 | All other 144 counties | 43.5% | | 36.2% (Jackson +27.6) | | | | |
+
+### Voting blocs: Georgia
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Black 35%+, large counties | Fulton, DeKalb, Chatham, Clayton, Henry, Richmond and 2 more | 9% | 49% | 32% | 43% | 30.0% / 29.9% / 28.9% |
+| Black 35%+, smaller counties | Douglas, Lowndes, Newton, Rockdale, Dougherty, Troup and 39 more | 7% | 46% | 42% | 22% | 11.2% / 11.2% / 11.0% |
+| College-educated | Cobb, Cherokee, Forsyth, Clarke, Fayette, Oconee | 13% | 19% | 56% | 50% | 16.3% / 16.6% / 16.3% |
+| Big diverse metros | Gwinnett | 24% | 28% | 31% | 39% | 8.3% / 7.6% / 8.0% |
+| White, non-college | Bartow, Jackson, Effingham, Walker, Catoosa, Gordon and 30 more | 8% | 8% | 80% | 22% | 10.8% / 11.1% / 11.6% |
+| Everything else | Hall, Paulding, Houston, Columbia, Coweta, Carroll and 57 more | 11% | 20% | 63% | 26% | 23.3% / 23.6% / 24.1% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Ossoff vs Perdue; 2022 Governor: Abrams vs Kemp; 2022 Senate: Warnock vs Walker; 2024 President: Harris vs Trump)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2022 Senate | 2024 President | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | D+0.2 | R+1.8 | R+7.6 | D+1.0 | R+2.2 | 2.4 toward R |  |
+| Black 35%+, large counties | D+46.6 | D+44.0 | D+41.3 | D+50.0 | D+45.4 | 1.2 toward R | 1.3 more toward D |
+| Black 35%+, smaller counties | D+4.0 | D+2.7 | R+1.5 | D+4.1 | D+3.0 | 1.0 toward R | 1.4 more toward D |
+| College-educated | R+4.4 | R+7.8 | R+14.9 | R+3.2 | R+4.9 | 0.5 toward R | 1.9 more toward D |
+| Big diverse metros | D+18.5 | D+16.7 | D+10.4 | D+20.9 | D+16.7 | 1.8 toward R | 0.7 more toward D |
+| White, non-college | R+60.0 | R+60.8 | R+67.0 | R+59.9 | R+60.6 | 0.7 toward R | 1.8 more toward D |
+| Everything else | R+36.8 | R+38.5 | R+45.1 | R+37.9 | R+37.6 | 0.9 toward R | 1.6 more toward D |
+
+**Governor 2026: what Bottoms needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+0.7 statewide)
+
+| Bloc | Share of the expected vote | Bottoms at a statewide tie | 2022 Senate (Warnock vs Walker) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Black 35%+, large counties | 29.9% | **D+48.1** | D+50.0 | 2.0 toward R | D+45.4 |
+| Black 35%+, smaller counties | 11.2% | **D+3.6** | D+4.1 | 0.5 toward R | D+3.0 |
+| College-educated | 16.6% | **R+3.7** | R+3.2 | 0.5 toward R | R+4.9 |
+| Big diverse metros | 7.6% | **D+18.9** | D+20.9 | 1.9 toward R | D+16.7 |
+| White, non-college | 11.1% | **R+60.2** | R+59.9 | 0.3 toward R | R+60.6 |
+| Everything else | 23.6% | **R+37.7** | R+37.9 | 0.2 toward D | R+37.6 |
 
 ---
 
@@ -606,6 +659,45 @@ What the curves show:
 | Medina | 1.9% | R +25.0 | **43.8%** (Husted +12.4) | 45.4% (Husted +9.2) | 42.2% (Husted +15.6) | 97% / 99% |
 | All other 73 counties | 37.8% | | 36.1% (Husted +27.8) | | | |
 
+### Voting blocs: Ohio
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| College-educated | Franklin, Hamilton, Warren, Delaware, Greene, Geauga | 6% | 18% | 65% | 44% | 24.8% / 25.1% / 24.7% |
+| Big diverse metros | Cuyahoga | 7% | 28% | 57% | 37% | 10.6% / 9.9% / 10.0% |
+| White, non-college | Stark, Lorain, Mahoning, Trumbull, Licking, Clark and 62 more | 4% | 4% | 87% | 21% | 37.4% / 37.4% / 37.8% |
+| Everything else | Summit, Montgomery, Lucas, Butler, Lake, Clermont and 7 more | 5% | 11% | 77% | 33% | 27.3% / 27.5% / 27.5% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2022 Governor: Whaley vs DeWine; 2022 Senate: Ryan vs Vance; 2024 President: Harris vs Trump; 2024 Senate: Brown vs Moreno)
+
+| Bloc | 2020 President | 2022 Governor | 2022 Senate | 2024 President | 2024 Senate | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | R+8.2 | R+25.1 | R+6.1 | R+11.3 | R+3.7 | 3.2 toward R |  |
+| College-educated | D+12.8 | R+6.1 | D+12.4 | D+10.4 | D+15.9 | 2.4 toward R | 0.7 more toward D |
+| Big diverse metros | D+34.5 | D+14.2 | D+35.6 | D+31.7 | D+38.5 | 2.8 toward R | 0.4 more toward D |
+| White, non-college | R+34.7 | R+48.3 | R+30.5 | R+38.1 | R+29.2 | 3.3 toward R | 0.2 more toward R |
+| Everything else | R+7.4 | R+25.1 | R+4.7 | R+9.7 | R+2.2 | 2.3 toward R | 0.8 more toward D |
+
+**Governor 2026: what Acton needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+0.9 statewide)
+
+| Bloc | Share of the expected vote | Acton at a statewide tie | 2022 Senate (Ryan vs Vance) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| College-educated | 25.1% | **D+20.0** | D+12.4 | 7.6 toward D | D+10.4 |
+| Big diverse metros | 9.9% | **D+41.7** | D+35.6 | 6.1 toward D | D+31.7 |
+| White, non-college | 37.4% | **R+26.0** | R+30.5 | 4.5 toward D | R+38.1 |
+| Everything else | 27.5% | **D+2.0** | R+4.7 | 6.7 toward D | R+9.7 |
+
+**Senate (special) 2026: what Brown needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+0.9 statewide)
+
+| Bloc | Share of the expected vote | Brown at a statewide tie | 2024 Senate (Brown vs Moreno) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| College-educated | 25.1% | **D+20.5** | D+15.9 | 4.5 toward D | D+10.4 |
+| Big diverse metros | 9.9% | **D+42.0** | D+38.5 | 3.5 toward D | D+31.7 |
+| White, non-college | 37.4% | **R+26.4** | R+29.2 | 2.8 toward D | R+38.1 |
+| Everything else | 27.5% | **D+2.0** | R+2.2 | 4.2 toward D | R+9.7 |
+
 ---
 
 ## Michigan: Senate
@@ -759,6 +851,36 @@ What the curves show:
 | Monroe | 1.5% | R +27.5 | **37.1%** (Rogers +25.9) | 38.6% (Rogers +22.9) | 35.6% (Rogers +28.8) | 9% / 56% |
 | Jackson | 1.5% | R +21.6 | **40.0%** (Rogers +20.0) | 41.5% (Rogers +16.9) | 38.5% (Rogers +23.0) | 20% / 82% |
 | All other 68 counties | 29.0% | | 38.5% (Rogers +22.9) | | | |
+
+### Voting blocs: Michigan
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Black 35%+, large counties | Wayne | 7% | 37% | 48% | 28% | 15.8% / 14.5% / 15.1% |
+| College-educated | Oakland, Kent, Washtenaw, Ingham, Kalamazoo, Livingston and 4 more | 7% | 10% | 71% | 47% | 33.6% / 34.6% / 33.5% |
+| White, non-college | Macomb, Genesee, Muskegon, St. Clair, Jackson, Monroe and 53 more | 5% | 7% | 82% | 23% | 38.6% / 38.5% / 39.3% |
+| Everything else | Ottawa, Saginaw, Berrien, Eaton, Midland, Clinton and 7 more | 7% | 6% | 80% | 33% | 12.0% / 12.4% / 12.1% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Peters vs James; 2022 Governor: Whitmer vs Dixon; 2024 President: Harris vs Trump; 2024 Senate: Slotkin vs Rogers)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2024 President | 2024 Senate | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | D+2.8 | D+1.7 | D+10.7 | R+1.4 | D+0.4 | 4.3 toward R |  |
+| Black 35%+, large counties | D+38.6 | D+38.2 | D+43.4 | D+30.0 | D+33.0 | 8.6 toward R | 4.3 more toward R |
+| College-educated | D+14.8 | D+10.7 | D+22.2 | D+12.7 | D+13.5 | 2.2 toward R | 2.1 more toward D |
+| White, non-college | R+18.4 | R+16.8 | R+7.7 | R+22.3 | R+19.9 | 3.9 toward R | 0.3 more toward D |
+| Everything else | R+9.8 | R+12.0 | R+2.9 | R+11.1 | R+10.8 | 1.3 toward R | 2.9 more toward D |
+
+**Senate 2026: what El-Sayed needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+3.0 statewide)
+
+| Bloc | Share of the expected vote | El-Sayed at a statewide tie | 2024 Senate (Slotkin vs Rogers) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Black 35%+, large counties | 14.5% | **D+32.0** | D+33.0 | 1.1 toward R | D+30.0 |
+| College-educated | 34.6% | **D+13.5** | D+13.5 | none | D+12.7 |
+| White, non-college | 38.5% | **R+20.7** | R+19.9 | 0.9 toward R | R+22.3 |
+| Everything else | 12.4% | **R+10.6** | R+10.8 | 0.2 toward D | R+11.1 |
 
 ---
 
@@ -965,6 +1087,49 @@ What the curves show:
 | Hays | 1.1% | D +5.7 | **61.0%** (Hinojosa +21.9) | 62.6% (Hinojosa +25.1) | 59.4% (Hinojosa +18.7) | Hinojosa +21.6 / Hinojosa +23.8 (84% early/mail) | 99% / 100% |
 | All other 239 counties | 34.5% | | 32.0% (Abbott +36.0) | | | | |
 
+### Voting blocs: Texas
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Hispanic-majority | Bexar, Hidalgo, El Paso, Cameron, Nueces, Webb and 58 more | 73% | 4% | 19% | 25% | 17.1% / 16.1% / 16.6% |
+| College-educated | Travis, Collin, Denton, Fort Bend, Williamson, Hays and 5 more | 25% | 10% | 48% | 52% | 22.4% / 23.6% / 23.1% |
+| Big diverse metros | Harris, Dallas, Tarrant, Montgomery | 39% | 18% | 32% | 35% | 32.4% / 31.2% / 31.1% |
+| White, non-college | Grayson, Orange, Henderson, Wise, Van Zandt, Hardin and 49 more | 14% | 6% | 75% | 21% | 5.3% / 5.7% / 5.6% |
+| Everything else | Brazoria, Bell, Galveston, Lubbock, McLennan, Jefferson and 114 more | 28% | 12% | 54% | 26% | 22.8% / 23.4% / 23.7% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Hegar vs Cornyn; 2022 Governor: O’Rourke vs Abbott; 2024 President: Harris vs Trump; 2024 Senate: Allred vs Cruz)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2024 President | 2024 Senate | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | R+5.7 | R+9.9 | R+11.1 | R+13.9 | R+8.7 | 8.2 toward R |  |
+| Hispanic-majority | D+10.0 | D+7.2 | D+7.1 | R+2.9 | D+4.3 | 12.9 toward R | 4.7 more toward R |
+| College-educated | D+7.6 | D+1.5 | D+4.2 | D+0.2 | D+5.1 | 7.4 toward R | 0.8 more toward D |
+| Big diverse metros | D+10.8 | D+5.6 | D+6.0 | D+2.7 | D+8.5 | 8.2 toward R | same |
+| White, non-college | R+65.0 | R+65.8 | R+70.3 | R+67.6 | R+64.7 | 2.7 toward R | 5.5 more toward D |
+| Everything else | R+39.9 | R+42.3 | R+47.2 | R+44.0 | R+40.3 | 4.1 toward R | 4.1 more toward D |
+
+**Senate 2026: what Talarico needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+1.2 statewide)
+
+| Bloc | Share of the expected vote | Talarico at a statewide tie | 2024 Senate (Allred vs Cruz) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Hispanic-majority | 16.1% | **D+12.2** | D+4.3 | 7.9 toward D | R+2.9 |
+| College-educated | 23.6% | **D+15.0** | D+5.1 | 9.8 toward D | D+0.2 |
+| Big diverse metros | 31.2% | **D+17.5** | D+8.5 | 9.0 toward D | D+2.7 |
+| White, non-college | 5.7% | **R+59.1** | R+64.7 | 5.6 toward D | R+67.6 |
+| Everything else | 23.4% | **R+32.5** | R+40.3 | 7.8 toward D | R+44.0 |
+
+**Governor 2026: what Hinojosa needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+4.9 statewide)
+
+| Bloc | Share of the expected vote | Hinojosa at a statewide tie | 2022 Governor (O’Rourke vs Abbott) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Hispanic-majority | 16.1% | **D+15.1** | D+7.1 | 8.0 toward D | R+2.9 |
+| College-educated | 23.6% | **D+15.5** | D+4.2 | 11.3 toward D | D+0.2 |
+| Big diverse metros | 31.2% | **D+17.7** | D+6.0 | 11.7 toward D | D+2.7 |
+| White, non-college | 5.7% | **R+61.2** | R+70.3 | 9.1 toward D | R+67.6 |
+| Everything else | 23.4% | **R+34.7** | R+47.2 | 12.5 toward D | R+44.0 |
+
 ---
 
 ## Kansas: Senate
@@ -1097,6 +1262,36 @@ What the curves show:
 | McPherson | 1.1% | R +41.9 | **37.5%** (Marshall +25.0) | 39.0% (Marshall +21.9) | 35.9% (Marshall +28.1) | 76% / 91% |
 | Cowley | 1.1% | R +41.0 | **38.9%** (Marshall +22.1) | 40.5% (Marshall +19.0) | 37.4% (Marshall +25.2) | 97% / 97% |
 | All other 90 counties | 27.3% | | 31.4% (Marshall +37.2) | | | |
+
+### Voting blocs: Kansas
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Hispanic-majority | Finney, Ford, Seward, Grant | 58% | 3% | 34% | 18% | 2.1% / 1.8% / 1.9% |
+| College-educated | Johnson, Douglas, Riley | 9% | 5% | 76% | 56% | 31.6% / 32.5% / 32.1% |
+| White, non-college | Reno, Saline, Cowley, Montgomery, Franklin, Barton and 66 more | 7% | 2% | 85% | 23% | 24.4% / 24.9% / 24.3% |
+| Everything else | Sedgwick, Shawnee, Wyandotte, Leavenworth, Butler, Crawford and 20 more | 16% | 7% | 67% | 31% | 42.0% / 40.8% / 41.7% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Bollier vs Marshall; 2022 Governor: Kelly vs Schmidt; 2022 Senate: Holland vs Moran; 2024 President: Harris vs Trump)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2022 Senate | 2024 President | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | R+15.0 | R+12.0 | D+2.3 | R+23.7 | R+16.4 | 1.4 toward R |  |
+| Hispanic-majority | R+31.2 | R+28.5 | R+19.6 | R+51.4 | R+39.7 | 8.6 toward R | 7.1 more toward R |
+| College-educated | D+12.6 | D+12.7 | D+25.5 | D+5.8 | D+12.4 | 0.3 toward R | 1.2 more toward D |
+| White, non-college | R+51.2 | R+45.9 | R+28.1 | R+59.5 | R+52.2 | 1.1 toward R | 0.3 more toward D |
+| Everything else | R+13.8 | R+10.2 | D+2.8 | R+24.3 | R+16.6 | 2.8 toward R | 1.4 more toward R |
+
+**Senate 2026: what Hamilton needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+0.9 statewide)
+
+| Bloc | Share of the expected vote | Hamilton at a statewide tie | 2020 Senate (Bollier vs Marshall) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Hispanic-majority | 1.8% | **R+19.8** | R+28.5 | 8.6 toward D | R+39.7 |
+| College-educated | 32.5% | **D+27.8** | D+12.7 | 15.1 toward D | D+12.4 |
+| White, non-college | 24.9% | **R+36.8** | R+45.9 | 9.2 toward D | R+52.2 |
+| Everything else | 40.8% | **D+1.2** | R+10.2 | 11.4 toward D | R+16.6 |
 
 ---
 
@@ -1248,6 +1443,33 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 | Oxford | 4.1% | R +13.1 | **40.9%** (Collins +18.2) | 42.4% (Collins +15.2) | 39.4% (Collins +21.2) | 47% / 68% |
 | All other 8 counties | 21.5% | | 45.5% (Collins +9.0) | | | |
 
+### Voting blocs: Maine
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| College-educated | Cumberland, Hancock, Sagadahoc, Lincoln | 3% | 3% | 88% | 50% | 34.0% / 34.9% / 34.2% |
+| White, non-college | Androscoggin, Aroostook, Oxford, Somerset, Washington, Piscataquis | 2% | 2% | 90% | 23% | 22.5% / 22.0% / 22.3% |
+| Everything else | York, Penobscot, Kennebec, Knox, Waldo, Franklin | 2% | 1% | 91% | 34% | 43.5% / 43.1% / 43.5% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Gideon vs Collins; 2022 Governor: Mills vs LePage; 2024 President: Harris vs Trump)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2024 President | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|
+| **Statewide** | D+8.9 | R+9.7 | D+13.5 | D+7.1 | 1.8 toward R |  |
+| College-educated | D+29.7 | D+10.1 | D+33.9 | D+30.1 | 0.4 toward D | 2.3 more toward D |
+| White, non-college | R+13.6 | R+31.2 | R+10.1 | R+17.7 | 4.1 toward R | 2.2 more toward R |
+| Everything else | D+4.4 | R+13.9 | D+8.9 | D+1.9 | 2.5 toward R | 0.7 more toward R |
+
+**Senate 2026: what Jackson needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+1.5 statewide)
+
+| Bloc | Share of the expected vote | Jackson at a statewide tie | 2020 Senate (Gideon vs Collins) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| College-educated | 34.9% | **D+21.1** | D+10.1 | 11.0 toward D | D+30.1 |
+| White, non-college | 22.0% | **R+23.6** | R+31.2 | 7.5 toward D | R+17.7 |
+| Everything else | 43.1% | **R+5.0** | R+13.9 | 8.9 toward D | D+1.9 |
+
 ---
 
 ## Iowa: Senate
@@ -1381,6 +1603,33 @@ What the curves show:
 | Marion | 1.2% | R +38.3 | **36.9%** (Hinson +26.1) | 38.5% (Hinson +23.1) | 35.5% (Hinson +29.1) | Hinson +9.3 / Hinson +35.6 (36% early/mail) | 100% / 100% |
 | All other 84 counties | 40.7% | | 38.1% (Hinson +23.8) | | | | |
 
+### Voting blocs: Iowa
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| College-educated | Polk, Johnson, Dallas, Story, Jefferson | 9% | 6% | 75% | 46% | 27.1% / 28.1% / 27.9% |
+| White, non-college | Pottawattamie, Clinton, Cerro Gordo, Muscatine, Des Moines, Jasper and 73 more | 6% | 1% | 89% | 22% | 41.2% / 40.8% / 40.9% |
+| Everything else | Linn, Scott, Black Hawk, Woodbury, Dubuque, Warren and 9 more | 8% | 5% | 80% | 32% | 31.6% / 31.2% / 31.3% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Greenfield vs Ernst; 2022 Governor: DeJear vs Reynolds; 2022 Senate: Franken vs Grassley; 2024 President: Harris vs Trump)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2022 Senate | 2024 President | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | R+8.4 | R+6.8 | R+19.0 | R+12.2 | R+13.4 | 5.1 toward R |  |
+| College-educated | D+18.6 | D+16.7 | D+11.4 | D+15.8 | D+13.6 | 4.9 toward R | 0.1 more toward D |
+| White, non-college | R+29.2 | R+24.8 | R+41.1 | R+33.1 | R+34.4 | 5.2 toward R | 0.1 more toward R |
+| Everything else | R+4.2 | R+3.7 | R+17.4 | R+10.3 | R+10.3 | 6.1 toward R | 1.0 more toward R |
+
+**Senate 2026: what Turek needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+0.9 statewide)
+
+| Bloc | Share of the expected vote | Turek at a statewide tie | 2022 Senate (Franken vs Grassley) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| College-educated | 28.1% | **D+27.6** | D+15.8 | 11.9 toward D | D+13.6 |
+| White, non-college | 40.8% | **R+21.3** | R+33.1 | 11.7 toward D | R+34.4 |
+| Everything else | 31.2% | **D+3.0** | R+10.3 | 13.3 toward D | R+10.3 |
+
 ---
 
 ## Nebraska: Senate
@@ -1510,6 +1759,36 @@ What the curves show:
 | Washington | 1.3% | R +25.7 | **40.8%** (Ricketts +18.4) | 42.4% (Ricketts +15.3) | 39.2% (Ricketts +21.5) | 0% / 99% |
 | Gage | 1.2% | R +15.3 | **46.1%** (Ricketts +7.8) | 47.7% (Ricketts +4.5) | 44.5% (Ricketts +11.0) | 60% / 99% |
 | All other 78 counties | 24.4% | | 33.1% (Ricketts +33.7) | | | |
+
+### Voting blocs: Nebraska
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Native 25%+ | Thurston | 5% | 0% | 36% | 22% | 0.2% / 0.2% / 0.2% |
+| College-educated | Douglas, Lancaster, Sarpy | 12% | 7% | 71% | 42% | 55.4% / 55.4% / 56.1% |
+| White, non-college | Dodge, Scotts Bluff, Madison, Platte, Lincoln, Adams and 66 more | 10% | 1% | 85% | 24% | 29.5% / 30.0% / 28.9% |
+| Everything else | Hall, Buffalo, Cass, Dawson, Saunders, Dakota and 11 more | 19% | 2% | 74% | 27% | 14.9% / 14.5% / 14.7% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Janicek vs Sasse; 2022 Governor: Blood vs Pillen; 2024 President: Harris vs Trump; 2024 Senate: Osborn vs Fischer)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2024 President | 2024 Senate | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | R+19.6 | R+44.0 | R+24.4 | R+20.8 | R+6.7 | 1.3 toward R |  |
+| Native 25%+ | R+2.5 | R+15.8 | R+32.1 | R+7.0 | I+6.9 | 4.5 toward R | 3.2 more toward R |
+| College-educated | D+6.3 | R+26.3 | D+1.2 | D+4.4 | I+13.8 | 2.0 toward R | 0.7 more toward R |
+| White, non-college | R+57.0 | R+67.8 | R+60.7 | R+57.9 | R+37.3 | 0.9 toward R | 0.4 more toward D |
+| Everything else | R+41.6 | R+58.0 | R+48.1 | R+44.2 | R+24.8 | 2.6 toward R | 1.3 more toward R |
+
+**Senate 2026: what Osborn needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+3.6 statewide)
+
+| Bloc | Share of the expected vote | Osborn at a statewide tie | 2024 Senate (Osborn vs Fischer) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Native 25%+ | 0.2% | **I+14.4** | I+6.9 | 7.5 toward D | R+7.0 |
+| College-educated | 55.4% | **I+21.4** | I+13.8 | 7.6 toward D | D+4.4 |
+| White, non-college | 30.0% | **R+31.1** | R+37.3 | 6.2 toward D | R+57.9 |
+| Everything else | 14.5% | **R+17.8** | R+24.8 | 7.0 toward D | R+44.2 |
 
 ---
 
@@ -1679,6 +1958,33 @@ What the curves show:
 | Churchill | 1.0% | R +51.6 | **25.2%** (Lombardo +49.7) | 26.4% (Lombardo +47.3) | 24.0% (Lombardo +52.0) | 0% / 95% |
 | All other 9 counties | 2.1% | | 22.4% (Lombardo +55.3) | | | |
 
+### Voting blocs: Nevada
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Big diverse metros | Clark, Washoe | 31% | 10% | 42% | 29% | 87.1% / 85.8% / 87.2% |
+| White, non-college | Lyon, Churchill, White Pine, Lander, Lincoln, Eureka | 17% | 2% | 72% | 17% | 3.8% / 4.1% / 3.9% |
+| Everything else | Carson City, Nye, Elko, Douglas, Humboldt, Pershing and 3 more | 21% | 2% | 67% | 21% | 9.0% / 10.1% / 8.9% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2022 Governor: Sisolak vs Lombardo; 2022 Senate: Cortez Masto vs Laxalt; 2024 President: Harris vs Trump; 2024 Senate: Rosen vs Brown)
+
+| Bloc | 2020 President | 2022 Governor | 2022 Senate | 2024 President | 2024 Senate | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | D+2.4 | R+1.6 | D+0.8 | R+3.2 | D+1.7 | 5.6 toward R |  |
+| Big diverse metros | D+8.5 | D+4.9 | D+7.3 | D+2.3 | D+7.4 | 6.2 toward R | 0.6 more toward R |
+| White, non-college | R+49.0 | R+52.1 | R+49.4 | R+50.6 | R+46.3 | 1.6 toward R | 4.0 more toward D |
+| Everything else | R+34.9 | R+37.3 | R+34.5 | R+36.6 | R+32.6 | 1.6 toward R | 4.0 more toward D |
+
+**Governor 2026: what Ford needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+3.3 statewide)
+
+| Bloc | Share of the expected vote | Ford at a statewide tie | 2022 Governor (Sisolak vs Lombardo) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Big diverse metros | 85.8% | **D+6.4** | D+4.9 | 1.5 toward D | D+2.3 |
+| White, non-college | 4.1% | **R+49.5** | R+52.1 | 2.6 toward D | R+50.6 |
+| Everything else | 10.1% | **R+34.5** | R+37.3 | 2.8 toward D | R+36.6 |
+
 ---
 
 ## Oregon: Governor
@@ -1839,6 +2145,33 @@ What the curves show:
 | Douglas | 2.8% | R +38.7 | **23.4%** (Drazan +53.2) | 24.7% (Drazan +50.7) | 22.2% (Drazan +55.6) | 77% / 98% |
 | All other 27 counties | 23.9% | | 35.9% (Drazan +28.1) | | | |
 
+### Voting blocs: Oregon
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| College-educated | Multnomah, Washington, Clackamas, Deschutes, Benton, Hood River | 14% | 3% | 68% | 47% | 51.9% / 51.3% / 51.1% |
+| White, non-college | Linn, Douglas, Yamhill, Josephine, Klamath, Coos and 15 more | 10% | 1% | 80% | 23% | 21.5% / 22.2% / 22.2% |
+| Everything else | Lane, Marion, Jackson, Polk, Umatilla, Malheur and 3 more | 19% | 1% | 70% | 29% | 26.5% / 26.5% / 26.7% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Merkley vs Perkins; 2022 Governor: Kotek vs Drazan; 2022 Senate: Wyden vs Perkins; 2024 President: Harris vs Trump)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2022 Senate | 2024 President | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | D+16.6 | D+18.3 | D+3.8 | D+15.4 | D+14.9 | 1.7 toward R |  |
+| College-educated | D+38.5 | D+38.6 | D+26.8 | D+36.6 | D+37.8 | 0.7 toward R | 1.1 more toward D |
+| White, non-college | R+21.4 | R+16.6 | R+34.9 | R+19.0 | R+22.5 | 1.0 toward R | 0.7 more toward D |
+| Everything else | D+4.7 | D+6.9 | R+9.5 | D+3.1 | D+2.0 | 2.6 toward R | 0.9 more toward R |
+
+**Governor 2026: what Kotek needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+4.5 statewide)
+
+| Bloc | Share of the expected vote | Kotek at a statewide tie | 2022 Governor (Kotek vs Drazan) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| College-educated | 51.3% | **D+23.3** | D+26.8 | 3.5 toward R | D+37.8 |
+| White, non-college | 22.2% | **R+37.6** | R+34.9 | 2.7 toward R | R+22.5 |
+| Everything else | 26.5% | **R+13.7** | R+9.5 | 4.3 toward R | D+2.0 |
+
 ---
 
 ## Alaska: Senate (ranked-choice)
@@ -1980,6 +2313,36 @@ What the curves show:
 | District 15 (Anchorage: Southwest) | 2.9% | R +2.6 | **55.0%** (Peltola +10.0) | 56.6% (Peltola +13.2) | 53.4% (Peltola +6.8) |
 | All other 25 House districts | 52.6% | | 50.5% (Peltola +1.1) | | |
 
+### Voting blocs: Alaska
+
+House districts grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | House districts (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Native 25%+ | District 36 (Goldstream, Delta Junction, Tok), District 40 (Utqiagvik, Kotzebue), District 39 (Nome, Unalakleet), District 37 (Aleutians, Dillingham), District 38 (Bethel) | 4% | 1% | 24% | 17% | - / 8.1% / 7.5% |
+| College-educated | District 15 (Anchorage: Southwest), District 35 (Fairbanks: Chena, University), District 11 (Anchorage: Hillside), District 16 (Anchorage: West), District 4 (Juneau, Douglas), District 23 (Eagle River) and 3 more | 8% | 3% | 65% | 46% | - / 27.3% / 26.1% |
+| White, non-college | District 28 (Mat-Su: Seldon, Lakes), District 26 (Knik-Goose Bay), District 29 (Fishhook, Valdez), District 27 (Wasilla, Meadow Lakes), District 7 (Kenai, Soldotna), District 8 (Sterling, Nikiski) and 2 more | 5% | 1% | 76% | 24% | - / 22.4% / 23.0% |
+| Everything else | District 25 (Palmer, Butte), District 6 (Homer, Kasilof, Anchor Point), District 34 (Fairbanks: Steese, Farmers Loop), District 19 (Anchorage: Airport Heights, Mountain View), District 22 (Anchorage: Northeast), District 21 (Anchorage: East) and 12 more | 9% | 4% | 55% | 31% | - / 42.2% / 43.4% |
+
+**How each bloc voted** (two-party margin; 2022 House: Peltola vs Palin+Begich; 2024 President: Harris vs Trump; 2024 House: Peltola vs Begich)
+
+| Bloc | 2022 House | 2024 President | 2024 House |
+|---|---|---|---|
+| **Statewide** | R+0.4 | R+13.8 | R+2.2 |
+| Native 25%+ | D+30.0 | R+7.3 | D+16.1 |
+| College-educated | D+12.5 | D+3.0 | D+11.8 |
+| White, non-college | R+41.8 | R+50.7 | R+41.0 |
+| Everything else | D+7.4 | R+5.3 | D+6.5 |
+
+**Senate 2026: what Peltola needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+0.2 statewide)
+
+| Bloc | Share of the expected vote | Peltola at a statewide tie | 2024 House (Peltola vs Begich) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Native 25%+ | 8.1% | **D+13.1** | D+16.1 | 2.9 toward R | R+7.3 |
+| College-educated | 27.3% | **D+15.3** | D+11.8 | 3.5 toward D | D+3.0 |
+| White, non-college | 22.5% | **R+39.4** | R+41.0 | 1.6 toward D | R+50.7 |
+| Everything else | 42.1% | **D+8.6** | D+6.5 | 2.1 toward D | R+5.3 |
+
 ---
 
 
@@ -2082,6 +2445,29 @@ The county benchmarks' method, run on every 2022 and 2024 race here, predicting 
   - Douglas County, Nebraska would have put Osborn 7.2 too low.
   - Among the five largest counties, a single county's error reached 9-10 points (Kansas and Iowa 2022 governor races).
 - **Several finished counties together are much better than any one.** The page's calculator averages them by size.
+
+### How each voting bloc moved, 2020 to 2024
+
+The 2020-to-2024 presidential shift in each bloc **minus the state's own shift** (points of two-party margin). Positive means the bloc moved toward the Democrat relative to the whole state, negative toward the Republican. Alaska is left out: its House districts were redrawn for 2022.
+
+| Bloc | Georgia | Ohio | Michigan | Texas | Kansas | Maine | Iowa | Nebraska | Nevada | Oregon |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **Whole state** (actual shift) | 2.4 R | 3.2 R | 4.3 R | 8.2 R | 1.4 R | 1.8 R | 5.1 R | 1.3 R | 5.6 R | 1.7 R |
+| Hispanic-majority |  |  |  | -4.7 | -7.1 |  |  |  |  |  |
+| Black 35%+, large counties | +1.3 |  | -4.3 |  |  |  |  |  |  |  |
+| Black 35%+, smaller counties | +1.4 |  |  |  |  |  |  |  |  |  |
+| Native 25%+ |  |  |  |  |  |  |  | -3.2 |  |  |
+| College-educated | +1.9 | +0.7 | +2.1 | +0.8 | +1.2 | +2.3 | +0.1 | -0.7 |  | +1.1 |
+| Big diverse metros | +0.7 | +0.4 |  | 0.0 |  |  |  |  | -0.6 |  |
+| White, non-college | +1.8 | -0.2 | +0.3 | +5.5 | +0.3 | -2.2 | -0.1 | +0.4 | +4.0 | +0.7 |
+| Everything else | +1.6 | +0.8 | +2.9 | +4.1 | -1.4 | -0.7 | -1.0 | -1.3 | +4.0 | -0.9 |
+
+**What it says:**
+- **The 2024 move toward Trump was concentrated in Hispanic and minority urban places.** Hispanic-majority counties moved 4.7 points more than Texas as a whole and 7.1 more than Kansas. Wayne County (Detroit) moved 4.3 more than Michigan.
+- **College-educated counties moved least:** 0.1-2.3 points less than their states everywhere but Nebraska.
+- **Georgia is the exception:** its Black-majority counties, large and small, moved less than the state.
+- **Mostly white, non-college counties moved less than Texas and Nevada** (by 5.5 and 4.0) because they were already near their ceiling (R+65 and R+49 in 2020).
+- **For 2026 (inference):** the swing-back questions are the Hispanic counties in Texas and Kansas and Wayne County in Michigan. Each state's "what it needs" table puts a number on them, such as Talarico's line in Texas's Hispanic-majority counties against Allred's 2024 result there.
 
 ---
 

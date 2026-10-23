@@ -1,0 +1,205 @@
+state,bloc,election,d_candidate,r_candidate,d_votes,r_votes,all_votes,two_party_margin,share_of_state_vote
+Georgia,"Black 35%+, large counties",2020 President,Biden,Trump,1087503,396372,1502067,46.58,30.04
+Georgia,"Black 35%+, smaller counties",2020 President,Biden,Trump,289686,267233,562423,4.03,11.25
+Georgia,College-educated,2020 President,Biden,Trump,384113,419145,816884,-4.36,16.34
+Georgia,Big diverse metros,2020 President,Biden,Trump,241994,166400,414350,18.51,8.29
+Georgia,"White, non-college",2020 President,Biden,Trump,106860,426802,539989,-59.95,10.8
+Georgia,Everything else,2020 President,Biden,Trump,363477,785902,1164247,-36.75,23.29
+Georgia,"Black 35%+, large counties",2020 Senate,Ossoff,Perdue,1049178,407563,1488527,44.04,30.06
+Georgia,"Black 35%+, smaller counties",2020 Senate,Ossoff,Perdue,279945,265111,555955,2.72,11.23
+Georgia,College-educated,2020 Senate,Ossoff,Perdue,363499,425283,810127,-7.83,16.36
+Georgia,Big diverse metros,2020 Senate,Ossoff,Perdue,233551,166754,411206,16.69,8.3
+Georgia,"White, non-college",2020 Senate,Ossoff,Perdue,102224,419038,534239,-60.78,10.79
+Georgia,Everything else,2020 Senate,Ossoff,Perdue,346122,778868,1152386,-38.47,23.27
+Georgia,"Black 35%+, large counties",2022 Governor,Abrams,Kemp,829799,344903,1181964,41.28,29.9
+Georgia,"Black 35%+, smaller counties",2022 Governor,Abrams,Kemp,216099,222597,441106,-1.48,11.16
+Georgia,College-educated,2022 Governor,Abrams,Kemp,277652,374896,658175,-14.9,16.65
+Georgia,Big diverse metros,2022 Governor,Abrams,Kemp,164051,133076,299482,10.42,7.58
+Georgia,"White, non-college",2022 Governor,Abrams,Kemp,71977,364248,439743,-67.0,11.12
+Georgia,Everything else,2022 Governor,Abrams,Kemp,254095,671852,932938,-45.12,23.6
+Georgia,"Black 35%+, large counties",2022 Senate,Warnock,Walker,869018,289357,1178113,50.04,29.93
+Georgia,"Black 35%+, smaller counties",2022 Senate,Warnock,Walker,225215,207631,439396,4.06,11.16
+Georgia,College-educated,2022 Senate,Warnock,Walker,308061,328288,654553,-3.18,16.63
+Georgia,Big diverse metros,2022 Senate,Warnock,Walker,175688,115024,298036,20.87,7.57
+Georgia,"White, non-college",2022 Senate,Warnock,Walker,85799,341737,437401,-59.86,11.11
+Georgia,Everything else,2022 Senate,Warnock,Walker,282336,626405,928425,-37.86,23.59
+Georgia,"Black 35%+, large counties",2024 President,Harris,Trump,1092838,410218,1516368,45.42,28.88
+Georgia,"Black 35%+, smaller counties",2024 President,Harris,Trump,296173,278935,577763,3.0,11.0
+Georgia,College-educated,2024 President,Harris,Trump,403490,444752,856706,-4.86,16.32
+Georgia,Big diverse metros,2024 President,Harris,Trump,242507,173041,420681,16.72,8.01
+Georgia,"White, non-college",2024 President,Harris,Trump,119718,488338,610777,-60.62,11.63
+Georgia,Everything else,2024 President,Harris,Trump,393291,867833,1267752,-37.63,24.15
+Ohio,College-educated,2020 President,Biden,Trump,815213,629682,1468340,12.84,24.79
+Ohio,Big diverse metros,2020 President,Biden,Trump,416176,202699,625670,34.49,10.56
+Ohio,"White, non-college",2020 President,Biden,Trump,711442,1468600,2212985,-34.73,37.37
+Ohio,Everything else,2020 President,Biden,Trump,736334,853853,1615207,-7.39,27.27
+Ohio,College-educated,2022 Governor,Whaley,DeWine,487078,550027,1037105,-6.07,25.14
+Ohio,Big diverse metros,2022 Governor,Whaley,DeWine,234076,175697,409773,14.25,9.93
+Ohio,"White, non-college",2022 Governor,Whaley,DeWine,398487,1143871,1542358,-48.33,37.38
+Ohio,Everything else,2022 Governor,Whaley,DeWine,425848,710829,1136677,-25.07,27.55
+Ohio,College-educated,2022 Senate,Ryan,Vance,582143,453484,1035627,12.42,25.07
+Ohio,Big diverse metros,2022 Senate,Ryan,Vance,277039,131427,408466,35.65,9.89
+Ohio,"White, non-college",2022 Senate,Ryan,Vance,538832,1011897,1550729,-30.51,37.53
+Ohio,Everything else,2022 Senate,Ryan,Vance,541475,595306,1136781,-4.74,27.51
+Ohio,College-educated,2024 President,Harris,Trump,778842,632018,1425150,10.41,24.72
+Ohio,Big diverse metros,2024 President,Harris,Trump,376384,195164,575890,31.71,9.99
+Ohio,"White, non-college",2024 President,Harris,Trump,668278,1490073,2176387,-38.08,37.75
+Ohio,Everything else,2024 President,Harris,Trump,710195,862861,1587590,-9.71,27.54
+Ohio,College-educated,2024 Senate,Brown,Moreno,794364,575939,1412932,15.94,24.77
+Ohio,Big diverse metros,2024 Senate,Brown,Moreno,384042,170671,568952,38.47,9.97
+Ohio,"White, non-college",2024 Senate,Brown,Moreno,732316,1337736,2151078,-29.25,37.71
+Ohio,Everything else,2024 Senate,Brown,Moreno,740227,773037,1571018,-2.17,27.54
+Michigan,"Black 35%+, large counties",2020 President,Biden,Trump,597170,264553,872469,38.6,15.75
+Michigan,College-educated,2020 President,Biden,Trump,1053129,780812,1863848,14.85,33.65
+Michigan,"White, non-college",2020 President,Biden,Trump,859436,1246349,2138953,-18.37,38.61
+Michigan,Everything else,2020 President,Biden,Trump,294305,358138,664032,-9.78,11.99
+Michigan,"Black 35%+, large counties",2020 Senate,Peters,James,582367,260146,862819,38.25,15.75
+Michigan,College-educated,2020 Senate,Peters,James,1006905,812091,1848778,10.71,33.74
+Michigan,"White, non-college",2020 Senate,Peters,James,860258,1207462,2110281,-16.79,38.51
+Michigan,Everything else,2020 Senate,Peters,James,285038,362534,657830,-11.97,12.0
+Michigan,"Black 35%+, large counties",2022 Governor,Whitmer,Dixon,457601,180487,645729,43.43,14.47
+Michigan,College-educated,2022 Governor,Whitmer,Dixon,930033,592271,1543930,22.19,34.6
+Michigan,"White, non-college",2022 Governor,Whitmer,Dixon,779025,908179,1719563,-7.65,38.54
+Michigan,Everything else,2022 Governor,Whitmer,Dixon,263846,279698,552703,-2.92,12.39
+Michigan,"Black 35%+, large counties",2024 President,Harris,Trump,537032,288860,856511,30.05,15.13
+Michigan,College-educated,2024 President,Harris,Trump,1048325,812626,1895924,12.67,33.48
+Michigan,"White, non-college",2024 President,Harris,Trump,850392,1339078,2223010,-22.32,39.26
+Michigan,Everything else,2024 President,Harris,Trump,300784,376072,687059,-11.12,12.13
+Michigan,"Black 35%+, large counties",2024 Senate,Slotkin,Rogers,532029,267761,838858,33.04,15.04
+Michigan,College-educated,2024 Senate,Slotkin,Rogers,1036774,790402,1876511,13.48,33.65
+Michigan,"White, non-college",2024 Senate,Slotkin,Rogers,848693,1269160,2183212,-19.85,39.15
+Michigan,Everything else,2024 Senate,Slotkin,Rogers,295190,366357,678602,-10.76,12.17
+Texas,Hispanic-majority,2020 President,Biden,Trump,1048476,857717,1933967,10.01,17.09
+Texas,College-educated,2020 President,Biden,Trump,1339236,1150802,2532977,7.57,22.39
+Texas,Big diverse metros,2020 President,Biden,Trump,2002713,1610829,3666562,10.84,32.4
+Texas,"White, non-college",2020 President,Biden,Trump,104214,490839,601323,-64.97,5.31
+Texas,Everything else,2020 President,Biden,Trump,764487,1780160,2580227,-39.91,22.8
+Texas,Hispanic-majority,2020 Senate,Hegar,Cornyn,972394,841884,1876820,7.19,16.84
+Texas,College-educated,2020 Senate,Hegar,Cornyn,1232042,1196378,2492295,1.47,22.36
+Texas,Big diverse metros,2020 Senate,Hegar,Cornyn,1865423,1666724,3627140,5.63,32.55
+Texas,"White, non-college",2020 Senate,Hegar,Cornyn,99711,482784,594125,-65.76,5.33
+Texas,Everything else,2020 Senate,Hegar,Cornyn,719194,1775213,2553660,-42.34,22.92
+Texas,Hispanic-majority,2022 Governor,O’Rourke,Abbott,689649,598767,1307356,7.05,16.14
+Texas,College-educated,2022 Governor,O’Rourke,Abbott,981735,902611,1912267,4.2,23.6
+Texas,Big diverse metros,2022 Governor,O’Rourke,Abbott,1320364,1171239,2526692,5.99,31.19
+Texas,"White, non-college",2022 Governor,O’Rourke,Abbott,67635,387378,459659,-70.27,5.67
+Texas,Everything else,2022 Governor,O’Rourke,Abbott,494273,1377104,1895297,-47.18,23.4
+Texas,Hispanic-majority,2024 President,Harris,Trump,905874,960481,1885011,-2.93,16.56
+Texas,College-educated,2024 President,Harris,Trump,1293143,1288364,2631725,0.19,23.13
+Texas,Big diverse metros,2024 President,Harris,Trump,1786667,1693854,3535072,2.67,31.06
+Texas,"White, non-college",2024 President,Harris,Trump,102211,529655,635679,-67.65,5.59
+Texas,Everything else,2024 President,Harris,Trump,747355,1921243,2692618,-43.99,23.66
+Texas,Hispanic-majority,2024 Senate,Allred,Cruz,936278,859786,1845211,4.26,16.35
+Texas,College-educated,2024 Senate,Allred,Cruz,1341854,1211266,2616425,5.11,23.18
+Texas,Big diverse metros,2024 Senate,Allred,Cruz,1861558,1571279,3518530,8.46,31.17
+Texas,"White, non-college",2024 Senate,Allred,Cruz,109595,511383,632197,-64.7,5.6
+Texas,Everything else,2024 Senate,Allred,Cruz,781964,1837027,2676666,-40.29,23.71
+Kansas,Hispanic-majority,2020 President,Biden,Trump,9623,18347,28510,-31.19,2.07
+Kansas,College-educated,2020 President,Biden,Trump,237809,184527,434052,12.62,31.56
+Kansas,"White, non-college",2020 President,Biden,Trump,80258,248364,335771,-51.15,24.41
+Kansas,Everything else,2020 President,Biden,Trump,242633,320168,576971,-13.78,41.95
+Kansas,Hispanic-majority,2020 Senate,Bollier,Marshall,9547,17141,28207,-28.45,2.06
+Kansas,College-educated,2020 Senate,Bollier,Marshall,232260,179985,432054,12.68,31.59
+Kansas,"White, non-college",2020 Senate,Bollier,Marshall,85617,231101,334001,-45.93,24.42
+Kansas,Everything else,2020 Senate,Bollier,Marshall,244106,299735,573493,-10.23,41.93
+Kansas,Hispanic-majority,2022 Governor,Kelly,Schmidt,6865,10212,17742,-19.6,1.76
+Kansas,College-educated,2022 Governor,Kelly,Schmidt,201749,119645,328288,25.55,32.54
+Kansas,"White, non-college",2022 Governor,Kelly,Schmidt,86330,153881,251300,-28.12,24.91
+Kansas,Everything else,2022 Governor,Kelly,Schmidt,204905,193853,411668,2.77,40.8
+Kansas,Hispanic-majority,2022 Senate,Holland,Moran,4173,13001,17673,-51.4,1.76
+Kansas,College-educated,2022 Senate,Holland,Moran,168564,149977,327362,5.84,32.57
+Kansas,"White, non-college",2022 Senate,Holland,Moran,49014,193079,250253,-59.51,24.9
+Kansas,Everything else,2022 Senate,Holland,Moran,150463,246919,409668,-24.27,40.76
+Kansas,Hispanic-majority,2024 President,Harris,Trump,7635,17708,25791,-39.75,1.94
+Kansas,College-educated,2024 President,Harris,Trump,235096,183400,426134,12.35,32.1
+Kansas,"White, non-college",2024 President,Harris,Trump,75665,241145,322688,-52.23,24.31
+Kansas,Everything else,2024 President,Harris,Trump,226457,316549,552978,-16.59,41.65
+Maine,College-educated,2020 President,Biden,Trump,174340,94577,276722,29.66,34.01
+Maine,"White, non-college",2020 President,Biden,Trump,76805,101027,182788,-13.62,22.46
+Maine,Everything else,2020 President,Biden,Trump,179328,164295,354230,4.37,43.53
+Maine,College-educated,2020 Senate,Gideon,Collins,141576,115596,277043,10.1,34.05
+Maine,"White, non-college",2020 Senate,Gideon,Collins,58897,112239,182432,-31.17,22.42
+Maine,Everything else,2020 Senate,Gideon,Collins,142682,188814,354211,-13.92,43.53
+Maine,College-educated,2022 Governor,Mills,LePage,155502,76735,236012,33.92,34.87
+Maine,"White, non-college",2022 Governor,Mills,LePage,65622,80332,149195,-10.08,22.04
+Maine,Everything else,2022 Governor,Mills,LePage,155810,130237,291612,8.94,43.09
+Maine,College-educated,2024 President,Harris,Trump,180190,96825,283935,30.09,34.15
+Maine,"White, non-college",2024 President,Harris,Trump,75091,107395,185784,-17.7,22.35
+Maine,Everything else,2024 President,Harris,Trump,180371,173757,361656,1.87,43.5
+Iowa,College-educated,2020 President,Biden,Trump,265800,182495,458625,18.58,27.12
+Iowa,"White, non-college",2020 President,Biden,Trump,242581,442382,697407,-29.17,41.25
+Iowa,Everything else,2020 President,Biden,Trump,250680,272795,534839,-4.22,31.63
+Iowa,College-educated,2020 Senate,Greenfield,Ernst,257581,183701,453468,16.74,27.14
+Iowa,"White, non-college",2020 Senate,Greenfield,Ernst,250385,415468,688560,-24.79,41.22
+Iowa,Everything else,2020 Senate,Greenfield,Ernst,246893,265828,528589,-3.69,31.64
+Iowa,College-educated,2022 Governor,DeJear,Reynolds,186232,148021,342595,11.43,28.06
+Iowa,"White, non-college",2022 Governor,DeJear,Reynolds,143500,343367,497816,-41.05,40.77
+Iowa,Everything else,2022 Governor,DeJear,Reynolds,153218,217810,380735,-17.41,31.18
+Iowa,College-educated,2022 Senate,Franken,Grassley,197887,143943,341830,15.78,28.14
+Iowa,"White, non-college",2022 Senate,Franken,Grassley,165032,328128,493160,-33.07,40.59
+Iowa,Everything else,2022 Senate,Franken,Grassley,170411,209430,379841,-10.27,31.27
+Iowa,College-educated,2024 President,Harris,Trump,258876,196719,461781,13.64,27.87
+Iowa,"White, non-college",2024 President,Harris,Trump,219097,448394,676874,-34.35,40.85
+Iowa,Everything else,2024 President,Harris,Trump,229305,281906,518194,-10.29,31.28
+Nebraska,Native 25%+,2020 President,Biden,Trump,1122,1180,2379,-2.52,0.25
+Nebraska,College-educated,2020 President,Biden,Trump,273849,241230,529948,6.33,55.41
+Nebraska,"White, non-college",2020 President,Biden,Trump,59223,216411,281852,-57.03,29.47
+Nebraska,Everything else,2020 President,Biden,Trump,40389,98025,142204,-41.64,14.87
+Nebraska,Native 25%+,2020 Senate,Janicek,Sasse,885,1218,2285,-15.83,0.25
+Nebraska,College-educated,2020 Senate,Janicek,Sasse,159864,273944,517180,-26.3,55.61
+Nebraska,"White, non-college",2020 Senate,Janicek,Sasse,40251,209681,272742,-67.79,29.33
+Nebraska,Everything else,2020 Senate,Janicek,Sasse,26191,98664,137805,-58.05,14.82
+Nebraska,Native 25%+,2022 Governor,Blood,Pillen,424,824,1290,-32.05,0.19
+Nebraska,College-educated,2022 Governor,Blood,Pillen,180091,175726,369183,1.23,55.37
+Nebraska,"White, non-college",2022 Governor,Blood,Pillen,37593,153506,199788,-60.66,29.96
+Nebraska,Everything else,2022 Governor,Blood,Pillen,23898,68278,96534,-48.15,14.48
+Nebraska,Native 25%+,2024 President,Harris,Trump,978,1125,2123,-6.99,0.22
+Nebraska,College-educated,2024 President,Harris,Trump,273570,250701,531771,4.36,56.14
+Nebraska,"White, non-college",2024 President,Harris,Trump,56978,213580,273625,-57.88,28.89
+Nebraska,Everything else,2024 President,Harris,Trump,38469,99410,139640,-44.2,14.74
+Nebraska,Native 25%+,2024 Senate,Osborn,Fischer,1092,951,2043,6.9,0.22
+Nebraska,College-educated,2024 Senate,Osborn,Fischer,298490,225954,524444,13.83,56.05
+Nebraska,"White, non-college",2024 Senate,Osborn,Fischer,84922,185953,270875,-37.3,28.95
+Nebraska,Everything else,2024 Senate,Osborn,Fischer,51989,86266,138255,-24.79,14.78
+Nevada,Big diverse metros,2020 President,Biden,Trump,649980,547690,1224652,8.54,87.14
+Nevada,"White, non-college",2020 President,Biden,Trump,13314,38849,53725,-48.95,3.82
+Nevada,Everything else,2020 President,Biden,Trump,40192,83351,126999,-34.93,9.04
+Nevada,Big diverse metros,2022 Governor,Sisolak,Lombardo,442043,400622,874397,4.92,85.8
+Nevada,"White, non-college",2022 Governor,Sisolak,Lombardo,9436,29969,42066,-52.11,4.13
+Nevada,Everything else,2022 Governor,Sisolak,Lombardo,30512,66786,102608,-37.28,10.07
+Nevada,Big diverse metros,2022 Senate,Cortez Masto,Laxalt,455892,394135,876078,7.27,85.82
+Nevada,"White, non-college",2022 Senate,Cortez Masto,Laxalt,10152,29975,42097,-49.4,4.12
+Nevada,Everything else,2022 Senate,Cortez Masto,Laxalt,32272,66278,102675,-34.51,10.06
+Nevada,Big diverse metros,2024 President,Harris,Trump,650258,620495,1294957,2.34,87.21
+Nevada,"White, non-college",2024 President,Harris,Trump,13916,42385,57628,-50.57,3.88
+Nevada,Everything else,2024 President,Harris,Trump,41023,88325,132255,-36.57,8.91
+Nevada,Big diverse metros,2024 Senate,Rosen,Brown,645503,556770,1276312,7.38,87.14
+Nevada,"White, non-college",2024 Senate,Rosen,Brown,14304,38939,57212,-46.27,3.91
+Nevada,Everything else,2024 Senate,Rosen,Brown,41298,81337,131204,-32.65,8.96
+Oregon,College-educated,2020 President,Biden,Trump,826785,367056,1232787,38.51,51.92
+Oregon,"White, non-college",2020 President,Biden,Trump,194609,300817,511269,-21.44,21.53
+Oregon,Everything else,2020 President,Biden,Trump,318989,290575,630265,4.66,26.55
+Oregon,College-educated,2020 Senate,Merkley,Perkins,802660,355227,1205294,38.64,51.92
+Oregon,"White, non-college",2020 Senate,Merkley,Perkins,200921,281029,499301,-16.62,21.51
+Oregon,Everything else,2020 Senate,Merkley,Perkins,317466,276558,616654,6.89,26.57
+Oregon,College-educated,2022 Governor,Kotek,Drazan,579072,334141,1001646,26.82,51.35
+Oregon,"White, non-college",2022 Governor,Kotek,Drazan,124578,258120,432321,-34.89,22.16
+Oregon,Everything else,2022 Governor,Kotek,Drazan,213424,258086,516803,-9.47,26.49
+Oregon,College-educated,2022 Senate,Wyden,Perkins,654232,303372,991180,36.64,51.47
+Oregon,"White, non-college",2022 Senate,Wyden,Perkins,167679,246190,425660,-18.97,22.1
+Oregon,Everything else,2022 Senate,Wyden,Perkins,254513,239429,508912,3.05,26.43
+Oregon,College-educated,2024 President,Harris,Trump,759901,342627,1139995,37.85,51.13
+Oregon,"White, non-college",2024 President,Harris,Trump,186068,293966,494283,-22.48,22.17
+Oregon,Everything else,2024 President,Harris,Trump,294631,282887,595189,2.03,26.7
+Alaska,Native 25%+,2022 House,Peltola,Palin+Begich,13633,7338,21391,30.02,8.12
+Alaska,College-educated,2022 House,Peltola,Palin+Begich,39767,30943,72031,12.48,27.34
+Alaska,"White, non-college",2022 House,Peltola,Palin+Begich,16735,40804,58979,-41.83,22.38
+Alaska,Everything else,2022 House,Peltola,Palin+Begich,58326,50285,111105,7.4,42.16
+Alaska,Native 25%+,2024 President,Harris,Trump,11029,12777,25441,-7.34,7.53
+Alaska,College-educated,2024 President,Harris,Trump,43576,41044,88161,2.99,26.1
+Alaska,"White, non-college",2024 President,Harris,Trump,18547,56646,77666,-50.67,22.99
+Alaska,Everything else,2024 President,Harris,Trump,66538,73940,146508,-5.27,43.37
+Alaska,Native 25%+,2024 House,Peltola,Begich,13425,9710,24861,16.06,7.57
+Alaska,College-educated,2024 House,Peltola,Begich,46817,36964,86804,11.76,26.43
+Alaska,"White, non-college",2024 House,Peltola,Begich,20994,50188,75609,-41.01,23.02
+Alaska,Everything else,2024 House,Peltola,Begich,71298,62638,141149,6.47,42.98

@@ -7,8 +7,10 @@ Tokens in the template:
   {{STATE:<slug>}}  that state's STATE_BY_STATE.md section plus its swing tables and county benchmarks
   {{PACE_ALL}} {{EARLY_EDAY}}   cross-state tables from the swings analysis
   {{COUNTY_BACKTEST}}           how county benchmarks did in past races (county_benchmarks.py)
+  {{BLOC_SUMMARY}}              each census bloc's 2020 -> 2024 presidential shift against its state's (census_blocs.py)
 
-County benchmarks come from data/processed/county_benchmarks.json (run county_benchmarks.py first).
+County benchmarks come from data/processed/county_benchmarks.json and the voting blocs from
+census_blocs.json (run county_benchmarks.py, then census_blocs.py, first).
 Runs the guide builder too, so everything is regenerated from data. render(html=True) is the
 dashboard page's version (build_election_night.py).
 
@@ -20,6 +22,7 @@ import re
 
 import build_state_guide
 import build_swings_report as sw
+import census_blocs
 import county_benchmarks as cb
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -74,12 +77,13 @@ def render(html=False):
         name = title.split(":")[0]
         return (f"## {title}\n\n{body}\n\n### The swing data: {name}\n\n"
                 f"{swing_block(rows, SLUG[slug], slug)}\n\n### County benchmarks: {name}\n\n"
-                f"{cb.state_markdown(slug, html=html)}\n\n---\n")
+                f"{cb.state_markdown(slug, html=html)}\n\n### Voting blocs: {name}\n\n"
+                f"{census_blocs.state_markdown(slug)}\n\n---\n")
 
     out = re.sub(r"\{\{GUIDE:(\w+)\}\}", guide, tmpl)
     out = re.sub(r"\{\{STATE:(\w+)\}\}", state, out)
     out = out.replace("{{PACE_ALL}}", sw.state_pace(rows)).replace("{{EARLY_EDAY}}", sw.early_eday(rows))
-    out = out.replace("{{COUNTY_BACKTEST}}", cb.backtest_markdown())
+    out = out.replace("{{COUNTY_BACKTEST}}", cb.backtest_markdown()).replace("{{BLOC_SUMMARY}}", census_blocs.summary_markdown())
     out = build_state_guide.fill_numbers(out, html=html).replace("{{N_RACES}}", str(len(rows)))
     # national volatility ranks (scripts/volatility.py)
     vol = list(csv.DictReader(open(os.path.join(ROOT, "data", "processed", "volatility_states.csv"), encoding="utf-8")))

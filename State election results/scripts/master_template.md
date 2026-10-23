@@ -8,7 +8,7 @@ past elections, and where that creates opportunities as results come in.*
 and the swings analysis ({{N_RACES}} races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
 generated from data. {{ASOF}} They move daily. Nevada, Oregon and Texas Governor were added on
 Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%. County benchmarks, ballots
-already cast and the Oct 23 open-item checks were added on Oct 23.*
+already cast, census voting blocs and the Oct 23 open-item checks were added on Oct 23.*
 
 *The same guide is a page on the dashboard, [election-night.html](https://pjmerica.github.io/polling-agg-2026/election-night.html).
 There the model and market numbers update with each forecast run, and every county table has a slider for the
@@ -18,8 +18,8 @@ statewide result plus a box that turns a county's finished result into an implie
 1. The states at a glance
 2. Which state is the best opportunity as results come in
 3. What is certain and what isn't, ballots already cast, patterns across states
-4. State by state: rules, how results come in, history, swing data, county benchmarks
-5. Cross-state tables, including how reliable county benchmarks have been
+4. State by state: rules, how results come in, history, swing data, county benchmarks, census voting blocs
+5. Cross-state tables, including how reliable county benchmarks have been and how each bloc moved 2020-2024
 6. Corrections, open questions, sources
 
 ---
@@ -175,11 +175,28 @@ From `VOLATILITY.md`, which measures every President, Senate and Governor race i
 
 # 4. State by state
 
-In poll-closing order. Each state has four parts:
+In poll-closing order. Each state has five parts:
 - rules and how results get reported, checked against primary sources: ✔ re-read, ◐ read by a researcher, ○ secondary;
 - generated history tables;
 - the swing data for that state;
 - **county benchmarks**: each county's expected share of the statewide vote, and what each candidate needs there for a statewide tie or a 3-point win either way. Uniform swing on recent results, explained in each table's notes (`scripts/county_benchmarks.py`).
+- **voting blocs**: counties grouped by demographics, how each group voted in 2020-2024 and what it needs to give in 2026 (`scripts/census_blocs.py`).
+
+**How the voting blocs are built.** The demographics are the Census Bureau's latest county estimates, the American Community Survey 2020-2024, which cover every county (Alaska: every House district). Each county goes to the **first** bloc it fits:
+
+| # | Bloc | Rule |
+|---|---|---|
+| 1 | Hispanic-majority | Hispanic 50%+ |
+| 2 | Black 35%+, large counties | Black 35%+ and 150,000+ people |
+| 3 | Black 35%+, smaller counties | Black 35%+, under 150,000 people |
+| 4 | Native 25%+ | American Indian / Alaska Native 25%+ |
+| 5 | College-educated | 40%+ of adults 25+ hold a bachelor's degree |
+| 6 | Big diverse metros | 400,000+ people and under 60% non-Hispanic white |
+| 7 | White, non-college | 70%+ non-Hispanic white, under 30% with a degree |
+| 8 | Everything else | none of the above |
+
+- These are places, not people: a "Hispanic-majority" county's swing mixes its Hispanic and non-Hispanic voters. The tables show which way places like that moved, not how any group of voters did.
+- The 2026 rows sum the county benchmarks by bloc. On election night, compare a bloc's finished counties with its line.
 
 {{STATE:georgia}}
 {{STATE:ohio}}
@@ -220,6 +237,19 @@ The county benchmarks' method, run on every 2022 and 2024 race here, predicting 
   - Douglas County, Nebraska would have put Osborn 7.2 too low.
   - Among the five largest counties, a single county's error reached 9-10 points (Kansas and Iowa 2022 governor races).
 - **Several finished counties together are much better than any one.** The page's calculator averages them by size.
+
+### How each voting bloc moved, 2020 to 2024
+
+The 2020-to-2024 presidential shift in each bloc **minus the state's own shift** (points of two-party margin). Positive means the bloc moved toward the Democrat relative to the whole state, negative toward the Republican. Alaska is left out: its House districts were redrawn for 2022.
+
+{{BLOC_SUMMARY}}
+
+**What it says:**
+- **The 2024 move toward Trump was concentrated in Hispanic and minority urban places.** Hispanic-majority counties moved 4.7 points more than Texas as a whole and 7.1 more than Kansas. Wayne County (Detroit) moved 4.3 more than Michigan.
+- **College-educated counties moved least:** 0.1-2.3 points less than their states everywhere but Nebraska.
+- **Georgia is the exception:** its Black-majority counties, large and small, moved less than the state.
+- **Mostly white, non-college counties moved less than Texas and Nevada** (by 5.5 and 4.0) because they were already near their ceiling (R+65 and R+49 in 2020).
+- **For 2026 (inference):** the swing-back questions are the Hispanic counties in Texas and Kansas and Wayne County in Michigan. Each state's "what it needs" table puts a number on them, such as Talarico's line in Texas's Hispanic-majority counties against Allred's 2024 result there.
 
 ---
 

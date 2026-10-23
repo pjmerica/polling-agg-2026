@@ -109,6 +109,10 @@ table.ct tr.has td { background: #16213a; }
 table.ct input[type=number] { width: 58px; background: var(--bg); border: 1px solid var(--line2); color: var(--text); border-radius: 6px; padding: 3px 5px; font: inherit; font-size: 0.78rem; }
 table.ct select { background: var(--bg); border: 1px solid var(--line2); color: var(--text); border-radius: 6px; padding: 3px; font: inherit; font-size: 0.74rem; }
 .ct-foot { display: flex; gap: 10px; align-items: center; margin-top: 8px; font-size: 0.75rem; color: var(--faint); flex-wrap: wrap; }
+.ctool select.ct-bloc { background: var(--bg); border: 1px solid var(--line2); color: var(--text); border-radius: 8px; padding: 5px 7px; font: inherit; font-size: 0.78rem; }
+.ct-blocsum { font-size: 0.82rem; margin: 2px 0 6px; }
+.ct-blocsum:empty { display: none; }
+.ct-bl { font-size: 0.68rem; margin-top: 1px; }
 .totop { position: fixed; right: 16px; bottom: 16px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 999px; padding: 6px 12px; font-size: 0.78rem; }
 </style>
 </head>
@@ -144,6 +148,8 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
           at any <b>statewide result</b>: move the slider, or use the buttons for a tie, a 3-point win either way or the model's margin.</li>
         <li>When a county has <b>finished counting</b>, type its two main candidates' percentages. The table turns them into the
           <b>statewide margin they imply</b>, and the box above it combines every county you've entered, weighted by size.</li>
+        <li>Each row shows the county's <b>voting bloc</b>, a group of counties with similar demographics in the Census Bureau's latest
+          estimates (rules at the start of section 4). Pick a bloc to list all its counties and see its combined line.</li>
         <li><b>Partial counts mislead:</b> early and mail votes usually come first and Election Day votes later. In Georgia, Texas and
           Iowa you can mark an entry as <b>early/mail only</b> to compare it with that county's early-vote benchmark instead.</li>
         <li>Method: uniform swing on the log-odds scale from recent results (each table says which). In past races counties landed a
@@ -271,17 +277,22 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
     const unit = race.unit, units = unit === 'county' ? 'counties' : unit + 's';
     const inp = saved[race.id] = saved[race.id] || {};
     const mm = modelMargin(race);
-    const st = { m: 0, all: false, q: '' };
+    const st = { m: 0, all: false, q: '', bloc: '' };
     const byF = {};
     for (const c of race.counties) byF[c.f] = c;
+    const blocs = [];
+    for (const c of race.counties) if (c.bl && !blocs.includes(c.bl)) blocs.push(c.bl);
+    blocs.sort((a, b) => (race.bloc_order || []).indexOf(a) - (race.bloc_order || []).indexOf(b));
     const TOP = race.counties.length <= 25 ? race.counties.length : 20;
     el.innerHTML =
       `<div class="ct-top"><div class="ct-title">${esc(race.state)} ${esc(race.seat)}: <span class="${pcls(race.d.party)}">${esc(D)}</span> vs <span class="pr">${esc(R)}</span>, ${units}</div>` +
       `<div class="ct-ctrl"><span class="mut">Statewide result</span><input type="range" min="-15" max="15" step="0.5" value="0" aria-label="Statewide margin">` +
       `<span class="ct-m">tie</span><button data-m="-3">${esc(R)} +3</button><button data-m="0">Tie</button><button data-m="3">${esc(D)} +3</button>` +
       (mm != null ? `<button data-m="model">Model: ${esc(fmtM(mm, race))}</button>` : '') +
-      `<input type="search" placeholder="Find a ${esc(unit)}" aria-label="Find a ${esc(unit)}"></div></div>` +
-      `<div class="ct-sum"></div>` +
+      `<input type="search" placeholder="Find a ${esc(unit)}" aria-label="Find a ${esc(unit)}">` +
+      (blocs.length ? `<select class="ct-bloc" aria-label="Voting bloc"><option value="">All voting blocs</option>${blocs.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('')}</select>` : '') +
+      `</div></div>` +
+      `<div class="ct-sum"></div><div class="ct-blocsum mut"></div>` +
       `<div class="tw"><table class="ct"><thead><tr><th>${esc(unit[0].toUpperCase() + unit.slice(1))}</th><th class="n">Share of state vote (2022)</th>` +
       `<th class="n">${esc(race.bases[0])}</th><th class="n ct-sc">At a tie: ${esc(D)} share (margin)</th>` +
       (typed ? `<th class="n">Early/mail / Election Day margin (${esc(race.types)} mix)</th>` : '') +
@@ -290,7 +301,8 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
       `<div class="ct-foot"><button class="ct-more"></button><button class="ct-clear">Clear my entries</button>` +
       `<span>Two-party shares and margins (${esc(D)} vs ${esc(R)}). Lean from ${esc(race.bases.join(' and '))}.</span></div>`;
     const tbody = el.querySelector('tbody'), sum = el.querySelector('.ct-sum'), lab = el.querySelector('.ct-m'),
-      sc = el.querySelector('.ct-sc'), more = el.querySelector('.ct-more'), rng = el.querySelector('input[type=range]');
+      sc = el.querySelector('.ct-sc'), more = el.querySelector('.ct-more'), rng = el.querySelector('input[type=range]'),
+      bsum = el.querySelector('.ct-blocsum');
 
     function implied(c) {
       const v = inp[c.f];
@@ -315,7 +327,7 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
       const S = expit(c.L + s);
       const v = inp[c.f] || {};
       const sh = implied(c);
-      let tds = `<td>${esc(c.n)}</td><td class="n">${(100 * c.w).toFixed(1)}%</td>` +
+      let tds = `<td>${esc(c.n)}${c.bl ? `<div class="mut ct-bl">${esc(c.bl)}</div>` : ''}</td><td class="n">${(100 * c.w).toFixed(1)}%</td>` +
         `<td class="n">${c.b > 0 ? race.bl : 'R'} +${Math.abs(c.b).toFixed(1)}</td>` +
         `<td class="n"><b>${(100 * S).toFixed(1)}%</b> <span class="mut">(${esc(fmtM(mg(S), race))})</span></td>`;
       if (typed) {
@@ -333,13 +345,22 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
       const s = shiftFor(race, (1 + st.m / 100) / 2);
       const q = st.q.trim().toLowerCase();
       let list = race.counties;
+      if (st.bloc) list = list.filter(c => c.bl === st.bloc);
       if (q) list = list.filter(c => c.n.toLowerCase().includes(q));
-      else if (!st.all) list = list.filter((c, i) => i < TOP || inp[c.f]);
+      else if (!st.all && !st.bloc) list = list.filter((c, i) => i < TOP || inp[c.f]);
+      if (bsum) {
+        if (st.bloc) {  // the bloc's combined line at this statewide result
+          let w = 0, ws = 0;
+          for (const c of race.counties) if (c.bl === st.bloc) { w += c.w; ws += c.w * expit(c.L + s); }
+          const ml = st.m === 0 ? 'a statewide tie' : fmtM(st.m, race) + ' statewide';
+          bsum.innerHTML = w ? `<b>${esc(st.bloc)}</b>: ${(100 * w).toFixed(1)}% of the expected vote. At ${esc(ml)}, ${esc(D)}'s two-party margin across these ${esc(units)} is <b>${esc(fmtM(mg(ws / w), race))}</b>.` : '';
+        } else bsum.innerHTML = '';
+      }
       if (tbody) tbody.innerHTML = list.map(c => row(c, s)).join('') || `<tr><td colspan="${6 + typed + timed}" class="mut">No ${esc(unit)} matches.</td></tr>`;
       const ml = st.m === 0 ? 'tie' : fmtM(st.m, race);
       if (lab) lab.textContent = ml;
       if (sc) sc.textContent = `At ${ml === 'tie' ? 'a tie' : ml}: ${D} share (margin)`;
-      if (more) { more.style.display = race.counties.length > TOP && !q ? '' : 'none'; more.textContent = st.all ? `Show the ${TOP} largest` : `Show all ${race.counties.length} ${units}`; }
+      if (more) { more.style.display = race.counties.length > TOP && !q && !st.bloc ? '' : 'none'; more.textContent = st.all ? `Show the ${TOP} largest` : `Show all ${race.counties.length} ${units}`; }
       summary();
     }
     function setM(m) { st.m = Math.max(-15, Math.min(15, m)); if (rng) rng.value = String(Math.round(st.m * 2) / 2); draw(); }
@@ -365,6 +386,7 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
     });
     el.addEventListener('change', e => {
       const t = e.target;
+      if (t && t.classList && t.classList.contains('ct-bloc')) { st.bloc = t.value || ''; draw(); return; }
       if (!t || !t.dataset || t.dataset.k !== 'mode') return;
       const f = t.dataset.f;
       (inp[f] = inp[f] || {}).mode = t.value;

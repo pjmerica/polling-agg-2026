@@ -25,6 +25,7 @@ from markdown_it import MarkdownIt
 
 import build_master
 import build_state_guide as g
+from census_blocs import BLOCS
 from state_curves import CLOSE_ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -73,19 +74,22 @@ def content():
 
 def page_data():
     data = json.load(open(os.path.join(ROOT, "data", "processed", "county_benchmarks.json"), encoding="utf-8"))
+    blocs = {s["slug"]: s["unit_blocs"] for s in
+             json.load(open(os.path.join(ROOT, "data", "processed", "census_blocs.json"), encoding="utf-8"))["states"]}
     races = []
     for r in data["races"]:
         bl = "D" if r["bases"][0].startswith("2024 President") else g.PARTY.get(r["d"]["party"], "I")
         counties = []
         for c in r["counties"]:
-            x = dict(f=c["f"], n=c["n"], w=round(c["w"], 6), L=round(c["L"], 4), b=round(c["b"][0], 1))
+            x = dict(f=c["f"], n=c["n"], w=round(c["w"], 6), L=round(c["L"], 4), b=round(c["b"][0], 1),
+                     bl=blocs.get(r["slug"], {}).get(c["f"], ""))
             if "a" in c:
                 x.update(a=round(c["a"], 4), la=round(c["la"], 4), le=round(c["le"], 4))
             if c.get("t_mid") is not None and c.get("t_six") is not None:
                 x.update(tm=c["t_mid"], ts=c["t_six"])
             counties.append(x)
         races.append(dict(id=r["id"], state=r["state"], slug=r["slug"], seat=r["seat"], unit=r["unit"], d=r["d"], r=r["r"],
-                          bases=r["bases"], types=r["types"], bl=bl, model_margin=r["model_margin"],
+                          bases=r["bases"], types=r["types"], bl=bl, model_margin=r["model_margin"], bloc_order=BLOCS,
                           close=close_label(CLOSE_ET[r["slug"]]), counties=counties))
     return dict(built=data["built"], races=races)
 

@@ -109,6 +109,10 @@ table.ct tr.has td { background: #16213a; }
 table.ct input[type=number] { width: 58px; background: var(--bg); border: 1px solid var(--line2); color: var(--text); border-radius: 6px; padding: 3px 5px; font: inherit; font-size: 0.78rem; }
 table.ct select { background: var(--bg); border: 1px solid var(--line2); color: var(--text); border-radius: 6px; padding: 3px; font: inherit; font-size: 0.74rem; }
 .ct-foot { display: flex; gap: 10px; align-items: center; margin-top: 8px; font-size: 0.75rem; color: var(--faint); flex-wrap: wrap; }
+.ctool select.ct-bloc { background: var(--bg); border: 1px solid var(--line2); color: var(--text); border-radius: 8px; padding: 5px 7px; font: inherit; font-size: 0.78rem; }
+.ct-blocsum { font-size: 0.82rem; margin: 2px 0 6px; }
+.ct-blocsum:empty { display: none; }
+.ct-bl { font-size: 0.68rem; margin-top: 1px; }
 .totop { position: fixed; right: 16px; bottom: 16px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 999px; padding: 6px 12px; font-size: 0.78rem; }
 </style>
 </head>
@@ -127,7 +131,7 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
       <p>Every Governor and Senate race where our model's favorite is at 75% or less: how each state counts and
         reports, how far the count has moved in past elections, where the betting opportunities are, and county by
         county what each candidate needs. Model and market numbers on this page refresh with every forecast run.</p>
-      <div class="asof" id="asof">Guide built 2026-10-23 13:49 UTC.</div>
+      <div class="asof" id="asof">Guide built 2026-10-23 14:03 UTC.</div>
     </section>
 
     <section class="card" id="live">
@@ -144,6 +148,8 @@ table.ct select { background: var(--bg); border: 1px solid var(--line2); color: 
           at any <b>statewide result</b>: move the slider, or use the buttons for a tie, a 3-point win either way or the model's margin.</li>
         <li>When a county has <b>finished counting</b>, type its two main candidates' percentages. The table turns them into the
           <b>statewide margin they imply</b>, and the box above it combines every county you've entered, weighted by size.</li>
+        <li>Each row shows the county's <b>voting bloc</b>, a group of counties with similar demographics in the Census Bureau's latest
+          estimates (rules at the start of section 4). Pick a bloc to list all its counties and see its combined line.</li>
         <li><b>Partial counts mislead:</b> early and mail votes usually come first and Election Day votes later. In Georgia, Texas and
           Iowa you can mark an entry as <b>early/mail only</b> to compare it with that county's early-vote benchmark instead.</li>
         <li>Method: uniform swing on the log-odds scale from recent results (each table says which). In past races counties landed a
@@ -877,12 +883,69 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 </ol>
 <hr />
 <h1 id="4-state-by-state">4. State by state</h1>
-<p>In poll-closing order. Each state has four parts:</p>
+<p>In poll-closing order. Each state has five parts:</p>
 <ul>
 <li>rules and how results get reported, checked against primary sources: ✔ re-read, ◐ read by a researcher, ○ secondary;</li>
 <li>generated history tables;</li>
 <li>the swing data for that state;</li>
 <li><strong>county benchmarks</strong>: each county's expected share of the statewide vote, and what each candidate needs there for a statewide tie or a 3-point win either way. Uniform swing on recent results, explained in each table's notes (<code>scripts/county_benchmarks.py</code>).</li>
+<li><strong>voting blocs</strong>: counties grouped by demographics, how each group voted in 2020-2024 and what it needs to give in 2026 (<code>scripts/census_blocs.py</code>).</li>
+</ul>
+<p><strong>How the voting blocs are built.</strong> The demographics are the Census Bureau's latest county estimates, the American Community Survey 2020-2024, which cover every county (Alaska: every House district). Each county goes to the <strong>first</strong> bloc it fits:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Bloc</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Hispanic-majority</td>
+<td>Hispanic 50%+</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Black 35%+, large counties</td>
+<td>Black 35%+ and 150,000+ people</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Black 35%+, smaller counties</td>
+<td>Black 35%+, under 150,000 people</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Native 25%+</td>
+<td>American Indian / Alaska Native 25%+</td>
+</tr>
+<tr>
+<td>5</td>
+<td>College-educated</td>
+<td>40%+ of adults 25+ hold a bachelor's degree</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Big diverse metros</td>
+<td>400,000+ people and under 60% non-Hispanic white</td>
+</tr>
+<tr>
+<td>7</td>
+<td>White, non-college</td>
+<td>70%+ non-Hispanic white, under 30% with a degree</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Everything else</td>
+<td>none of the above</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>These are places, not people: a &quot;Hispanic-majority&quot; county's swing mixes its Hispanic and non-Hispanic voters. The tables show which way places like that moved, not how any group of voters did.</li>
+<li>The 2026 rows sum the county benchmarks by bloc. On election night, compare a bloc's finished counties with its line.</li>
 </ul>
 <h2 id="georgia-governor">Georgia: Governor</h2>
 <p><strong>Race.</strong></p>
@@ -1395,6 +1458,227 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 3 past races here (2022-2024), counties landed a typical <strong>3.0 pts</strong> from their line even when the statewide result was known. A statewide estimate from Fulton alone was off by 0.0 (2022 Governor), 3.2 (2022 Senate), 2.0 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_GA_Governor"></div>
+<h3 id="voting-blocs-georgia">Voting blocs: Georgia</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Black 35%+, large counties</td>
+<td>Fulton, DeKalb, Chatham, Clayton, Henry, Richmond and 2 more</td>
+<td>9%</td>
+<td>49%</td>
+<td>32%</td>
+<td>43%</td>
+<td>30.0% / 29.9% / 28.9%</td>
+</tr>
+<tr>
+<td>Black 35%+, smaller counties</td>
+<td>Douglas, Lowndes, Newton, Rockdale, Dougherty, Troup and 39 more</td>
+<td>7%</td>
+<td>46%</td>
+<td>42%</td>
+<td>22%</td>
+<td>11.2% / 11.2% / 11.0%</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>Cobb, Cherokee, Forsyth, Clarke, Fayette, Oconee</td>
+<td>13%</td>
+<td>19%</td>
+<td>56%</td>
+<td>50%</td>
+<td>16.3% / 16.6% / 16.3%</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>Gwinnett</td>
+<td>24%</td>
+<td>28%</td>
+<td>31%</td>
+<td>39%</td>
+<td>8.3% / 7.6% / 8.0%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Bartow, Jackson, Effingham, Walker, Catoosa, Gordon and 30 more</td>
+<td>8%</td>
+<td>8%</td>
+<td>80%</td>
+<td>22%</td>
+<td>10.8% / 11.1% / 11.6%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Hall, Paulding, Houston, Columbia, Coweta, Carroll and 57 more</td>
+<td>11%</td>
+<td>20%</td>
+<td>63%</td>
+<td>26%</td>
+<td>23.3% / 23.6% / 24.1%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Ossoff vs Perdue; 2022 Governor: Abrams vs Kemp; 2022 Senate: Warnock vs Walker; 2024 President: Harris vs Trump)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2022 Senate</th>
+<th>2024 President</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>D+0.2</td>
+<td>R+1.8</td>
+<td>R+7.6</td>
+<td>D+1.0</td>
+<td>R+2.2</td>
+<td>2.4 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>Black 35%+, large counties</td>
+<td>D+46.6</td>
+<td>D+44.0</td>
+<td>D+41.3</td>
+<td>D+50.0</td>
+<td>D+45.4</td>
+<td>1.2 toward R</td>
+<td>1.3 more toward D</td>
+</tr>
+<tr>
+<td>Black 35%+, smaller counties</td>
+<td>D+4.0</td>
+<td>D+2.7</td>
+<td>R+1.5</td>
+<td>D+4.1</td>
+<td>D+3.0</td>
+<td>1.0 toward R</td>
+<td>1.4 more toward D</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>R+4.4</td>
+<td>R+7.8</td>
+<td>R+14.9</td>
+<td>R+3.2</td>
+<td>R+4.9</td>
+<td>0.5 toward R</td>
+<td>1.9 more toward D</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>D+18.5</td>
+<td>D+16.7</td>
+<td>D+10.4</td>
+<td>D+20.9</td>
+<td>D+16.7</td>
+<td>1.8 toward R</td>
+<td>0.7 more toward D</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+60.0</td>
+<td>R+60.8</td>
+<td>R+67.0</td>
+<td>R+59.9</td>
+<td>R+60.6</td>
+<td>0.7 toward R</td>
+<td>1.8 more toward D</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+36.8</td>
+<td>R+38.5</td>
+<td>R+45.1</td>
+<td>R+37.9</td>
+<td>R+37.6</td>
+<td>0.9 toward R</td>
+<td>1.6 more toward D</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Governor 2026: what Bottoms needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has R+0.7 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Bottoms at a statewide tie</th>
+<th>2022 Senate (Warnock vs Walker)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Black 35%+, large counties</td>
+<td>29.9%</td>
+<td><strong>D+48.1</strong></td>
+<td>D+50.0</td>
+<td>2.0 toward R</td>
+<td>D+45.4</td>
+</tr>
+<tr>
+<td>Black 35%+, smaller counties</td>
+<td>11.2%</td>
+<td><strong>D+3.6</strong></td>
+<td>D+4.1</td>
+<td>0.5 toward R</td>
+<td>D+3.0</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>16.6%</td>
+<td><strong>R+3.7</strong></td>
+<td>R+3.2</td>
+<td>0.5 toward R</td>
+<td>R+4.9</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>7.6%</td>
+<td><strong>D+18.9</strong></td>
+<td>D+20.9</td>
+<td>1.9 toward R</td>
+<td>D+16.7</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>11.1%</td>
+<td><strong>R+60.2</strong></td>
+<td>R+59.9</td>
+<td>0.3 toward R</td>
+<td>R+60.6</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>23.6%</td>
+<td><strong>R+37.7</strong></td>
+<td>R+37.9</td>
+<td>0.2 toward D</td>
+<td>R+37.6</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="ohio-governor-and-senate-special-election">Ohio: Governor and Senate special election</h2>
 <p><strong>Races.</strong></p>
@@ -1797,6 +2081,220 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 4 past races here (2022-2024), counties landed a typical <strong>2.4 pts</strong> from their line even when the statewide result was known. A statewide estimate from Franklin alone was off by 0.3 (2022 Governor), 1.9 (2022 Senate), 1.0 (2024 Senate), 0.2 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_OH_Senate-S"></div>
+<h3 id="voting-blocs-ohio">Voting blocs: Ohio</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>Franklin, Hamilton, Warren, Delaware, Greene, Geauga</td>
+<td>6%</td>
+<td>18%</td>
+<td>65%</td>
+<td>44%</td>
+<td>24.8% / 25.1% / 24.7%</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>Cuyahoga</td>
+<td>7%</td>
+<td>28%</td>
+<td>57%</td>
+<td>37%</td>
+<td>10.6% / 9.9% / 10.0%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Stark, Lorain, Mahoning, Trumbull, Licking, Clark and 62 more</td>
+<td>4%</td>
+<td>4%</td>
+<td>87%</td>
+<td>21%</td>
+<td>37.4% / 37.4% / 37.8%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Summit, Montgomery, Lucas, Butler, Lake, Clermont and 7 more</td>
+<td>5%</td>
+<td>11%</td>
+<td>77%</td>
+<td>33%</td>
+<td>27.3% / 27.5% / 27.5%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2022 Governor: Whaley vs DeWine; 2022 Senate: Ryan vs Vance; 2024 President: Harris vs Trump; 2024 Senate: Brown vs Moreno)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2022 Governor</th>
+<th>2022 Senate</th>
+<th>2024 President</th>
+<th>2024 Senate</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>R+8.2</td>
+<td>R+25.1</td>
+<td>R+6.1</td>
+<td>R+11.3</td>
+<td>R+3.7</td>
+<td>3.2 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+12.8</td>
+<td>R+6.1</td>
+<td>D+12.4</td>
+<td>D+10.4</td>
+<td>D+15.9</td>
+<td>2.4 toward R</td>
+<td>0.7 more toward D</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>D+34.5</td>
+<td>D+14.2</td>
+<td>D+35.6</td>
+<td>D+31.7</td>
+<td>D+38.5</td>
+<td>2.8 toward R</td>
+<td>0.4 more toward D</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+34.7</td>
+<td>R+48.3</td>
+<td>R+30.5</td>
+<td>R+38.1</td>
+<td>R+29.2</td>
+<td>3.3 toward R</td>
+<td>0.2 more toward R</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+7.4</td>
+<td>R+25.1</td>
+<td>R+4.7</td>
+<td>R+9.7</td>
+<td>R+2.2</td>
+<td>2.3 toward R</td>
+<td>0.8 more toward D</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Governor 2026: what Acton needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has D+0.9 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Acton at a statewide tie</th>
+<th>2022 Senate (Ryan vs Vance)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>25.1%</td>
+<td><strong>D+20.0</strong></td>
+<td>D+12.4</td>
+<td>7.6 toward D</td>
+<td>D+10.4</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>9.9%</td>
+<td><strong>D+41.7</strong></td>
+<td>D+35.6</td>
+<td>6.1 toward D</td>
+<td>D+31.7</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>37.4%</td>
+<td><strong>R+26.0</strong></td>
+<td>R+30.5</td>
+<td>4.5 toward D</td>
+<td>R+38.1</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>27.5%</td>
+<td><strong>D+2.0</strong></td>
+<td>R+4.7</td>
+<td>6.7 toward D</td>
+<td>R+9.7</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate (special) 2026: what Brown needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has D+0.9 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Brown at a statewide tie</th>
+<th>2024 Senate (Brown vs Moreno)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>25.1%</td>
+<td><strong>D+20.5</strong></td>
+<td>D+15.9</td>
+<td>4.5 toward D</td>
+<td>D+10.4</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>9.9%</td>
+<td><strong>D+42.0</strong></td>
+<td>D+38.5</td>
+<td>3.5 toward D</td>
+<td>D+31.7</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>37.4%</td>
+<td><strong>R+26.4</strong></td>
+<td>R+29.2</td>
+<td>2.8 toward D</td>
+<td>R+38.1</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>27.5%</td>
+<td><strong>D+2.0</strong></td>
+<td>R+2.2</td>
+<td>4.2 toward D</td>
+<td>R+9.7</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="michigan-senate">Michigan: Senate</h2>
 <p><strong>Race.</strong></p>
@@ -2337,6 +2835,173 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 3 past races here (2022-2024), counties landed a typical <strong>2.2 pts</strong> from their line even when the statewide result was known. A statewide estimate from Wayne alone was off by 3.4 (2022 Governor), 2.7 (2024 Senate), 4.0 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_MI_Senate"></div>
+<h3 id="voting-blocs-michigan">Voting blocs: Michigan</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Black 35%+, large counties</td>
+<td>Wayne</td>
+<td>7%</td>
+<td>37%</td>
+<td>48%</td>
+<td>28%</td>
+<td>15.8% / 14.5% / 15.1%</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>Oakland, Kent, Washtenaw, Ingham, Kalamazoo, Livingston and 4 more</td>
+<td>7%</td>
+<td>10%</td>
+<td>71%</td>
+<td>47%</td>
+<td>33.6% / 34.6% / 33.5%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Macomb, Genesee, Muskegon, St. Clair, Jackson, Monroe and 53 more</td>
+<td>5%</td>
+<td>7%</td>
+<td>82%</td>
+<td>23%</td>
+<td>38.6% / 38.5% / 39.3%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Ottawa, Saginaw, Berrien, Eaton, Midland, Clinton and 7 more</td>
+<td>7%</td>
+<td>6%</td>
+<td>80%</td>
+<td>33%</td>
+<td>12.0% / 12.4% / 12.1%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Peters vs James; 2022 Governor: Whitmer vs Dixon; 2024 President: Harris vs Trump; 2024 Senate: Slotkin vs Rogers)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2024 President</th>
+<th>2024 Senate</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>D+2.8</td>
+<td>D+1.7</td>
+<td>D+10.7</td>
+<td>R+1.4</td>
+<td>D+0.4</td>
+<td>4.3 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>Black 35%+, large counties</td>
+<td>D+38.6</td>
+<td>D+38.2</td>
+<td>D+43.4</td>
+<td>D+30.0</td>
+<td>D+33.0</td>
+<td>8.6 toward R</td>
+<td>4.3 more toward R</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+14.8</td>
+<td>D+10.7</td>
+<td>D+22.2</td>
+<td>D+12.7</td>
+<td>D+13.5</td>
+<td>2.2 toward R</td>
+<td>2.1 more toward D</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+18.4</td>
+<td>R+16.8</td>
+<td>R+7.7</td>
+<td>R+22.3</td>
+<td>R+19.9</td>
+<td>3.9 toward R</td>
+<td>0.3 more toward D</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+9.8</td>
+<td>R+12.0</td>
+<td>R+2.9</td>
+<td>R+11.1</td>
+<td>R+10.8</td>
+<td>1.3 toward R</td>
+<td>2.9 more toward D</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate 2026: what El-Sayed needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has D+3.0 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>El-Sayed at a statewide tie</th>
+<th>2024 Senate (Slotkin vs Rogers)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Black 35%+, large counties</td>
+<td>14.5%</td>
+<td><strong>D+32.0</strong></td>
+<td>D+33.0</td>
+<td>1.1 toward R</td>
+<td>D+30.0</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>34.6%</td>
+<td><strong>D+13.5</strong></td>
+<td>D+13.5</td>
+<td>none</td>
+<td>D+12.7</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>38.5%</td>
+<td><strong>R+20.7</strong></td>
+<td>R+19.9</td>
+<td>0.9 toward R</td>
+<td>R+22.3</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>12.4%</td>
+<td><strong>R+10.6</strong></td>
+<td>R+10.8</td>
+<td>0.2 toward D</td>
+<td>R+11.1</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="texas-senate-and-governor">Texas: Senate and Governor</h2>
 <p><strong>Races.</strong></p>
@@ -3035,6 +3700,255 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 3 past races here (2022-2024), counties landed a typical <strong>3.8 pts</strong> from their line even when the statewide result was known. A statewide estimate from Harris alone was off by 1.1 (2022 Governor), 0.5 (2024 Senate), 0.7 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_TX_Governor"></div>
+<h3 id="voting-blocs-texas">Voting blocs: Texas</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hispanic-majority</td>
+<td>Bexar, Hidalgo, El Paso, Cameron, Nueces, Webb and 58 more</td>
+<td>73%</td>
+<td>4%</td>
+<td>19%</td>
+<td>25%</td>
+<td>17.1% / 16.1% / 16.6%</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>Travis, Collin, Denton, Fort Bend, Williamson, Hays and 5 more</td>
+<td>25%</td>
+<td>10%</td>
+<td>48%</td>
+<td>52%</td>
+<td>22.4% / 23.6% / 23.1%</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>Harris, Dallas, Tarrant, Montgomery</td>
+<td>39%</td>
+<td>18%</td>
+<td>32%</td>
+<td>35%</td>
+<td>32.4% / 31.2% / 31.1%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Grayson, Orange, Henderson, Wise, Van Zandt, Hardin and 49 more</td>
+<td>14%</td>
+<td>6%</td>
+<td>75%</td>
+<td>21%</td>
+<td>5.3% / 5.7% / 5.6%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Brazoria, Bell, Galveston, Lubbock, McLennan, Jefferson and 114 more</td>
+<td>28%</td>
+<td>12%</td>
+<td>54%</td>
+<td>26%</td>
+<td>22.8% / 23.4% / 23.7%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Hegar vs Cornyn; 2022 Governor: O’Rourke vs Abbott; 2024 President: Harris vs Trump; 2024 Senate: Allred vs Cruz)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2024 President</th>
+<th>2024 Senate</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>R+5.7</td>
+<td>R+9.9</td>
+<td>R+11.1</td>
+<td>R+13.9</td>
+<td>R+8.7</td>
+<td>8.2 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>Hispanic-majority</td>
+<td>D+10.0</td>
+<td>D+7.2</td>
+<td>D+7.1</td>
+<td>R+2.9</td>
+<td>D+4.3</td>
+<td>12.9 toward R</td>
+<td>4.7 more toward R</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+7.6</td>
+<td>D+1.5</td>
+<td>D+4.2</td>
+<td>D+0.2</td>
+<td>D+5.1</td>
+<td>7.4 toward R</td>
+<td>0.8 more toward D</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>D+10.8</td>
+<td>D+5.6</td>
+<td>D+6.0</td>
+<td>D+2.7</td>
+<td>D+8.5</td>
+<td>8.2 toward R</td>
+<td>same</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+65.0</td>
+<td>R+65.8</td>
+<td>R+70.3</td>
+<td>R+67.6</td>
+<td>R+64.7</td>
+<td>2.7 toward R</td>
+<td>5.5 more toward D</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+39.9</td>
+<td>R+42.3</td>
+<td>R+47.2</td>
+<td>R+44.0</td>
+<td>R+40.3</td>
+<td>4.1 toward R</td>
+<td>4.1 more toward D</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate 2026: what Talarico needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has D+1.2 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Talarico at a statewide tie</th>
+<th>2024 Senate (Allred vs Cruz)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hispanic-majority</td>
+<td>16.1%</td>
+<td><strong>D+12.2</strong></td>
+<td>D+4.3</td>
+<td>7.9 toward D</td>
+<td>R+2.9</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>23.6%</td>
+<td><strong>D+15.0</strong></td>
+<td>D+5.1</td>
+<td>9.8 toward D</td>
+<td>D+0.2</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>31.2%</td>
+<td><strong>D+17.5</strong></td>
+<td>D+8.5</td>
+<td>9.0 toward D</td>
+<td>D+2.7</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>5.7%</td>
+<td><strong>R+59.1</strong></td>
+<td>R+64.7</td>
+<td>5.6 toward D</td>
+<td>R+67.6</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>23.4%</td>
+<td><strong>R+32.5</strong></td>
+<td>R+40.3</td>
+<td>7.8 toward D</td>
+<td>R+44.0</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Governor 2026: what Hinojosa needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has R+4.9 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Hinojosa at a statewide tie</th>
+<th>2022 Governor (O’Rourke vs Abbott)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hispanic-majority</td>
+<td>16.1%</td>
+<td><strong>D+15.1</strong></td>
+<td>D+7.1</td>
+<td>8.0 toward D</td>
+<td>R+2.9</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>23.6%</td>
+<td><strong>D+15.5</strong></td>
+<td>D+4.2</td>
+<td>11.3 toward D</td>
+<td>D+0.2</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>31.2%</td>
+<td><strong>D+17.7</strong></td>
+<td>D+6.0</td>
+<td>11.7 toward D</td>
+<td>D+2.7</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>5.7%</td>
+<td><strong>R+61.2</strong></td>
+<td>R+70.3</td>
+<td>9.1 toward D</td>
+<td>R+67.6</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>23.4%</td>
+<td><strong>R+34.7</strong></td>
+<td>R+47.2</td>
+<td>12.5 toward D</td>
+<td>R+44.0</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="kansas-senate">Kansas: Senate</h2>
 <p><strong>Race.</strong></p>
@@ -3426,6 +4340,173 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 3 past races here (2022-2024), counties landed a typical <strong>4.4 pts</strong> from their line even when the statewide result was known. A statewide estimate from Johnson alone was off by 4.3 (2022 Governor), 3.8 (2022 Senate), 0.4 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_KS_Senate"></div>
+<h3 id="voting-blocs-kansas">Voting blocs: Kansas</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hispanic-majority</td>
+<td>Finney, Ford, Seward, Grant</td>
+<td>58%</td>
+<td>3%</td>
+<td>34%</td>
+<td>18%</td>
+<td>2.1% / 1.8% / 1.9%</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>Johnson, Douglas, Riley</td>
+<td>9%</td>
+<td>5%</td>
+<td>76%</td>
+<td>56%</td>
+<td>31.6% / 32.5% / 32.1%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Reno, Saline, Cowley, Montgomery, Franklin, Barton and 66 more</td>
+<td>7%</td>
+<td>2%</td>
+<td>85%</td>
+<td>23%</td>
+<td>24.4% / 24.9% / 24.3%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Sedgwick, Shawnee, Wyandotte, Leavenworth, Butler, Crawford and 20 more</td>
+<td>16%</td>
+<td>7%</td>
+<td>67%</td>
+<td>31%</td>
+<td>42.0% / 40.8% / 41.7%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Bollier vs Marshall; 2022 Governor: Kelly vs Schmidt; 2022 Senate: Holland vs Moran; 2024 President: Harris vs Trump)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2022 Senate</th>
+<th>2024 President</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>R+15.0</td>
+<td>R+12.0</td>
+<td>D+2.3</td>
+<td>R+23.7</td>
+<td>R+16.4</td>
+<td>1.4 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>Hispanic-majority</td>
+<td>R+31.2</td>
+<td>R+28.5</td>
+<td>R+19.6</td>
+<td>R+51.4</td>
+<td>R+39.7</td>
+<td>8.6 toward R</td>
+<td>7.1 more toward R</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+12.6</td>
+<td>D+12.7</td>
+<td>D+25.5</td>
+<td>D+5.8</td>
+<td>D+12.4</td>
+<td>0.3 toward R</td>
+<td>1.2 more toward D</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+51.2</td>
+<td>R+45.9</td>
+<td>R+28.1</td>
+<td>R+59.5</td>
+<td>R+52.2</td>
+<td>1.1 toward R</td>
+<td>0.3 more toward D</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+13.8</td>
+<td>R+10.2</td>
+<td>D+2.8</td>
+<td>R+24.3</td>
+<td>R+16.6</td>
+<td>2.8 toward R</td>
+<td>1.4 more toward R</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate 2026: what Hamilton needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has R+0.9 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Hamilton at a statewide tie</th>
+<th>2020 Senate (Bollier vs Marshall)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hispanic-majority</td>
+<td>1.8%</td>
+<td><strong>R+19.8</strong></td>
+<td>R+28.5</td>
+<td>8.6 toward D</td>
+<td>R+39.7</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>32.5%</td>
+<td><strong>D+27.8</strong></td>
+<td>D+12.7</td>
+<td>15.1 toward D</td>
+<td>D+12.4</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>24.9%</td>
+<td><strong>R+36.8</strong></td>
+<td>R+45.9</td>
+<td>9.2 toward D</td>
+<td>R+52.2</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>40.8%</td>
+<td><strong>D+1.2</strong></td>
+<td>R+10.2</td>
+<td>11.4 toward D</td>
+<td>R+16.6</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="maine-senate-ranked-choice">Maine: Senate (ranked-choice)</h2>
 <p><strong>Race and ballot.</strong></p>
@@ -3871,6 +4952,141 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 2 past races here (2022-2024), counties landed a typical <strong>1.6 pts</strong> from their line even when the statewide result was known. A statewide estimate from Cumberland alone was off by 1.6 (2022 Governor), 2.1 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_ME_Senate"></div>
+<h3 id="voting-blocs-maine">Voting blocs: Maine</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>Cumberland, Hancock, Sagadahoc, Lincoln</td>
+<td>3%</td>
+<td>3%</td>
+<td>88%</td>
+<td>50%</td>
+<td>34.0% / 34.9% / 34.2%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Androscoggin, Aroostook, Oxford, Somerset, Washington, Piscataquis</td>
+<td>2%</td>
+<td>2%</td>
+<td>90%</td>
+<td>23%</td>
+<td>22.5% / 22.0% / 22.3%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>York, Penobscot, Kennebec, Knox, Waldo, Franklin</td>
+<td>2%</td>
+<td>1%</td>
+<td>91%</td>
+<td>34%</td>
+<td>43.5% / 43.1% / 43.5%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Gideon vs Collins; 2022 Governor: Mills vs LePage; 2024 President: Harris vs Trump)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2024 President</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>D+8.9</td>
+<td>R+9.7</td>
+<td>D+13.5</td>
+<td>D+7.1</td>
+<td>1.8 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+29.7</td>
+<td>D+10.1</td>
+<td>D+33.9</td>
+<td>D+30.1</td>
+<td>0.4 toward D</td>
+<td>2.3 more toward D</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+13.6</td>
+<td>R+31.2</td>
+<td>R+10.1</td>
+<td>R+17.7</td>
+<td>4.1 toward R</td>
+<td>2.2 more toward R</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>D+4.4</td>
+<td>R+13.9</td>
+<td>D+8.9</td>
+<td>D+1.9</td>
+<td>2.5 toward R</td>
+<td>0.7 more toward R</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate 2026: what Jackson needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has D+1.5 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Jackson at a statewide tie</th>
+<th>2020 Senate (Gideon vs Collins)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>34.9%</td>
+<td><strong>D+21.1</strong></td>
+<td>D+10.1</td>
+<td>11.0 toward D</td>
+<td>D+30.1</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>22.0%</td>
+<td><strong>R+23.6</strong></td>
+<td>R+31.2</td>
+<td>7.5 toward D</td>
+<td>R+17.7</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>43.1%</td>
+<td><strong>R+5.0</strong></td>
+<td>R+13.9</td>
+<td>8.9 toward D</td>
+<td>D+1.9</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="iowa-senate">Iowa: Senate</h2>
 <p><strong>Race.</strong></p>
@@ -4279,6 +5495,146 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 3 past races here (2022-2024), counties landed a typical <strong>3.0 pts</strong> from their line even when the statewide result was known. A statewide estimate from Polk alone was off by 4.9 (2022 Governor), 2.7 (2022 Senate), 0.2 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_IA_Senate"></div>
+<h3 id="voting-blocs-iowa">Voting blocs: Iowa</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>Polk, Johnson, Dallas, Story, Jefferson</td>
+<td>9%</td>
+<td>6%</td>
+<td>75%</td>
+<td>46%</td>
+<td>27.1% / 28.1% / 27.9%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Pottawattamie, Clinton, Cerro Gordo, Muscatine, Des Moines, Jasper and 73 more</td>
+<td>6%</td>
+<td>1%</td>
+<td>89%</td>
+<td>22%</td>
+<td>41.2% / 40.8% / 40.9%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Linn, Scott, Black Hawk, Woodbury, Dubuque, Warren and 9 more</td>
+<td>8%</td>
+<td>5%</td>
+<td>80%</td>
+<td>32%</td>
+<td>31.6% / 31.2% / 31.3%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Greenfield vs Ernst; 2022 Governor: DeJear vs Reynolds; 2022 Senate: Franken vs Grassley; 2024 President: Harris vs Trump)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2022 Senate</th>
+<th>2024 President</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>R+8.4</td>
+<td>R+6.8</td>
+<td>R+19.0</td>
+<td>R+12.2</td>
+<td>R+13.4</td>
+<td>5.1 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+18.6</td>
+<td>D+16.7</td>
+<td>D+11.4</td>
+<td>D+15.8</td>
+<td>D+13.6</td>
+<td>4.9 toward R</td>
+<td>0.1 more toward D</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+29.2</td>
+<td>R+24.8</td>
+<td>R+41.1</td>
+<td>R+33.1</td>
+<td>R+34.4</td>
+<td>5.2 toward R</td>
+<td>0.1 more toward R</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+4.2</td>
+<td>R+3.7</td>
+<td>R+17.4</td>
+<td>R+10.3</td>
+<td>R+10.3</td>
+<td>6.1 toward R</td>
+<td>1.0 more toward R</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate 2026: what Turek needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has R+0.9 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Turek at a statewide tie</th>
+<th>2022 Senate (Franken vs Grassley)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>28.1%</td>
+<td><strong>D+27.6</strong></td>
+<td>D+15.8</td>
+<td>11.9 toward D</td>
+<td>D+13.6</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>40.8%</td>
+<td><strong>R+21.3</strong></td>
+<td>R+33.1</td>
+<td>11.7 toward D</td>
+<td>R+34.4</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>31.2%</td>
+<td><strong>D+3.0</strong></td>
+<td>R+10.3</td>
+<td>13.3 toward D</td>
+<td>R+10.3</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="nebraska-senate">Nebraska: Senate</h2>
 <p><strong>Race.</strong></p>
@@ -4649,6 +6005,173 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 3 past races here (2022-2024), counties landed a typical <strong>5.0 pts</strong> from their line even when the statewide result was known. A statewide estimate from Douglas alone was off by 1.6 (2022 Governor), 7.2 (2024 Senate), 0.8 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_NE_Senate"></div>
+<h3 id="voting-blocs-nebraska">Voting blocs: Nebraska</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Native 25%+</td>
+<td>Thurston</td>
+<td>5%</td>
+<td>0%</td>
+<td>36%</td>
+<td>22%</td>
+<td>0.2% / 0.2% / 0.2%</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>Douglas, Lancaster, Sarpy</td>
+<td>12%</td>
+<td>7%</td>
+<td>71%</td>
+<td>42%</td>
+<td>55.4% / 55.4% / 56.1%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Dodge, Scotts Bluff, Madison, Platte, Lincoln, Adams and 66 more</td>
+<td>10%</td>
+<td>1%</td>
+<td>85%</td>
+<td>24%</td>
+<td>29.5% / 30.0% / 28.9%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Hall, Buffalo, Cass, Dawson, Saunders, Dakota and 11 more</td>
+<td>19%</td>
+<td>2%</td>
+<td>74%</td>
+<td>27%</td>
+<td>14.9% / 14.5% / 14.7%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Janicek vs Sasse; 2022 Governor: Blood vs Pillen; 2024 President: Harris vs Trump; 2024 Senate: Osborn vs Fischer)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2024 President</th>
+<th>2024 Senate</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>R+19.6</td>
+<td>R+44.0</td>
+<td>R+24.4</td>
+<td>R+20.8</td>
+<td>R+6.7</td>
+<td>1.3 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>Native 25%+</td>
+<td>R+2.5</td>
+<td>R+15.8</td>
+<td>R+32.1</td>
+<td>R+7.0</td>
+<td>I+6.9</td>
+<td>4.5 toward R</td>
+<td>3.2 more toward R</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+6.3</td>
+<td>R+26.3</td>
+<td>D+1.2</td>
+<td>D+4.4</td>
+<td>I+13.8</td>
+<td>2.0 toward R</td>
+<td>0.7 more toward R</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+57.0</td>
+<td>R+67.8</td>
+<td>R+60.7</td>
+<td>R+57.9</td>
+<td>R+37.3</td>
+<td>0.9 toward R</td>
+<td>0.4 more toward D</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+41.6</td>
+<td>R+58.0</td>
+<td>R+48.1</td>
+<td>R+44.2</td>
+<td>R+24.8</td>
+<td>2.6 toward R</td>
+<td>1.3 more toward R</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate 2026: what Osborn needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has R+3.6 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Osborn at a statewide tie</th>
+<th>2024 Senate (Osborn vs Fischer)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Native 25%+</td>
+<td>0.2%</td>
+<td><strong>I+14.4</strong></td>
+<td>I+6.9</td>
+<td>7.5 toward D</td>
+<td>R+7.0</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>55.4%</td>
+<td><strong>I+21.4</strong></td>
+<td>I+13.8</td>
+<td>7.6 toward D</td>
+<td>D+4.4</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>30.0%</td>
+<td><strong>R+31.1</strong></td>
+<td>R+37.3</td>
+<td>6.2 toward D</td>
+<td>R+57.9</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>14.5%</td>
+<td><strong>R+17.8</strong></td>
+<td>R+24.8</td>
+<td>7.0 toward D</td>
+<td>R+44.2</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="nevada-governor">Nevada: Governor</h2>
 <p><strong>Race.</strong></p>
@@ -5167,6 +6690,146 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 4 past races here (2022-2024), counties landed a typical <strong>1.2 pts</strong> from their line even when the statewide result was known. A statewide estimate from Clark alone was off by 0.1 (2022 Governor), 0.4 (2022 Senate), 0.9 (2024 Senate), 0.9 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_NV_Governor"></div>
+<h3 id="voting-blocs-nevada">Voting blocs: Nevada</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Big diverse metros</td>
+<td>Clark, Washoe</td>
+<td>31%</td>
+<td>10%</td>
+<td>42%</td>
+<td>29%</td>
+<td>87.1% / 85.8% / 87.2%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Lyon, Churchill, White Pine, Lander, Lincoln, Eureka</td>
+<td>17%</td>
+<td>2%</td>
+<td>72%</td>
+<td>17%</td>
+<td>3.8% / 4.1% / 3.9%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Carson City, Nye, Elko, Douglas, Humboldt, Pershing and 3 more</td>
+<td>21%</td>
+<td>2%</td>
+<td>67%</td>
+<td>21%</td>
+<td>9.0% / 10.1% / 8.9%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2022 Governor: Sisolak vs Lombardo; 2022 Senate: Cortez Masto vs Laxalt; 2024 President: Harris vs Trump; 2024 Senate: Rosen vs Brown)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2022 Governor</th>
+<th>2022 Senate</th>
+<th>2024 President</th>
+<th>2024 Senate</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>D+2.4</td>
+<td>R+1.6</td>
+<td>D+0.8</td>
+<td>R+3.2</td>
+<td>D+1.7</td>
+<td>5.6 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>D+8.5</td>
+<td>D+4.9</td>
+<td>D+7.3</td>
+<td>D+2.3</td>
+<td>D+7.4</td>
+<td>6.2 toward R</td>
+<td>0.6 more toward R</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+49.0</td>
+<td>R+52.1</td>
+<td>R+49.4</td>
+<td>R+50.6</td>
+<td>R+46.3</td>
+<td>1.6 toward R</td>
+<td>4.0 more toward D</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>R+34.9</td>
+<td>R+37.3</td>
+<td>R+34.5</td>
+<td>R+36.6</td>
+<td>R+32.6</td>
+<td>1.6 toward R</td>
+<td>4.0 more toward D</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Governor 2026: what Ford needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has R+3.3 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Ford at a statewide tie</th>
+<th>2022 Governor (Sisolak vs Lombardo)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Big diverse metros</td>
+<td>85.8%</td>
+<td><strong>D+6.4</strong></td>
+<td>D+4.9</td>
+<td>1.5 toward D</td>
+<td>D+2.3</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>4.1%</td>
+<td><strong>R+49.5</strong></td>
+<td>R+52.1</td>
+<td>2.6 toward D</td>
+<td>R+50.6</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>10.1%</td>
+<td><strong>R+34.5</strong></td>
+<td>R+37.3</td>
+<td>2.8 toward D</td>
+<td>R+36.6</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="oregon-governor">Oregon: Governor</h2>
 <p><strong>Race.</strong></p>
@@ -5675,6 +7338,146 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>How reliable:</strong> in 3 past races here (2022-2024), counties landed a typical <strong>2.3 pts</strong> from their line even when the statewide result was known. A statewide estimate from Multnomah alone was off by 4.7 (2022 Governor), 2.5 (2022 Senate), 1.5 (2024 President) (backtest in section 5).</li>
 </ul>
 <div class="ctool" id="ct-2026_OR_Governor"></div>
+<h3 id="voting-blocs-oregon">Voting blocs: Oregon</h3>
+<p>Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Counties (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>Multnomah, Washington, Clackamas, Deschutes, Benton, Hood River</td>
+<td>14%</td>
+<td>3%</td>
+<td>68%</td>
+<td>47%</td>
+<td>51.9% / 51.3% / 51.1%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>Linn, Douglas, Yamhill, Josephine, Klamath, Coos and 15 more</td>
+<td>10%</td>
+<td>1%</td>
+<td>80%</td>
+<td>23%</td>
+<td>21.5% / 22.2% / 22.2%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>Lane, Marion, Jackson, Polk, Umatilla, Malheur and 3 more</td>
+<td>19%</td>
+<td>1%</td>
+<td>70%</td>
+<td>29%</td>
+<td>26.5% / 26.5% / 26.7%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Merkley vs Perkins; 2022 Governor: Kotek vs Drazan; 2022 Senate: Wyden vs Perkins; 2024 President: Harris vs Trump)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2020 President</th>
+<th>2020 Senate</th>
+<th>2022 Governor</th>
+<th>2022 Senate</th>
+<th>2024 President</th>
+<th>President, 2020 to 2024</th>
+<th>Relative to the state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>D+16.6</td>
+<td>D+18.3</td>
+<td>D+3.8</td>
+<td>D+15.4</td>
+<td>D+14.9</td>
+<td>1.7 toward R</td>
+<td></td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+38.5</td>
+<td>D+38.6</td>
+<td>D+26.8</td>
+<td>D+36.6</td>
+<td>D+37.8</td>
+<td>0.7 toward R</td>
+<td>1.1 more toward D</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+21.4</td>
+<td>R+16.6</td>
+<td>R+34.9</td>
+<td>R+19.0</td>
+<td>R+22.5</td>
+<td>1.0 toward R</td>
+<td>0.7 more toward D</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>D+4.7</td>
+<td>D+6.9</td>
+<td>R+9.5</td>
+<td>D+3.1</td>
+<td>D+2.0</td>
+<td>2.6 toward R</td>
+<td>0.9 more toward R</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Governor 2026: what Kotek needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has D+4.5 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Kotek at a statewide tie</th>
+<th>2022 Governor (Kotek vs Drazan)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>College-educated</td>
+<td>51.3%</td>
+<td><strong>D+23.3</strong></td>
+<td>D+26.8</td>
+<td>3.5 toward R</td>
+<td>D+37.8</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>22.2%</td>
+<td><strong>R+37.6</strong></td>
+<td>R+34.9</td>
+<td>2.7 toward R</td>
+<td>R+22.5</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>26.5%</td>
+<td><strong>R+13.7</strong></td>
+<td>R+9.5</td>
+<td>4.3 toward R</td>
+<td>D+2.0</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="alaska-senate-ranked-choice">Alaska: Senate (ranked-choice)</h2>
 <p><strong>Race and ballot ✔</strong> (<a href="https://news.ballotpedia.org/2026/09/14/alaska-voters-to-decide-on-the-second-u-s-senate-general-election-using-ranked-choice-voting/" target="_blank" rel="noopener">Ballotpedia, Sept 14</a>; <a href="https://en.wikipedia.org/wiki/2026_United_States_Senate_election_in_Alaska" target="_blank" rel="noopener">Wikipedia</a>)</p>
@@ -6062,6 +7865,149 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 <li><strong>Alaska reports by House district</strong>, not county. The lean is first-choice votes; the ranked-choice count can change the winner. Absentee ballots are counted Nov 10-18, so on election night every district shows only part of its vote. No backtest: the districts were redrawn for 2022.</li>
 </ul>
 <div class="ctool" id="ct-2026_AK_Senate"></div>
+<h3 id="voting-blocs-alaska">Voting blocs: Alaska</h3>
+<p>House districts grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>House districts (largest first)</th>
+<th>Hispanic</th>
+<th>Black</th>
+<th>White</th>
+<th>Bachelor's+</th>
+<th>Share of the vote: 2020 / 2022 / 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Native 25%+</td>
+<td>District 36 (Goldstream, Delta Junction, Tok), District 40 (Utqiagvik, Kotzebue), District 39 (Nome, Unalakleet), District 37 (Aleutians, Dillingham), District 38 (Bethel)</td>
+<td>4%</td>
+<td>1%</td>
+<td>24%</td>
+<td>17%</td>
+<td>- / 8.1% / 7.5%</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>District 15 (Anchorage: Southwest), District 35 (Fairbanks: Chena, University), District 11 (Anchorage: Hillside), District 16 (Anchorage: West), District 4 (Juneau, Douglas), District 23 (Eagle River) and 3 more</td>
+<td>8%</td>
+<td>3%</td>
+<td>65%</td>
+<td>46%</td>
+<td>- / 27.3% / 26.1%</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>District 28 (Mat-Su: Seldon, Lakes), District 26 (Knik-Goose Bay), District 29 (Fishhook, Valdez), District 27 (Wasilla, Meadow Lakes), District 7 (Kenai, Soldotna), District 8 (Sterling, Nikiski) and 2 more</td>
+<td>5%</td>
+<td>1%</td>
+<td>76%</td>
+<td>24%</td>
+<td>- / 22.4% / 23.0%</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>District 25 (Palmer, Butte), District 6 (Homer, Kasilof, Anchor Point), District 34 (Fairbanks: Steese, Farmers Loop), District 19 (Anchorage: Airport Heights, Mountain View), District 22 (Anchorage: Northeast), District 21 (Anchorage: East) and 12 more</td>
+<td>9%</td>
+<td>4%</td>
+<td>55%</td>
+<td>31%</td>
+<td>- / 42.2% / 43.4%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How each bloc voted</strong> (two-party margin; 2022 House: Peltola vs Palin+Begich; 2024 President: Harris vs Trump; 2024 House: Peltola vs Begich)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>2022 House</th>
+<th>2024 President</th>
+<th>2024 House</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Statewide</strong></td>
+<td>R+0.4</td>
+<td>R+13.8</td>
+<td>R+2.2</td>
+</tr>
+<tr>
+<td>Native 25%+</td>
+<td>D+30.0</td>
+<td>R+7.3</td>
+<td>D+16.1</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>D+12.5</td>
+<td>D+3.0</td>
+<td>D+11.8</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>R+41.8</td>
+<td>R+50.7</td>
+<td>R+41.0</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>D+7.4</td>
+<td>R+5.3</td>
+<td>D+6.5</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Senate 2026: what Peltola needs in each bloc for a statewide tie</strong> (the county benchmarks summed by bloc; the model has R+0.2 statewide)</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Share of the expected vote</th>
+<th>Peltola at a statewide tie</th>
+<th>2024 House (Peltola vs Begich)</th>
+<th>Change from it</th>
+<th>2024 President</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Native 25%+</td>
+<td>8.1%</td>
+<td><strong>D+13.1</strong></td>
+<td>D+16.1</td>
+<td>2.9 toward R</td>
+<td>R+7.3</td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>27.3%</td>
+<td><strong>D+15.3</strong></td>
+<td>D+11.8</td>
+<td>3.5 toward D</td>
+<td>D+3.0</td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>22.5%</td>
+<td><strong>R+39.4</strong></td>
+<td>R+41.0</td>
+<td>1.6 toward D</td>
+<td>R+50.7</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>42.1%</td>
+<td><strong>D+8.6</strong></td>
+<td>D+6.5</td>
+<td>2.1 toward D</td>
+<td>R+5.3</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h1 id="5-cross-state-tables">5. Cross-state tables</h1>
 <h3 id="pace-and-typical-move-every-state-and-year">Pace and typical move, every state and year</h3>
@@ -6811,6 +8757,152 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
 </li>
 <li><strong>Several finished counties together are much better than any one.</strong> The page's calculator averages them by size.</li>
 </ul>
+<h3 id="how-each-voting-bloc-moved-2020-to-2024">How each voting bloc moved, 2020 to 2024</h3>
+<p>The 2020-to-2024 presidential shift in each bloc <strong>minus the state's own shift</strong> (points of two-party margin). Positive means the bloc moved toward the Democrat relative to the whole state, negative toward the Republican. Alaska is left out: its House districts were redrawn for 2022.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Georgia</th>
+<th>Ohio</th>
+<th>Michigan</th>
+<th>Texas</th>
+<th>Kansas</th>
+<th>Maine</th>
+<th>Iowa</th>
+<th>Nebraska</th>
+<th>Nevada</th>
+<th>Oregon</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Whole state</strong> (actual shift)</td>
+<td>2.4 R</td>
+<td>3.2 R</td>
+<td>4.3 R</td>
+<td>8.2 R</td>
+<td>1.4 R</td>
+<td>1.8 R</td>
+<td>5.1 R</td>
+<td>1.3 R</td>
+<td>5.6 R</td>
+<td>1.7 R</td>
+</tr>
+<tr>
+<td>Hispanic-majority</td>
+<td></td>
+<td></td>
+<td></td>
+<td>-4.7</td>
+<td>-7.1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Black 35%+, large counties</td>
+<td>+1.3</td>
+<td></td>
+<td>-4.3</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Black 35%+, smaller counties</td>
+<td>+1.4</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Native 25%+</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-3.2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>College-educated</td>
+<td>+1.9</td>
+<td>+0.7</td>
+<td>+2.1</td>
+<td>+0.8</td>
+<td>+1.2</td>
+<td>+2.3</td>
+<td>+0.1</td>
+<td>-0.7</td>
+<td></td>
+<td>+1.1</td>
+</tr>
+<tr>
+<td>Big diverse metros</td>
+<td>+0.7</td>
+<td>+0.4</td>
+<td></td>
+<td>0.0</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-0.6</td>
+<td></td>
+</tr>
+<tr>
+<td>White, non-college</td>
+<td>+1.8</td>
+<td>-0.2</td>
+<td>+0.3</td>
+<td>+5.5</td>
+<td>+0.3</td>
+<td>-2.2</td>
+<td>-0.1</td>
+<td>+0.4</td>
+<td>+4.0</td>
+<td>+0.7</td>
+</tr>
+<tr>
+<td>Everything else</td>
+<td>+1.6</td>
+<td>+0.8</td>
+<td>+2.9</td>
+<td>+4.1</td>
+<td>-1.4</td>
+<td>-0.7</td>
+<td>-1.0</td>
+<td>-1.3</td>
+<td>+4.0</td>
+<td>-0.9</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>What it says:</strong></p>
+<ul>
+<li><strong>The 2024 move toward Trump was concentrated in Hispanic and minority urban places.</strong> Hispanic-majority counties moved 4.7 points more than Texas as a whole and 7.1 more than Kansas. Wayne County (Detroit) moved 4.3 more than Michigan.</li>
+<li><strong>College-educated counties moved least:</strong> 0.1-2.3 points less than their states everywhere but Nebraska.</li>
+<li><strong>Georgia is the exception:</strong> its Black-majority counties, large and small, moved less than the state.</li>
+<li><strong>Mostly white, non-college counties moved less than Texas and Nevada</strong> (by 5.5 and 4.0) because they were already near their ceiling (R+65 and R+49 in 2020).</li>
+<li><strong>For 2026 (inference):</strong> the swing-back questions are the Hispanic counties in Texas and Kansas and Wayne County in Michigan. Each state's &quot;what it needs&quot; table puts a number on them, such as Talarico's line in Texas's Hispanic-majority counties against Allred's 2024 result there.</li>
+</ul>
 <hr />
 <h1 id="6-corrections-open-questions-sources">6. Corrections, open questions, sources</h1>
 <h3 id="corrections-to-earlier-statements-in-this-project">Corrections to earlier statements in this project</h3>
@@ -7148,17 +9240,22 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
     const unit = race.unit, units = unit === 'county' ? 'counties' : unit + 's';
     const inp = saved[race.id] = saved[race.id] || {};
     const mm = modelMargin(race);
-    const st = { m: 0, all: false, q: '' };
+    const st = { m: 0, all: false, q: '', bloc: '' };
     const byF = {};
     for (const c of race.counties) byF[c.f] = c;
+    const blocs = [];
+    for (const c of race.counties) if (c.bl && !blocs.includes(c.bl)) blocs.push(c.bl);
+    blocs.sort((a, b) => (race.bloc_order || []).indexOf(a) - (race.bloc_order || []).indexOf(b));
     const TOP = race.counties.length <= 25 ? race.counties.length : 20;
     el.innerHTML =
       `<div class="ct-top"><div class="ct-title">${esc(race.state)} ${esc(race.seat)}: <span class="${pcls(race.d.party)}">${esc(D)}</span> vs <span class="pr">${esc(R)}</span>, ${units}</div>` +
       `<div class="ct-ctrl"><span class="mut">Statewide result</span><input type="range" min="-15" max="15" step="0.5" value="0" aria-label="Statewide margin">` +
       `<span class="ct-m">tie</span><button data-m="-3">${esc(R)} +3</button><button data-m="0">Tie</button><button data-m="3">${esc(D)} +3</button>` +
       (mm != null ? `<button data-m="model">Model: ${esc(fmtM(mm, race))}</button>` : '') +
-      `<input type="search" placeholder="Find a ${esc(unit)}" aria-label="Find a ${esc(unit)}"></div></div>` +
-      `<div class="ct-sum"></div>` +
+      `<input type="search" placeholder="Find a ${esc(unit)}" aria-label="Find a ${esc(unit)}">` +
+      (blocs.length ? `<select class="ct-bloc" aria-label="Voting bloc"><option value="">All voting blocs</option>${blocs.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('')}</select>` : '') +
+      `</div></div>` +
+      `<div class="ct-sum"></div><div class="ct-blocsum mut"></div>` +
       `<div class="tw"><table class="ct"><thead><tr><th>${esc(unit[0].toUpperCase() + unit.slice(1))}</th><th class="n">Share of state vote (2022)</th>` +
       `<th class="n">${esc(race.bases[0])}</th><th class="n ct-sc">At a tie: ${esc(D)} share (margin)</th>` +
       (typed ? `<th class="n">Early/mail / Election Day margin (${esc(race.types)} mix)</th>` : '') +
@@ -7167,7 +9264,8 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
       `<div class="ct-foot"><button class="ct-more"></button><button class="ct-clear">Clear my entries</button>` +
       `<span>Two-party shares and margins (${esc(D)} vs ${esc(R)}). Lean from ${esc(race.bases.join(' and '))}.</span></div>`;
     const tbody = el.querySelector('tbody'), sum = el.querySelector('.ct-sum'), lab = el.querySelector('.ct-m'),
-      sc = el.querySelector('.ct-sc'), more = el.querySelector('.ct-more'), rng = el.querySelector('input[type=range]');
+      sc = el.querySelector('.ct-sc'), more = el.querySelector('.ct-more'), rng = el.querySelector('input[type=range]'),
+      bsum = el.querySelector('.ct-blocsum');
 
     function implied(c) {
       const v = inp[c.f];
@@ -7192,7 +9290,7 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
       const S = expit(c.L + s);
       const v = inp[c.f] || {};
       const sh = implied(c);
-      let tds = `<td>${esc(c.n)}</td><td class="n">${(100 * c.w).toFixed(1)}%</td>` +
+      let tds = `<td>${esc(c.n)}${c.bl ? `<div class="mut ct-bl">${esc(c.bl)}</div>` : ''}</td><td class="n">${(100 * c.w).toFixed(1)}%</td>` +
         `<td class="n">${c.b > 0 ? race.bl : 'R'} +${Math.abs(c.b).toFixed(1)}</td>` +
         `<td class="n"><b>${(100 * S).toFixed(1)}%</b> <span class="mut">(${esc(fmtM(mg(S), race))})</span></td>`;
       if (typed) {
@@ -7210,13 +9308,22 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
       const s = shiftFor(race, (1 + st.m / 100) / 2);
       const q = st.q.trim().toLowerCase();
       let list = race.counties;
+      if (st.bloc) list = list.filter(c => c.bl === st.bloc);
       if (q) list = list.filter(c => c.n.toLowerCase().includes(q));
-      else if (!st.all) list = list.filter((c, i) => i < TOP || inp[c.f]);
+      else if (!st.all && !st.bloc) list = list.filter((c, i) => i < TOP || inp[c.f]);
+      if (bsum) {
+        if (st.bloc) {  // the bloc's combined line at this statewide result
+          let w = 0, ws = 0;
+          for (const c of race.counties) if (c.bl === st.bloc) { w += c.w; ws += c.w * expit(c.L + s); }
+          const ml = st.m === 0 ? 'a statewide tie' : fmtM(st.m, race) + ' statewide';
+          bsum.innerHTML = w ? `<b>${esc(st.bloc)}</b>: ${(100 * w).toFixed(1)}% of the expected vote. At ${esc(ml)}, ${esc(D)}'s two-party margin across these ${esc(units)} is <b>${esc(fmtM(mg(ws / w), race))}</b>.` : '';
+        } else bsum.innerHTML = '';
+      }
       if (tbody) tbody.innerHTML = list.map(c => row(c, s)).join('') || `<tr><td colspan="${6 + typed + timed}" class="mut">No ${esc(unit)} matches.</td></tr>`;
       const ml = st.m === 0 ? 'tie' : fmtM(st.m, race);
       if (lab) lab.textContent = ml;
       if (sc) sc.textContent = `At ${ml === 'tie' ? 'a tie' : ml}: ${D} share (margin)`;
-      if (more) { more.style.display = race.counties.length > TOP && !q ? '' : 'none'; more.textContent = st.all ? `Show the ${TOP} largest` : `Show all ${race.counties.length} ${units}`; }
+      if (more) { more.style.display = race.counties.length > TOP && !q && !st.bloc ? '' : 'none'; more.textContent = st.all ? `Show the ${TOP} largest` : `Show all ${race.counties.length} ${units}`; }
       summary();
     }
     function setM(m) { st.m = Math.max(-15, Math.min(15, m)); if (rng) rng.value = String(Math.round(st.m * 2) / 2); draw(); }
@@ -7242,6 +9349,7 @@ Nov 3: the Supreme Court left the lower court's freeze in place, per Votebeat, S
     });
     el.addEventListener('change', e => {
       const t = e.target;
+      if (t && t.classList && t.classList.contains('ct-bloc')) { st.bloc = t.value || ''; draw(); return; }
       if (!t || !t.dataset || t.dataset.k !== 'mode') return;
       const f = t.dataset.f;
       (inp[f] = inp[f] || {}).mode = t.value;

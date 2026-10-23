@@ -1,0 +1,991 @@
+state,unit,name,bloc,population,hispanic,black,white_non_hispanic,native,asian,bachelors_plus,median_household_income
+Georgia,13001,Appling,Everything else,18493,10.8,18.1,67.5,0.1,0.4,11.2,46651.0
+Georgia,13003,Atkinson,Everything else,8337,27.5,13.6,53.6,0.0,0.0,8.9,42347.0
+Georgia,13005,Bacon,"White, non-college",11109,8.5,13.4,72.2,0.0,0.9,10.4,44694.0
+Georgia,13007,Baker,"Black 35%+, smaller counties",2790,4.2,36.8,50.9,0.0,6.0,16.7,46012.0
+Georgia,13009,Baldwin,"Black 35%+, smaller counties",43642,2.9,41.3,51.4,0.1,1.7,24.4,54403.0
+Georgia,13011,Banks,"White, non-college",19264,7.3,2.7,85.6,0.1,1.9,18.6,77063.0
+Georgia,13013,Barrow,Everything else,89886,15.3,13.7,62.8,0.1,4.0,21.2,80653.0
+Georgia,13015,Bartow,"White, non-college",113113,10.6,10.4,73.3,0.0,1.1,24.3,82243.0
+Georgia,13017,Ben Hill,"Black 35%+, smaller counties",17089,6.8,37.9,53.3,0.2,0.4,13.0,41758.0
+Georgia,13019,Berrien,"White, non-college",18352,6.1,11.2,79.1,0.2,0.1,15.7,52876.0
+Georgia,13021,Bibb,"Black 35%+, large counties",156578,4.7,54.7,34.3,0.0,2.3,26.3,51234.0
+Georgia,13023,Bleckley,Everything else,12430,3.8,26.0,67.4,0.1,0.9,19.8,62008.0
+Georgia,13025,Brantley,"White, non-college",18315,3.1,3.2,90.8,0.0,0.5,14.5,58239.0
+Georgia,13027,Brooks,Everything else,16293,6.8,32.8,53.4,0.0,1.4,15.8,46807.0
+Georgia,13029,Bryan,Everything else,48263,8.2,13.2,69.7,0.0,2.6,36.1,103408.0
+Georgia,13031,Bulloch,Everything else,82683,5.2,28.1,61.5,0.1,1.4,32.5,58810.0
+Georgia,13033,Burke,"Black 35%+, smaller counties",24470,3.6,45.0,48.0,0.1,0.5,15.5,53014.0
+Georgia,13035,Butts,Everything else,26496,3.9,24.3,64.2,0.5,0.3,14.4,69241.0
+Georgia,13037,Calhoun,"Black 35%+, smaller counties",5498,5.5,58.4,32.7,0.2,0.4,13.0,46940.0
+Georgia,13039,Camden,Everything else,56970,7.6,16.2,68.0,0.1,1.7,24.6,74378.0
+Georgia,13043,Candler,Everything else,11043,12.8,22.4,58.5,0.6,0.6,16.0,49581.0
+Georgia,13045,Carroll,Everything else,124569,8.6,18.2,66.7,0.3,0.9,23.8,73714.0
+Georgia,13047,Catoosa,"White, non-college",68634,4.0,1.3,87.8,0.0,1.5,24.2,74639.0
+Georgia,13049,Charlton,Everything else,12818,15.4,24.8,54.4,0.4,1.1,12.3,61276.0
+Georgia,13051,Chatham,"Black 35%+, large counties",300879,8.3,38.4,45.3,0.1,3.0,37.7,71097.0
+Georgia,13053,Chattahoochee,Everything else,8887,17.9,19.3,54.1,0.4,3.1,29.6,61042.0
+Georgia,13055,Chattooga,"White, non-college",25036,5.7,8.9,81.0,0.1,0.4,12.0,50285.0
+Georgia,13057,Cherokee,College-educated,281032,12.4,7.0,73.9,0.0,2.4,41.1,108115.0
+Georgia,13059,Clarke,College-educated,129609,11.8,25.6,54.1,0.2,4.1,47.4,53625.0
+Georgia,13061,Clay,"Black 35%+, smaller counties",2850,0.0,60.5,37.3,0.0,0.0,23.4,49147.0
+Georgia,13063,Clayton,"Black 35%+, large counties",298924,14.5,68.5,7.8,0.1,4.9,22.5,59806.0
+Georgia,13065,Clinch,Everything else,6759,6.6,25.7,63.3,1.1,0.3,9.1,45847.0
+Georgia,13067,Cobb,College-educated,775208,15.1,26.4,47.1,0.1,5.4,50.8,102738.0
+Georgia,13069,Coffee,Everything else,43347,13.5,28.0,55.6,0.1,0.7,13.9,50683.0
+Georgia,13071,Colquitt,Everything else,46224,20.8,22.8,53.5,0.2,0.9,15.5,49341.0
+Georgia,13073,Columbia,Everything else,162434,8.0,18.7,63.2,0.1,4.7,38.5,95592.0
+Georgia,13075,Cook,Everything else,17532,7.6,27.6,60.5,0.0,0.4,17.9,53651.0
+Georgia,13077,Coweta,Everything else,152852,8.2,18.2,67.3,0.0,2.1,36.2,95548.0
+Georgia,13079,Crawford,"White, non-college",12225,3.9,21.0,71.9,0.6,0.1,14.5,67116.0
+Georgia,13081,Crisp,"Black 35%+, smaller counties",19790,3.6,44.8,48.2,0.1,0.5,15.3,45105.0
+Georgia,13083,Dade,"White, non-college",16165,2.9,1.1,91.5,0.0,1.2,18.4,64568.0
+Georgia,13085,Dawson,Everything else,30242,7.3,1.9,85.7,0.0,1.3,36.4,92991.0
+Georgia,13087,Decatur,"Black 35%+, smaller counties",29195,7.1,41.9,48.5,0.1,0.7,15.1,53317.0
+Georgia,13089,DeKalb,"Black 35%+, large counties",765351,10.6,50.4,27.9,0.1,6.1,47.4,80644.0
+Georgia,13091,Dodge,Everything else,19805,3.6,30.9,63.8,0.2,0.0,17.2,51587.0
+Georgia,13093,Dooly,"Black 35%+, smaller counties",10984,8.3,46.9,40.8,0.1,0.0,14.8,60987.0
+Georgia,13095,Dougherty,"Black 35%+, smaller counties",83091,3.3,70.2,22.8,0.1,0.7,22.8,49044.0
+Georgia,13097,Douglas,"Black 35%+, smaller counties",147888,12.2,49.2,31.1,0.1,1.8,30.8,82984.0
+Georgia,13099,Early,"Black 35%+, smaller counties",10603,0.6,53.2,41.1,0.0,0.4,14.7,54083.0
+Georgia,13101,Echols,Everything else,3709,21.1,6.3,58.1,0.1,7.9,15.7,59489.0
+Georgia,13103,Effingham,"White, non-college",69143,6.6,14.4,72.9,0.1,1.0,27.2,88438.0
+Georgia,13105,Elbert,Everything else,19849,5.9,22.3,62.2,0.5,1.3,16.3,58450.0
+Georgia,13107,Emanuel,Everything else,23026,4.8,31.3,57.7,0.0,0.9,13.5,52772.0
+Georgia,13109,Evans,Everything else,10757,12.3,28.0,55.0,0.1,1.0,14.5,53259.0
+Georgia,13111,Fannin,"White, non-college",25742,3.3,0.4,91.8,0.0,0.8,24.2,57073.0
+Georgia,13113,Fayette,College-educated,122244,8.6,25.3,55.5,0.1,4.9,49.9,111978.0
+Georgia,13115,Floyd,Everything else,99693,12.4,13.6,68.8,0.0,1.5,25.9,65565.0
+Georgia,13117,Forsyth,College-educated,267287,10.1,4.2,61.8,0.1,19.6,57.1,143784.0
+Georgia,13119,Franklin,"White, non-college",24234,5.4,8.8,80.9,0.1,1.8,17.8,53046.0
+Georgia,13121,Fulton,"Black 35%+, large counties",1076561,8.2,42.1,36.8,0.1,7.8,58.5,95292.0
+Georgia,13123,Gilmer,"White, non-college",32426,12.3,0.3,83.6,0.1,0.5,24.9,74499.0
+Georgia,13125,Glascock,"White, non-college",2932,3.2,7.2,86.5,0.0,0.0,17.0,54934.0
+Georgia,13127,Glynn,Everything else,85447,7.8,24.1,61.8,0.1,1.3,32.4,69799.0
+Georgia,13129,Gordon,"White, non-college",59100,16.3,3.4,75.8,0.1,0.9,18.8,63650.0
+Georgia,13131,Grady,Everything else,26108,13.3,28.8,56.0,0.2,0.1,16.4,58980.0
+Georgia,13133,Greene,Everything else,20109,7.2,29.5,59.2,0.0,1.2,37.8,86272.0
+Georgia,13135,Gwinnett,Big diverse metros,979864,23.7,27.8,30.6,0.1,13.2,39.0,87890.0
+Georgia,13137,Habersham,"White, non-college",47793,16.1,3.2,75.4,0.1,2.3,24.6,67309.0
+Georgia,13139,Hall,Everything else,212705,29.1,6.7,57.9,0.0,2.2,27.3,80901.0
+Georgia,13141,Hancock,"Black 35%+, smaller counties",8650,0.7,69.7,27.3,0.0,0.6,10.3,40082.0
+Georgia,13143,Haralson,"White, non-college",31285,2.1,5.0,89.0,0.0,0.6,17.0,72127.0
+Georgia,13145,Harris,Everything else,36086,4.9,15.5,74.2,0.1,0.6,38.0,97302.0
+Georgia,13147,Hart,"White, non-college",26939,4.3,17.0,73.9,0.1,1.4,20.8,59385.0
+Georgia,13149,Heard,"White, non-college",11773,2.8,7.8,84.4,0.0,0.5,12.8,65868.0
+Georgia,13151,Henry,"Black 35%+, large counties",249960,8.3,51.2,32.4,0.1,3.3,29.5,83146.0
+Georgia,13153,Houston,Everything else,169649,7.6,32.2,51.4,0.1,3.0,32.5,80698.0
+Georgia,13155,Irwin,Everything else,9285,7.2,24.1,66.3,0.0,0.1,15.2,51384.0
+Georgia,13157,Jackson,"White, non-college",84757,10.9,7.6,75.8,0.0,2.4,27.8,89544.0
+Georgia,13159,Jasper,"White, non-college",15929,5.0,16.3,74.1,0.0,0.2,19.5,60134.0
+Georgia,13161,Jeff Davis,Everything else,14924,14.0,12.0,67.4,0.0,0.5,13.2,40283.0
+Georgia,13163,Jefferson,"Black 35%+, smaller counties",15341,3.6,52.7,41.1,0.0,0.0,13.5,53014.0
+Georgia,13165,Jenkins,"Black 35%+, smaller counties",8711,9.2,37.1,52.7,0.1,0.0,10.3,44389.0
+Georgia,13167,Johnson,Everything else,9190,1.8,32.8,61.5,0.3,0.0,8.4,51028.0
+Georgia,13169,Jones,Everything else,28673,2.2,24.3,69.3,0.0,0.2,19.9,75500.0
+Georgia,13171,Lamar,Everything else,19571,3.4,27.1,66.4,0.1,0.7,19.2,67062.0
+Georgia,13173,Lanier,Everything else,10221,7.4,24.2,64.7,0.0,1.2,19.3,47186.0
+Georgia,13175,Laurens,"Black 35%+, smaller counties",49798,3.3,36.5,56.3,0.1,1.0,19.1,55010.0
+Georgia,13177,Lee,Everything else,33626,3.4,23.7,66.3,0.0,2.5,34.1,89168.0
+Georgia,13179,Liberty,"Black 35%+, smaller counties",67397,12.7,40.8,36.5,0.2,1.7,20.5,60456.0
+Georgia,13181,Lincoln,Everything else,7854,1.5,27.2,68.2,0.0,0.1,15.5,56907.0
+Georgia,13183,Long,Everything else,18374,13.1,22.9,53.0,0.0,0.7,13.3,68808.0
+Georgia,13185,Lowndes,"Black 35%+, smaller counties",119965,7.1,37.0,50.6,0.1,1.7,27.9,58541.0
+Georgia,13187,Lumpkin,Everything else,34505,5.8,2.0,88.7,0.2,0.8,31.6,77448.0
+Georgia,13189,McDuffie,"Black 35%+, smaller counties",21718,3.7,40.1,53.1,0.0,0.3,17.8,56733.0
+Georgia,13191,McIntosh,Everything else,11312,2.7,28.0,63.2,0.2,0.4,20.0,50273.0
+Georgia,13193,Macon,"Black 35%+, smaller counties",11864,4.7,58.4,32.5,0.2,1.6,11.0,41031.0
+Georgia,13195,Madison,"White, non-college",31528,7.4,9.4,77.8,0.1,2.0,21.1,61963.0
+Georgia,13197,Marion,Everything else,7509,8.0,27.2,57.4,0.2,2.3,17.7,51667.0
+Georgia,13199,Meriwether,"Black 35%+, smaller counties",20929,0.8,39.1,56.8,0.1,0.7,14.5,57340.0
+Georgia,13201,Miller,Everything else,5850,3.3,28.2,64.9,0.3,0.9,21.3,51425.0
+Georgia,13205,Mitchell,"Black 35%+, smaller counties",21058,5.2,45.0,45.8,0.2,0.0,14.3,57613.0
+Georgia,13207,Monroe,"White, non-college",29664,2.9,22.1,71.9,0.2,1.2,27.0,83183.0
+Georgia,13209,Montgomery,Everything else,8640,7.5,23.4,64.8,0.1,0.6,19.9,51941.0
+Georgia,13211,Morgan,"White, non-college",21078,3.8,20.5,73.4,0.0,0.7,29.7,78111.0
+Georgia,13213,Murray,"White, non-college",40562,16.1,0.6,79.6,0.0,0.4,15.0,69253.0
+Georgia,13215,Muscogee,"Black 35%+, large counties",203711,8.5,46.1,36.7,0.0,2.6,30.5,58073.0
+Georgia,13217,Newton,"Black 35%+, smaller counties",118152,7.1,47.3,38.8,0.1,1.5,25.0,77179.0
+Georgia,13219,Oconee,College-educated,43551,5.8,3.4,82.1,0.2,4.7,55.9,121217.0
+Georgia,13221,Oglethorpe,"White, non-college",15509,6.8,15.4,73.1,0.0,0.7,25.3,75034.0
+Georgia,13223,Paulding,Everything else,178909,8.7,23.1,61.0,0.1,1.5,29.5,98031.0
+Georgia,13225,Peach,"Black 35%+, smaller counties",28560,9.4,41.4,42.9,0.1,0.2,22.8,71293.0
+Georgia,13227,Pickens,"White, non-college",34951,4.0,0.6,91.5,0.2,0.3,26.7,78930.0
+Georgia,13229,Pierce,"White, non-college",20202,5.3,9.9,82.0,0.3,0.0,20.2,60517.0
+Georgia,13231,Pike,"White, non-college",19903,2.3,8.4,86.1,0.0,0.5,21.5,86719.0
+Georgia,13233,Polk,"White, non-college",43785,13.9,11.9,70.4,0.0,0.7,15.4,58515.0
+Georgia,13235,Pulaski,Everything else,9939,5.7,30.6,61.3,0.0,0.8,14.5,50406.0
+Georgia,13237,Putnam,Everything else,22855,7.2,22.0,64.5,0.0,2.0,31.1,72096.0
+Georgia,13239,Quitman,"Black 35%+, smaller counties",2264,0.8,52.5,42.8,0.0,0.0,12.4,40179.0
+Georgia,13241,Rabun,Everything else,17312,8.8,0.8,86.7,0.0,0.9,31.3,67493.0
+Georgia,13243,Randolph,"Black 35%+, smaller counties",6196,4.2,67.4,26.8,0.0,0.1,16.4,28380.0
+Georgia,13245,Richmond,"Black 35%+, large counties",206069,5.8,55.7,31.4,0.1,1.6,24.5,55637.0
+Georgia,13247,Rockdale,"Black 35%+, smaller counties",95281,10.9,57.5,24.0,0.0,1.6,32.4,77247.0
+Georgia,13249,Schley,"White, non-college",4513,1.4,14.6,82.6,0.0,0.0,22.2,56875.0
+Georgia,13251,Screven,"Black 35%+, smaller counties",14130,2.7,39.0,55.1,0.0,0.0,14.7,52792.0
+Georgia,13253,Seminole,Everything else,9156,3.1,33.5,61.9,0.2,0.5,13.4,49495.0
+Georgia,13255,Spalding,"Black 35%+, smaller counties",68892,6.1,35.8,53.4,0.0,1.0,18.5,62071.0
+Georgia,13257,Stephens,"White, non-college",27012,4.0,8.1,80.6,0.0,1.1,15.1,54754.0
+Georgia,13259,Stewart,"Black 35%+, smaller counties",4869,4.2,67.7,25.3,1.5,0.2,12.7,33250.0
+Georgia,13261,Sumter,"Black 35%+, smaller counties",29061,6.2,49.8,38.5,0.2,1.3,21.4,42653.0
+Georgia,13263,Talbot,"Black 35%+, smaller counties",5742,0.6,53.7,40.4,0.0,0.1,12.1,41597.0
+Georgia,13265,Taliaferro,"Black 35%+, smaller counties",1558,4.4,45.9,39.4,0.0,0.1,12.0,52500.0
+Georgia,13267,Tattnall,Everything else,24208,10.7,26.7,57.3,0.2,0.8,15.4,50747.0
+Georgia,13269,Taylor,"Black 35%+, smaller counties",7786,1.0,37.8,58.5,0.4,0.3,17.5,41788.0
+Georgia,13271,Telfair,"Black 35%+, smaller counties",11831,15.0,35.5,48.3,0.0,0.1,10.1,50929.0
+Georgia,13273,Terrell,"Black 35%+, smaller counties",8850,2.6,59.9,36.7,0.0,0.1,13.1,46171.0
+Georgia,13275,Thomas,Everything else,45777,3.9,34.9,57.0,0.2,0.9,22.7,60736.0
+Georgia,13277,Tift,Everything else,41438,13.2,29.5,52.9,0.1,1.3,21.0,53255.0
+Georgia,13279,Toombs,Everything else,27102,12.1,23.6,57.5,0.3,0.8,18.4,52621.0
+Georgia,13281,Towns,Everything else,12913,3.3,1.4,92.9,0.0,0.0,31.0,59135.0
+Georgia,13283,Treutlen,Everything else,6376,1.5,30.6,62.0,1.5,0.1,11.9,55518.0
+Georgia,13285,Troup,"Black 35%+, smaller counties",70330,4.7,36.0,53.9,0.1,2.3,23.8,56776.0
+Georgia,13287,Turner,"Black 35%+, smaller counties",8939,4.8,36.4,53.9,0.1,0.0,9.8,36799.0
+Georgia,13289,Twiggs,"Black 35%+, smaller counties",7803,1.1,39.4,54.8,0.4,1.0,10.5,56324.0
+Georgia,13291,Union,"White, non-college",26304,3.8,0.7,92.5,0.0,0.4,26.9,66176.0
+Georgia,13293,Upson,Everything else,28029,2.7,25.8,66.4,0.1,0.2,15.5,55429.0
+Georgia,13295,Walker,"White, non-college",68762,2.9,3.0,89.3,0.3,0.4,21.3,59469.0
+Georgia,13297,Walton,Everything else,103313,6.6,18.7,67.9,0.2,1.3,24.5,84945.0
+Georgia,13299,Ware,Everything else,35976,5.1,29.7,61.2,0.1,1.3,14.4,47448.0
+Georgia,13301,Warren,"Black 35%+, smaller counties",5170,1.1,56.0,39.2,0.0,0.1,12.3,44289.0
+Georgia,13303,Washington,"Black 35%+, smaller counties",19849,2.2,53.1,41.7,0.0,0.5,16.9,46023.0
+Georgia,13305,Wayne,"White, non-college",30949,6.3,19.5,70.3,0.1,1.3,16.2,53427.0
+Georgia,13307,Webster,"Black 35%+, smaller counties",2381,4.4,56.1,38.7,0.0,0.0,8.9,46792.0
+Georgia,13309,Wheeler,"Black 35%+, smaller counties",7335,4.3,37.0,56.5,0.4,0.0,10.0,40539.0
+Georgia,13311,White,"White, non-college",28810,3.8,1.9,88.9,0.1,0.6,24.0,70666.0
+Georgia,13313,Whitfield,Everything else,103598,37.2,3.4,55.5,0.0,1.4,20.2,67070.0
+Georgia,13315,Wilcox,Everything else,8798,3.8,32.1,59.1,0.0,0.0,15.4,54138.0
+Georgia,13317,Wilkes,"Black 35%+, smaller counties",9549,4.8,39.4,51.6,0.1,1.2,16.9,52043.0
+Georgia,13319,Wilkinson,"Black 35%+, smaller counties",8747,3.3,37.7,55.6,0.0,0.5,12.3,45465.0
+Georgia,13321,Worth,Everything else,20451,2.4,25.1,66.2,0.2,0.8,11.7,58694.0
+Ohio,39001,Adams,"White, non-college",27540,0.9,0.4,95.8,0.2,0.5,14.9,50264.0
+Ohio,39003,Allen,"White, non-college",101348,3.6,9.6,79.0,0.3,0.9,20.1,64038.0
+Ohio,39005,Ashland,"White, non-college",52256,1.8,1.0,93.9,0.1,0.5,22.6,69860.0
+Ohio,39007,Ashtabula,"White, non-college",97167,5.0,3.7,86.7,0.0,0.4,16.1,57728.0
+Ohio,39009,Athens,Everything else,61737,2.3,2.2,88.6,0.0,2.0,34.9,56001.0
+Ohio,39011,Auglaize,"White, non-college",46125,1.9,1.0,94.3,0.0,0.3,21.6,78660.0
+Ohio,39013,Belmont,"White, non-college",65473,1.4,3.0,90.7,0.0,0.6,18.9,57017.0
+Ohio,39015,Brown,"White, non-college",43845,1.3,0.6,94.7,0.0,0.3,15.7,71270.0
+Ohio,39017,Butler,Everything else,392876,7.0,8.3,74.6,0.0,4.3,32.8,81590.0
+Ohio,39019,Carroll,"White, non-college",26659,1.3,0.7,94.6,0.1,0.0,16.1,64835.0
+Ohio,39021,Champaign,"White, non-college",38804,1.8,1.6,91.7,0.2,0.5,19.0,75556.0
+Ohio,39023,Clark,"White, non-college",135158,4.2,8.0,81.7,0.0,0.6,20.2,63132.0
+Ohio,39025,Clermont,Everything else,211181,2.6,1.5,90.6,0.0,1.1,31.6,85510.0
+Ohio,39027,Clinton,"White, non-college",42012,2.3,1.8,91.7,0.0,0.3,19.3,70407.0
+Ohio,39029,Columbiana,"White, non-college",100704,1.9,1.9,92.0,0.0,0.3,17.1,58180.0
+Ohio,39031,Coshocton,"White, non-college",36744,1.3,0.5,94.3,0.1,0.5,16.7,55577.0
+Ohio,39033,Crawford,"White, non-college",41711,1.8,0.7,94.0,0.0,0.8,17.2,58044.0
+Ohio,39035,Cuyahoga,Big diverse metros,1245873,7.0,28.5,56.5,0.1,3.3,36.5,64468.0
+Ohio,39037,Darke,"White, non-college",51594,1.9,0.6,94.6,0.0,0.5,16.5,64486.0
+Ohio,39039,Defiance,"White, non-college",38343,11.1,1.6,84.7,0.1,0.2,19.0,73064.0
+Ohio,39041,Delaware,College-educated,226834,3.5,4.3,79.2,0.0,8.6,59.4,133540.0
+Ohio,39043,Erie,"White, non-college",74581,4.6,8.2,79.6,0.1,0.9,29.0,71993.0
+Ohio,39045,Fairfield,Everything else,163453,2.8,9.2,80.9,0.1,3.0,32.3,90966.0
+Ohio,39047,Fayette,"White, non-college",28876,2.5,2.0,90.8,0.0,0.8,14.4,63275.0
+Ohio,39049,Franklin,College-educated,1333048,7.5,23.1,58.0,0.1,5.6,42.1,75176.0
+Ohio,39051,Fulton,"White, non-college",42240,9.3,0.3,87.2,0.0,0.3,20.2,72864.0
+Ohio,39053,Gallia,"White, non-college",29068,1.1,2.0,92.6,0.1,0.8,20.5,56830.0
+Ohio,39055,Geauga,College-educated,95481,2.0,1.0,92.7,0.0,0.5,40.9,107860.0
+Ohio,39057,Greene,College-educated,169688,3.3,5.8,81.3,0.1,3.0,41.7,87309.0
+Ohio,39059,Guernsey,"White, non-college",38223,1.4,1.9,93.3,0.0,0.3,15.6,58478.0
+Ohio,39061,Hamilton,College-educated,830774,4.8,23.9,62.3,0.1,2.7,41.8,72470.0
+Ohio,39063,Hancock,Everything else,74866,6.1,1.8,86.9,0.0,1.9,30.3,73141.0
+Ohio,39065,Hardin,"White, non-college",30475,2.4,1.3,92.7,0.1,0.7,19.5,62484.0
+Ohio,39067,Harrison,"White, non-college",14306,1.2,2.7,93.7,0.0,0.1,11.5,54414.0
+Ohio,39069,Henry,"White, non-college",27567,8.3,0.5,87.8,0.1,0.1,19.5,80099.0
+Ohio,39071,Highland,"White, non-college",43517,1.2,1.2,94.4,0.1,0.1,16.3,65785.0
+Ohio,39073,Hocking,"White, non-college",27799,1.0,0.3,94.6,0.0,0.5,13.5,62960.0
+Ohio,39075,Holmes,"White, non-college",44418,1.1,0.1,97.3,0.1,0.1,11.1,76140.0
+Ohio,39077,Huron,"White, non-college",58319,7.4,0.8,87.5,0.0,0.4,16.7,67878.0
+Ohio,39079,Jackson,"White, non-college",32650,1.0,0.8,95.3,0.3,0.5,15.9,57106.0
+Ohio,39081,Jefferson,"White, non-college",64518,1.9,5.1,88.4,0.0,0.6,20.3,59055.0
+Ohio,39083,Knox,"White, non-college",63142,2.0,0.9,92.9,0.0,0.8,24.7,73878.0
+Ohio,39085,Lake,Everything else,232216,5.3,4.7,84.2,0.1,1.5,31.6,80925.0
+Ohio,39087,Lawrence,"White, non-college",56819,1.1,1.7,93.8,0.0,0.6,18.5,58325.0
+Ohio,39089,Licking,"White, non-college",181837,2.5,4.2,85.1,0.0,3.7,29.3,84426.0
+Ohio,39091,Logan,"White, non-college",46089,2.4,1.7,91.5,0.1,0.5,18.7,71551.0
+Ohio,39093,Lorain,"White, non-college",317129,11.0,7.1,75.5,0.1,1.4,28.5,73347.0
+Ohio,39095,Lucas,Everything else,428018,7.8,18.9,66.1,0.0,1.7,29.4,62224.0
+Ohio,39097,Madison,"White, non-college",44423,3.1,4.3,86.2,0.2,1.3,24.2,87045.0
+Ohio,39099,Mahoning,"White, non-college",226491,6.8,13.6,73.7,0.1,0.8,27.0,56942.0
+Ohio,39101,Marion,"White, non-college",65020,3.2,4.7,86.3,0.0,0.6,14.7,59371.0
+Ohio,39103,Medina,Everything else,183660,2.7,1.1,91.3,0.0,1.0,36.2,94968.0
+Ohio,39105,Meigs,"White, non-college",21896,0.5,0.9,95.8,0.0,0.3,12.2,46873.0
+Ohio,39107,Mercer,"White, non-college",42484,2.2,1.1,94.2,0.0,0.5,21.9,76782.0
+Ohio,39109,Miami,"White, non-college",110296,2.1,1.8,89.9,0.0,1.9,26.8,76817.0
+Ohio,39111,Monroe,"White, non-college",13227,0.1,0.4,95.3,0.0,0.4,12.1,60134.0
+Ohio,39113,Montgomery,Everything else,536096,4.2,20.4,67.7,0.0,2.2,31.3,66139.0
+Ohio,39115,Morgan,"White, non-college",13651,1.2,2.9,90.2,0.1,0.1,14.4,59351.0
+Ohio,39117,Morrow,"White, non-college",35404,1.9,0.4,93.7,0.1,0.4,19.4,75283.0
+Ohio,39119,Muskingum,"White, non-college",86411,1.3,3.1,90.5,0.0,0.5,20.6,60780.0
+Ohio,39121,Noble,"White, non-college",14282,1.7,4.2,92.1,0.1,0.4,15.7,56098.0
+Ohio,39123,Ottawa,"White, non-college",39994,5.3,1.0,90.3,0.1,0.4,29.5,76101.0
+Ohio,39125,Paulding,"White, non-college",18791,5.8,0.2,90.0,0.1,0.5,16.9,67731.0
+Ohio,39127,Perry,"White, non-college",35535,0.9,0.2,95.7,0.0,0.1,16.2,67460.0
+Ohio,39129,Pickaway,"White, non-college",60131,1.9,3.0,90.6,0.1,0.1,21.7,74040.0
+Ohio,39131,Pike,"White, non-college",27044,0.6,1.0,94.4,0.1,0.4,16.3,52736.0
+Ohio,39133,Portage,Everything else,161956,2.3,5.0,86.0,0.1,2.2,32.5,75766.0
+Ohio,39135,Preble,"White, non-college",40765,1.1,0.7,95.0,0.0,0.1,18.5,69223.0
+Ohio,39137,Putnam,"White, non-college",34314,6.7,0.5,90.8,0.0,0.2,26.4,84928.0
+Ohio,39139,Richland,"White, non-college",125099,2.3,7.1,83.9,0.1,0.8,17.9,59509.0
+Ohio,39141,Ross,"White, non-college",76492,1.4,5.5,88.4,0.2,0.5,17.4,61303.0
+Ohio,39143,Sandusky,"White, non-college",58778,10.9,2.8,81.9,0.1,0.5,18.4,62295.0
+Ohio,39145,Scioto,"White, non-college",72627,1.6,2.3,92.0,0.1,0.5,18.2,50609.0
+Ohio,39147,Seneca,"White, non-college",54770,5.7,2.4,87.8,0.2,0.5,20.6,66025.0
+Ohio,39149,Shelby,"White, non-college",47929,1.7,2.2,91.5,0.0,0.6,21.4,73978.0
+Ohio,39151,Stark,"White, non-college",373713,3.0,7.1,83.8,0.1,0.9,25.9,67934.0
+Ohio,39153,Summit,Everything else,537864,2.7,13.7,73.4,0.1,4.3,35.8,71622.0
+Ohio,39155,Trumbull,"White, non-college",200929,2.3,8.0,84.6,0.1,0.5,20.9,56435.0
+Ohio,39157,Tuscarawas,"White, non-college",92385,4.7,0.6,91.9,0.1,0.4,19.8,65044.0
+Ohio,39159,Union,Everything else,67324,3.4,2.3,84.5,0.1,5.0,39.2,112322.0
+Ohio,39161,Van Wert,"White, non-college",28826,4.2,0.5,91.7,0.2,0.3,17.1,67917.0
+Ohio,39163,Vinton,"White, non-college",12630,0.2,1.0,95.9,0.0,1.4,13.4,55336.0
+Ohio,39165,Warren,College-educated,250008,3.5,3.2,81.8,0.1,7.2,45.6,110132.0
+Ohio,39167,Washington,"White, non-college",58978,1.3,0.8,93.6,0.2,0.5,21.9,63603.0
+Ohio,39169,Wayne,"White, non-college",116588,2.5,1.2,92.3,0.1,1.1,25.1,73574.0
+Ohio,39171,Williams,"White, non-college",36719,5.4,0.6,90.8,0.0,0.7,13.7,61048.0
+Ohio,39173,Wood,Everything else,132064,6.6,2.1,85.5,0.1,2.1,36.5,74216.0
+Ohio,39175,Wyandot,"White, non-college",21598,3.1,0.2,94.1,0.0,0.0,19.6,69768.0
+Michigan,26001,Alcona,"White, non-college",10397,1.7,0.7,93.1,0.3,0.5,21.4,54993.0
+Michigan,26003,Alger,"White, non-college",8762,1.8,7.6,81.4,2.3,0.3,21.0,61286.0
+Michigan,26005,Allegan,"White, non-college",121456,8.1,1.2,84.6,0.2,0.7,27.1,83283.0
+Michigan,26007,Alpena,"White, non-college",28880,1.7,1.0,92.4,0.1,0.2,18.3,53950.0
+Michigan,26009,Antrim,Everything else,24127,2.2,0.5,92.4,0.5,0.3,34.3,72054.0
+Michigan,26011,Arenac,"White, non-college",15077,2.2,0.7,93.0,0.4,0.1,16.0,58811.0
+Michigan,26013,Baraga,"White, non-college",8191,1.7,6.3,72.0,11.8,0.8,14.8,55327.0
+Michigan,26015,Barry,"White, non-college",63409,3.7,0.3,91.8,0.1,0.6,24.9,77500.0
+Michigan,26017,Bay,"White, non-college",103008,5.9,1.0,88.2,0.1,0.5,22.1,61763.0
+Michigan,26019,Benzie,Everything else,18310,2.5,0.6,91.4,0.9,0.5,36.9,74834.0
+Michigan,26021,Berrien,Everything else,153288,6.3,13.1,72.7,0.2,1.8,30.9,65425.0
+Michigan,26023,Branch,"White, non-college",45300,6.8,1.7,86.4,0.1,0.4,17.3,63724.0
+Michigan,26025,Calhoun,"White, non-college",133778,5.9,9.6,75.3,0.3,2.6,22.9,63177.0
+Michigan,26027,Cass,"White, non-college",51520,4.5,4.0,84.0,0.7,0.8,21.8,70443.0
+Michigan,26029,Charlevoix,Everything else,26108,2.0,0.5,92.3,0.7,0.7,35.2,76531.0
+Michigan,26031,Cheboygan,"White, non-college",25865,1.7,0.9,89.0,2.2,0.5,24.4,62875.0
+Michigan,26033,Chippewa,Everything else,36295,2.3,5.6,67.3,13.2,0.7,23.3,62217.0
+Michigan,26035,Clare,"White, non-college",31218,2.3,0.9,92.8,0.4,0.3,12.9,49384.0
+Michigan,26037,Clinton,Everything else,79626,5.2,1.8,87.3,0.2,1.5,35.4,88210.0
+Michigan,26039,Crawford,"White, non-college",13369,2.4,0.4,91.5,0.2,0.8,20.3,60392.0
+Michigan,26041,Delta,"White, non-college",36813,1.5,0.2,89.9,1.5,0.5,20.6,57809.0
+Michigan,26043,Dickinson,"White, non-college",25954,2.0,0.3,92.3,0.4,0.3,25.3,65156.0
+Michigan,26045,Eaton,Everything else,109130,6.3,6.7,79.8,0.2,2.2,30.8,79597.0
+Michigan,26047,Emmet,College-educated,34125,2.1,0.4,89.1,1.5,0.5,41.6,78112.0
+Michigan,26049,Genesee,"White, non-college",403305,4.3,19.1,70.0,0.2,1.1,23.3,62281.0
+Michigan,26051,Gladwin,"White, non-college",25693,2.2,0.3,92.7,0.4,0.4,16.9,55349.0
+Michigan,26053,Gogebic,"White, non-college",14319,2.0,0.4,90.5,2.4,0.6,22.8,52732.0
+Michigan,26055,Grand Traverse,College-educated,96166,3.4,0.8,90.5,0.4,0.7,40.6,81647.0
+Michigan,26057,Gratiot,"White, non-college",41385,7.7,5.8,83.0,0.3,0.4,18.7,63556.0
+Michigan,26059,Hillsdale,"White, non-college",45654,2.8,0.7,92.1,0.0,0.3,21.2,64242.0
+Michigan,26061,Houghton,Everything else,37693,1.8,1.1,90.9,0.5,2.9,37.2,58899.0
+Michigan,26063,Huron,"White, non-college",31113,2.8,0.3,93.3,0.2,0.6,18.5,58870.0
+Michigan,26065,Ingham,College-educated,283913,8.7,11.0,66.6,0.2,6.2,41.2,65526.0
+Michigan,26067,Ionia,"White, non-college",66574,5.3,3.3,85.3,0.5,0.5,18.5,75611.0
+Michigan,26069,Iosco,"White, non-college",25347,2.8,0.9,91.3,0.1,0.8,19.3,50066.0
+Michigan,26071,Iron,"White, non-college",11667,2.3,0.9,90.6,0.8,0.6,22.5,55940.0
+Michigan,26073,Isabella,Everything else,64565,5.1,2.4,83.0,2.5,1.6,31.3,55237.0
+Michigan,26075,Jackson,"White, non-college",160060,4.1,7.4,82.0,0.2,0.8,23.4,66073.0
+Michigan,26077,Kalamazoo,College-educated,262375,5.9,10.8,74.6,0.1,2.8,41.3,72532.0
+Michigan,26079,Kalkaska,"White, non-college",18239,2.3,0.8,92.3,0.2,0.5,19.0,68578.0
+Michigan,26081,Kent,College-educated,663150,11.7,9.4,70.4,0.2,3.2,40.8,82631.0
+Michigan,26083,Keweenaw,College-educated,2133,2.0,0.0,92.7,0.1,0.0,41.2,52583.0
+Michigan,26085,Lake,"White, non-college",12563,9.3,7.8,75.5,0.8,0.3,12.7,50805.0
+Michigan,26087,Lapeer,"White, non-college",88837,5.0,1.0,89.7,0.1,0.3,20.4,77306.0
+Michigan,26089,Leelanau,College-educated,22734,4.3,0.6,89.0,2.1,0.5,51.8,99422.0
+Michigan,26091,Lenawee,"White, non-college",98415,8.9,2.3,84.8,0.1,0.3,22.7,70518.0
+Michigan,26093,Livingston,College-educated,195833,3.0,0.6,92.4,0.2,0.9,40.2,103039.0
+Michigan,26095,Luce,"White, non-college",6271,2.0,8.2,76.4,6.4,0.1,17.3,54893.0
+Michigan,26097,Mackinac,"White, non-college",10957,2.3,4.8,71.1,13.7,0.6,25.0,63909.0
+Michigan,26099,Macomb,"White, non-college",879853,3.2,12.7,74.1,0.1,5.1,27.7,77837.0
+Michigan,26101,Manistee,"White, non-college",25350,3.6,3.2,87.4,1.2,0.4,24.9,63516.0
+Michigan,26103,Marquette,Everything else,67112,2.1,1.3,90.7,0.9,0.5,36.8,65429.0
+Michigan,26105,Mason,"White, non-college",29207,4.9,1.0,89.4,0.4,0.5,26.6,64748.0
+Michigan,26107,Mecosta,"White, non-college",41242,3.0,2.1,89.6,0.5,0.7,22.5,60951.0
+Michigan,26109,Menominee,"White, non-college",23247,2.4,0.4,91.1,2.0,0.4,18.5,56435.0
+Michigan,26111,Midland,Everything else,83757,3.4,1.2,89.2,0.2,2.2,36.6,77705.0
+Michigan,26113,Missaukee,"White, non-college",15207,3.4,0.3,90.4,0.2,0.4,18.8,66194.0
+Michigan,26115,Monroe,"White, non-college",155505,4.4,2.2,88.5,0.0,0.4,23.3,77335.0
+Michigan,26117,Montcalm,"White, non-college",67816,4.5,3.2,87.0,0.2,0.2,16.0,67344.0
+Michigan,26119,Montmorency,"White, non-college",9516,1.7,0.7,93.0,0.3,0.6,15.6,49756.0
+Michigan,26121,Muskegon,"White, non-college",175961,6.3,12.0,75.0,0.4,0.6,21.3,65024.0
+Michigan,26123,Newaygo,"White, non-college",50792,6.3,0.8,87.2,0.3,0.4,18.1,63304.0
+Michigan,26125,Oakland,College-educated,1279825,5.0,12.7,68.2,0.1,8.5,51.0,97760.0
+Michigan,26127,Oceana,"White, non-college",26915,15.5,1.0,79.5,0.5,0.1,21.5,62417.0
+Michigan,26129,Ogemaw,"White, non-college",20885,2.3,0.5,92.5,0.2,0.8,17.2,54666.0
+Michigan,26131,Ontonagon,"White, non-college",5850,1.8,0.5,92.3,0.4,0.4,18.4,54398.0
+Michigan,26133,Osceola,"White, non-college",23227,2.1,1.1,91.6,0.3,0.4,16.6,58267.0
+Michigan,26135,Oscoda,"White, non-college",8425,2.1,0.4,93.1,0.3,0.2,15.6,49515.0
+Michigan,26137,Otsego,"White, non-college",25584,2.0,0.7,92.9,0.3,0.6,26.3,68183.0
+Michigan,26139,Ottawa,Everything else,301203,10.3,1.5,81.7,0.1,2.7,38.9,90502.0
+Michigan,26141,Presque Isle,"White, non-college",13209,1.6,0.2,94.2,0.2,0.2,21.4,59321.0
+Michigan,26143,Roscommon,"White, non-college",23737,2.0,0.7,92.4,0.2,0.1,20.2,55246.0
+Michigan,26145,Saginaw,Everything else,188665,9.2,18.1,67.8,0.1,1.2,24.4,60622.0
+Michigan,26147,St. Clair,"White, non-college",160221,3.7,2.1,89.7,0.1,0.5,20.3,71270.0
+Michigan,26149,St. Joseph,"White, non-college",60969,9.4,2.1,83.5,0.0,0.7,16.9,66425.0
+Michigan,26151,Sanilac,"White, non-college",40462,4.3,0.4,91.9,0.1,0.3,16.5,58863.0
+Michigan,26153,Schoolcraft,"White, non-college",8128,1.7,0.5,81.7,7.3,0.2,21.1,56782.0
+Michigan,26155,Shiawassee,"White, non-college",67991,3.2,0.4,92.7,0.1,0.4,20.0,67404.0
+Michigan,26157,Tuscola,"White, non-college",52980,3.8,1.0,91.5,0.2,0.4,16.3,63811.0
+Michigan,26159,Van Buren,"White, non-college",75795,12.5,3.5,78.2,0.4,0.5,23.0,68114.0
+Michigan,26161,Washtenaw,College-educated,369822,5.8,11.3,67.2,0.2,9.2,58.7,89180.0
+Michigan,26163,Wayne,"Black 35%+, large counties",1772259,6.9,36.6,47.9,0.2,3.7,27.6,60539.0
+Michigan,26165,Wexford,"White, non-college",34077,2.7,1.1,90.8,0.2,0.6,21.3,61085.0
+Texas,48001,Anderson,Everything else,58439,19.6,17.6,55.1,1.4,0.7,15.4,62068.0
+Texas,48003,Andrews,Hispanic-majority,18610,57.5,1.6,38.8,0.3,0.3,17.7,72242.0
+Texas,48005,Angelina,Everything else,87275,23.5,12.1,58.2,0.3,0.9,17.9,60960.0
+Texas,48007,Aransas,Everything else,24876,27.1,1.3,67.2,0.5,1.3,28.8,69466.0
+Texas,48009,Archer,"White, non-college",8867,9.4,1.4,85.5,0.4,0.6,25.4,72159.0
+Texas,48011,Armstrong,"White, non-college",1822,12.0,0.6,83.4,1.0,1.6,27.2,72750.0
+Texas,48013,Atascosa,Hispanic-majority,51008,65.4,1.1,31.0,0.4,0.6,15.7,70770.0
+Texas,48015,Austin,Everything else,31170,27.8,7.9,60.4,0.1,0.8,25.1,75789.0
+Texas,48017,Bailey,Hispanic-majority,6913,66.0,0.6,29.9,0.0,0.8,15.2,61420.0
+Texas,48019,Bandera,"White, non-college",22021,21.0,1.2,73.0,0.4,0.5,27.2,75813.0
+Texas,48021,Bastrop,Everything else,106582,45.0,5.7,44.4,0.1,0.8,25.0,86226.0
+Texas,48023,Baylor,"White, non-college",3485,13.1,1.2,76.6,0.1,0.0,25.3,45370.0
+Texas,48025,Bee,Hispanic-majority,31083,61.8,7.3,27.7,0.0,0.5,14.0,57673.0
+Texas,48027,Bell,Everything else,386897,26.3,21.5,42.4,0.1,2.9,27.2,68865.0
+Texas,48029,Bexar,Hispanic-majority,2067341,59.7,7.4,26.2,0.1,3.2,31.8,72341.0
+Texas,48031,Blanco,Everything else,12446,18.6,1.1,75.5,0.1,0.1,35.4,92425.0
+Texas,48033,Borden,Everything else,713,8.4,0.6,90.2,0.0,0.0,36.9,65625.0
+Texas,48035,Bosque,"White, non-college",18687,19.1,1.1,74.9,0.1,0.4,20.4,68914.0
+Texas,48037,Bowie,Everything else,92115,8.6,24.7,60.9,0.3,1.4,23.6,59803.0
+Texas,48039,Brazoria,Everything else,391255,31.6,15.9,41.6,0.2,7.4,33.1,97993.0
+Texas,48041,Brazos,College-educated,242311,27.4,10.1,53.0,0.1,5.8,43.0,58553.0
+Texas,48043,Brewster,College-educated,9503,42.1,0.6,51.3,0.0,1.9,45.5,56212.0
+Texas,48045,Briscoe,Everything else,1301,26.1,4.1,68.7,0.1,0.0,23.1,45417.0
+Texas,48047,Brooks,Hispanic-majority,6943,90.1,0.6,7.2,0.7,0.0,17.0,47764.0
+Texas,48049,Brown,Everything else,38347,22.5,3.5,69.9,0.1,0.6,20.2,57470.0
+Texas,48051,Burleson,Everything else,18857,22.7,10.6,62.5,0.0,0.7,23.5,70000.0
+Texas,48053,Burnet,"White, non-college",52652,23.4,1.2,70.7,0.1,0.7,28.5,78732.0
+Texas,48055,Caldwell,Hispanic-majority,48669,57.0,4.5,34.4,0.0,0.8,19.3,69758.0
+Texas,48057,Calhoun,Everything else,19868,49.4,2.6,40.8,0.3,4.1,20.1,79959.0
+Texas,48059,Callahan,"White, non-college",14241,11.2,1.2,81.0,0.0,0.6,24.0,72436.0
+Texas,48061,Cameron,Hispanic-majority,426120,89.3,0.5,8.7,0.1,0.8,22.1,52601.0
+Texas,48063,Camp,Everything else,12798,27.4,15.5,52.9,0.0,1.4,22.2,58843.0
+Texas,48065,Carson,"White, non-college",5801,10.9,0.7,81.8,0.4,0.3,26.4,85231.0
+Texas,48067,Cass,"White, non-college",28568,5.4,16.2,74.4,0.2,0.7,18.9,53813.0
+Texas,48069,Castro,Hispanic-majority,7344,65.6,1.2,29.7,0.8,0.9,18.6,56776.0
+Texas,48071,Chambers,Everything else,51498,26.5,7.5,61.5,0.2,1.5,21.9,109804.0
+Texas,48073,Cherokee,Everything else,51886,23.9,12.8,58.8,0.1,0.4,18.9,61261.0
+Texas,48075,Childress,Everything else,6743,31.9,6.7,54.9,1.5,0.2,11.8,58654.0
+Texas,48077,Clay,"White, non-college",10495,7.1,1.0,86.9,0.6,0.8,22.4,80114.0
+Texas,48079,Cochran,Hispanic-majority,2550,60.2,4.9,33.0,0.2,0.0,8.2,45313.0
+Texas,48081,Coke,"White, non-college",3353,21.1,1.2,75.2,0.0,0.2,23.0,43333.0
+Texas,48083,Coleman,"White, non-college",7833,16.6,4.4,76.4,0.0,0.6,16.8,49159.0
+Texas,48085,Collin,College-educated,1163337,16.1,10.8,49.6,0.2,18.7,56.2,121600.0
+Texas,48087,Collingsworth,Everything else,2588,32.6,4.4,54.6,0.4,0.0,25.6,61280.0
+Texas,48089,Colorado,Everything else,21006,30.5,9.7,53.2,0.1,0.7,22.9,66377.0
+Texas,48091,Comal,College-educated,183826,28.4,2.4,64.0,0.1,1.4,43.3,101889.0
+Texas,48093,Comanche,Everything else,13950,29.5,0.4,66.2,0.2,0.3,21.4,59635.0
+Texas,48095,Concho,Everything else,3328,31.9,4.7,59.5,0.0,1.7,14.1,65795.0
+Texas,48097,Cooke,"White, non-college",43046,20.9,3.2,71.3,0.3,0.7,23.7,73932.0
+Texas,48099,Coryell,Everything else,84748,20.7,13.0,54.4,0.3,2.0,19.3,71301.0
+Texas,48101,Cottle,Everything else,1368,42.0,2.3,46.7,0.0,0.0,21.1,59063.0
+Texas,48103,Crane,Hispanic-majority,4610,68.9,1.9,25.6,0.2,1.6,12.6,62212.0
+Texas,48105,Crockett,Hispanic-majority,2822,66.8,0.2,32.8,0.0,0.0,10.7,81022.0
+Texas,48107,Crosby,Hispanic-majority,5041,56.3,2.8,38.4,0.0,0.7,15.4,52188.0
+Texas,48109,Culberson,Hispanic-majority,2195,78.0,0.2,17.4,2.9,1.2,15.8,58777.0
+Texas,48111,Dallam,Hispanic-majority,7298,54.3,0.2,40.8,0.0,0.0,11.9,71500.0
+Texas,48113,Dallas,Big diverse metros,2621179,41.3,22.1,26.4,0.1,7.0,35.7,76547.0
+Texas,48115,Dawson,Hispanic-majority,12134,55.8,6.5,35.2,0.1,0.5,12.7,54360.0
+Texas,48117,Deaf Smith,Hispanic-majority,18460,76.4,0.8,21.0,0.4,0.0,11.4,60799.0
+Texas,48119,Delta,"White, non-college",5438,9.2,8.1,77.9,0.2,0.4,14.9,66575.0
+Texas,48121,Denton,College-educated,979561,20.5,10.7,52.4,0.1,11.0,49.4,111498.0
+Texas,48123,DeWitt,Everything else,20016,35.7,6.0,52.7,0.2,0.7,16.9,63730.0
+Texas,48125,Dickens,Everything else,1747,32.8,1.4,62.9,0.0,1.5,18.0,49335.0
+Texas,48127,Dimmit,Hispanic-majority,8380,87.1,1.1,8.2,2.8,0.5,9.8,38808.0
+Texas,48129,Donley,"White, non-college",3257,12.6,5.2,77.4,0.2,2.5,16.6,58750.0
+Texas,48131,Duval,Hispanic-majority,9742,81.6,0.7,15.6,0.0,1.2,6.8,49038.0
+Texas,48133,Eastland,"White, non-college",18011,17.3,2.2,76.9,0.3,0.5,21.8,53549.0
+Texas,48135,Ector,Hispanic-majority,164654,63.5,4.2,28.7,0.1,1.1,17.6,71536.0
+Texas,48137,Edwards,Everything else,1290,43.0,2.1,53.3,0.2,0.0,26.1,40313.0
+Texas,48139,Ellis,Everything else,213160,28.2,14.4,52.7,0.1,0.8,30.1,99595.0
+Texas,48141,El Paso,Hispanic-majority,870779,82.7,3.0,11.0,0.2,1.2,25.9,59806.0
+Texas,48143,Erath,Everything else,43794,22.3,1.8,72.2,0.3,1.0,32.1,65115.0
+Texas,48145,Falls,Everything else,17291,25.0,18.4,49.6,0.0,1.7,19.5,57247.0
+Texas,48147,Fannin,"White, non-college",37326,13.1,5.9,75.2,0.3,0.5,19.5,72295.0
+Texas,48149,Fayette,Everything else,25042,22.1,5.6,69.5,0.1,0.3,27.5,75854.0
+Texas,48151,Fisher,Everything else,3655,28.0,3.4,64.2,0.1,0.2,17.1,65533.0
+Texas,48153,Floyd,Hispanic-majority,5216,58.1,2.0,36.8,0.3,0.2,14.9,58462.0
+Texas,48155,Foard,"White, non-college",991,11.9,0.3,82.5,0.0,0.3,20.6,61563.0
+Texas,48157,Fort Bend,College-educated,893767,24.7,20.6,28.7,0.1,21.9,50.2,114041.0
+Texas,48159,Franklin,"White, non-college",10632,14.7,5.4,77.0,0.2,0.3,27.8,72360.0
+Texas,48161,Freestone,Everything else,20049,17.2,14.5,63.2,0.2,0.1,16.5,59960.0
+Texas,48163,Frio,Hispanic-majority,18582,77.8,5.1,14.6,0.1,1.4,11.9,66010.0
+Texas,48165,Gaines,Everything else,22232,40.3,2.1,56.4,0.0,0.6,11.7,74132.0
+Texas,48167,Galveston,Everything else,358990,26.4,11.9,54.0,0.2,3.4,34.8,86105.0
+Texas,48169,Garza,Everything else,5118,49.5,9.9,37.0,0.3,0.1,10.2,46314.0
+Texas,48171,Gillespie,Everything else,27524,22.9,0.1,73.6,0.1,0.4,37.2,76162.0
+Texas,48173,Glasscock,Everything else,1068,27.0,0.0,66.2,0.0,0.0,29.2,101250.0
+Texas,48175,Goliad,Everything else,7141,32.3,4.8,60.4,0.4,0.0,21.4,59359.0
+Texas,48177,Gonzales,Hispanic-majority,19851,51.1,5.8,40.6,0.1,0.4,11.9,58672.0
+Texas,48179,Gray,Everything else,21045,31.4,4.5,59.4,0.7,0.9,16.2,59614.0
+Texas,48181,Grayson,"White, non-college",143337,16.3,5.1,71.1,0.4,1.5,23.9,72182.0
+Texas,48183,Gregg,Everything else,125480,20.2,17.6,54.7,0.3,1.3,22.9,66550.0
+Texas,48185,Grimes,Everything else,31340,25.5,11.3,56.8,0.4,0.4,19.7,69803.0
+Texas,48187,Guadalupe,Everything else,183642,39.0,7.1,47.0,0.1,1.5,31.4,92375.0
+Texas,48189,Hale,Hispanic-majority,32131,61.3,4.5,31.4,0.1,0.5,15.3,51897.0
+Texas,48191,Hall,Everything else,2820,35.5,4.1,53.6,1.1,0.4,21.4,48459.0
+Texas,48193,Hamilton,"White, non-college",8406,14.2,2.0,81.5,0.2,0.0,26.8,58219.0
+Texas,48195,Hansford,Hispanic-majority,5119,50.2,0.1,47.0,0.6,0.3,36.4,69441.0
+Texas,48197,Hardeman,Everything else,3501,25.6,3.4,62.2,0.7,1.4,16.8,63333.0
+Texas,48199,Hardin,"White, non-college",57642,6.8,5.6,82.4,0.0,0.5,21.0,75808.0
+Texas,48201,Harris,Big diverse metros,4838303,44.0,18.6,26.6,0.1,7.3,34.2,74983.0
+Texas,48203,Harrison,Everything else,70155,14.8,20.3,60.5,0.1,0.5,22.7,66103.0
+Texas,48205,Hartley,Everything else,5215,31.2,6.0,56.5,0.2,0.2,20.7,75841.0
+Texas,48207,Haskell,Everything else,5421,26.4,5.9,65.4,0.2,0.2,22.8,60653.0
+Texas,48209,Hays,College-educated,268638,39.4,3.8,50.5,0.1,2.0,43.2,89097.0
+Texas,48211,Hemphill,Everything else,3234,32.6,2.4,62.2,0.6,0.0,21.9,61563.0
+Texas,48213,Henderson,"White, non-college",84862,14.8,5.1,73.9,0.2,0.8,20.7,65179.0
+Texas,48215,Hidalgo,Hispanic-majority,891977,91.9,0.6,6.0,0.1,1.0,20.6,54338.0
+Texas,48217,Hill,Everything else,37328,23.1,5.0,67.6,0.1,0.5,18.0,64591.0
+Texas,48219,Hockley,Hispanic-majority,21363,50.2,2.8,43.9,0.2,0.1,18.9,63140.0
+Texas,48221,Hood,Everything else,65894,13.8,1.1,80.8,0.3,0.7,32.9,88160.0
+Texas,48223,Hopkins,"White, non-college",37784,18.7,7.0,70.5,0.4,0.9,21.9,70888.0
+Texas,48225,Houston,Everything else,22051,14.5,20.9,58.0,0.6,0.4,14.8,56531.0
+Texas,48227,Howard,Everything else,32290,47.7,4.5,43.1,0.3,1.0,15.7,69649.0
+Texas,48229,Hudspeth,Hispanic-majority,3403,66.7,1.4,27.5,0.0,0.0,9.6,48600.0
+Texas,48231,Hunt,Everything else,108972,21.5,7.8,65.0,0.3,1.4,22.6,71938.0
+Texas,48233,Hutchinson,Everything else,20184,24.8,2.2,67.6,1.0,0.6,16.8,67228.0
+Texas,48235,Irion,Everything else,1409,27.5,0.1,68.3,2.8,0.0,28.3,70357.0
+Texas,48237,Jack,"White, non-college",8882,18.7,2.9,74.7,0.0,0.5,14.5,68079.0
+Texas,48239,Jackson,Everything else,15152,33.4,6.6,56.9,0.1,1.4,16.6,65414.0
+Texas,48241,Jasper,"White, non-college",32727,7.0,15.3,73.1,0.1,0.4,14.0,56723.0
+Texas,48243,Jeff Davis,Everything else,1865,30.1,0.0,65.5,0.0,0.0,35.9,59286.0
+Texas,48245,Jefferson,Everything else,253878,24.1,32.7,36.3,0.1,3.8,19.7,60026.0
+Texas,48247,Jim Hogg,Hispanic-majority,4727,91.4,0.3,8.0,0.0,0.2,14.8,42211.0
+Texas,48249,Jim Wells,Hispanic-majority,38850,79.5,0.8,18.4,0.2,0.5,16.3,51896.0
+Texas,48251,Johnson,Everything else,195597,25.3,5.1,64.6,0.2,1.1,25.2,84859.0
+Texas,48253,Jones,Everything else,20304,28.6,10.0,55.7,0.3,0.6,12.0,59464.0
+Texas,48255,Karnes,Hispanic-majority,14968,53.4,9.3,34.7,0.1,0.3,14.3,60214.0
+Texas,48257,Kaufman,Everything else,172604,27.4,18.4,48.8,0.1,1.8,26.5,89485.0
+Texas,48259,Kendall,College-educated,48567,24.4,0.9,69.2,0.1,1.6,48.9,114962.0
+Texas,48261,Kenedy,Hispanic-majority,145,88.3,0.7,9.0,0.7,0.7,13.0,38882.0
+Texas,48263,Kent,"White, non-college",734,16.1,1.0,79.0,0.0,0.0,26.3,72889.0
+Texas,48265,Kerr,Everything else,53489,26.8,1.5,67.1,0.1,1.1,31.3,69395.0
+Texas,48267,Kimble,Everything else,4389,26.5,1.1,70.0,1.0,0.0,27.1,69455.0
+Texas,48269,King,Everything else,211,16.6,0.0,69.2,0.0,0.0,38.9,46645.0
+Texas,48271,Kinney,Hispanic-majority,3157,57.5,0.1,39.8,1.2,0.0,11.8,70000.0
+Texas,48273,Kleberg,Hispanic-majority,30579,71.4,3.6,20.8,0.2,1.3,23.2,61292.0
+Texas,48275,Knox,Everything else,3307,33.5,3.7,57.0,0.2,0.3,13.5,56667.0
+Texas,48277,Lamar,"White, non-college",50669,9.6,12.0,71.3,0.6,0.9,21.6,61880.0
+Texas,48279,Lamb,Hispanic-majority,12828,58.3,3.3,36.0,0.0,0.7,14.3,60760.0
+Texas,48281,Lampasas,Everything else,22715,20.5,4.0,69.5,0.0,1.1,24.3,81736.0
+Texas,48283,La Salle,Hispanic-majority,6839,71.8,5.2,19.5,0.4,0.1,11.8,57716.0
+Texas,48285,Lavaca,"White, non-college",20552,20.1,3.6,71.5,0.0,0.3,22.2,63240.0
+Texas,48287,Lee,Everything else,17971,26.6,9.6,59.9,0.3,0.2,20.9,76371.0
+Texas,48289,Leon,"White, non-college",16263,16.7,7.2,70.9,0.1,0.1,18.6,61449.0
+Texas,48291,Liberty,Everything else,103380,39.6,7.5,48.7,0.1,0.6,11.9,68703.0
+Texas,48293,Limestone,Everything else,22283,23.5,16.9,54.7,0.0,1.0,18.5,60573.0
+Texas,48295,Lipscomb,Everything else,2918,38.6,0.0,56.1,0.2,0.0,22.4,72560.0
+Texas,48297,Live Oak,Everything else,11620,42.3,1.9,47.2,0.0,0.7,15.9,57150.0
+Texas,48299,Llano,Everything else,22424,13.4,0.3,82.1,0.2,0.6,32.4,67530.0
+Texas,48301,Loving,"White, non-college",33,0.0,0.0,93.9,0.0,6.1,0.0,51250.0
+Texas,48303,Lubbock,Everything else,318884,36.2,6.7,51.5,0.1,2.4,33.4,64155.0
+Texas,48305,Lynn,Everything else,5752,41.2,1.7,54.5,0.1,0.5,26.8,73679.0
+Texas,48307,McCulloch,Everything else,7514,30.5,0.9,64.0,0.1,0.1,23.9,54043.0
+Texas,48309,McLennan,Everything else,266067,27.0,13.5,54.1,0.1,1.7,28.7,66643.0
+Texas,48311,McMullen,Hispanic-majority,700,62.1,0.0,37.3,0.4,0.0,20.1,43875.0
+Texas,48313,Madison,Everything else,13648,26.2,15.3,52.3,0.1,1.1,18.4,74596.0
+Texas,48315,Marion,Everything else,9737,4.8,21.9,69.5,0.4,0.2,15.6,49672.0
+Texas,48317,Martin,Everything else,5218,47.7,2.8,45.1,0.0,0.1,20.9,93734.0
+Texas,48319,Mason,Everything else,3955,18.9,0.1,79.8,0.0,0.2,38.8,74180.0
+Texas,48321,Matagorda,Everything else,36329,43.7,9.7,41.4,0.1,1.6,22.2,58628.0
+Texas,48323,Maverick,Hispanic-majority,58082,94.8,0.2,2.9,1.5,0.5,14.3,49568.0
+Texas,48325,Medina,Hispanic-majority,53547,51.5,2.9,41.7,0.1,0.8,23.1,78074.0
+Texas,48327,Menard,"White, non-college",1955,25.7,0.4,70.3,0.0,0.0,24.0,53043.0
+Texas,48329,Midland,Everything else,174801,46.0,6.4,42.3,0.1,2.4,31.0,92874.0
+Texas,48331,Milam,Everything else,25567,26.0,8.1,61.6,0.1,0.5,20.6,66141.0
+Texas,48333,Mills,"White, non-college",4511,21.0,0.7,73.1,0.0,0.7,27.9,67620.0
+Texas,48335,Mitchell,Everything else,9018,38.8,8.2,46.8,0.3,1.0,11.5,60550.0
+Texas,48337,Montague,"White, non-college",21046,12.3,0.1,83.6,0.5,0.2,18.9,64545.0
+Texas,48339,Montgomery,Big diverse metros,684432,27.9,6.1,58.7,0.1,3.3,38.8,97701.0
+Texas,48341,Moore,Hispanic-majority,21373,61.0,4.8,28.2,0.3,2.1,12.3,61762.0
+Texas,48343,Morris,Everything else,12076,11.2,22.3,61.9,0.4,1.1,16.0,58645.0
+Texas,48345,Motley,"White, non-college",1183,10.1,5.3,78.7,0.1,0.0,19.3,61154.0
+Texas,48347,Nacogdoches,Everything else,65162,21.6,16.5,57.1,0.2,0.9,28.2,53555.0
+Texas,48349,Navarro,Everything else,54711,32.1,9.1,50.5,0.2,0.8,18.2,63111.0
+Texas,48351,Newton,"White, non-college",12093,3.6,17.3,74.2,0.1,0.7,6.8,42618.0
+Texas,48353,Nolan,Everything else,14454,37.4,2.7,53.8,0.7,0.1,16.0,50747.0
+Texas,48355,Nueces,Hispanic-majority,352955,62.5,3.5,29.3,0.1,2.3,23.8,66897.0
+Texas,48357,Ochiltree,Hispanic-majority,9786,56.8,0.0,39.3,0.8,0.3,20.7,70183.0
+Texas,48359,Oldham,Everything else,2249,27.8,8.7,62.3,0.0,0.3,21.4,79900.0
+Texas,48361,Orange,"White, non-college",85307,9.6,7.6,76.8,0.1,1.1,17.7,72104.0
+Texas,48363,Palo Pinto,"White, non-college",29295,20.6,2.3,73.0,0.1,0.7,17.8,67674.0
+Texas,48365,Panola,"White, non-college",22726,10.4,11.2,71.1,0.0,0.5,17.0,64894.0
+Texas,48367,Parker,Everything else,165168,14.7,1.3,79.1,0.2,0.9,32.3,104443.0
+Texas,48369,Parmer,Hispanic-majority,9731,66.7,0.3,30.4,0.0,0.0,16.9,69735.0
+Texas,48371,Pecos,Hispanic-majority,14896,71.3,3.4,22.1,0.1,2.6,14.1,72750.0
+Texas,48373,Polk,"White, non-college",52800,15.3,7.7,70.9,0.9,0.6,16.2,62259.0
+Texas,48375,Potter,Everything else,115975,39.3,10.2,42.2,0.2,4.7,18.6,53249.0
+Texas,48377,Presidio,Hispanic-majority,5930,79.5,0.0,18.2,0.3,0.0,28.0,43802.0
+Texas,48379,Rains,"White, non-college",12775,10.3,2.5,81.8,0.5,1.0,20.9,65413.0
+Texas,48381,Randall,Everything else,146070,24.6,3.1,66.5,0.2,1.7,33.7,83864.0
+Texas,48383,Reagan,Hispanic-majority,3232,68.7,5.4,22.1,0.0,1.4,13.6,57813.0
+Texas,48385,Real,"White, non-college",2802,18.9,0.7,79.1,0.0,0.0,21.1,39605.0
+Texas,48387,Red River,"White, non-college",11611,7.5,16.3,72.8,1.0,0.3,15.4,48491.0
+Texas,48389,Reeves,Hispanic-majority,12664,85.3,1.7,11.6,0.1,0.2,7.4,64297.0
+Texas,48391,Refugio,Hispanic-majority,6707,50.4,6.2,40.6,0.1,0.0,14.0,60181.0
+Texas,48393,Roberts,"White, non-college",832,6.6,0.4,89.1,0.0,0.0,20.5,67868.0
+Texas,48395,Robertson,Everything else,17167,22.2,17.2,54.8,0.1,0.6,22.0,72236.0
+Texas,48397,Rockwall,College-educated,123617,20.8,9.1,63.0,0.1,3.5,44.5,127981.0
+Texas,48399,Runnels,Everything else,9874,34.9,2.9,60.0,0.0,0.1,19.1,62632.0
+Texas,48401,Rusk,Everything else,52842,19.1,13.2,61.4,0.1,0.4,17.5,68658.0
+Texas,48403,Sabine,"White, non-college",10023,1.6,6.8,84.5,0.0,0.7,14.3,66585.0
+Texas,48405,San Augustine,Everything else,7874,8.3,21.4,68.1,0.4,0.0,13.8,50408.0
+Texas,48407,San Jacinto,Everything else,28441,19.2,8.7,68.8,0.1,0.3,16.2,65364.0
+Texas,48409,San Patricio,Hispanic-majority,70181,56.5,1.5,37.9,0.1,1.1,17.5,69704.0
+Texas,48411,San Saba,Everything else,5696,30.7,2.5,62.6,0.2,0.2,24.0,55819.0
+Texas,48413,Schleicher,Hispanic-majority,2381,53.2,0.5,41.8,0.0,0.0,18.4,86694.0
+Texas,48415,Scurry,Everything else,16488,43.3,3.3,49.0,0.7,0.8,13.0,60039.0
+Texas,48417,Shackelford,Everything else,3175,12.9,0.9,81.2,0.1,0.0,34.1,73047.0
+Texas,48419,Shelby,Everything else,24155,19.9,15.1,59.7,0.7,0.0,15.1,49776.0
+Texas,48421,Sherman,Everything else,2295,46.6,0.1,52.1,0.0,0.5,30.2,61250.0
+Texas,48423,Smith,Everything else,241740,20.9,16.3,57.5,0.1,1.7,28.6,74192.0
+Texas,48425,Somervell,"White, non-college",9691,18.2,1.3,76.9,0.2,0.0,29.3,79825.0
+Texas,48427,Starr,Hispanic-majority,66067,97.2,0.4,2.3,0.0,0.1,13.6,37639.0
+Texas,48429,Stephens,Everything else,9351,25.1,3.0,68.2,0.0,1.0,17.2,58008.0
+Texas,48431,Sterling,Everything else,1468,35.7,0.1,62.8,0.3,0.1,24.5,64954.0
+Texas,48433,Stonewall,"White, non-college",1227,20.0,0.4,78.2,0.0,0.0,16.9,56875.0
+Texas,48435,Sutton,Hispanic-majority,3277,63.4,0.1,31.9,0.3,0.0,18.3,78906.0
+Texas,48437,Swisher,Everything else,6937,46.3,7.7,41.5,0.6,0.0,15.5,36165.0
+Texas,48439,Tarrant,Big diverse metros,2167390,30.3,17.3,42.0,0.1,6.1,34.8,84207.0
+Texas,48441,Taylor,Everything else,145863,25.1,7.7,61.0,0.1,2.2,29.3,67139.0
+Texas,48443,Terrell,Everything else,835,40.1,0.0,50.8,0.0,0.0,26.9,44886.0
+Texas,48445,Terry,Hispanic-majority,11629,56.9,2.9,37.7,0.4,0.2,9.8,44100.0
+Texas,48447,Throckmorton,"White, non-college",1639,10.3,0.0,84.4,0.0,0.6,22.4,59216.0
+Texas,48449,Titus,Everything else,31363,45.0,10.2,42.4,0.3,0.0,16.3,58425.0
+Texas,48451,Tom Green,Everything else,119577,40.6,3.6,51.4,0.1,1.3,25.5,68370.0
+Texas,48453,Travis,College-educated,1330015,32.6,7.8,46.9,0.1,7.8,56.6,99611.0
+Texas,48455,Trinity,"White, non-college",14046,11.2,7.9,76.9,0.0,0.2,16.8,52018.0
+Texas,48457,Tyler,"White, non-college",20238,8.4,10.7,76.4,0.1,0.4,12.4,55396.0
+Texas,48459,Upshur,"White, non-college",42567,10.4,7.2,77.2,0.1,0.6,18.2,66208.0
+Texas,48461,Upton,Hispanic-majority,3191,54.7,1.2,42.6,0.2,0.4,8.7,49167.0
+Texas,48463,Uvalde,Hispanic-majority,24881,70.9,0.3,25.6,0.3,1.1,19.8,53801.0
+Texas,48465,Val Verde,Hispanic-majority,47741,81.2,1.2,15.4,0.1,0.6,22.5,66100.0
+Texas,48467,Van Zandt,"White, non-college",62649,13.4,2.3,80.2,0.3,0.5,19.8,69475.0
+Texas,48469,Victoria,Everything else,91413,48.1,5.5,42.4,0.1,1.2,19.9,70896.0
+Texas,48471,Walker,Everything else,80209,21.8,19.6,53.0,0.2,1.0,21.6,52324.0
+Texas,48473,Waller,Everything else,61552,33.5,23.4,38.1,0.1,2.0,27.9,80397.0
+Texas,48475,Ward,Hispanic-majority,11144,56.2,5.0,36.4,0.3,0.8,12.4,65952.0
+Texas,48477,Washington,Everything else,36647,18.5,14.2,61.4,0.3,1.4,30.7,77825.0
+Texas,48479,Webb,Hispanic-majority,269294,95.0,0.4,3.6,0.0,0.5,21.4,63058.0
+Texas,48481,Wharton,Everything else,41794,42.0,10.9,43.3,0.2,0.5,20.7,66924.0
+Texas,48483,Wheeler,Everything else,4862,25.4,1.4,68.5,0.4,1.0,17.0,60167.0
+Texas,48485,Wichita,Everything else,129996,20.7,10.2,62.5,0.3,2.3,25.1,63524.0
+Texas,48487,Wilbarger,Everything else,12616,30.2,5.8,54.5,0.1,3.1,17.2,54102.0
+Texas,48489,Willacy,Hispanic-majority,20139,87.3,1.5,9.8,0.0,0.2,14.0,54180.0
+Texas,48491,Williamson,College-educated,672688,24.7,6.7,53.3,0.1,9.9,48.4,111340.0
+Texas,48493,Wilson,Everything else,52781,39.9,2.0,54.8,0.1,0.6,25.9,94565.0
+Texas,48495,Winkler,Hispanic-majority,7454,62.5,3.9,31.6,0.0,0.6,10.6,86900.0
+Texas,48497,Wise,"White, non-college",75005,21.1,1.6,72.9,0.3,0.7,22.2,93421.0
+Texas,48499,Wood,"White, non-college",46961,11.6,3.7,80.6,0.0,0.5,21.5,60300.0
+Texas,48501,Yoakum,Hispanic-majority,7571,65.6,0.1,31.0,0.0,0.9,20.1,84925.0
+Texas,48503,Young,"White, non-college",18029,20.5,0.6,75.1,0.2,1.0,24.0,68010.0
+Texas,48505,Zapata,Hispanic-majority,13841,93.9,0.1,4.8,0.0,0.6,15.2,39239.0
+Texas,48507,Zavala,Hispanic-majority,9412,92.6,0.8,6.0,0.0,0.5,11.1,36749.0
+Kansas,20001,Allen,"White, non-college",12483,4.3,2.8,88.5,0.5,0.4,22.4,60689.0
+Kansas,20003,Anderson,"White, non-college",7834,1.8,1.1,90.9,0.1,0.0,14.0,70614.0
+Kansas,20005,Atchison,"White, non-college",16208,3.8,3.5,86.7,0.1,0.3,21.8,61112.0
+Kansas,20007,Barber,"White, non-college",4069,6.3,0.1,88.7,2.3,0.0,27.3,61926.0
+Kansas,20009,Barton,"White, non-college",25097,16.7,0.6,78.9,0.2,0.2,21.7,58851.0
+Kansas,20011,Bourbon,"White, non-college",14394,3.1,1.7,88.8,0.1,0.8,23.9,59238.0
+Kansas,20013,Brown,"White, non-college",9343,4.7,1.6,81.5,6.3,0.3,19.6,62233.0
+Kansas,20015,Butler,Everything else,68287,5.8,1.9,85.7,0.5,1.7,32.4,81610.0
+Kansas,20017,Chase,Everything else,2561,8.4,1.1,86.3,0.2,0.5,30.2,56484.0
+Kansas,20019,Chautauqua,"White, non-college",3370,5.0,0.8,80.1,3.5,0.1,18.6,56438.0
+Kansas,20021,Cherokee,"White, non-college",19151,3.0,0.8,85.3,2.0,0.5,19.4,57668.0
+Kansas,20023,Cheyenne,"White, non-college",2628,9.4,0.1,87.2,0.4,0.0,22.0,55429.0
+Kansas,20025,Clark,Everything else,1974,5.4,0.0,87.3,0.9,0.4,31.1,63043.0
+Kansas,20027,Clay,"White, non-college",8048,3.5,2.4,90.0,0.5,0.6,25.5,66176.0
+Kansas,20029,Cloud,"White, non-college",8898,3.9,0.8,89.3,0.5,0.1,20.8,58770.0
+Kansas,20031,Coffey,"White, non-college",8308,3.9,0.6,91.3,0.1,0.9,19.7,70346.0
+Kansas,20033,Comanche,"White, non-college",1729,2.0,0.4,94.7,0.0,0.0,20.1,54545.0
+Kansas,20035,Cowley,"White, non-college",34411,12.2,2.4,76.9,1.2,1.5,24.5,57878.0
+Kansas,20037,Crawford,Everything else,39008,7.5,1.5,83.4,0.5,1.7,32.2,52844.0
+Kansas,20039,Decatur,"White, non-college",2726,4.8,1.1,90.5,0.5,0.0,27.0,53870.0
+Kansas,20041,Dickinson,"White, non-college",18445,5.7,0.1,88.4,0.1,0.2,23.7,68417.0
+Kansas,20043,Doniphan,"White, non-college",7503,3.5,3.0,88.0,0.2,0.1,21.7,74028.0
+Kansas,20045,Douglas,College-educated,120302,7.2,4.2,76.0,1.0,4.3,53.2,69746.0
+Kansas,20047,Edwards,"White, non-college",2779,22.8,0.1,72.5,0.7,0.0,20.5,52692.0
+Kansas,20049,Elk,"White, non-college",2453,4.5,0.1,87.4,0.7,0.2,21.5,64609.0
+Kansas,20051,Ellis,Everything else,28920,7.3,1.3,86.9,0.2,1.6,38.9,63084.0
+Kansas,20053,Ellsworth,"White, non-college",6360,6.1,3.4,83.8,0.2,0.5,22.7,65560.0
+Kansas,20055,Finney,Hispanic-majority,38084,53.2,4.4,37.0,0.1,3.9,19.0,73009.0
+Kansas,20057,Ford,Hispanic-majority,34074,59.1,2.4,35.4,0.0,0.9,20.7,70781.0
+Kansas,20059,Franklin,"White, non-college",26106,4.8,1.1,88.9,0.6,0.6,24.6,77207.0
+Kansas,20061,Geary,Everything else,35815,16.9,14.4,54.9,0.4,2.8,26.2,59317.0
+Kansas,20063,Gove,"White, non-college",2799,1.7,0.5,93.7,0.0,0.8,24.2,66029.0
+Kansas,20065,Graham,"White, non-college",2389,3.9,4.6,87.3,0.0,0.7,26.9,50650.0
+Kansas,20067,Grant,Hispanic-majority,7229,53.4,0.2,44.0,0.7,0.1,25.1,66476.0
+Kansas,20069,Gray,"White, non-college",5701,16.6,0.0,79.4,0.1,0.6,25.9,79122.0
+Kansas,20071,Greeley,"White, non-college",1304,16.9,0.2,81.4,0.4,0.0,29.8,80565.0
+Kansas,20073,Greenwood,"White, non-college",5919,4.0,0.7,90.9,1.3,0.0,21.6,60042.0
+Kansas,20075,Hamilton,Everything else,2471,44.0,0.0,54.3,0.0,0.0,20.5,70250.0
+Kansas,20077,Harper,"White, non-college",5400,8.1,0.8,86.1,0.3,0.3,22.8,53488.0
+Kansas,20079,Harvey,Everything else,33756,12.2,1.4,81.2,0.2,1.1,30.1,74368.0
+Kansas,20081,Haskell,Everything else,3641,30.9,0.5,66.0,0.6,0.0,19.9,66162.0
+Kansas,20083,Hodgeman,Everything else,1652,4.6,0.4,92.0,0.1,0.0,30.2,59955.0
+Kansas,20085,Jackson,"White, non-college",13341,5.8,0.7,81.6,5.2,0.5,22.6,75215.0
+Kansas,20087,Jefferson,"White, non-college",18349,3.5,0.4,91.1,0.4,0.2,24.6,81278.0
+Kansas,20089,Jewell,"White, non-college",2916,2.8,0.7,91.9,0.2,0.3,18.2,52634.0
+Kansas,20091,Johnson,College-educated,620631,9.3,4.8,76.1,0.1,5.2,57.6,109208.0
+Kansas,20093,Kearny,Everything else,3864,35.6,0.0,58.5,0.1,3.6,19.4,89135.0
+Kansas,20095,Kingman,"White, non-college",7186,4.1,0.3,89.7,0.1,0.0,25.3,59842.0
+Kansas,20097,Kiowa,"White, non-college",2422,4.5,0.9,87.3,0.4,2.7,28.3,75539.0
+Kansas,20099,Labette,"White, non-college",19869,5.1,3.2,83.2,0.7,0.0,20.2,56325.0
+Kansas,20101,Lane,"White, non-college",1461,16.1,1.2,81.2,0.3,0.0,24.4,54526.0
+Kansas,20103,Leavenworth,Everything else,83123,7.6,6.8,77.4,0.3,1.3,36.1,89218.0
+Kansas,20105,Lincoln,"White, non-college",2923,4.6,0.1,91.1,0.1,0.6,25.9,57500.0
+Kansas,20107,Linn,"White, non-college",9767,3.1,1.4,91.0,0.2,0.2,22.7,59069.0
+Kansas,20109,Logan,"White, non-college",2707,7.4,0.0,87.7,0.9,0.6,25.7,75662.0
+Kansas,20111,Lyon,Everything else,32186,24.2,1.4,68.3,0.2,1.9,26.3,59912.0
+Kansas,20113,McPherson,Everything else,30205,5.6,1.7,89.1,0.1,0.4,34.3,78851.0
+Kansas,20115,Marion,Everything else,11754,4.2,0.9,90.9,0.5,0.4,30.4,64695.0
+Kansas,20117,Marshall,"White, non-college",9993,2.8,0.7,93.3,0.3,0.3,19.1,68419.0
+Kansas,20119,Meade,Everything else,3903,24.3,0.4,69.8,1.6,1.8,26.5,71852.0
+Kansas,20121,Miami,Everything else,34938,4.1,1.2,89.9,0.1,0.1,31.0,89000.0
+Kansas,20123,Mitchell,"White, non-college",5779,3.2,0.1,93.0,0.2,0.7,26.2,64246.0
+Kansas,20125,Montgomery,"White, non-college",30940,8.1,3.8,76.5,1.9,0.2,22.6,55697.0
+Kansas,20127,Morris,"White, non-college",5340,4.3,0.0,90.0,0.0,0.7,29.9,58686.0
+Kansas,20129,Morton,"White, non-college",2611,24.1,1.2,70.3,0.0,1.7,17.1,66447.0
+Kansas,20131,Nemaha,"White, non-college",10160,2.6,1.2,93.3,0.3,0.6,29.9,77348.0
+Kansas,20133,Neosho,"White, non-college",15656,6.0,1.5,88.0,0.1,0.5,23.3,56618.0
+Kansas,20135,Ness,"White, non-college",2653,14.9,0.0,79.9,0.5,0.2,25.0,68616.0
+Kansas,20137,Norton,"White, non-college",5359,5.9,3.1,85.7,1.0,0.1,22.5,54050.0
+Kansas,20139,Osage,"White, non-college",15744,3.4,0.3,92.1,0.3,0.1,21.6,74467.0
+Kansas,20141,Osborne,"White, non-college",3452,3.0,0.3,91.8,0.2,0.5,23.8,63011.0
+Kansas,20143,Ottawa,"White, non-college",5819,3.3,0.4,92.9,0.5,0.1,27.7,74018.0
+Kansas,20145,Pawnee,"White, non-college",6144,9.1,7.4,79.9,0.9,0.0,18.0,63517.0
+Kansas,20147,Phillips,"White, non-college",4813,3.4,0.7,91.6,0.6,0.4,22.5,62123.0
+Kansas,20149,Pottawatomie,Everything else,26204,6.1,1.6,87.1,0.2,0.4,38.2,92325.0
+Kansas,20151,Pratt,"White, non-college",9127,8.6,0.6,84.1,0.1,0.2,25.8,66022.0
+Kansas,20153,Rawlins,"White, non-college",2516,7.7,0.0,88.5,1.2,0.8,20.0,67742.0
+Kansas,20155,Reno,"White, non-college",61553,10.4,2.7,82.0,0.4,0.5,20.4,60645.0
+Kansas,20157,Republic,"White, non-college",4646,3.9,0.5,93.3,0.0,0.0,21.5,56833.0
+Kansas,20159,Rice,"White, non-college",9350,14.0,1.8,77.6,0.5,0.0,25.9,63925.0
+Kansas,20161,Riley,College-educated,71946,10.0,6.4,73.6,0.2,4.1,48.9,61098.0
+Kansas,20163,Rooks,"White, non-college",4813,3.2,1.9,91.4,0.2,0.7,23.2,62500.0
+Kansas,20165,Rush,"White, non-college",2947,6.5,0.4,87.4,0.5,0.0,21.2,59970.0
+Kansas,20167,Russell,"White, non-college",6679,4.1,0.4,89.5,0.2,0.4,19.7,62392.0
+Kansas,20169,Saline,"White, non-college",53668,12.8,3.4,77.8,0.1,1.7,29.1,65422.0
+Kansas,20171,Scott,"White, non-college",5027,21.8,0.0,75.1,1.2,0.0,28.7,68839.0
+Kansas,20173,Sedgwick,Everything else,528226,16.5,7.6,64.9,0.4,4.2,32.1,69365.0
+Kansas,20175,Seward,Hispanic-majority,21486,67.4,2.9,25.1,0.2,2.4,11.4,63827.0
+Kansas,20177,Shawnee,Everything else,178025,13.8,6.6,71.0,0.4,1.3,32.2,67104.0
+Kansas,20179,Sheridan,"White, non-college",2426,5.9,0.0,91.3,0.3,0.0,24.3,73750.0
+Kansas,20181,Sherman,"White, non-college",5858,13.0,1.8,82.8,0.0,0.1,24.1,61750.0
+Kansas,20183,Smith,"White, non-college",3552,2.6,0.2,93.3,0.3,0.2,25.6,59135.0
+Kansas,20185,Stafford,"White, non-college",3978,13.4,0.2,81.1,0.3,0.0,27.1,64226.0
+Kansas,20187,Stanton,Everything else,2038,45.6,0.1,45.7,5.7,0.4,24.2,71700.0
+Kansas,20189,Stevens,Everything else,5162,39.1,0.1,57.2,0.0,0.2,20.3,64178.0
+Kansas,20191,Sumner,"White, non-college",22353,6.1,1.1,86.5,0.5,0.4,25.9,63951.0
+Kansas,20193,Thomas,Everything else,7885,8.4,0.4,86.6,0.0,0.1,34.6,71325.0
+Kansas,20195,Trego,Everything else,2777,1.1,0.0,95.2,0.5,0.7,30.1,81528.0
+Kansas,20197,Wabaunsee,"White, non-college",7009,4.8,0.2,89.6,0.0,0.4,25.0,76908.0
+Kansas,20199,Wallace,"White, non-college",1417,7.4,0.8,87.9,0.1,0.6,24.5,63207.0
+Kansas,20201,Washington,"White, non-college",5533,4.9,0.1,89.9,0.4,0.4,25.8,65482.0
+Kansas,20203,Wichita,Everything else,2091,27.5,0.2,69.1,0.4,0.0,20.1,79063.0
+Kansas,20205,Wilson,"White, non-college",8505,3.8,0.2,90.4,0.8,0.0,19.9,60677.0
+Kansas,20207,Woodson,"White, non-college",3109,2.9,0.2,91.4,0.2,0.0,23.1,50326.0
+Kansas,20209,Wyandotte,Everything else,167654,34.1,18.1,36.4,0.3,5.2,21.2,63631.0
+Maine,23001,Androscoggin,"White, non-college",113423,2.2,5.5,87.2,0.0,1.2,23.4,67873.0
+Maine,23003,Aroostook,"White, non-college",67058,1.7,0.7,92.5,1.1,0.3,23.4,56700.0
+Maine,23005,Cumberland,College-educated,308827,2.8,3.4,85.6,0.1,2.2,53.0,95677.0
+Maine,23007,Franklin,Everything else,30413,1.7,0.8,93.1,0.2,0.6,32.0,58675.0
+Maine,23009,Hancock,College-educated,56460,1.9,1.0,92.6,0.4,1.0,40.1,72744.0
+Maine,23011,Kennebec,Everything else,126808,2.3,0.9,91.8,0.2,0.9,31.9,69077.0
+Maine,23013,Knox,Everything else,41003,1.9,0.3,93.2,0.1,0.5,39.7,74096.0
+Maine,23015,Lincoln,College-educated,36099,1.4,0.8,93.1,0.3,0.7,40.2,76875.0
+Maine,23017,Oxford,"White, non-college",59255,1.7,0.3,92.2,0.2,0.7,24.0,60173.0
+Maine,23019,Penobscot,Everything else,154710,2.1,1.1,91.1,0.7,1.1,30.1,66356.0
+Maine,23021,Piscataquis,"White, non-college",17263,1.9,1.0,92.7,0.1,0.8,21.6,61345.0
+Maine,23023,Sagadahoc,College-educated,37285,2.0,0.5,92.0,0.0,0.7,44.2,87806.0
+Maine,23025,Somerset,"White, non-college",50959,1.5,0.5,93.8,0.1,0.4,21.1,58179.0
+Maine,23027,Waldo,Everything else,40192,1.6,0.4,92.8,0.2,0.5,34.4,72782.0
+Maine,23029,Washington,"White, non-college",31331,2.5,0.7,87.6,4.4,0.3,24.7,56024.0
+Maine,23031,York,Everything else,216731,2.2,1.1,90.1,0.1,1.1,36.2,88333.0
+Iowa,19001,Adair,"White, non-college",7460,3.2,1.4,93.1,0.0,0.3,19.9,68092.0
+Iowa,19003,Adams,"White, non-college",3622,1.7,0.3,94.5,0.2,0.0,27.0,71875.0
+Iowa,19005,Allamakee,"White, non-college",14092,9.1,1.8,86.5,0.1,0.4,22.2,70694.0
+Iowa,19007,Appanoose,"White, non-college",12184,2.0,0.8,93.8,0.0,0.9,20.5,54934.0
+Iowa,19009,Audubon,"White, non-college",5599,2.5,0.5,93.8,0.1,0.1,20.8,58229.0
+Iowa,19011,Benton,"White, non-college",25724,2.0,0.4,94.4,0.1,0.2,25.6,86962.0
+Iowa,19013,Black Hawk,Everything else,131049,5.2,9.1,78.1,0.1,2.7,30.3,66417.0
+Iowa,19015,Boone,"White, non-college",26668,2.9,1.2,92.9,0.0,0.2,28.5,83531.0
+Iowa,19017,Bremer,Everything else,25204,2.1,1.1,92.3,0.0,0.9,36.2,86784.0
+Iowa,19019,Buchanan,"White, non-college",20694,1.9,0.6,95.0,0.1,0.2,22.4,78236.0
+Iowa,19021,Buena Vista,Everything else,20753,29.4,3.3,52.1,0.1,9.5,22.2,71719.0
+Iowa,19023,Butler,"White, non-college",14268,1.7,0.2,94.6,0.0,1.3,21.4,73715.0
+Iowa,19025,Calhoun,"White, non-college",9803,2.7,1.6,91.3,0.2,0.2,21.8,64964.0
+Iowa,19027,Carroll,"White, non-college",20594,3.5,0.5,91.9,0.0,0.2,24.0,72930.0
+Iowa,19029,Cass,"White, non-college",13096,2.7,0.9,93.5,0.2,0.5,22.1,63013.0
+Iowa,19031,Cedar,"White, non-college",18349,2.8,0.4,93.2,0.1,0.5,23.7,80602.0
+Iowa,19033,Cerro Gordo,"White, non-college",42632,5.6,1.9,88.2,0.2,1.2,24.0,68189.0
+Iowa,19035,Cherokee,"White, non-college",11600,5.4,1.0,88.6,0.0,0.4,23.4,71269.0
+Iowa,19037,Chickasaw,"White, non-college",11807,4.6,0.5,92.6,0.4,0.0,21.2,75675.0
+Iowa,19039,Clarke,"White, non-college",9662,16.8,0.1,77.5,0.0,0.6,16.0,71641.0
+Iowa,19041,Clay,"White, non-college",16461,4.7,0.3,91.1,0.1,0.8,27.5,65428.0
+Iowa,19043,Clayton,"White, non-college",17013,2.3,0.6,95.0,0.0,0.3,14.5,67242.0
+Iowa,19045,Clinton,"White, non-college",46268,3.6,3.1,89.0,0.1,0.7,22.4,66981.0
+Iowa,19047,Crawford,Everything else,16277,30.8,0.9,62.1,0.1,2.2,17.7,67027.0
+Iowa,19049,Dallas,College-educated,107968,6.9,3.0,80.9,0.0,4.9,51.5,102379.0
+Iowa,19051,Davis,"White, non-college",9157,2.4,0.0,93.8,0.0,0.0,17.1,77194.0
+Iowa,19053,Decatur,"White, non-college",7759,3.5,1.3,90.2,0.2,0.7,23.5,59044.0
+Iowa,19055,Delaware,"White, non-college",17558,1.7,0.1,94.1,0.1,0.0,22.6,74989.0
+Iowa,19057,Des Moines,"White, non-college",38487,3.7,4.7,84.5,0.2,1.2,23.8,62928.0
+Iowa,19059,Dickinson,Everything else,17990,2.9,0.0,93.4,0.1,0.5,31.2,75432.0
+Iowa,19061,Dubuque,Everything else,99030,3.3,2.9,88.3,0.0,1.3,33.4,77630.0
+Iowa,19063,Emmet,"White, non-college",9262,10.2,1.6,85.2,0.1,0.2,17.1,63730.0
+Iowa,19065,Fayette,"White, non-college",19288,3.1,0.8,91.0,0.3,0.9,20.7,60165.0
+Iowa,19067,Floyd,"White, non-college",15328,3.9,1.4,88.7,0.0,1.6,18.3,68557.0
+Iowa,19069,Franklin,"White, non-college",9956,16.5,0.7,80.2,0.1,0.4,19.4,59894.0
+Iowa,19071,Fremont,"White, non-college",6514,3.4,0.4,91.4,0.1,0.2,20.8,71621.0
+Iowa,19073,Greene,"White, non-college",8688,3.5,0.1,92.3,0.3,0.6,21.2,63409.0
+Iowa,19075,Grundy,"White, non-college",12384,1.8,0.6,94.9,0.5,0.5,27.8,87205.0
+Iowa,19077,Guthrie,"White, non-college",10688,3.1,0.6,92.4,0.1,0.5,25.0,77711.0
+Iowa,19079,Hamilton,"White, non-college",14886,10.1,1.0,83.8,0.2,2.3,22.8,72432.0
+Iowa,19081,Hancock,"White, non-college",10671,6.0,0.4,90.1,0.1,0.9,20.5,70601.0
+Iowa,19083,Hardin,"White, non-college",16639,5.5,1.1,90.1,0.3,0.8,21.9,65069.0
+Iowa,19085,Harrison,"White, non-college",14632,2.2,0.1,94.4,0.0,0.3,22.0,79535.0
+Iowa,19087,Henry,"White, non-college",20004,5.5,2.5,86.2,0.2,0.9,23.0,67436.0
+Iowa,19089,Howard,"White, non-college",9445,3.3,0.8,93.0,0.1,0.3,19.5,67446.0
+Iowa,19091,Humboldt,"White, non-college",9591,5.7,0.3,90.4,0.1,1.0,19.4,71946.0
+Iowa,19093,Ida,"White, non-college",6911,4.1,0.3,91.5,0.0,0.7,21.6,63073.0
+Iowa,19095,Iowa,"White, non-college",16507,3.4,0.3,92.5,0.1,0.2,24.8,71223.0
+Iowa,19097,Jackson,"White, non-college",19390,1.6,1.0,93.6,0.1,0.1,19.5,74186.0
+Iowa,19099,Jasper,"White, non-college",37954,3.1,1.5,90.8,0.1,0.7,20.0,71311.0
+Iowa,19101,Jefferson,College-educated,15705,4.1,2.4,82.4,0.1,8.2,43.2,61620.0
+Iowa,19103,Johnson,College-educated,156639,6.7,7.6,74.8,0.1,5.6,55.2,74935.0
+Iowa,19105,Jones,"White, non-college",20896,2.6,2.5,91.5,0.1,0.6,22.0,73531.0
+Iowa,19107,Keokuk,"White, non-college",9924,2.3,0.3,94.6,0.0,0.2,17.0,62329.0
+Iowa,19109,Kossuth,"White, non-college",14516,4.5,0.7,91.7,0.0,0.4,22.8,67697.0
+Iowa,19111,Lee,"White, non-college",32893,3.5,2.4,90.3,0.1,0.6,21.7,62382.0
+Iowa,19113,Linn,Everything else,230004,4.1,5.9,82.4,0.1,2.4,34.7,77649.0
+Iowa,19115,Louisa,"White, non-college",10678,16.4,0.9,77.0,0.1,2.2,16.8,77354.0
+Iowa,19117,Lucas,"White, non-college",8716,2.9,0.3,94.0,0.0,0.8,15.8,61793.0
+Iowa,19119,Lyon,"White, non-college",12162,3.9,0.4,93.4,0.1,0.5,20.4,76746.0
+Iowa,19121,Madison,"White, non-college",16926,2.3,0.7,94.3,0.0,0.4,27.1,90855.0
+Iowa,19123,Mahaska,"White, non-college",22021,2.5,1.1,91.6,0.0,1.0,24.1,70940.0
+Iowa,19125,Marion,Everything else,33642,2.3,0.4,93.3,0.0,1.4,32.1,78680.0
+Iowa,19127,Marshall,Everything else,40114,24.6,1.6,66.0,0.2,4.1,22.6,73315.0
+Iowa,19129,Mills,Everything else,14568,3.9,0.4,92.7,0.1,0.5,31.0,90753.0
+Iowa,19131,Mitchell,"White, non-college",10575,2.4,0.3,95.1,0.3,0.6,24.9,71365.0
+Iowa,19133,Monona,"White, non-college",8557,2.7,0.2,92.8,0.4,0.0,19.6,68377.0
+Iowa,19135,Monroe,"White, non-college",7513,2.1,1.2,94.8,0.1,0.5,21.4,70996.0
+Iowa,19137,Montgomery,"White, non-college",10214,0.8,1.8,92.0,0.1,1.1,20.4,63666.0
+Iowa,19139,Muscatine,"White, non-college",42559,18.8,2.2,75.0,0.1,0.6,23.1,69396.0
+Iowa,19141,O'Brien,"White, non-college",14126,7.6,1.7,87.0,0.2,0.7,22.0,68356.0
+Iowa,19143,Osceola,"White, non-college",6100,10.6,0.5,84.0,1.1,0.6,16.7,69239.0
+Iowa,19145,Page,"White, non-college",15131,3.3,1.7,90.3,0.4,0.5,19.2,57953.0
+Iowa,19147,Palo Alto,"White, non-college",8863,3.5,1.6,91.3,0.1,0.6,19.0,72781.0
+Iowa,19149,Plymouth,"White, non-college",25747,6.4,2.4,88.0,0.2,0.5,21.7,83251.0
+Iowa,19151,Pocahontas,"White, non-college",7046,5.8,0.7,88.6,0.1,0.2,18.7,61875.0
+Iowa,19153,Polk,College-educated,503175,10.4,7.3,73.2,0.1,4.9,40.3,83576.0
+Iowa,19155,Pottawattamie,"White, non-college",93424,9.1,1.8,84.5,0.2,0.9,23.6,73602.0
+Iowa,19157,Poweshiek,"White, non-college",18545,3.5,0.9,89.8,0.3,2.0,27.3,67391.0
+Iowa,19159,Ringgold,"White, non-college",4645,2.2,0.4,94.7,0.3,0.0,24.6,73346.0
+Iowa,19161,Sac,"White, non-college",9689,4.4,0.5,91.8,0.1,0.4,22.3,73838.0
+Iowa,19163,Scott,Everything else,174608,7.4,7.1,77.0,0.1,2.8,36.6,78277.0
+Iowa,19165,Shelby,"White, non-college",11778,4.4,0.3,91.3,0.1,0.5,24.1,72738.0
+Iowa,19167,Sioux,Everything else,36212,14.3,0.6,82.8,0.1,0.5,30.6,86098.0
+Iowa,19169,Story,College-educated,100466,5.2,2.7,81.0,0.1,6.6,54.8,69685.0
+Iowa,19171,Tama,"White, non-college",16868,11.7,0.9,78.4,5.3,0.7,20.5,70781.0
+Iowa,19173,Taylor,"White, non-college",5868,8.1,0.2,88.9,0.0,0.0,16.0,67740.0
+Iowa,19175,Union,"White, non-college",11993,3.8,0.8,91.9,0.0,0.9,23.3,57772.0
+Iowa,19177,Van Buren,"White, non-college",7241,1.8,0.4,94.4,0.1,0.0,18.8,61161.0
+Iowa,19179,Wapello,"White, non-college",35362,13.4,3.0,75.6,0.0,1.6,19.6,64766.0
+Iowa,19181,Warren,Everything else,54409,3.7,0.7,91.9,0.1,0.7,33.3,94588.0
+Iowa,19183,Washington,"White, non-college",22561,7.8,1.0,88.7,0.0,0.4,26.2,75647.0
+Iowa,19185,Wayne,"White, non-college",6532,1.2,0.2,93.7,0.0,0.1,17.2,61964.0
+Iowa,19187,Webster,"White, non-college",36886,6.6,3.3,83.9,0.1,1.2,22.0,68975.0
+Iowa,19189,Winnebago,"White, non-college",10583,5.8,2.0,89.0,0.2,1.3,26.1,67642.0
+Iowa,19191,Winneshiek,Everything else,19873,3.1,0.4,93.3,0.4,0.5,31.2,79066.0
+Iowa,19193,Woodbury,Everything else,106247,19.1,4.9,67.1,1.3,2.3,24.3,73658.0
+Iowa,19195,Worth,"White, non-college",7350,3.5,0.8,93.3,0.1,0.4,19.1,78008.0
+Iowa,19197,Wright,"White, non-college",12791,19.9,0.4,75.5,0.1,0.5,24.9,67190.0
+Nebraska,31001,Adams,"White, non-college",31052,12.5,1.4,82.3,0.2,1.0,29.6,68365.0
+Nebraska,31003,Antelope,"White, non-college",6305,4.0,0.8,92.8,0.1,0.2,20.5,66105.0
+Nebraska,31005,Arthur,Everything else,484,0.6,0.0,93.0,0.0,0.0,36.6,76250.0
+Nebraska,31007,Banner,Everything else,742,10.6,0.0,85.8,0.0,0.0,33.3,78839.0
+Nebraska,31009,Blaine,"White, non-college",422,0.0,0.0,100.0,0.0,0.0,25.0,69583.0
+Nebraska,31011,Boone,"White, non-college",5356,4.3,0.0,93.5,0.0,0.2,19.7,74947.0
+Nebraska,31013,Box Butte,"White, non-college",10714,12.6,0.1,78.6,2.5,0.4,18.6,68892.0
+Nebraska,31015,Boyd,"White, non-college",1688,3.3,0.2,90.8,2.9,0.2,22.3,67045.0
+Nebraska,31017,Brown,"White, non-college",2869,6.2,0.0,88.5,0.4,0.0,24.0,54676.0
+Nebraska,31019,Buffalo,Everything else,50579,10.6,0.8,83.8,0.2,1.6,34.4,75911.0
+Nebraska,31021,Burt,"White, non-college",6740,3.4,0.2,90.3,1.2,0.1,24.9,63685.0
+Nebraska,31023,Butler,"White, non-college",8424,6.3,0.2,90.0,0.4,0.0,24.0,79268.0
+Nebraska,31025,Cass,Everything else,27161,4.1,0.3,90.5,0.2,0.3,32.2,91836.0
+Nebraska,31027,Cedar,"White, non-college",8315,2.5,0.1,95.0,0.2,0.3,24.0,73578.0
+Nebraska,31029,Chase,"White, non-college",3671,17.9,0.4,77.8,0.0,1.7,24.1,68173.0
+Nebraska,31031,Cherry,"White, non-college",5498,3.5,1.0,83.8,5.2,1.7,25.3,66270.0
+Nebraska,31033,Cheyenne,"White, non-college",9533,8.7,0.8,86.9,0.2,1.3,23.2,60348.0
+Nebraska,31035,Clay,"White, non-college",6095,9.7,0.7,87.1,0.2,0.0,22.3,78986.0
+Nebraska,31037,Colfax,Everything else,10641,47.8,3.5,44.7,2.1,0.2,14.8,82530.0
+Nebraska,31039,Cuming,"White, non-college",8975,12.4,0.4,85.1,0.5,0.3,24.9,71104.0
+Nebraska,31041,Custer,"White, non-college",10518,4.0,0.5,91.6,0.4,0.1,24.3,67906.0
+Nebraska,31043,Dakota,Everything else,21354,41.6,8.7,42.3,2.0,3.0,14.6,70329.0
+Nebraska,31045,Dawes,Everything else,8140,5.0,0.5,85.8,2.8,1.1,36.2,56280.0
+Nebraska,31047,Dawson,Everything else,24202,37.4,6.4,52.8,0.2,0.8,17.6,69880.0
+Nebraska,31049,Deuel,"White, non-college",1847,9.9,0.0,85.7,0.9,0.4,25.2,70096.0
+Nebraska,31051,Dixon,"White, non-college",5545,15.8,0.0,80.9,0.5,0.1,23.4,72454.0
+Nebraska,31053,Dodge,"White, non-college",37351,18.0,0.5,77.5,0.1,0.5,22.0,74329.0
+Nebraska,31055,Douglas,College-educated,590736,14.5,10.2,65.8,0.2,4.4,42.1,80391.0
+Nebraska,31057,Dundy,"White, non-college",1736,3.3,0.6,92.5,0.0,0.0,20.2,58922.0
+Nebraska,31059,Fillmore,"White, non-college",5541,3.8,0.6,92.5,0.3,0.1,22.9,76295.0
+Nebraska,31061,Franklin,"White, non-college",2846,3.5,0.1,92.7,0.5,0.0,21.3,60195.0
+Nebraska,31063,Frontier,"White, non-college",2569,4.9,0.1,91.1,0.2,0.4,25.7,70132.0
+Nebraska,31065,Furnas,"White, non-college",4568,5.1,0.4,91.4,1.0,0.2,24.9,61048.0
+Nebraska,31067,Gage,"White, non-college",21629,3.4,0.5,92.5,0.3,0.7,23.1,67247.0
+Nebraska,31069,Garden,"White, non-college",1761,4.3,0.1,93.4,0.5,0.5,21.1,41882.0
+Nebraska,31071,Garfield,"White, non-college",1718,1.7,0.2,96.7,0.1,0.0,29.7,62804.0
+Nebraska,31073,Gosper,"White, non-college",2040,7.4,0.0,89.8,0.3,0.6,27.4,77500.0
+Nebraska,31075,Grant,"White, non-college",626,0.2,0.2,96.0,1.0,0.8,28.6,70147.0
+Nebraska,31077,Greeley,"White, non-college",2202,3.1,0.6,91.9,0.4,0.0,21.3,63929.0
+Nebraska,31079,Hall,Everything else,62536,32.4,3.3,60.5,0.2,1.0,21.5,69251.0
+Nebraska,31081,Hamilton,Everything else,9464,4.3,0.2,91.9,0.1,0.5,31.3,83994.0
+Nebraska,31083,Harlan,"White, non-college",2847,1.8,0.1,94.1,0.0,1.2,29.2,70625.0
+Nebraska,31085,Hayes,"White, non-college",843,4.9,0.0,93.6,0.2,0.0,19.8,69250.0
+Nebraska,31087,Hitchcock,"White, non-college",2569,4.2,0.0,91.9,0.3,0.7,20.9,51567.0
+Nebraska,31089,Holt,"White, non-college",10102,5.7,0.4,90.9,0.2,0.2,29.1,68513.0
+Nebraska,31091,Hooker,"White, non-college",647,0.0,1.5,88.9,0.2,0.0,24.6,49464.0
+Nebraska,31093,Howard,"White, non-college",6534,3.2,0.6,91.1,0.0,0.1,26.0,76767.0
+Nebraska,31095,Jefferson,"White, non-college",7161,5.9,0.3,90.5,0.2,0.0,20.2,59044.0
+Nebraska,31097,Johnson,"White, non-college",5261,11.9,4.7,77.6,2.4,0.8,17.7,57632.0
+Nebraska,31099,Kearney,Everything else,6713,6.8,0.0,90.8,0.2,0.5,34.5,78631.0
+Nebraska,31101,Keith,"White, non-college",8219,9.1,1.1,85.4,0.1,0.7,22.7,60645.0
+Nebraska,31103,Keya Paha,"White, non-college",822,4.6,0.1,93.1,0.0,0.0,20.6,64000.0
+Nebraska,31105,Kimball,"White, non-college",3248,9.9,1.7,82.3,1.6,0.7,15.0,56712.0
+Nebraska,31107,Knox,"White, non-college",8363,2.9,0.7,84.5,8.8,0.4,19.0,64636.0
+Nebraska,31109,Lancaster,College-educated,326696,8.5,3.7,77.9,0.3,4.1,41.9,74793.0
+Nebraska,31111,Lincoln,"White, non-college",33802,9.3,0.8,86.0,0.6,0.7,22.7,65148.0
+Nebraska,31113,Logan,"White, non-college",773,1.9,1.7,88.6,0.6,0.0,24.1,74271.0
+Nebraska,31115,Loup,"White, non-college",578,8.5,0.0,87.5,0.7,0.0,27.2,71667.0
+Nebraska,31117,McPherson,"White, non-college",475,0.8,0.0,92.4,0.0,0.0,25.7,58684.0
+Nebraska,31119,Madison,"White, non-college",35532,16.3,0.8,77.2,0.9,1.3,23.7,63128.0
+Nebraska,31121,Merrick,"White, non-college",7724,5.6,0.0,90.5,0.0,0.7,18.3,68354.0
+Nebraska,31123,Morrill,"White, non-college",4534,14.7,0.1,80.5,0.4,0.3,19.4,58500.0
+Nebraska,31125,Nance,"White, non-college",3324,2.6,0.2,94.1,0.5,0.2,20.1,65179.0
+Nebraska,31127,Nemaha,"White, non-college",7046,3.3,1.1,89.3,0.8,0.1,29.4,60924.0
+Nebraska,31129,Nuckolls,"White, non-college",4087,3.6,0.1,92.6,0.4,0.0,23.1,73976.0
+Nebraska,31131,Otoe,"White, non-college",16241,9.0,1.0,85.5,0.2,0.2,27.2,82188.0
+Nebraska,31133,Pawnee,"White, non-college",2530,1.9,0.1,93.9,0.0,0.0,21.2,62188.0
+Nebraska,31135,Perkins,"White, non-college",2821,5.6,0.0,90.1,0.1,0.6,25.8,72778.0
+Nebraska,31137,Phelps,"White, non-college",9009,6.9,0.9,89.5,0.3,0.0,29.9,68919.0
+Nebraska,31139,Pierce,"White, non-college",7325,2.7,0.4,93.6,0.4,0.2,23.7,72357.0
+Nebraska,31141,Platte,"White, non-college",34716,23.7,0.7,72.7,0.2,0.2,23.0,71552.0
+Nebraska,31143,Polk,"White, non-college",5225,6.3,0.2,90.1,0.1,0.2,20.0,69768.0
+Nebraska,31145,Red Willow,"White, non-college",10557,6.3,1.0,88.8,0.2,0.3,24.8,63697.0
+Nebraska,31147,Richardson,"White, non-college",7751,2.4,0.2,90.4,1.6,0.1,23.8,60108.0
+Nebraska,31149,Rock,"White, non-college",1319,0.8,0.1,98.6,0.0,0.0,27.1,58125.0
+Nebraska,31151,Saline,Everything else,14650,29.5,0.4,64.8,0.1,2.4,21.8,79910.0
+Nebraska,31153,Sarpy,College-educated,197389,11.6,4.0,76.3,0.2,2.8,42.6,103321.0
+Nebraska,31155,Saunders,Everything else,23048,2.8,0.2,92.2,0.1,0.7,32.6,94066.0
+Nebraska,31157,Scotts Bluff,"White, non-college",35843,23.9,0.6,70.7,1.0,0.7,27.0,63614.0
+Nebraska,31159,Seward,Everything else,17641,3.0,0.8,93.7,0.1,0.5,33.2,82444.0
+Nebraska,31161,Sheridan,"White, non-college",5014,5.4,0.6,80.5,8.5,1.4,24.2,60121.0
+Nebraska,31163,Sherman,"White, non-college",2967,2.8,0.3,92.6,0.1,0.5,20.5,63578.0
+Nebraska,31165,Sioux,"White, non-college",1171,2.1,0.1,95.5,0.0,0.2,22.4,53929.0
+Nebraska,31167,Stanton,"White, non-college",5796,7.0,0.1,89.0,0.0,1.1,24.1,80687.0
+Nebraska,31169,Thayer,"White, non-college",4901,3.2,0.1,93.1,0.3,0.1,23.8,66213.0
+Nebraska,31171,Thomas,"White, non-college",564,5.0,2.0,89.2,0.0,0.0,28.7,65000.0
+Nebraska,31173,Thurston,Native 25%+,6627,4.9,0.3,36.2,53.7,1.4,22.2,69177.0
+Nebraska,31175,Valley,"White, non-college",4066,2.9,0.0,94.7,0.7,0.1,25.3,61852.0
+Nebraska,31177,Washington,Everything else,21106,3.3,0.3,92.9,0.2,0.2,36.8,94396.0
+Nebraska,31179,Wayne,Everything else,9844,10.3,1.0,85.4,0.8,0.3,30.4,66215.0
+Nebraska,31181,Webster,"White, non-college",3360,5.8,0.2,88.2,0.1,0.8,21.2,64347.0
+Nebraska,31183,Wheeler,Everything else,847,3.8,0.0,95.2,0.0,0.0,30.3,70250.0
+Nebraska,31185,York,"White, non-college",14286,6.2,1.3,87.9,0.4,0.5,25.7,77757.0
+Nevada,32001,Churchill,"White, non-college",25805,15.2,2.1,70.7,3.2,2.2,17.7,79163.0
+Nevada,32003,Clark,Big diverse metros,2329548,31.9,11.5,38.3,0.3,10.5,27.8,76472.0
+Nevada,32005,Douglas,Everything else,49623,13.0,0.3,77.2,1.1,2.3,31.6,90754.0
+Nevada,32007,Elko,Everything else,54047,26.0,0.8,61.1,3.5,1.4,17.8,86487.0
+Nevada,32009,Esmeralda,Everything else,1028,31.5,0.3,58.3,1.4,1.2,21.1,41715.0
+Nevada,32011,Eureka,"White, non-college",1585,5.4,0.1,80.9,3.3,2.7,17.1,70473.0
+Nevada,32013,Humboldt,Everything else,17289,27.3,0.8,63.7,2.9,1.5,19.3,81073.0
+Nevada,32015,Lander,"White, non-college",5770,16.8,0.2,75.0,1.8,0.4,19.3,89014.0
+Nevada,32017,Lincoln,"White, non-college",4405,6.6,2.8,84.6,3.0,0.0,20.4,72307.0
+Nevada,32019,Lyon,"White, non-college",61680,19.5,1.3,70.4,1.3,1.3,17.0,80812.0
+Nevada,32021,Mineral,Everything else,4542,17.4,3.2,57.1,15.7,0.1,13.2,54855.0
+Nevada,32023,Nye,Everything else,54344,17.1,2.9,68.9,0.9,1.9,13.3,60714.0
+Nevada,32027,Pershing,Everything else,6487,23.6,4.8,63.7,4.1,0.9,6.1,66902.0
+Nevada,32029,Storey,Everything else,4140,12.8,2.2,76.5,0.0,1.3,31.2,93409.0
+Nevada,32031,Washoe,Big diverse metros,497200,26.1,2.3,58.5,0.7,5.6,34.2,88096.0
+Nevada,32033,White Pine,"White, non-college",8735,16.5,5.9,71.5,3.6,0.3,12.4,72865.0
+Nevada,32510,Carson City,Everything else,58384,26.4,1.7,62.1,1.4,2.4,23.7,72355.0
+Oregon,41001,Baker,"White, non-college",16840,5.3,1.3,87.8,0.9,0.4,26.1,60936.0
+Oregon,41003,Benton,College-educated,96303,9.4,1.1,76.2,0.4,6.6,54.2,77702.0
+Oregon,41005,Clackamas,College-educated,423975,10.1,1.0,76.5,0.3,5.1,40.5,103517.0
+Oregon,41007,Clatsop,"White, non-college",41363,10.0,0.9,80.4,0.3,1.2,28.7,71822.0
+Oregon,41009,Columbia,"White, non-college",53493,6.7,0.6,84.3,0.7,0.8,19.8,87458.0
+Oregon,41011,Coos,"White, non-college",64827,7.3,0.4,82.1,1.5,1.1,22.6,62143.0
+Oregon,41013,Crook,"White, non-college",26277,7.9,0.5,85.8,0.8,0.3,21.3,81965.0
+Oregon,41015,Curry,"White, non-college",23381,7.7,0.0,82.2,1.3,0.9,22.1,62244.0
+Oregon,41017,Deschutes,College-educated,206334,9.2,0.3,83.5,0.4,1.0,45.0,92758.0
+Oregon,41019,Douglas,"White, non-college",112072,6.6,0.3,84.2,0.8,0.8,19.3,61310.0
+Oregon,41021,Gilliam,"White, non-college",1971,9.4,0.0,80.0,1.6,0.0,21.0,66917.0
+Oregon,41023,Grant,"White, non-college",7209,4.2,0.1,86.9,0.5,0.8,17.7,59450.0
+Oregon,41025,Harney,"White, non-college",7499,5.6,1.9,84.6,1.8,0.0,18.3,55208.0
+Oregon,41027,Hood River,College-educated,23905,30.6,0.8,61.8,0.1,0.8,41.0,88947.0
+Oregon,41029,Jackson,Everything else,222645,14.6,0.6,76.8,0.3,1.0,31.7,73999.0
+Oregon,41031,Jefferson,Everything else,25203,21.3,0.6,57.3,11.0,0.5,21.2,76260.0
+Oregon,41033,Josephine,"White, non-college",88179,8.8,0.4,82.9,0.4,0.8,19.7,60098.0
+Oregon,41035,Klamath,"White, non-college",70247,13.9,0.7,74.4,2.3,0.9,22.7,58830.0
+Oregon,41037,Lake,"White, non-college",8267,10.8,0.5,78.8,2.1,0.1,21.1,62787.0
+Oregon,41039,Lane,Everything else,384207,10.5,1.1,78.2,0.7,2.5,34.0,71544.0
+Oregon,41041,Lincoln,"White, non-college",50964,10.3,0.4,78.3,2.0,1.2,28.6,63165.0
+Oregon,41043,Linn,"White, non-college",130706,10.7,0.4,81.3,0.4,1.0,21.6,76329.0
+Oregon,41045,Malheur,Everything else,31954,34.0,1.0,60.2,0.6,1.2,15.2,54519.0
+Oregon,41047,Marion,Everything else,349244,29.0,1.2,60.7,0.5,2.0,26.0,77351.0
+Oregon,41049,Morrow,Everything else,12300,42.0,0.8,52.5,0.1,0.2,10.1,75448.0
+Oregon,41051,Multnomah,College-educated,801477,13.5,5.3,65.2,0.4,7.4,48.9,88766.0
+Oregon,41053,Polk,Everything else,89662,15.6,0.6,73.9,1.1,1.9,31.2,85118.0
+Oregon,41055,Sherman,"White, non-college",1938,4.4,0.5,85.4,0.5,0.3,16.0,60161.0
+Oregon,41057,Tillamook,"White, non-college",27496,11.4,0.8,81.3,0.4,0.8,26.2,69105.0
+Oregon,41059,Umatilla,Everything else,79940,29.7,0.7,61.5,1.9,0.7,18.3,67728.0
+Oregon,41061,Union,"White, non-college",26144,5.5,0.8,85.8,0.5,1.1,26.1,65661.0
+Oregon,41063,Wallowa,Everything else,7553,4.2,1.3,89.2,0.1,0.3,38.2,67112.0
+Oregon,41065,Wasco,"White, non-college",26552,20.6,0.4,70.8,1.8,0.7,22.4,64175.0
+Oregon,41067,Washington,College-educated,603947,18.6,2.2,60.0,0.3,11.4,47.5,107772.0
+Oregon,41069,Wheeler,"White, non-college",1485,4.8,0.0,83.3,0.1,0.5,18.8,55284.0
+Oregon,41071,Yamhill,"White, non-college",108734,17.6,0.7,72.7,0.7,1.9,29.6,90063.0
+Alaska,1,"District 1 (Ketchikan, Wrangell)",Everything else,17537,5.1,0.4,56.7,17.0,7.6,25.2,87338.0
+Alaska,2,"District 2 (Sitka, Petersburg, Craig)",Everything else,17973,7.7,0.7,53.8,14.1,7.6,26.9,82243.0
+Alaska,3,District 3 (Juneau: Mendenhall Valley; Haines),Everything else,17418,4.8,0.8,67.7,7.7,4.4,37.4,110417.0
+Alaska,4,"District 4 (Juneau, Douglas)",College-educated,18382,8.7,0.5,57.7,8.7,9.4,42.7,93627.0
+Alaska,5,"District 5 (Kodiak, Cordova)",Everything else,18132,6.6,0.9,54.6,9.1,16.9,31.4,85597.0
+Alaska,6,"District 6 (Homer, Kasilof, Anchor Point)",Everything else,19820,3.9,0.2,79.8,4.3,2.0,33.4,74333.0
+Alaska,7,"District 7 (Kenai, Soldotna)","White, non-college",18580,6.0,0.9,73.1,5.6,2.7,28.1,74537.0
+Alaska,8,"District 8 (Sterling, Nikiski)","White, non-college",18524,3.5,0.4,80.9,6.3,1.1,26.1,93513.0
+Alaska,9,"District 9 (South Anchorage, Girdwood)",College-educated,17577,5.2,2.5,74.8,2.9,4.1,60.8,171550.0
+Alaska,10,District 10 (Anchorage: Oceanview),Everything else,18015,9.7,1.4,55.0,5.8,10.6,37.8,111909.0
+Alaska,11,District 11 (Anchorage: Hillside),College-educated,18530,8.8,2.2,62.8,5.9,11.0,46.6,134488.0
+Alaska,12,District 12 (Anchorage: Southeast),Everything else,17310,9.7,3.7,51.8,5.8,14.9,32.9,112411.0
+Alaska,13,District 13 (Anchorage: South Midtown),Everything else,18316,10.7,4.7,47.6,10.9,8.5,28.5,95807.0
+Alaska,14,District 14 (Anchorage: North Midtown),Everything else,18106,8.2,4.0,46.6,12.2,11.6,32.8,86411.0
+Alaska,15,District 15 (Anchorage: Southwest),College-educated,19191,5.5,2.7,64.7,4.4,9.7,41.9,124774.0
+Alaska,16,District 16 (Anchorage: West),College-educated,18434,8.6,3.4,59.4,6.7,8.0,44.0,107401.0
+Alaska,17,District 17 (Anchorage: Downtown),College-educated,16940,10.8,4.9,53.4,11.4,7.6,43.0,79986.0
+Alaska,18,"District 18 (Anchorage: JBER, Government Hill)",Everything else,17486,16.3,6.3,54.1,3.7,3.5,31.8,71983.0
+Alaska,19,"District 19 (Anchorage: Airport Heights, Mountain View)",Everything else,18920,14.3,9.0,29.5,9.0,17.5,22.6,62817.0
+Alaska,20,District 20 (Anchorage: University),Everything else,17920,8.2,6.5,45.8,10.6,9.1,33.8,87424.0
+Alaska,21,District 21 (Anchorage: East),Everything else,18664,12.5,6.2,45.2,7.4,12.3,37.0,97059.0
+Alaska,22,District 22 (Anchorage: Northeast),Everything else,18846,9.5,13.2,30.3,8.6,22.0,24.1,77664.0
+Alaska,23,District 23 (Eagle River),College-educated,17582,7.5,1.7,76.8,1.3,2.8,50.4,146744.0
+Alaska,24,"District 24 (Chugiak, Peters Creek)",College-educated,17550,6.4,4.2,72.1,4.7,2.3,44.5,122297.0
+Alaska,25,"District 25 (Palmer, Butte)",Everything else,20024,5.5,1.2,76.5,6.0,1.2,32.6,97807.0
+Alaska,26,District 26 (Knik-Goose Bay),"White, non-college",20411,6.8,1.4,72.3,4.7,1.2,24.3,109066.0
+Alaska,27,"District 27 (Wasilla, Meadow Lakes)","White, non-college",19400,4.7,1.4,74.0,7.5,2.0,19.8,74470.0
+Alaska,28,"District 28 (Mat-Su: Seldon, Lakes)","White, non-college",20857,6.1,0.3,78.3,2.7,1.9,25.5,103209.0
+Alaska,29,"District 29 (Fishhook, Valdez)","White, non-college",20165,4.5,1.3,74.7,6.0,1.0,27.1,100849.0
+Alaska,30,"District 30 (Big Lake, Willow, Houston)","White, non-college",18002,4.5,1.8,77.5,5.1,2.7,18.5,75340.0
+Alaska,31,District 31 (Fairbanks),Everything else,18636,11.1,5.6,53.8,11.3,4.4,25.0,72734.0
+Alaska,32,"District 32 (Fairbanks, Badger, Fort Wainwright)",Everything else,17289,9.8,9.2,60.4,3.7,3.4,26.8,81573.0
+Alaska,33,District 33 (North Pole area),"White, non-college",18015,7.6,1.7,73.6,4.6,1.3,25.0,98014.0
+Alaska,34,"District 34 (Fairbanks: Steese, Farmers Loop)",Everything else,19082,6.8,1.4,80.5,1.6,1.2,38.3,109383.0
+Alaska,35,"District 35 (Fairbanks: Chena, University)",College-educated,18671,7.9,2.7,61.4,8.6,4.5,41.7,83743.0
+Alaska,36,"District 36 (Goldstream, Delta Junction, Tok)",Native 25%+,18656,4.7,0.9,58.0,26.2,1.1,29.6,73145.0
+Alaska,37,"District 37 (Aleutians, Dillingham)",Native 25%+,17518,7.7,3.1,19.3,41.3,17.4,17.4,82162.0
+Alaska,38,District 38 (Bethel),Native 25%+,17428,1.5,1.2,8.1,83.6,1.1,12.9,74764.0
+Alaska,39,"District 39 (Nome, Unalakleet)",Native 25%+,17548,1.8,0.8,8.9,79.0,1.0,10.7,64142.0
+Alaska,40,"District 40 (Utqiagvik, Kotzebue)",Native 25%+,18251,4.1,0.9,22.1,61.7,3.8,13.8,90042.0
