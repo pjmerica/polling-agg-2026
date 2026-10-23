@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2026 Forecast Map</title>
-<!-- Data: forecast_data.js (the model's projections, rebuilt by CI), data.js (every race on the ballot),
-     us_map_geo.js (state shapes and the House tile grid, scripts/build_map_geo.py). 2026-10-23. -->
+<!-- Data: forecast_data.js (the model's projections, rebuilt by CI), data.js (every race on the ballot, with each
+     venue's party-winner book, rebuilt by every market refresh), us_map_geo.js (state shapes and the House tile
+     grid, scripts/build_map_geo.py). 2026-10-23. -->
 <script src="forecast_data.js"></script>
 <script src="data.js"></script>
 <script src="us_map_geo.js"></script>
@@ -37,11 +38,14 @@ a:hover { text-decoration: underline; }
 .hero p { color: var(--muted); max-width: 780px; margin-top: 8px; font-size: 0.93rem; }
 .asof { margin-top: 8px; font-size: 0.76rem; color: var(--faint); }
 
-.bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 18px 0 10px; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin: 18px 0 10px; }
+.bar .tally { margin-left: auto; }
 .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--line2); border-radius: 10px; padding: 3px; }
 .seg button { background: none; border: none; color: var(--muted); font: inherit; font-size: 0.86rem; font-weight: 650;
               padding: 7px 16px; border-radius: 7px; cursor: pointer; }
 .seg button.on { background: var(--panel2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line2); }
+.seg.src button.on { background: #6d8bff26; color: #fff; box-shadow: inset 0 0 0 1px #6d8bff66; }
+@media (max-width: 600px) { .seg button { padding: 7px 11px; } .bar .tally { margin-left: 0; } }
 .tally { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.74rem; }
 .tally span { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
 .tally b { color: var(--text); font-variant-numeric: tabular-nums; }
@@ -65,7 +69,7 @@ a:hover { text-decoration: underline; }
 .note { font-size: 0.78rem; color: var(--faint); margin: 8px 2px 0; }
 
 .tip { position: fixed; z-index: 60; pointer-events: none; background: #0b0e14f5; border: 1px solid var(--line2);
-       border-radius: 10px; padding: 9px 11px; font-size: 0.78rem; display: none; max-width: 300px; box-shadow: 0 6px 24px #0008; }
+       border-radius: 10px; padding: 9px 11px; font-size: 0.78rem; display: none; max-width: 320px; box-shadow: 0 6px 24px #0008; }
 .detail { margin-top: 12px; }
 .card { background: var(--panel); border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14px; }
 .rname { font-weight: 750; font-size: 0.95rem; }
@@ -101,22 +105,23 @@ a:hover { text-decoration: underline; }
 
 <div class="wrap">
   <section class="hero">
-    <h2>How sure the model is, race by race</h2>
-    <p>Each race is shaded by the model's confidence in its pick: dark when the favorite is near-certain, light when it's
-      a lean, gold when it's a tossup. Gray races are on the ballot but have no public polls, so the model doesn't project
-      them. Hover or tap a race for the numbers.</p>
+    <h2 id="title">How sure the model is, race by race</h2>
+    <p id="lede"></p>
     <div class="asof" id="asof"></div>
   </section>
 
   <div class="bar">
-    <div class="seg" id="tabs" role="tablist">
+    <div class="seg src" id="src" role="tablist" aria-label="Whose numbers">
+      <button data-s="model" class="on" role="tab">Our model</button><button data-s="kalshi" role="tab">Kalshi</button>
+    </div>
+    <div class="seg" id="tabs" role="tablist" aria-label="Office">
       <button data-v="Senate" class="on" role="tab">Senate</button><button data-v="House" role="tab">House</button><button data-v="Governor" role="tab">Governor</button>
     </div>
     <div class="tally" id="tally"></div>
   </div>
 
   <div class="mapcard">
-    <div class="mapscroll"><svg id="map" viewBox="0 0 975 610" role="img" aria-label="Map of 2026 races shaded by the model's confidence"></svg></div>
+    <div class="mapscroll"><svg id="map" viewBox="0 0 975 610" role="img" aria-label="Map of 2026 races shaded by confidence"></svg></div>
     <div class="legend" id="legend"></div>
     <div class="note" id="note"></div>
   </div>
@@ -124,19 +129,18 @@ a:hover { text-decoration: underline; }
 
   <section class="list">
     <h3 id="list-title">Least certain first</h3>
-    <div class="tw"><table class="tbl"><thead><tr><th>Race</th><th>Confidence</th><th>Favorite</th><th class="n">Win chance</th><th>Runner-up</th><th class="n">Model margin</th><th>Market</th><th>Flags</th></tr></thead>
-    <tbody id="rows"></tbody></table></div>
+    <div class="tw"><table class="tbl"><thead id="thead"></thead><tbody id="rows"></tbody></table></div>
     <button class="more" id="more"></button>
   </section>
 
   <section class="how">
     <h3>How to read it</h3>
     <ul>
-      <li><b>Confidence</b> is the model's win probability for its favorite: Safe 95%+, Likely 80-95%, Lean 60-80%, Tossup under 60%. These are the same tiers as the <a href="predictions.html">forecast page</a>, where every race has an explainer.</li>
-      <li><b>No projection</b> means the race is on the ballot but has no public polls, which the model needs. Most House districts are in that group.</li>
-      <li><b>House:</b> each square is one district, inside its state's tile. Squares run from the most Democratic projection to the most Republican, then the unprojected ones, so a square's place isn't the district's location. Tiles sit in a fixed grid, not on a true map, so every state stays visible and every district gets the same space.</li>
-      <li><b>Fragile</b> races are ones where the pick flips if every poll is off by 3 points in one direction, which has happened in past cycles.</li>
-      <li>The numbers update with every model run. The states' shapes come from the Census Bureau's cartographic boundaries (via us-atlas).</li>
+      <li><b>Our model:</b> each race's shade is the model's win probability for its favorite: Safe 95%+, Likely 80-95%, Lean 60-80%, Tossup under 60%. These are the same tiers as the <a href="predictions.html">forecast page</a>, where every race has an explainer. <b>No projection</b> means the race has no public polls, which the model needs.</li>
+      <li><b>Kalshi:</b> the same tiers applied to Kalshi's price for each party to win the seat. Prices are normalized so the outcomes add up to 100% (the venue's built-in margin removed), from the dashboard's last market refresh. Gray races have no Kalshi party market.</li>
+      <li><b>House:</b> each square is one district, inside its state's tile. Squares run from the most Democratic to the most Republican, then the unshaded ones, so a square's place isn't the district's location. Tiles sit in a fixed grid, not on a true map, so every state stays visible and every district gets the same space.</li>
+      <li><b>Fragile</b> races are ones where the model's pick flips if every poll is off by 3 points in one direction, which has happened in past cycles.</li>
+      <li>The model updates with every model run and Kalshi with every market refresh. The states' shapes come from the Census Bureau's cartographic boundaries (via us-atlas).</li>
     </ul>
   </section>
 </div>
@@ -147,22 +151,19 @@ a:hover { text-decoration: underline; }
   const F = (typeof FORECAST !== 'undefined') ? FORECAST : { races: [] };
   const BALLOT = (typeof RACES !== 'undefined') ? RACES : [];
   const M = (typeof US_MAP !== 'undefined') ? US_MAP : null;
-  const OFFICE = { Senate: 'SEN', House: 'H', Governor: 'GOV' };
   const PARTY = { DEM: 'D', REP: 'R', IND: 'I' };
-  const PCOL = { DEM: '#60a5fa', REP: '#f87171', IND: '#a78bfa' };
+  const PNAME = { D: 'Democrat', R: 'Republican', I: 'Independent' };
+  const PCOL = { DEM: '#60a5fa', REP: '#f87171', IND: '#a78bfa', D: '#60a5fa', R: '#f87171', I: '#a78bfa' };
   const SUFFIX = new Set(['jr.', 'jr', 'sr.', 'ii', 'iii', 'iv']);
-  const surname = n => { const w = String(n).split(/\s+/).filter(x => !SUFFIX.has(x.toLowerCase())); return w.length ? w[w.length - 1] : n; };
+  const surname = n => { const w = String(n).split(' ').filter(x => x && !SUFFIX.has(x.toLowerCase())); return w.length ? w[w.length - 1] : n; };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pct = (p, d) => (p * 100).toFixed(d == null ? 1 : d) + '%';
   const NAMES = {};
   if (M) for (const ab in M.states) NAMES[ab] = M.states[ab].name;
 
-  // ---------- the model's confidence (same tiers and colours as predictions.html) ----------
-  function rating(r) {
-    const top = r.cands[0], p = top.win || 0;
-    const tier = p >= 0.95 ? 'Safe' : p >= 0.8 ? 'Likely' : p >= 0.6 ? 'Lean' : 'Tossup';
-    const side = top.party === 'DEM' ? 'D' : top.party === 'REP' ? 'R' : 'I';
-    return { tier, side, p, label: tier === 'Tossup' ? 'Tossup' : `${tier} ${side}` };
-  }
+  // ---------- tiers and colours (same as predictions.html) ----------
+  const tierOf = p => p >= 0.95 ? 'Safe' : p >= 0.8 ? 'Likely' : p >= 0.6 ? 'Lean' : 'Tossup';
+  const mkRt = (side, p) => { const tier = tierOf(p); return { tier, side, p, label: tier === 'Tossup' ? 'Tossup' : `${tier} ${side}` }; };
   const COL = { D: { Safe: 'var(--safe-d)', Likely: 'var(--likely-d)', Lean: 'var(--lean-d)' },
                 R: { Safe: 'var(--safe-r)', Likely: 'var(--likely-r)', Lean: 'var(--lean-r)' },
                 I: { Safe: '#7c3aed', Likely: '#8b5cf6', Lean: '#c4b5fd' } };
@@ -176,26 +177,18 @@ a:hover { text-decoration: underline; }
     const v = (a.margin - b.margin) / 2;
     return v >= 0 ? { name: a.name, v } : { name: b.name, v: -v };
   }
-  const demLean = r => {  // 1 = surely D, 0 = surely R (independents count as non-R)
-    const d = r.cands.filter(c => c.party !== 'REP').reduce((s, c) => s + (c.win || 0), 0);
-    const rp = r.cands.filter(c => c.party === 'REP').reduce((s, c) => s + (c.win || 0), 0);
-    return d + rp > 0 ? d / (d + rp) : 0.5;
-  };
-  function marketFor(r) {
-    if (!r.market || r.market.prob == null) return null;
-    const c = r.cands.find(x => x.name === r.market.name);
-    if (!c) return null;
-    const top = r.cands[0];
-    return { name: top.name, p: c === top ? r.market.prob : 1 - r.market.prob };
-  }
+  const letter = party => party === 'DEM' ? 'D' : party === 'REP' ? 'R' : 'I';
+  const modelSide = (r, side) => r.cands.filter(c => letter(c.party) === side).reduce((s, c) => s + (c.win || 0), 0);
+  const candFor = (r, side) => { const c = r && r.cands.find(x => letter(x.party) === side); return c ? c.name : null; };
+  const fmtVol = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? Math.round(v / 1e3) + 'K' : String(v);
+  const gap = (a, b) => { const d = Math.round((a - b) * 100) || 0; return `${d > 0 ? '+' : ''}${d} pts`; };
 
   // ---------- races, keyed by state (Senate/Governor) or state-district (House) ----------
   const fc = { Senate: {}, House: {}, Governor: {} };
   for (const r of (F.races || [])) {
     if (!r.cands || !r.cands.length || !fc[r.office]) continue;
     r.cands = r.cands.slice().sort((a, b) => (b.win || 0) - (a.win || 0));
-    r._rt = rating(r);
-    r._lean = demLean(r);
+    r._rt = mkRt(letter(r.cands[0].party), r.cands[0].win || 0);
     const key = r.office === 'House' ? `${r.state}-${parseInt(r.district, 10) || 1}` : r.state;
     fc[r.office][key] = r;
   }
@@ -216,31 +209,68 @@ a:hover { text-decoration: underline; }
     return `${NAMES[key] || key} ${office}${r && r.special ? ' (special)' : ''}`;
   };
 
+  // ---------- one race under the chosen source ----------
+  const st = { src: 'model', office: 'Senate', sel: null, all: false };
+  function book(b) {  // Kalshi's normalized party book -> [[side, p], ...] best first
+    const k = b && b.kalshi;
+    if (!k || typeof k !== 'object') return null;
+    const out = ['D', 'R', 'I'].filter(x => typeof k[x] === 'number').map(x => [x, k[x]]);
+    return out.length >= 2 ? out.sort((a, c) => c[1] - a[1]) : null;
+  }
+  function view(office, key) {
+    const r = fc[office][key] || null, b = ballot[office][key] || null;
+    if (st.src === 'model') return r ? { rt: r._rt, r, b, lean: 1 - modelSide(r, 'R') } : null;
+    const bk = book(b);
+    if (!bk) return null;
+    return { rt: mkRt(bk[0][0], bk[0][1]), bk, r, b, vol: b.kalshi.vol, lean: 1 - (b.kalshi.R || 0) };
+  }
+
   // ---------- tooltip and detail card ----------
+  function heldLine(r, b) {
+    const name = (r && r.incumbent) || (b && b.incumbent_name) || '';
+    const party = (r && r.incumbent_party) || (b && b.incumbent_party) || '';
+    if (!name) return '';
+    const held = `${esc(name)}${party ? ' (' + esc(party) + ')' : ''}`;
+    if (!r) return `Seat held by ${held}`;
+    // whether the officeholder runs comes from the candidate list, not the seat's metadata
+    return r.cands.some(c => surname(c.name) === surname(name)) ? `Incumbent ${held} is running` : `Open seat, held by ${held}`;
+  }
   function body(office, key) {
-    const r = fc[office][key], b = ballot[office][key];
+    const v = view(office, key), r = fc[office][key] || null, b = ballot[office][key] || null;
     const name = esc(label(office, key, r));
-    if (!r) {
-      const why = b ? 'On the ballot. No public polls, so the model makes no projection.' : `No ${office.toLowerCase()} race in 2026.`;
-      return `<div class="rname">${name}</div><div class="rsub">${why}</div>` +
-        (b && b.incumbent_name ? `<div class="meta"><span>Seat held by ${esc(b.incumbent_name)}${b.incumbent_party ? ' (' + esc(b.incumbent_party) + ')' : ''}</span></div>` : '');
+    if (!v) {
+      const why = !b ? `No ${office.toLowerCase()} race in 2026.`
+        : st.src === 'model' ? 'On the ballot. No public polls, so the model makes no projection.'
+        : 'On the ballot. Kalshi has no party market for this race.';
+      const hl = heldLine(r, b);
+      const other = st.src === 'kalshi' && r ? `<div class="meta"><span>Model: ${esc(surname(r.cands[0].name))} ${pct(r.cands[0].win || 0)}</span></div>` : '';
+      return `<div class="rname">${name}</div><div class="rsub">${why}</div>` + (hl ? `<div class="meta"><span>${hl}</span></div>` : '') + other;
     }
-    const rt = r._rt, m = margin(r), mk = marketFor(r);
-    const rows = r.cands.filter((c, i) => i < 2 || (c.win || 0) >= 0.01).slice(0, 4).map(c =>
-      `<div class="cand"><span><span class="pb" style="background:${PCOL[c.party] || '#94a3b8'}">${esc(PARTY[c.party] || c.party.slice(0, 3))}</span>${esc(c.name)}</span><b>${((c.win || 0) * 100).toFixed(1)}%</b></div>`).join('');
+    const head = `<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div class="rname">${name}</div>` +
+      `<div class="rsub">${heldLine(r, b)}</div></div>${pill(v.rt)}</div>`;
     const meta = [];
-    if (m) meta.push(`Model margin: ${esc(surname(m.name))} +${m.v.toFixed(1)}`);
-    if (mk) meta.push(`Market: ${esc(surname(mk.name))} ${(mk.p * 100).toFixed(0)}%`);
-    if (r.n_surveys) meta.push(`${r.n_surveys} surveys`);
-    // whether the officeholder is running comes from the candidate list itself, not the seat's metadata
-    // (which still listed Cornyn, Cassidy, Mullin and McKee as running on 2026-10-23)
-    const held = r.incumbent ? `${esc(r.incumbent)}${r.incumbent_party ? ' (' + esc(r.incumbent_party) + ')' : ''}` : '';
-    const running = r.incumbent && r.cands.some(c => surname(c.name) === surname(r.incumbent));
-    const sub = !r.incumbent ? '' : running ? `Incumbent ${held} is running` : `Open seat, held by ${held}`;
-    return `<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div class="rname">${name}</div>` +
-      `<div class="rsub">${sub}</div></div>${pill(rt)}</div>` +
-      `<div class="cands">${rows}</div><div class="meta">${meta.map(x => `<span>${x}</span>`).join('')}` +
-      (r.fragile ? '<span class="warn">Fragile: the pick flips if every poll is off by 3 points one way</span>' : '') + '</div>';
+    let rows;
+    if (st.src === 'model') {
+      rows = r.cands.filter((c, i) => i < 2 || (c.win || 0) >= 0.01).slice(0, 4).map(c =>
+        `<div class="cand"><span><span class="pb" style="background:${PCOL[c.party] || '#94a3b8'}">${esc(PARTY[c.party] || c.party.slice(0, 3))}</span>${esc(c.name)}</span><b>${pct(c.win || 0)}</b></div>`).join('');
+      const m = margin(r);
+      if (m) meta.push(`Model margin: ${esc(surname(m.name))} +${m.v.toFixed(1)}`);
+      const k = book(b);
+      if (k) { const side = letter(r.cands[0].party), kp = (b.kalshi[side] || 0); meta.push(`Kalshi: ${esc(surname(r.cands[0].name))} ${pct(kp, 0)}`); }
+      if (r.n_surveys) meta.push(`${r.n_surveys} surveys`);
+    } else {
+      rows = v.bk.map(([side, p]) => {
+        const who = candFor(r, side);
+        return `<div class="cand"><span><span class="pb" style="background:${PCOL[side]}">${side}</span>${esc(who || PNAME[side])}</span><b>${pct(p)}</b></div>`;
+      }).join('');
+      if (v.vol) meta.push(`Kalshi volume ${fmtVol(v.vol)}`);
+      if (r) {
+        const mp = modelSide(r, v.rt.side);
+        meta.push(`Our model, same side: ${pct(mp)} (${gap(mp, v.rt.p)})`);
+      } else meta.push('Our model: no projection (no polls)');
+    }
+    const fragile = st.src === 'model' && r && r.fragile ? '<span class="warn">Fragile: the pick flips if every poll is off by 3 points one way</span>' : '';
+    return head + `<div class="cands">${rows}</div><div class="meta">${meta.map(x => `<span>${x}</span>`).join('')}${fragile}</div>`;
   }
   const tip = document.getElementById('tip');
   function showTip(e, office, key) {
@@ -257,18 +287,14 @@ a:hover { text-decoration: underline; }
   const hideTip = () => { if (tip) tip.style.display = 'none'; };
 
   // ---------- drawing ----------
-  const NONE = 'var(--none)', OFF = 'var(--off)';
   function fill(office, key) {
-    const r = fc[office][key];
-    if (r) return color(r._rt);
-    return ballot[office][key] ? NONE : OFF;
+    const v = view(office, key);
+    if (v) return color(v.rt);
+    return ballot[office][key] ? 'var(--none)' : 'var(--off)';
   }
   function drawStates(office) {
     let s = '';
-    for (const ab in M.states) {
-      const st = M.states[ab];
-      s += `<path class="st" data-k="${ab}" d="${st.d}" fill="${fill(office, ab)}"></path>`;
-    }
+    for (const ab in M.states) s += `<path class="st" data-k="${ab}" d="${M.states[ab].d}" fill="${fill(office, ab)}"></path>`;
     for (const ab in M.states) {
       if (M.callouts[ab] || ab === 'DC') continue;
       s += `<text class="lab" x="${M.states[ab].lx}" y="${M.states[ab].ly}">${ab}</text>`;
@@ -282,20 +308,22 @@ a:hover { text-decoration: underline; }
   }
   function drawHouse() {
     const C = 100, P = 12, S = 10;
-    let s = '';
-    for (const st in M.tiles) {
-      const n = seats[st] || 0;
-      const [col, row] = M.tiles[st];
+    let s = '', cols = 0, rows = 0;
+    for (const t in M.tiles) { cols = Math.max(cols, M.tiles[t][0] + 1); rows = Math.max(rows, M.tiles[t][1] + 1); }
+    for (const stc in M.tiles) {
+      const n = seats[stc] || 0;
+      const [col, row] = M.tiles[stc];
       const x0 = col * C, y0 = row * C;
-      s += `<text class="tl" x="${x0 + 4}" y="${y0 + 12}">${st}</text>`;
+      s += `<text class="tl" x="${x0 + 4}" y="${y0 + 12}">${stc}</text>`;
       if (!n) continue;
       const keys = [];
-      for (let d = 1; d <= n; d++) keys.push(`${st}-${d}`);
-      // most Democratic projection first, then the unprojected districts in number order
+      for (let d = 1; d <= n; d++) keys.push(`${stc}-${d}`);
+      // most Democratic first, then the unshaded districts in number order
+      const vs = {};
+      keys.forEach(k => { vs[k] = view('House', k); });
       keys.sort((a, b) => {
-        const ra = fc.House[a], rb = fc.House[b];
-        if (ra && rb) return rb._lean - ra._lean;
-        if (ra || rb) return ra ? -1 : 1;
+        if (vs[a] && vs[b]) return vs[b].lean - vs[a].lean;
+        if (vs[a] || vs[b]) return vs[a] ? -1 : 1;
         return parseInt(a.split('-')[1], 10) - parseInt(b.split('-')[1], 10);
       });
       const k = Math.min(8, Math.ceil(Math.sqrt(n)));
@@ -305,46 +333,61 @@ a:hover { text-decoration: underline; }
         s += `<rect class="sq" data-k="${key}" x="${left + (i % k) * P}" y="${top + Math.floor(i / k) * P}" width="${S}" height="${S}" rx="1.5" fill="${fill('House', key)}"></rect>`;
       });
     }
-    let cols = 0, rows = 0;
-    for (const t in M.tiles) { cols = Math.max(cols, M.tiles[t][0] + 1); rows = Math.max(rows, M.tiles[t][1] + 1); }
     return { svg: s, box: `0 0 ${cols * C} ${rows * C}` };
   }
 
   const svg = document.getElementById('map');
-  const tabs = document.getElementById('tabs');
-  const st = { office: 'Senate', sel: null, all: false };
+  const tabs = document.getElementById('tabs'), srcs = document.getElementById('src');
   const TOP = 15;
+  const ORDER = ['Safe D', 'Likely D', 'Lean D', 'Tossup', 'Lean I', 'Likely I', 'Safe I', 'Lean R', 'Likely R', 'Safe R'];
+  const swatch = l => { const [t, side] = l.split(' '); return l === 'Tossup' ? 'var(--toss)' : COL[side][t]; };
+  const noneLabel = () => st.src === 'model' ? 'No projection' : 'No Kalshi market';
 
+  function all(office) {  // [key, view] for every race on the ballot that has a view
+    return Object.keys(ballot[office]).map(k => [k, view(office, k)]).filter(x => x[1]);
+  }
   function tally(office) {
-    const c = {}, order = ['Safe D', 'Likely D', 'Lean D', 'Tossup', 'Lean I', 'Likely I', 'Safe I', 'Lean R', 'Likely R', 'Safe R'];
-    let n = 0;
-    for (const key in fc[office]) { const l = fc[office][key]._rt.label; c[l] = (c[l] || 0) + 1; n++; }
+    const c = {};
+    const vs = all(office);
+    for (const [, v] of vs) c[v.rt.label] = (c[v.rt.label] || 0) + 1;
     const total = Object.keys(ballot[office]).length;
-    const sw = l => { const [t, side] = l.split(' '); return l === 'Tossup' ? 'var(--toss)' : COL[side][t]; };
-    return order.filter(l => c[l]).map(l => `<span><i style="background:${sw(l)}"></i>${l} <b>${c[l]}</b></span>`).join('') +
-      `<span><i style="background:var(--none)"></i>No projection <b>${Math.max(0, total - n)}</b></span>`;
+    return ORDER.filter(l => c[l]).map(l => `<span><i style="background:${swatch(l)}"></i>${l} <b>${c[l]}</b></span>`).join('') +
+      `<span><i style="background:var(--none)"></i>${noneLabel()} <b>${Math.max(0, total - vs.length)}</b></span>`;
   }
   function legend(office) {
     const items = [['Safe D', 'var(--safe-d)'], ['Likely D', 'var(--likely-d)'], ['Lean D', 'var(--lean-d)'], ['Tossup', 'var(--toss)'],
                    ['Lean R', 'var(--lean-r)'], ['Likely R', 'var(--likely-r)'], ['Safe R', 'var(--safe-r)']];
-    if (Object.values(fc[office]).some(r => r._rt.side === 'I')) items.push(['Independent favored', '#8b5cf6']);
-    items.push(['On the ballot, no projection', 'var(--none)']);
+    if (all(office).some(([, v]) => v.rt.side === 'I')) items.push(['Independent favored', '#8b5cf6']);
+    items.push([`On the ballot, ${st.src === 'model' ? 'no projection' : 'no Kalshi market'}`, 'var(--none)']);
     if (office !== 'House') items.push([`No ${office.toLowerCase()} race`, 'var(--off)']);
     return items.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('');
   }
+  function thead() {
+    return st.src === 'model'
+      ? '<tr><th>Race</th><th>Confidence</th><th>Favorite</th><th class="n">Win chance</th><th>Runner-up</th><th class="n">Model margin</th><th class="n">Kalshi, same side</th><th>Flags</th></tr>'
+      : '<tr><th>Race</th><th>Kalshi confidence</th><th>Favored</th><th class="n">Kalshi price</th><th class="n">Our model, same side</th><th class="n">Model minus Kalshi</th><th class="n">Volume</th></tr>';
+  }
   function rowsHtml(office) {
-    const rs = Object.entries(fc[office]).sort((a, b) => a[1]._rt.p - b[1]._rt.p);
+    const rs = all(office).sort((a, b) => a[1].rt.p - b[1].rt.p);
     const list = st.all ? rs : rs.slice(0, TOP);
     const more = document.getElementById('more');
     if (more) { more.style.display = rs.length > TOP ? '' : 'none'; more.textContent = st.all ? `Show the ${TOP} least certain` : `Show all ${rs.length}`; }
-    return list.map(([key, r]) => {
-      const m = margin(r), mk = marketFor(r), a = r.cands[0], b = r.cands[1];
-      return `<tr><td><a href="predictions.html#${encodeURIComponent(r.id)}">${esc(label(office, key, r))}</a></td><td>${pill(r._rt)}</td>` +
-        `<td>${esc(a.name)} (${esc(PARTY[a.party] || a.party)})</td><td class="n">${((a.win || 0) * 100).toFixed(1)}%</td>` +
-        `<td>${b ? esc(b.name) + ' (' + esc(PARTY[b.party] || b.party) + ')' : '-'}</td>` +
-        `<td class="n">${m ? esc(surname(m.name)) + ' +' + m.v.toFixed(1) : '-'}</td>` +
-        `<td>${mk ? esc(surname(mk.name)) + ' ' + (mk.p * 100).toFixed(0) + '%' : '-'}</td>` +
-        `<td>${r.fragile ? '<span class="warn">Fragile</span>' : ''}</td></tr>`;
+    return list.map(([key, v]) => {
+      const r = v.r, link = r ? `<a href="predictions.html#${encodeURIComponent(r.id)}">${esc(label(office, key, r))}</a>` : esc(label(office, key, r));
+      if (st.src === 'model') {
+        const m = margin(r), a = r.cands[0], b = r.cands[1], bk = book(v.b);
+        const kp = bk ? (v.b.kalshi[letter(a.party)] || 0) : null;
+        return `<tr><td>${link}</td><td>${pill(v.rt)}</td><td>${esc(a.name)} (${esc(PARTY[a.party] || a.party)})</td><td class="n">${pct(a.win || 0)}</td>` +
+          `<td>${b ? esc(b.name) + ' (' + esc(PARTY[b.party] || b.party) + ')' : '-'}</td>` +
+          `<td class="n">${m ? esc(surname(m.name)) + ' +' + m.v.toFixed(1) : '-'}</td>` +
+          `<td class="n">${kp == null ? '-' : pct(kp, 0)}</td><td>${r.fragile ? '<span class="warn">Fragile</span>' : ''}</td></tr>`;
+      }
+      const side = v.rt.side, who = candFor(r, side);
+      const mp = r ? modelSide(r, side) : null;
+      return `<tr><td>${link}</td><td>${pill(v.rt)}</td><td>${esc(who ? who + ' (' + side + ')' : PNAME[side])}</td><td class="n">${pct(v.rt.p)}</td>` +
+        `<td class="n">${mp == null ? 'no projection' : pct(mp)}</td>` +
+        `<td class="n">${mp == null ? '-' : gap(mp, v.rt.p)}</td>` +
+        `<td class="n">${v.vol ? fmtVol(v.vol) : '-'}</td></tr>`;
     }).join('');
   }
   function detail() {
@@ -355,6 +398,7 @@ a:hover { text-decoration: underline; }
     el.innerHTML = `<div class="card">${body(st.office, st.sel)}` +
       (r ? `<div class="meta" style="margin-top:10px"><a href="predictions.html#${encodeURIComponent(r.id)}">Open this race in the forecast &rarr;</a></div>` : '') + '</div>';
   }
+  function setText(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
   function render() {
     const office = st.office;
     const out = !M ? { svg: '', box: '0 0 975 610' } : office === 'House' ? drawHouse() : drawStates(office);
@@ -363,26 +407,41 @@ a:hover { text-decoration: underline; }
       if (svg.classList) svg.classList.toggle('house', office === 'House');
       svg.innerHTML = out.svg;
     }
-    const nf = Object.keys(fc[office]).length, nb = Object.keys(ballot[office]).length;
-    const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-    set('tally', tally(office));
-    set('legend', legend(office));
-    set('note', office === 'House'
-      ? `${nf} of ${nb} districts have a projection. Each square is a district; squares run from the most Democratic projection to the most Republican, so their order isn't geographic.`
-      : `${nf} of ${nb} ${office.toLowerCase()} races on the ballot have a projection.`);
-    set('list-title', `${office}: least certain first`);
-    set('rows', rowsHtml(office));
+    const nv = all(office).length, nb = Object.keys(ballot[office]).length;
+    const what = office === 'House' ? 'districts' : `${office.toLowerCase()} races`;
+    if (st.src === 'model') {
+      setText('title', 'How sure the model is, race by race');
+      setText('lede', "Each race is shaded by the model's confidence in its pick: dark when the favorite is near-certain, light when it's a lean, gold when it's a tossup. Gray races are on the ballot but have no public polls, so the model doesn't project them. Hover or tap a race for the numbers.");
+      setText('asof', F.predictions_as_of ? `Model run ${esc(String(F.predictions_as_of).slice(0, 16).replace('T', ' '))} UTC · polls through ${esc(F.polls_as_of || '-')}` : '');
+      setText('note', `${nv} of ${nb} ${what} have a projection.` + (office === 'House' ? ' Each square is a district; squares run from the most Democratic to the most Republican, so their order isn’t geographic.' : ''));
+    } else {
+      const upd = BALLOT.length && BALLOT[0].updated_at ? String(BALLOT[0].updated_at).slice(0, 16).replace('T', ' ') : '';
+      setText('title', 'How sure Kalshi is, race by race');
+      setText('lede', "The same map with Kalshi's prices instead of the model: each race is shaded by the price of its favored party, after removing the venue's built-in margin. Gray races have no Kalshi party market. Hover or tap a race to compare with the model.");
+      setText('asof', upd ? `Kalshi prices from the dashboard's market refresh of ${esc(upd)} UTC` : '');
+      setText('note', `Kalshi prices ${nv} of ${nb} ${what}.` + (office === 'House' ? ' Each square is a district; squares run from the most Democratic to the most Republican, so their order isn’t geographic.' : ''));
+    }
+    setText('tally', tally(office));
+    setText('legend', legend(office));
+    setText('list-title', `${office}: least certain first` + (st.src === 'kalshi' ? ' (Kalshi)' : ''));
+    setText('thead', thead());
+    setText('rows', rowsHtml(office));
     detail();
   }
+  function hash() { try { history.replaceState(null, '', '#' + (st.src === 'kalshi' ? 'kalshi-' : '') + st.office.toLowerCase()); } catch (err) { /* file:// or sandbox */ } }
+  function mark(group, attr, val) { if (group) for (const x of group.querySelectorAll('button')) x.classList.toggle('on', x.dataset[attr] === val); }
 
   if (tabs) tabs.addEventListener('click', e => {
     const b = e.target && e.target.closest ? e.target.closest('button') : null;
     if (!b || !b.dataset || !b.dataset.v) return;
     st.office = b.dataset.v; st.sel = null; st.all = false;
-    for (const x of tabs.querySelectorAll('button')) x.classList.toggle('on', x === b);
-    try { history.replaceState(null, '', '#' + st.office.toLowerCase()); } catch (err) { /* file:// or sandbox */ }
-    hideTip();
-    render();
+    mark(tabs, 'v', st.office); hash(); hideTip(); render();
+  });
+  if (srcs) srcs.addEventListener('click', e => {
+    const b = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!b || !b.dataset || !b.dataset.s) return;
+    st.src = b.dataset.s; st.all = false;
+    mark(srcs, 's', st.src); hash(); hideTip(); render();
   });
   if (svg) {
     svg.addEventListener('mousemove', e => {
@@ -400,16 +459,15 @@ a:hover { text-decoration: underline; }
     });
   }
   const more = document.getElementById('more');
-  if (more) more.addEventListener('click', () => { st.all = !st.all; const el = document.getElementById('rows'); if (el) el.innerHTML = rowsHtml(st.office); });
+  if (more) more.addEventListener('click', () => { st.all = !st.all; setText('rows', rowsHtml(st.office)); });
 
+  // #senate, #house, #governor, #kalshi-senate ...
   const h = (location.hash || '').slice(1).toLowerCase();
-  const start = { senate: 'Senate', house: 'House', governor: 'Governor' }[h];
-  if (start) {
-    st.office = start;
-    if (tabs) for (const x of tabs.querySelectorAll('button')) x.classList.toggle('on', x.dataset.v === start);
-  }
-  const asof = document.getElementById('asof');
-  if (asof && F.predictions_as_of) asof.textContent = `Model run ${String(F.predictions_as_of).slice(0, 16).replace('T', ' ')} UTC · polls through ${F.polls_as_of || '-'}`;
+  if (h.startsWith('kalshi')) st.src = 'kalshi';
+  const off = { senate: 'Senate', house: 'House', governor: 'Governor' }[h.replace('kalshi-', '').replace('kalshi', '')];
+  if (off) st.office = off;
+  mark(tabs, 'v', st.office);
+  mark(srcs, 's', st.src);
   render();
 })();
 </script>

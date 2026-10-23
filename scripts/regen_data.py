@@ -155,6 +155,19 @@ def _venue_dem(book):
         return norm_pair(d, r)
     return (1.0 - r) if r is not None else None
 
+def _venue_book(book):
+    """{'D'/'R'/'I': win probability normalized over the venue's outcomes, 'vol': contracts or $
+    traded}, or '' unless at least two outcomes are priced (a lone side says nothing)."""
+    ps = {p[0]: v['prob'] for p, v in (book or {}).items() if v.get('prob') is not None}
+    s = sum(ps.values())
+    if len(ps) < 2 or not s:
+        return ''
+    out = {k: round(v / s, 4) for k, v in ps.items()}
+    vol = sum(v.get('volume') or 0 for v in book.values())
+    if vol:
+        out['vol'] = int(round(vol))
+    return out
+
 _books = {}
 for _name, _csv, _col in [('kalshi', 'kalshi_markets.csv', 'market_title'),
                           ('polymarket', 'polymarket_markets.csv', 'question')]:
@@ -174,6 +187,10 @@ for race in ALL_RACES_2026:
         'office': race.office, 'district': (int(race.district) if race.district else ''),
         'incumbent_party': race.incumbent_party or '', 'incumbent_name': race.incumbent_name or '',
         'implied_prob_avg': (round(float(np.mean(list(quotes.values()))), 4) if quotes else ''),
+        # each venue's own vetted party-winner book, normalized over its outcomes (D/R and I where
+        # listed, e.g. NE-Sen's Osborn) plus traded volume - the map page's Kalshi view (2026-10-23)
+        'kalshi': _venue_book(_books['kalshi'].get(rid)),
+        'polymarket': _venue_book(_books['polymarket'].get(rid)),
         'n_sources': len(quotes) + int(_n_polls.get(rid, 0)),
         'sources': '|'.join(srcs),
         'updated_at': _now,
