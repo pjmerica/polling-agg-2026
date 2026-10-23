@@ -45,11 +45,11 @@ count moves more precisely than the market does, and from acting faster.*
 |---|---|---|---|
 | **1** | **Nevada Governor** | The longest window and the most consistent late direction in the data. Close races are decided Wednesday to Saturday, and the post-election-night count moved toward the Democrat in every statewide race since 2020. It's also the biggest model-market disagreement (detail below). | 2024's tail was about half of 2022's. Clark's new print-and-scan ballots are untested at general-election turnout. Thinner market than Michigan or Maine. First numbers only at ~1-2 am ET. |
 | **2** | **Michigan Senate** | Long window, repeating order and liquid (detail below) | Late batches aren't always Democratic: the 2026 primary narrowed late against El-Sayed (6.3 → 0.9), and 2024's late move was ~0. |
-| **3** | **Maine Senate** | Slow count, liquid market, a repeating intra-night pattern, and ranked-choice complications (detail below) | No live state feed; towns report piecemeal to AP. The ranked-choice count resolves ~8-10 days later, and the first-round leader can lose (2026 primary). |
-| **4** | **Kansas, Nebraska, Iowa: fade the early Democratic/independent lead** | The **most consistent election-night direction** in the data (detail below). All three settle **on election night**, so money turns over quickly. | Thinner markets (Kansas ~2.2M Kalshi contracts; Nebraska not on Kalshi in our data). 2026's early vote may be more Democratic than before, so early leads may be bigger, and so may the fade. Most likely already priced in by sharp traders. |
+| **3** | **Kansas, Nebraska, Iowa, Ohio, Texas: fade the early Democratic/independent lead** | The **most reliable direction** in the national data. In every 2020-2024 race in these five states, the count moved toward the Republican after the first quarter was in, usually by 15-30 pts. The leader at some point lost in 4 or 5 of each state's 5 races. All five are in the national top eight for volatility (`VOLATILITY.md`). They settle **on election night**, so money turns over quickly. | The window is short: Ohio and Texas post most of their vote in the first hour or two. Thinner markets in Kansas and Nebraska (Kansas ~2.2M Kalshi contracts; Nebraska not on Kalshi in our data). 2026's early vote may be more Democratic than before, so early leads may be bigger, and so may the fade. Most likely already priced in by sharp traders. |
+| **4** | **Maine Senate** | Slow count, liquid market, a repeating early pattern, and ranked-choice complications (detail below) | Nationally it's one of the calmer counts: its 4-8 point move happens while little is counted, and no 2020-2024 Maine race had a leader who went on to lose (`VOLATILITY.md`). No live state feed; towns report piecemeal to AP. The ranked-choice count resolves ~8-10 days later. |
 | Special case | **Alaska Senate** | Big model-market disagreement (detail below) | Settles only after Nov 18 (ranked-choice count), possibly later with a recount, so money is tied up for weeks. The model's poll inputs in Alaska are thin. |
 | Special case | **Oregon Governor** | Nevada's mirror image: Kotek's numbers look **worst** at the end of election night (detail below) | The market already prices {{MARKET:2026_OR_Governor}}, and it's thin (Kalshi ~130K contracts; Polymarket ~$113K liquidity, Oct 19). Only interesting if election night shows Drazan ahead or Kotek's price drops. |
-| Avoid during the count | **Texas (Senate and Governor), Georgia, Ohio** | They count fast: Texas ~62-79% counted in the first hour or two; Georgia and Ohio 93-99% by midnight. | Little time for mispricing. The Ohio Governor gap (model {{MODEL:2026_OH_Governor}}, market {{MARKET:2026_OH_Governor}}) is a **pre-election** disagreement, not a live-count one. |
+| Avoid during the count | **Georgia** | Fast (94-98% counted by midnight in 2022 and 2024; 80% in 2020), and its direction has flipped by year: toward the Democrat in 2020 and 2024, toward the Republican in 2022. | Little time and no reliable direction to trade. |
 
 **1. Nevada Governor** (Lombardo R vs Ford D; model {{MODEL:2026_NV_Governor}}, market {{MARKET:2026_NV_Governor}}, so the market favors Ford)
 - **Long window:**
@@ -79,16 +79,41 @@ count moves more precisely than the market does, and from acting faster.*
   - Prices swing hardest at those moments.
 - **Liquid:** ~3.3M contracts traded on Kalshi; ~$577K liquidity on Polymarket (as of Oct 19-20).
 
-**3. Maine Senate** (Jackson D vs Collins R; model {{MODEL:2026_ME_Senate}}, market {{MARKET:2026_ME_Senate}})
+**3. Fade the early lead: Kansas, Nebraska, Iowa, Ohio, Texas**
+- **Every race moved the same way.** After the first update with a quarter of the vote in, the margin moved toward the Republican in all 25 of these states' 2020-2024 top races:
+
+  | State | Move after the first quarter, every race |
+  |---|---|
+  | Kansas | −9 to −27 |
+  | Nebraska | −9 to −37 |
+  | Iowa | −15 to −28 |
+  | Ohio | −6 to −30 |
+  | Texas | −6 to −20 |
+
+- **Examples:**
+  - **Kansas 2022:** every race moved 5+ pts toward Republicans after 2 hours (median 19). Governor Kelly's +20 became a 2.2-point win.
+  - **Nebraska 2024:** Osborn led by **18** at 9:00 pm and lost by 6.7. The lead changed at about 11:25 pm, and the race was called at 12:06 am.
+  - **Iowa:** the first-hour margin moved a median 13-29 pts by the end.
+  - **Ohio 2020:** Biden was +21.9 at the first update with a quarter in; Trump won by 8.0.
+  - **Texas 2020:** Biden was +14.4 at that point; Trump won by 5.6.
+- **Timing:** Ohio and Texas do most of the move within about two hours of the close, though Texas still moved 2-4 points after 10 pm. Kansas, Nebraska and Iowa take two to three hours.
+- **When a lead is safe** (from 2020-2024; each state's section has the detail):
+
+  | State | Lead the Democrat/independent needed to be safe |
+  |---|---|
+  | Texas | ~7+ pts at 9 pm, ~4+ at 10 pm |
+  | Kansas | ~8+ at 10:30 pm |
+  | Iowa | ~2+ at 11 pm |
+  | Nebraska | ~9+ at midnight |
+  | Ohio | ~1+ at 10 pm in 2022/2024; in 2020 the count moved 8 more pts toward the Republican after 10 pm |
+- **2026:** Talarico and Hinojosa (Texas), Acton and Brown (Ohio), Hamilton (Kansas), Osborn (Nebraska) and Turek (Iowa) should all lead early.
+- The Ohio Governor gap (model {{MODEL:2026_OH_Governor}}, market {{MARKET:2026_OH_Governor}}) is a **pre-election** disagreement, not a live-count one.
+
+**4. Maine Senate** (Jackson D vs Collins R; model {{MODEL:2026_ME_Senate}}, market {{MARKET:2026_ME_Senate}})
 - **Slow:** only 29-63% is counted by midnight ET.
-- **Repeating pattern:** in every race we have, the count moved 5-8 pts toward the non-Republican after the first two hours, then 0-3 pts back after 6 am.
+- **Repeating pattern:** in every top race we have, the count moved 4-8 pts toward the non-Republican after the first two hours, then 0-3 pts back after 6 am. Most of that move happens while under a quarter of the vote is in, so the window is the first two hours.
 - **Liquid:** ~4.4M Kalshi contracts; ~$2.3M Polymarket volume.
 - **Ranked-choice wrinkle:** if no one tops 50% of *all* ballots (blanks count against the leader), the ranked-choice count decides about a week later, a second chance for prices to be wrong.
-
-**4. Kansas, Nebraska, Iowa**
-- **Kansas:** in 2022 **every** race moved 5+ pts toward Republicans after 2 hours (median 19). Governor Kelly's +20 became a 2.2-point win.
-- **Nebraska:** Osborn led by **18** at 9:00 pm in 2024 and lost by 6.7. The lead changed at about 11:25 pm, and the race was called at 12:06 am.
-- **Iowa:** the first-hour margin moved a median 13-29 pts by the end.
 
 **Special case: Alaska Senate** (Peltola D vs Sullivan R)
 - **The disagreement:** our model says {{MODEL:2026_AK_Senate}}; the market says {{MARKET:2026_AK_Senate}}.
@@ -100,6 +125,15 @@ count moves more precisely than the market does, and from acting faster.*
 - **Wednesday to Friday** (Multnomah and Washington Election Day drop-offs) took her back to +3.7 by Friday midday; the final was +3.4.
 - **The rule of thumb:** a Drazan lead under ~2 points at the end of election night is at real risk, and a Kotek lead should grow.
 
+### How these states compare nationally
+
+From `VOLATILITY.md`, which measures every President, Senate and Governor race in the 50 states and DC, 2020-2024. A state ranks high when its visible margin moves a lot during the count *and* its leader at some point often lost.
+- **National top ten:** {{VOL_TOP10}}.
+- **Our eleven, by national rank:** {{VOL_OURS}}.
+- **Volatility isn't the same as opportunity.**
+  - The biggest swings (Kansas, Nebraska, Iowa) are also the most predictable and settle within hours, so they're probably priced in.
+  - Nevada's swings are small (about 2 points) but always in the same direction. They play out over days, and they changed the leader in 3 of its 5 races.
+
 ### Practical cautions
 
 - **Settlement rules differ by platform** (see `AGENTS.md`):
@@ -107,7 +141,7 @@ count moves more precisely than the market does, and from acting faster.*
   - These all delay settlement:
     - ranked-choice counts (Alaska Nov 18, Maine about a week later);
     - recounts: automatic in Georgia's governor race at 0.5% or less, Michigan at 0.1%, Ohio at 0.25%, Oregon at 0.2%, and Nebraska at 1% of the leader's vote. Nevada recounts only on demand, by Dec 1;
-    - late mail: Alaska, Oregon to Nov 10, Nevada to Nov 7, Kansas to Nov 6, Texas to Nov 4.
+    - late mail: Alaska to Nov 13, Oregon to Nov 10, Nevada to Nov 7, Kansas to Nov 6, Texas to Nov 4.
   - Nevada's statewide canvass is Nov 24. Oregon's governor result is never certified by the Secretary of State; the House Speaker publishes it before the 2027 Legislature.
 - **Fees are real per leg** (`utils/fees.py`). Small edges disappear.
 - **The tools that make this usable are already set up:**
@@ -172,6 +206,7 @@ Shown only where NYT tagged a full share of early votes.
 **Also corrected later:**
 - Maine's first-round leader *can* lose the ranked-choice count: the 2026 Democratic governor primary went to Pingree after Shah led round one.
 - Ranked-choice races are now measured on first-round votes in the swing data.
+- Iowa 2020: polls closed at 10 pm ET that year (9 pm CT, an hour later than now), so its first votes came 13 minutes after the close, not 73. The swing tables now use that close.
 - Michigan's model probability moved from 73.0% to 76.3% on Oct 21, just above the 75% cut. On Oct 22 it fell to 63.4% after the model audit fixed duplicated and mismatched poll inputs and the model was retrained (`model_audit/MODEL_AUDIT.md`).
 
 ### Still unconfirmed

@@ -11,6 +11,7 @@ Runs both builders first, so everything is regenerated from data.
 
     py "State election results/scripts/build_master.py"
 """
+import csv
 import os
 import re
 
@@ -73,6 +74,12 @@ def main():
     out = re.sub(r"\{\{STATE:(\w+)\}\}", state, out)
     out = out.replace("{{PACE_ALL}}", sw.state_pace(rows)).replace("{{EARLY_EDAY}}", sw.early_eday(rows))
     out = build_state_guide.fill_numbers(out).replace("{{N_RACES}}", str(len(rows)))
+    # national volatility ranks (scripts/volatility.py)
+    vol = list(csv.DictReader(open(os.path.join(ROOT, "data", "processed", "volatility_states.csv"), encoding="utf-8")))
+    vol.sort(key=lambda x: int(x["rank"]))
+    out = out.replace("{{VOL_TOP10}}", ", ".join(x["name"] for x in vol[:10]))
+    out = out.replace("{{VOL_OURS}}", ", ".join(f"{x['name']} {x['rank']}" for x in vol if x["competitive"] == "True"))
+    out = out.replace("{{VOL_N}}", str(len(vol)))
     assert "{{" not in out, "unfilled token"
     with open(os.path.join(ROOT, "MASTER.md"), "w", encoding="utf-8") as f:
         f.write(out)

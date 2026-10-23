@@ -1,6 +1,8 @@
 # Close 2026 Races Finish on Staggered Clocks
 
-> **Checked 2026-10-21:** several statements here were corrected after re-checking against primary sources and NYT's timelines (Michigan early lead, Ohio 2020 lead change, GA 2024 and OH 2022 call times, Nebraska and Maine patterns, Texas canvass and recount). See section 12 of `STATE_BY_STATE.md`, which supersedes this report where they differ.
+> **Checked 2026-10-21:** several statements here were corrected after re-checking against primary sources and NYT's timelines (Michigan early lead, Ohio 2020 lead change, GA 2024 and OH 2022 call times, Nebraska and Maine patterns, Texas canvass and recount). See the corrections section of `STATE_BY_STATE.md`, which supersedes this report where they differ.
+>
+> **Checked 2026-10-22:** Iowa's polls closed at 9 p.m. CT (10 p.m. ET) in 2020; SF 413 moved the close to 8 p.m. from 2022. So AP's 2020 first votes at 10:11 p.m. ET came 11 minutes after the close, not 71, and there is no conflict with the "10-15 minutes" summary.
 
 
 *Synthesis of the research notes in `research_notes/Vote count timing in close 2026 races/` (all researched 2026-10-21). Covers the ten races in nine states where the forecast favorite is at 75% or less (see `competitive_races.md`): AK-Sen, GA-Gov, OH-Gov, OH-Sen (special), KS-Sen, TX-Sen, NE-Sen, ME-Sen, IA-Sen and MI-Sen. All clock times are Eastern (ET) on Nov 3-4, 2026 unless marked otherwise. DST ends Nov 1, so ET = EST.*

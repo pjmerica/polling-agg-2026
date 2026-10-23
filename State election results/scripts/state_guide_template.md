@@ -23,10 +23,10 @@ Listed in poll-closing order.
 | 1 | Georgia | Governor | {{MATCHUP:2026_GA_Governor}} | {{MARKET:2026_GA_Governor}} | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
 | 2 | Ohio | Governor; Senate (special) | {{MATCHUP:2026_OH_Governor}}; {{MATCHUP:2026_OH_Senate-S}} | {{MARKET:2026_OH_Governor}}; {{MARKET:2026_OH_Senate-S}} | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
 | 3 | Michigan | Senate | {{MATCHUP:2026_MI_Senate}} | {{MARKET:2026_MI_Senate}} | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
-| 4 | Texas | Senate; Governor | {{MATCHUP:2026_TX_Senate}}; {{MATCHUP:2026_TX_Governor}} | {{MARKET:2026_TX_Senate}}; {{MARKET:2026_TX_Governor}} | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat for the first 15-35 min, then Republican | Election night; AP calls no statewide race before 9 pm |
+| 4 | Texas | Senate; Governor | {{MATCHUP:2026_TX_Senate}}; {{MATCHUP:2026_TX_Governor}} | {{MARKET:2026_TX_Senate}}; {{MARKET:2026_TX_Governor}} | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
 | 5 | Kansas | Senate | {{MATCHUP:2026_KS_Senate}} | {{MARKET:2026_KS_Senate}} | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
 | 6 | Maine | Senate (ranked-choice) | {{MATCHUP:2026_ME_Senate}} | {{MARKET:2026_ME_Senate}} | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
-| 7 | Iowa | Senate | {{MATCHUP:2026_IA_Senate}} | {{MARKET:2026_IA_Senate}} | 9:00 pm | 9:02-9:12 pm (10:13 pm in 2020) | Democrat until ~10:00-11:30 pm | Election night |
+| 7 | Iowa | Senate | {{MATCHUP:2026_IA_Senate}} | {{MARKET:2026_IA_Senate}} | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
 | 8 | Nebraska | Senate | {{MATCHUP:2026_NE_Senate}}; no Democrat on the ballot | {{MARKET:2026_NE_Senate}} | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
 | 9 | Nevada | Governor | {{MATCHUP:2026_NV_Governor}} | {{MARKET:2026_NV_Governor}} (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
 | 10 | Oregon | Governor | {{MATCHUP:2026_OR_Governor}} | {{MARKET:2026_OR_Governor}} | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
@@ -145,7 +145,7 @@ What the curves show (`state_curves.md`):
 - **2022 Governor:** Abrams was +9.0 one hour after close with 27% counted. Kemp led from 8:34 pm and won by 7.5.
 - **2022 Senate:** Warnock was +16.5 at one hour; the lead traded hands for three hours and he finished +1.0.
 - **2020:** the very late count (Atlanta-area mail) took Biden from −15 at two hours after close to +0.2.
-- **2024:** about 98% was counted by midnight, the fastest of the nine states.
+- **2024:** about 98% was counted by midnight, the fastest of the eleven states.
 
 **After election night**
 
@@ -160,6 +160,7 @@ What the curves show (`state_curves.md`):
 **What to expect** (inference):
 - Expect a large Democratic-leaning batch between 7:00 and 8:00 pm, then Republican-leaning rural Election Day precincts.
 - The 2022 Governor lead changed at about 43% counted (8:34 pm).
+- Watch for metro Atlanta's late batches: after 9:00 pm the count moved **toward the Democrat** in 2024 (+3.2) and 2020 (+15.5), and barely at all in 2022.
 - A race inside ~2 points is likely called around midnight to 1 am, as in 2022 (12:49 am) and 2024 (12:46 am).
 - Inside 0.5%, there is no final result before the hand recount, around Nov 18-20.
 
@@ -258,7 +259,8 @@ What the curves show:
 
 **What to expect** (inference):
 - An El-Sayed lead in the first hour or two is likely and means little.
-- Rogers may lead late on election night while the rural and Election Day vote outruns Wayne County. A Rogers lead at midnight is consistent with an El-Sayed win of a few points.
+- Rogers may lead late on election night while the rural and Election Day vote outruns Wayne County.
+- After midnight the count moved **3.5-13.6 points toward the Democrat** in every top race 2020-2024. Even in 2024, the calmest year, a Rogers lead of 3 points at midnight would have flipped.
 - Expect no call before Wednesday unless the margin is wide (2022 Governor, +10.5: 1:26 am).
 
 ---
@@ -308,16 +310,23 @@ Both races are on the same ballot and counted together, so everything below appl
 
 What the curves show:
 - **Most of the vote arrives in the first hour:** 62-67% was counted one hour after close in 2020 and 2024.
-- **The early Democratic lead lasts minutes:**
+- **The early Democratic lead usually lasts about half an hour, but not always:**
   - 2024 Senate: Allred led until 8:34 pm.
   - 2020 Senate: Hegar led until 8:31 pm.
   - 2022 Governor: O'Rourke led until 8:37 pm.
-- **After that the count moves another 2-4 points toward the Republican:** 2024 Senate was −4.7 at one hour and finished −8.5.
+  - **2020 President: Biden led until 9:29 pm, with 75% counted, and lost by 5.6.**
+- **The count keeps moving toward the Republican well after the first hour.** In every top race 2020-2024, what was left moved:
+
+  | From | Share counted then | Rest of the count moved toward the Republican by |
+  |---|---|---|
+  | 8:30 pm | 25-45% | 8.5-18.6 pts |
+  | 9:00 pm | 36-67% | 3.8-6.7 pts |
+  | 10:00 pm | 63-79% | 1.9-3.6 pts |
 - One odd point: in 2020 NYT recorded first votes at 7:34 pm ET, before polls closed at 8 pm ET. It was a few hundred votes, probably an early county post. Treat 8:00 pm as the real start.
 
 **What to expect** (inference):
-- If Talarico leads by more than ~4 points at 8:30 pm with most early votes in, he is in good shape. The same arithmetic applies to Hinojosa against Abbott; in 2022 O'Rourke led only until 8:37 pm and lost by 10.9.
-- If he leads by less, the Election Day vote can erase it.
+- An early Talarico lead means little: Biden was +5.0 at 8:30 pm in 2020 and lost by 5.6.
+- Judging from 2020-2024, Talarico needs a lead of about **7+ points at 9:00 pm, or 4+ at 10:00 pm**, to be safe. The same arithmetic applies to Hinojosa against Abbott (O'Rourke 2022 led until 8:37 pm and lost by 10.9).
 - A margin under ~2 points likely pushes the call past midnight. Late mail (to Nov 4) and provisionals matter only within ~0.5 points.
 
 ---
@@ -365,8 +374,9 @@ What the curves show:
 - Late mail under the grace period was roughly 2,000-2,800 ballots in Nov 2024, about 0.2% of the vote (sources conflict ○).
 
 **What to expect** (inference):
-- Hamilton will very likely lead the first hour; that tells you little.
-- The test is around 9:30-10:00 pm with ~55% counted. If Hamilton still leads then, the race is genuinely close.
+- Hamilton will very likely lead until about 10 pm; that tells you little. At 9:30 pm the Democrat led **every** top race 2020-2024, and the rest of the count then moved 17-28 points toward the Republican.
+- Even at 10:00 pm a Democratic lead wasn't safe: Holland led the 2022 Senate race then (39% counted) and lost by 23.
+- At 10:30 pm (about two-thirds counted) the rest still moved 4-8 points toward the Republican. Hamilton needs a lead of about **8+ points at 10:30 pm** to be in good shape (Kelly 2022 was +9.2 then and won by 2.2).
 - A margin of ~5+ points has been called on election night. A margin of 2-3 points may wait until Wednesday.
 
 ---
@@ -476,11 +486,12 @@ What the curves show:
   | 2024 President | Harris +15.3 at one hour | 10:03 pm | Trump +13.3 |
 
 - About 86-95% is counted by midnight. Almost nothing changes after election night.
-- First votes: 9:02-9:12 pm in 2022/2024. In 2020 they came at 10:13 pm, when the absentee wave delayed counts. This settles the "12 vs 71 minutes" question in the report: both are real, and 2020 was the slow year.
+- First votes come within minutes of the close: 9:02-9:12 pm in 2022/2024 and 10:13 pm in 2020. **Iowa's polls closed an hour later until 2021** (9 pm CT, 10 pm ET); SF 413 moved the close to 8 pm CT from 2022 ✔ ([KCRG](https://www.kcrg.com/2021/03/08/gov-reynolds-signs-election-reform-bill-limiting-length-of-absentee-election-day-voting/)). So 2020 was not a slow year: its first votes came 13 minutes after its close.
+- That also means 2020's "midnight" was only 2 hours after the close. The 86-87% counted by then is the same pace as 2022/2024.
 
 **What to expect** (inference):
 - Turek will lead early, likely by double digits.
-- The meaningful read is at ~10:30-11:00 pm, once the absentee batches and most precincts are in.
+- The meaningful read is at about 11:00 pm. At 10:30 pm (about half counted) the rest still moved 4-9 points toward the Republican in 2022/2024. By 11:00 pm (three-quarters counted) it moved under 2 points.
 - With 86-95% counted by midnight, a call is likely on election night unless the margin is under ~1-2 points.
 
 ---
@@ -524,7 +535,8 @@ What the curves show:
 
 **What to expect** (inference):
 - Osborn will likely lead the first hour or two. Ricketts gains as rural Election Day precincts report.
-- If Osborn still leads at ~11:30 pm with 55-60% counted, the race is close.
+- An Osborn lead at 11:30 pm (55-60% counted) is not safe. After 11:30 pm the rest moved 2-11 points toward the Republican in every top race; 2024 Senate moved 6.3 (Osborn +1.5 at 11:00 pm, lost by 6.7).
+- After midnight it still moved 2-9 points. Osborn needs a lead of roughly **9+ points at midnight** to be safe.
 - Douglas County's leftover ballots favor Osborn and are counted later in the week.
 
 ---
@@ -781,7 +793,7 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 | Texas recount rules "not researched" (report) | Automatic only on a tie; request allowed within 10% of the leader's vote ✔. |
 | Nebraska recount "1% of total vote" (AP) | 1% of the leading candidate's votes (statute) ✔. |
 | Georgia "no automatic recount" (AP, May 2026) | Out of date. June 2026 law: automatic full hand recount for Governor at 0.5% or less ✔. |
-| Iowa "first results 12 minutes vs 71 minutes" (conflict) | Both are right: 2022/2024 about 2-12 minutes, 2020 73 minutes. |
+| Iowa "first results 12 minutes vs 71 minutes" (conflict); this guide's earlier "2020 was the slow year" | Neither: Iowa polls closed at 10 pm ET in 2020 (9 pm CT; moved to 8 pm CT from 2022 by SF 413). First votes came 2-13 minutes after the close in all three years. |
 | Georgia: "the Libertarian withdrew" (report) | The Libertarian Party never qualified for the ballot (July 2026). The outcome is the same: a two-candidate race. |
 | Nebraska: "Burbank withdrew and endorsed Osborn" (report) | She withdrew July 17. The state party (chair Jane Kleeb) endorsed Osborn and declined to replace her. Burbank had said she'd back him if she had no path. |
 | Kansas recounts: request-only, the requester pays (report) | Request-only, but in a general election decided by 0.5% or less the state pays and no bond is needed (K.S.A. 25-3107). |
@@ -816,5 +828,5 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 | Statutes and official calendars | Linked inline above |
 | NYT results files 2020-2024 | `data/raw/nyt/` |
 | Rebuilding the history tables | `py "State election results/scripts/build_state_guide.py"` |
-| Full research report with all citations | `reports/Vote count timing in close 2026 races.md` (nine states) and `reports/Vote count timing Nevada and Oregon.md` (Oct 22) |
+| Full research report with all citations | `reports/Vote count timing in close 2026 races.md` (the first nine states) and `reports/Vote count timing Nevada and Oregon.md` (Oct 22) |
 | Nevada and Oregon statutes re-read 2026-10-22 | [NRS ch. 293](https://www.leg.state.nv.us/NRS/NRS-293.html) (revised 9/9/2026); [ORS ch. 254](https://www.oregonlegislature.gov/bills_laws/ors/ors254.html), [258](https://www.oregonlegislature.gov/bills_laws/ors/ors258.html), [260](https://www.oregonlegislature.gov/bills_laws/ors/ors260.html) (2025 edition) |

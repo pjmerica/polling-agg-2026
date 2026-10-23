@@ -4,10 +4,12 @@ Each file holds final county results (2022/2024: split by vote type) and a
 statewide timeseries of the count through election week. Raw files go to
 data/raw/nyt/{year}/{state}-{race}.json and are not committed.
 
-    py "State election results/scripts/fetch_nyt_history.py"
+    py "State election results/scripts/fetch_nyt_history.py"          # the competitive-race states
+    py "State election results/scripts/fetch_nyt_history.py" --all    # every state -> data/raw/nyt_all/
 """
 import json
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -19,6 +21,13 @@ UA = {"User-Agent": "Mozilla/5.0"}
 
 STATES = ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
           "nevada", "oregon"]
+ALL_STATES = ["alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware",
+              "district-of-columbia", "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas",
+              "kentucky", "louisiana", "maine", "maryland", "massachusetts", "michigan", "minnesota", "mississippi",
+              "missouri", "montana", "nebraska", "nevada", "new-hampshire", "new-jersey", "new-mexico", "new-york",
+              "north-carolina", "north-dakota", "ohio", "oklahoma", "oregon", "pennsylvania", "rhode-island",
+              "south-carolina", "south-dakota", "tennessee", "texas", "utah", "vermont", "virginia", "washington",
+              "west-virginia", "wisconsin", "wyoming"]
 
 # year -> (url template, race slugs). Slugs that don't exist for a state 404 and are skipped.
 YEARS = {
@@ -40,11 +49,13 @@ def fetch(url):
 
 
 def main():
+    every = "--all" in sys.argv
+    out, states = (OUT + "_all", ALL_STATES) if every else (OUT, STATES)
     for year, (tmpl, races) in YEARS.items():
-        os.makedirs(os.path.join(OUT, str(year)), exist_ok=True)
-        for state in STATES:
+        os.makedirs(os.path.join(out, str(year)), exist_ok=True)
+        for state in states:
             for race in races:
-                path = os.path.join(OUT, str(year), f"{state}-{race}.json")
+                path = os.path.join(out, str(year), f"{state}-{race}.json")
                 if os.path.exists(path):
                     continue
                 body = fetch(BASE + tmpl.format(state=state, race=race))

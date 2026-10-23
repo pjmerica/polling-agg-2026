@@ -22,8 +22,9 @@ ROOT = os.path.join(HERE, "..")
 RAW = os.path.join(ROOT, "data", "raw", "nyt")
 PROC = os.path.join(ROOT, "data", "processed")
 
-# Main poll close, ET (EST, UTC-5, in 2020/2022/2024/2026), as hours after 7 p.m. ET.
-# Later-closing parts (MI UP, TX El Paso, KS west) are ignored; AK = 8 p.m. AKST.
+# Main poll close, ET (EST, UTC-5, in 2020/2022/2024/2026), as hours after midnight ET.
+# Later-closing parts (MI UP, TX El Paso, KS west, OR Malheur earlier) are ignored; AK = 8 p.m. AKST.
+# Iowa closed at 9 p.m. CT (10 p.m. ET) until 2021 (SF 413 moved it to 8 p.m. from 2022).
 CLOSE_ET = {"georgia": 19.0, "ohio": 19.5, "michigan": 20.0, "texas": 20.0, "kansas": 20.0,
             "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "nevada": 22.0, "oregon": 23.0,
             "alaska": 24.0}
@@ -68,8 +69,9 @@ def load(path):
     rep = max(reps, key=final.get)
     opp = max(opps, key=final.get)
     total_final = sum(final.values())
+    close_h = 22.0 if (state == "iowa" and year < 2022) else CLOSE_ET[state]
     close = dt.datetime.combine(ELECTION_DAY[year], dt.time(0), dt.timezone(dt.timedelta(hours=-5))) \
-        + dt.timedelta(hours=CLOSE_ET[state])
+        + dt.timedelta(hours=close_h)
     return dict(year=year, state=state, race=race, rep=rep, opp=opp, opp_party=party.get(opp, ""),
                 total_final=total_final, final_margin=100 * (final[opp] - final[rep]) / total_final,
                 close=close, pts=pts)
@@ -135,7 +137,8 @@ def write_md(races, rows):
            "state's main poll close. Margin = top non-Republican minus top Republican, points of all "
            "votes (+ = Democrat/independent ahead). *Shift* = final margin minus the margin at 2 hours "
            "after close: positive means the count moved toward the non-Republican after that point.", "",
-           "Poll close used (ET): GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00, AK midnight. "
+           "Poll close used (ET): GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00 (Iowa 2020: 10:00, before "
+           "SF 413 moved its close an hour earlier), NV 10:00, OR 11:00, AK midnight. "
            "Built by `scripts/state_curves.py` from `data/raw/nyt` (2020, 2022, 2024).", "",
            "Caveats:", "",
            "- 2024 **president** timelines cover only 8 p.m.-5:40 a.m. ET (NYT model window); later cells "

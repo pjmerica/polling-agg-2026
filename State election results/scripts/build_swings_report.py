@@ -43,8 +43,12 @@ def generals(rows):
 
 
 def swing(r, cp):
+    """Final margin minus the margin at checkpoint cp. Needs 3%+ counted at cp: a handful of early
+    votes (Nevada 2020 at 2 h: 0%, margin -84) is not a margin."""
     d = f(r[f"dr_{cp}"])
-    return None if d is None else f(r["final_dr"]) - d
+    if d is None or (f(r[f"pct_{cp}"]) or 0) < 3:
+        return None
+    return f(r["final_dr"]) - d
 
 
 def big_swings(rows):
@@ -70,17 +74,28 @@ def big_swings(rows):
 
 
 def comebacks(rows):
-    out = ["| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |",
-           "|---|---|---|---|---|---|"]
+    out = ["| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |",
+           "|---|---|---|---|---|---|---|"]
     for r in sorted([r for r in rows if r["kind"] == "G"], key=lambda r: (ORDER.index(r["state"]), r["year"], r["label"])):
-        lost2 = r["leader_2h"] and r["leader_2h"] != r["winner"]
-        lostm = r["leader_midnight"] and r["leader_midnight"] != r["winner"]
-        if not (lost2 or lostm):
+        lost = [r[k] and r[k] != r["winner"] for k in ("leader_2h", "leader_midnight", "leader_night_end")]
+        if not any(lost):
             continue
-        out.append(f"| {NAMES[r['state']]} {r['label']} | {r['race_id']} | {r['leader_2h'] or '-'} ({r['pct_2h']}%) | "
-                   f"{r['leader_midnight'] or '-'} ({r['pct_midnight'] or '-'}%) | {r['winner']} +{f(r['final_margin']):.1f} | "
-                   f"{r['winner_lead_for_good_et']} ({r['pct_when_winner_took_lead']}% in) |")
+        out.append(f"| {NAMES[r['state']]} {r['label']} | {r['race_id']} | {r['leader_2h'] or '-'} ({r['pct_2h'] or '-'}%) | "
+                   f"{r['leader_midnight'] or '-'} ({r['pct_midnight'] or '-'}%) | {r['leader_night_end'] or '-'} ({r['pct_night_end'] or '-'}%) | "
+                   f"{r['winner']} +{f(r['final_margin']):.1f} | {when(r)} ({r['pct_when_winner_took_lead']}% in) |")
     return "\n".join(out)
+
+
+def when(r):
+    """'MM-DD HH:MM' (ET) -> '9:28 pm' on election night, 'Wed 7:31 am' the next day, else 'Nov 12 9:14 pm'."""
+    s = r["winner_lead_for_good_et"]
+    if not s:
+        return "-"
+    day = dt.date.fromisoformat(r["date"])
+    t = dt.datetime(day.year, int(s[:2]), int(s[3:5]), int(s[6:8]), int(s[9:11]))
+    hm = t.strftime("%I:%M %p").lstrip("0").lower()
+    days = (t.date() - day).days
+    return hm if days == 0 else (f"{(day + dt.timedelta(days=1)).strftime('%a')} {hm}" if days == 1 else t.strftime("%b %d ").replace(" 0", " ") + hm)
 
 
 def late_movers(rows):
@@ -150,7 +165,7 @@ def primaries(rows):
                 flag += f" **- {r['official_winner']} won the ranked-choice count**"
         out.append(f"| {NAMES[r['state']]} | {r['date']} | {r['office']} | {r['race_id']} | {r['pct_1h'] or '-'} / {r['pct_2h'] or '-'} / "
                    f"{r['pct_midnight'] or '-'} / {r['pct_night_end'] or '-'} | {r['winner']} +{f(r['final_margin']):.1f}{flag} | "
-                   f"{r['margin_2h'] or '-'} | {r['winner_lead_for_good_et'][6:]} ({r['pct_when_winner_took_lead']}%) |")
+                   f"{r['margin_2h'] or '-'} | {when(r)} ({r['pct_when_winner_took_lead']}%) |")
     return "\n".join(out)
 
 
@@ -178,7 +193,12 @@ def county_2020(only=None):
     for state in (only or ["georgia", "ohio", "michigan", "texas", "kansas", "maine", "iowa", "nebraska",
                            "nevada", "oregon"]):
         fin, _ = state_at(state, snaps[-1][0])
-        tot = sum(c["votes"] or 0 for c in fin.values())
+        # The last archive copy (Nov 10) is not the final count everywhere (Nevada 95%, Maine 96%), so the
+        # share still to count is measured against the certified total in NYT's 2020 race file. The split
+        # and the counties cover what was counted by Nov 10.
+        race = json.load(open(os.path.join(ROOT, "data", "raw", "nyt", "2020", f"{state}-president.json"),
+                              encoding="utf-8"))["data"]["races"][0]
+        tot = sum(c["votes"] for c in race["candidates"])
         for lab, when in points:
             early, cap = state_at(state, when)
             D = R = V = 0
@@ -192,9 +212,13 @@ def county_2020(only=None):
                 if vv > 0:
                     per.append((c["name"], vv, 100 * (dv - rv) / vv))
             per.sort(key=lambda x: -x[1])
-            share = 100 * V / tot
+            share = 100 * (tot - sum(c.get("votes") or 0 for c in early.values())) / tot
             if share < 0.5:
                 out.append(f"| {state.title()} | {lab} | under 0.5% | - | - | {cap.astimezone(dt.timezone(dt.timedelta(hours=-5))).strftime('%I:%M %p').lstrip('0')} |")
+                continue
+            if 100 * V / tot < 0.5:  # what remained was counted after the last archive copy (Nov 10)
+                out.append(f"| {state.title()} | {lab} | {share:.0f}% | - (counted after Nov 10, not in the archive) | - | "
+                           f"{cap.astimezone(dt.timezone(dt.timedelta(hours=-5))).strftime('%I:%M %p').lstrip('0')} |")
                 continue
             top = "; ".join(f"{n} {100 * v / tot:.1f}% ({m:+.0f})" for n, v, m in per[:4])
             out.append(f"| {state.title()} | {lab} | {share:.0f}% | {100 * (D - R) / V:+.1f} | {top} | "

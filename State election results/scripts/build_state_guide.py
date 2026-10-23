@@ -16,6 +16,8 @@ import json
 import os
 import re
 
+from state_curves import CLOSE_ET
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 RAW = os.path.join(ROOT, "data", "raw", "nyt")
@@ -86,8 +88,13 @@ def history_row(r):
     margin = 100 * (r["cands"][a][2] - r["cands"][b][2]) / r["total"]
     result = f"{r['cands'][a][0]} ({party(r, a)}) +{margin:.1f}"
     first = clock(r["pts"][0][0], eday) if r["pts"] else "-"
-    if r["year"] == 2024 and r["race"] == "president":
-        first = "(timeline starts 8:00 pm)"
+    # NYT's 2024 presidential timelines start at 8:00 pm ET with whatever was counted by then, so in
+    # states whose polls close before 8 pm (GA, OH) the first point is not the first vote. Later states
+    # are exact (Texas closes at 8 pm and its Senate timeline also starts at 8:00 pm).
+    pres_start = dt.datetime.combine(eday, dt.time(20, 1), ET)
+    if (r["year"] == 2024 and r["race"] == "president" and r["pts"] and r["pts"][0][0] <= pres_start
+            and CLOSE_ET.get(r["state"], 20.0) < 20.0):
+        first = "before 8:00 pm (timeline starts 8:00 pm)"
     midnight = dt.datetime.combine(eday + dt.timedelta(days=1), dt.time(0), ET)
     at_mid = max([p[1] for p in r["pts"] if p[0] <= midnight], default=0)
     mid = f"{min(100, 100 * at_mid / r['total']):.0f}%"

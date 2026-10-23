@@ -25,7 +25,8 @@ OUT = os.path.join(ROOT, "data", "processed", "swings.csv")
 
 STATES = {"alaska": "AK", "georgia": "GA", "ohio": "OH", "kansas": "KS", "texas": "TX",
           "nebraska": "NE", "maine": "ME", "iowa": "IA", "michigan": "MI", "nevada": "NV", "oregon": "OR"}
-# main poll close, hours after midnight local ET on election day (AK: 8 pm Alaska = midnight ET)
+# main poll close, hours after midnight local ET on election day (AK: 8 pm Alaska = midnight ET).
+# Iowa closed at 9 pm CT (10 pm ET) until 2021; SF 413 moved it to 8 pm from 2022 (close_hours).
 CLOSE = {"GA": 19.0, "OH": 19.5, "MI": 20.0, "TX": 20.0, "KS": 20.0, "ME": 20.0,
          "IA": 21.0, "NE": 21.0, "NV": 22.0, "OR": 23.0, "AK": 24.0}
 REP = {"republican", "gop", "rep"}
@@ -44,13 +45,23 @@ def ts(s):
     return dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
+def close_hours(state, day):
+    """Main poll close in hours after midnight ET, for that election's rules."""
+    if state == "IA" and day.year < 2022:
+        return 22.0
+    return CLOSE[state]
+
+
 def races_2020(path, d):
     r = d["data"]["races"][0]
     state = STATES[r["state_slug"]]
     cands = {c["candidate_key"]: dict(name=c["last_name"], party=c["party_id"].lower(), votes=c["votes"])
              for c in r["candidates"]}
+    # A few 2020 files carry vote shares for only one candidate (WV, NM Senate) or none (MA Senate);
+    # a missing share is not zero votes, so keep only points that have both of the top two.
+    top2 = sorted(cands, key=lambda k: -cands[k]["votes"])[:2]
     pts = [(ts(t["timestamp"]), t["votes"], {k: s * t["votes"] for k, s in t["vote_shares"].items()})
-           for t in r["timeseries"]]
+           for t in r["timeseries"] if all(k in t["vote_shares"] for k in top2)]
     yield dict(file=path, race_id=r["race_id"], state=state, date=dt.date(2020, 11, 3), kind="G",
                office=r["race_name"], cands=cands, pts=pts, types=None, rcv=False, official="")
 
@@ -108,7 +119,7 @@ def analyse(r):
         return None
     denom = max([total] + [p[1] for p in pts])
     tz = et_offset(r["date"])
-    close = dt.datetime.combine(r["date"], dt.time(0), tz) + dt.timedelta(hours=CLOSE[r["state"]])
+    close = dt.datetime.combine(r["date"], dt.time(0), tz) + dt.timedelta(hours=close_hours(r["state"], r["date"]))
     midnight = dt.datetime.combine(r["date"] + dt.timedelta(days=1), dt.time(0), tz)
     morning = dt.datetime.combine(r["date"] + dt.timedelta(days=1), dt.time(6), tz)
     reps = [k for k in order if cands[k]["party"] in REP]

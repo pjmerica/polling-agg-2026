@@ -2,7 +2,7 @@
 
 Each cell: **% of the final vote counted / margin of the counted vote** at N hours after the state's main poll close. Margin = top non-Republican minus top Republican, points of all votes (+ = Democrat/independent ahead). *Shift* = final margin minus the margin at 2 hours after close: positive means the count moved toward the non-Republican after that point.
 
-Poll close used (ET): GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00, AK midnight. Built by `scripts/state_curves.py` from `data/raw/nyt` (2020, 2022, 2024).
+Poll close used (ET): GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00 (Iowa 2020: 10:00, before SF 413 moved its close an hour earlier), NV 10:00, OR 11:00, AK midnight. Built by `scripts/state_curves.py` from `data/raw/nyt` (2020, 2022, 2024).
 
 Caveats:
 
@@ -76,8 +76,8 @@ Caveats:
 
 | Year | Race | +1h | +2h | +3h | +4h | +6h | +15h | +24h | Final | Shift after +2h |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 2020 | president | - | 48% / +12.2 | 86% / -5.5 | 99% / -7.1 | 99% / -7.2 | 100% / -7.3 | 100% / -8.2 | -8.2 | -20.4 |
-| 2020 | senate | - | 50% / +10.3 | 87% / -4.8 | 99% / -6.4 | 99% / -6.5 | 100% / -6.6 | 100% / -6.6 | -6.6 | -16.9 |
+| 2020 | president | 48% / +12.2 | 86% / -5.5 | 99% / -7.1 | 99% / -7.2 | 99% / -7.2 | 100% / -7.3 | 100% / -8.2 | -8.2 | -2.7 |
+| 2020 | senate | 50% / +10.3 | 87% / -4.8 | 99% / -6.4 | 99% / -6.5 | 99% / -6.5 | 100% / -6.6 | 100% / -6.6 | -6.6 | -1.8 |
 | 2022 | governor | 24% / +10.1 | 75% / -16.7 | 95% / -20.1 | 98% / -19.2 | 100% / -18.5 | 100% / -18.5 | 100% / -18.5 | -18.5 | -1.8 |
 | 2022 | us-senate | 24% / +15.5 | 75% / -10.5 | 95% / -13.7 | 98% / -12.9 | 100% / -12.2 | 100% / -12.2 | 100% / -12.2 | -12.2 | -1.7 |
 | 2024 | president | 12% / +15.3 | 75% / -13.8 | 90% / -13.5 | 95% / -13.8 | 96% / -13.9 | 96% / -14.0 | 96% / -14.0 | -13.3 | +0.5 |

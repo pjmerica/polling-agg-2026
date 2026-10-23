@@ -28,10 +28,10 @@ Listed in poll-closing order.
 | 1 | Georgia | Governor | Bottoms (D) 55.0% vs Jackson (R) | Bottoms 61% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
 | 2 | Ohio | Governor; Senate (special) | Acton (D) 54.9% vs Ramaswamy (R); Brown (D) 59.6% vs Husted (R) | Acton 84%; Brown 69% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
 | 3 | Michigan | Senate | El-Sayed (D) 63.4% vs Rogers (R) | El-Sayed 70% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
-| 4 | Texas | Senate; Governor | Talarico (D) 55.0% vs Paxton (R); Abbott (R) 74.0% vs Hinojosa (D) | Talarico 67%; Abbott 68% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat for the first 15-35 min, then Republican | Election night; AP calls no statewide race before 9 pm |
+| 4 | Texas | Senate; Governor | Talarico (D) 55.0% vs Paxton (R); Abbott (R) 74.0% vs Hinojosa (D) | Talarico 67%; Abbott 68% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
 | 5 | Kansas | Senate | Marshall (R) 58.8% vs Hamilton (D) | Marshall 62% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
 | 6 | Maine | Senate (ranked-choice) | Jackson (D) 71.6% vs Collins (R) | Jackson 66% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
-| 7 | Iowa | Senate | Hinson (R) 68.2% vs Turek (D) | Hinson 57% | 9:00 pm | 9:02-9:12 pm (10:13 pm in 2020) | Democrat until ~10:00-11:30 pm | Election night |
+| 7 | Iowa | Senate | Hinson (R) 68.2% vs Turek (D) | Hinson 57% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
 | 8 | Nebraska | Senate | Ricketts (R) 62.2% vs Osborn (I); no Democrat on the ballot | Ricketts 74% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
 | 9 | Nevada | Governor | Lombardo (R) 69.5% vs Ford (D) | Lombardo 34% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
 | 10 | Oregon | Governor | Kotek (D) 70.1% vs Drazan (R) | Kotek 83% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
@@ -64,11 +64,11 @@ count moves more precisely than the market does, and from acting faster.*
 |---|---|---|---|
 | **1** | **Nevada Governor** | The longest window and the most consistent late direction in the data. Close races are decided Wednesday to Saturday, and the post-election-night count moved toward the Democrat in every statewide race since 2020. It's also the biggest model-market disagreement (detail below). | 2024's tail was about half of 2022's. Clark's new print-and-scan ballots are untested at general-election turnout. Thinner market than Michigan or Maine. First numbers only at ~1-2 am ET. |
 | **2** | **Michigan Senate** | Long window, repeating order and liquid (detail below) | Late batches aren't always Democratic: the 2026 primary narrowed late against El-Sayed (6.3 → 0.9), and 2024's late move was ~0. |
-| **3** | **Maine Senate** | Slow count, liquid market, a repeating intra-night pattern, and ranked-choice complications (detail below) | No live state feed; towns report piecemeal to AP. The ranked-choice count resolves ~8-10 days later, and the first-round leader can lose (2026 primary). |
-| **4** | **Kansas, Nebraska, Iowa: fade the early Democratic/independent lead** | The **most consistent election-night direction** in the data (detail below). All three settle **on election night**, so money turns over quickly. | Thinner markets (Kansas ~2.2M Kalshi contracts; Nebraska not on Kalshi in our data). 2026's early vote may be more Democratic than before, so early leads may be bigger, and so may the fade. Most likely already priced in by sharp traders. |
+| **3** | **Kansas, Nebraska, Iowa, Ohio, Texas: fade the early Democratic/independent lead** | The **most reliable direction** in the national data. In every 2020-2024 race in these five states, the count moved toward the Republican after the first quarter was in, usually by 15-30 pts. The leader at some point lost in 4 or 5 of each state's 5 races. All five are in the national top eight for volatility (`VOLATILITY.md`). They settle **on election night**, so money turns over quickly. | The window is short: Ohio and Texas post most of their vote in the first hour or two. Thinner markets in Kansas and Nebraska (Kansas ~2.2M Kalshi contracts; Nebraska not on Kalshi in our data). 2026's early vote may be more Democratic than before, so early leads may be bigger, and so may the fade. Most likely already priced in by sharp traders. |
+| **4** | **Maine Senate** | Slow count, liquid market, a repeating early pattern, and ranked-choice complications (detail below) | Nationally it's one of the calmer counts: its 4-8 point move happens while little is counted, and no 2020-2024 Maine race had a leader who went on to lose (`VOLATILITY.md`). No live state feed; towns report piecemeal to AP. The ranked-choice count resolves ~8-10 days later. |
 | Special case | **Alaska Senate** | Big model-market disagreement (detail below) | Settles only after Nov 18 (ranked-choice count), possibly later with a recount, so money is tied up for weeks. The model's poll inputs in Alaska are thin. |
 | Special case | **Oregon Governor** | Nevada's mirror image: Kotek's numbers look **worst** at the end of election night (detail below) | The market already prices Kotek 83%, and it's thin (Kalshi ~130K contracts; Polymarket ~$113K liquidity, Oct 19). Only interesting if election night shows Drazan ahead or Kotek's price drops. |
-| Avoid during the count | **Texas (Senate and Governor), Georgia, Ohio** | They count fast: Texas ~62-79% counted in the first hour or two; Georgia and Ohio 93-99% by midnight. | Little time for mispricing. The Ohio Governor gap (model Acton 54.9%, market Acton 84%) is a **pre-election** disagreement, not a live-count one. |
+| Avoid during the count | **Georgia** | Fast (94-98% counted by midnight in 2022 and 2024; 80% in 2020), and its direction has flipped by year: toward the Democrat in 2020 and 2024, toward the Republican in 2022. | Little time and no reliable direction to trade. |
 
 **1. Nevada Governor** (Lombardo R vs Ford D; model Lombardo 69.5%, market Lombardo 34%, so the market favors Ford)
 - **Long window:**
@@ -98,16 +98,41 @@ count moves more precisely than the market does, and from acting faster.*
   - Prices swing hardest at those moments.
 - **Liquid:** ~3.3M contracts traded on Kalshi; ~$577K liquidity on Polymarket (as of Oct 19-20).
 
-**3. Maine Senate** (Jackson D vs Collins R; model Jackson 71.6%, market Jackson 66%)
+**3. Fade the early lead: Kansas, Nebraska, Iowa, Ohio, Texas**
+- **Every race moved the same way.** After the first update with a quarter of the vote in, the margin moved toward the Republican in all 25 of these states' 2020-2024 top races:
+
+  | State | Move after the first quarter, every race |
+  |---|---|
+  | Kansas | −9 to −27 |
+  | Nebraska | −9 to −37 |
+  | Iowa | −15 to −28 |
+  | Ohio | −6 to −30 |
+  | Texas | −6 to −20 |
+
+- **Examples:**
+  - **Kansas 2022:** every race moved 5+ pts toward Republicans after 2 hours (median 19). Governor Kelly's +20 became a 2.2-point win.
+  - **Nebraska 2024:** Osborn led by **18** at 9:00 pm and lost by 6.7. The lead changed at about 11:25 pm, and the race was called at 12:06 am.
+  - **Iowa:** the first-hour margin moved a median 13-29 pts by the end.
+  - **Ohio 2020:** Biden was +21.9 at the first update with a quarter in; Trump won by 8.0.
+  - **Texas 2020:** Biden was +14.4 at that point; Trump won by 5.6.
+- **Timing:** Ohio and Texas do most of the move within about two hours of the close, though Texas still moved 2-4 points after 10 pm. Kansas, Nebraska and Iowa take two to three hours.
+- **When a lead is safe** (from 2020-2024; each state's section has the detail):
+
+  | State | Lead the Democrat/independent needed to be safe |
+  |---|---|
+  | Texas | ~7+ pts at 9 pm, ~4+ at 10 pm |
+  | Kansas | ~8+ at 10:30 pm |
+  | Iowa | ~2+ at 11 pm |
+  | Nebraska | ~9+ at midnight |
+  | Ohio | ~1+ at 10 pm in 2022/2024; in 2020 the count moved 8 more pts toward the Republican after 10 pm |
+- **2026:** Talarico and Hinojosa (Texas), Acton and Brown (Ohio), Hamilton (Kansas), Osborn (Nebraska) and Turek (Iowa) should all lead early.
+- The Ohio Governor gap (model Acton 54.9%, market Acton 84%) is a **pre-election** disagreement, not a live-count one.
+
+**4. Maine Senate** (Jackson D vs Collins R; model Jackson 71.6%, market Jackson 66%)
 - **Slow:** only 29-63% is counted by midnight ET.
-- **Repeating pattern:** in every race we have, the count moved 5-8 pts toward the non-Republican after the first two hours, then 0-3 pts back after 6 am.
+- **Repeating pattern:** in every top race we have, the count moved 4-8 pts toward the non-Republican after the first two hours, then 0-3 pts back after 6 am. Most of that move happens while under a quarter of the vote is in, so the window is the first two hours.
 - **Liquid:** ~4.4M Kalshi contracts; ~$2.3M Polymarket volume.
 - **Ranked-choice wrinkle:** if no one tops 50% of *all* ballots (blanks count against the leader), the ranked-choice count decides about a week later, a second chance for prices to be wrong.
-
-**4. Kansas, Nebraska, Iowa**
-- **Kansas:** in 2022 **every** race moved 5+ pts toward Republicans after 2 hours (median 19). Governor Kelly's +20 became a 2.2-point win.
-- **Nebraska:** Osborn led by **18** at 9:00 pm in 2024 and lost by 6.7. The lead changed at about 11:25 pm, and the race was called at 12:06 am.
-- **Iowa:** the first-hour margin moved a median 13-29 pts by the end.
 
 **Special case: Alaska Senate** (Peltola D vs Sullivan R)
 - **The disagreement:** our model says Peltola 51.9%; the market says Peltola 75%.
@@ -119,6 +144,15 @@ count moves more precisely than the market does, and from acting faster.*
 - **Wednesday to Friday** (Multnomah and Washington Election Day drop-offs) took her back to +3.7 by Friday midday; the final was +3.4.
 - **The rule of thumb:** a Drazan lead under ~2 points at the end of election night is at real risk, and a Kotek lead should grow.
 
+### How these states compare nationally
+
+From `VOLATILITY.md`, which measures every President, Senate and Governor race in the 50 states and DC, 2020-2024. A state ranks high when its visible margin moves a lot during the count *and* its leader at some point often lost.
+- **National top ten:** Kansas, Nebraska, Virginia, Michigan, Iowa, Rhode Island, Texas, Ohio, North Carolina, Georgia.
+- **Our eleven, by national rank:** Kansas 1, Nebraska 2, Michigan 4, Iowa 5, Texas 7, Ohio 8, Georgia 10, Nevada 17, Alaska 19, Oregon 33, Maine 37.
+- **Volatility isn't the same as opportunity.**
+  - The biggest swings (Kansas, Nebraska, Iowa) are also the most predictable and settle within hours, so they're probably priced in.
+  - Nevada's swings are small (about 2 points) but always in the same direction. They play out over days, and they changed the leader in 3 of its 5 races.
+
 ### Practical cautions
 
 - **Settlement rules differ by platform** (see `AGENTS.md`):
@@ -126,7 +160,7 @@ count moves more precisely than the market does, and from acting faster.*
   - These all delay settlement:
     - ranked-choice counts (Alaska Nov 18, Maine about a week later);
     - recounts: automatic in Georgia's governor race at 0.5% or less, Michigan at 0.1%, Ohio at 0.25%, Oregon at 0.2%, and Nebraska at 1% of the leader's vote. Nevada recounts only on demand, by Dec 1;
-    - late mail: Alaska, Oregon to Nov 10, Nevada to Nov 7, Kansas to Nov 6, Texas to Nov 4.
+    - late mail: Alaska to Nov 13, Oregon to Nov 10, Nevada to Nov 7, Kansas to Nov 6, Texas to Nov 4.
   - Nevada's statewide canvass is Nov 24. Oregon's governor result is never certified by the Secretary of State; the House Speaker publishes it before the 2027 Legislature.
 - **Fees are real per leg** (`utils/fees.py`). Small edges disappear.
 - **The tools that make this usable are already set up:**
@@ -253,13 +287,13 @@ In poll-closing order. Each state has three parts:
 | 2020 | Senate | 7:14 pm | 79% | Ossoff led first; Perdue ahead 7:36 pm (5% in) | Nov 6 (NYT) | Perdue (R) +1.8 |
 | 2022 | Governor | 7:03 pm | 94% | Abrams led first; Kemp ahead 8:34 pm (43% in) | Wed 12:49 am (AP) | Kemp (R) +7.5 |
 | 2022 | Senate | 7:03 pm | 94% | Warnock led first; lead traded 9:00 pm-9:03 pm, Warnock ahead from 9:03 pm (63% in); Walker ahead 9:39 pm (75% in); lead traded 11:21 pm-11:22 pm, Walker ahead from 11:22 pm (91% in); Warnock ahead Wed 12:17 am (94% in) | - | Warnock (D) +1.0 |
-| 2024 | President | (timeline starts 8:00 pm) | 98% | Trump led first (timeline ends 5:40 am Wed) | Wed 12:46 am (AP) | Trump (R) +2.2 |
+| 2024 | President | before 8:00 pm (timeline starts 8:00 pm) | 98% | Trump led first (timeline ends 5:40 am Wed) | Wed 12:46 am (AP) | Trump (R) +2.2 |
 
 What the curves show (`state_curves.md`):
 - **2022 Governor:** Abrams was +9.0 one hour after close with 27% counted. Kemp led from 8:34 pm and won by 7.5.
 - **2022 Senate:** Warnock was +16.5 at one hour; the lead traded hands for three hours and he finished +1.0.
 - **2020:** the very late count (Atlanta-area mail) took Biden from −15 at two hours after close to +0.2.
-- **2024:** about 98% was counted by midnight, the fastest of the nine states.
+- **2024:** about 98% was counted by midnight, the fastest of the eleven states.
 
 **After election night**
 
@@ -274,6 +308,7 @@ What the curves show (`state_curves.md`):
 **What to expect** (inference):
 - Expect a large Democratic-leaning batch between 7:00 and 8:00 pm, then Republican-leaning rural Election Day precincts.
 - The 2022 Governor lead changed at about 43% counted (8:34 pm).
+- Watch for metro Atlanta's late batches: after 9:00 pm the count moved **toward the Democrat** in 2024 (+3.2) and 2020 (+15.5), and barely at all in 2022.
 - A race inside ~2 points is likely called around midnight to 1 am, as in 2022 (12:49 am) and 2024 (12:46 am).
 - Inside 0.5%, there is no final result before the hand recount, around Nov 18-20.
 
@@ -302,15 +337,15 @@ What the curves show (`state_curves.md`):
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Georgia 2020 President | GA-G-P-2020-11-03 | Trump (32.3%) | Trump (79.6%) | Biden +0.2 | 11-05 21:32 (99.0% in) |
-| Georgia 2022 Agriculture Commissioner | GA-G-agriculture_commissioner-2022-11-08 | Hemingway (16.3%) | Harper (90.0%) | Harper +8.1 | 11-08 21:31 (44.5% in) |
-| Georgia 2022 Attorney General | GA-G-attorney_general-2022-11-08 | Jordan (16.3%) | Carr (90.0%) | Carr +5.3 | 11-08 21:31 (45.7% in) |
-| Georgia 2022 Insurance Commissioner | GA-G-insurance_commissioner-2022-11-08 | Laws Robinson (16.3%) | King (90.1%) | King +8.2 | 11-08 21:31 (43.9% in) |
-| Georgia 2022 Labor Commissioner | GA-G-labor_commissioner-2022-11-08 | Boddie (16.3%) | Thompson (90.3%) | Thompson +6.8 | 11-08 21:31 (44.4% in) |
-| Georgia 2022 Lieutenant Governor | GA-G-LG-2022-11-08 | Bailey (16.3%) | Jones (90.3%) | Jones +5.0 | 11-08 21:32 (66.7% in) |
-| Georgia 2022 Senate | GA-G-S-2022-11-08 | Warnock (55.6%) | Walker (93.7%) | Warnock +1.0 | 11-09 00:17 (94.3% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Georgia 2020 President | GA-G-P-2020-11-03 | Trump (32.3%) | Trump (79.6%) | Trump (94.4%) | Biden +0.2 | Nov 5 9:32 pm (99.0% in) |
+| Georgia 2022 Agriculture Commissioner | GA-G-agriculture_commissioner-2022-11-08 | Hemingway (16.3%) | Harper (90.0%) | Harper (98.8%) | Harper +8.1 | 9:31 pm (44.5% in) |
+| Georgia 2022 Attorney General | GA-G-attorney_general-2022-11-08 | Jordan (16.3%) | Carr (90.0%) | Carr (98.8%) | Carr +5.3 | 9:31 pm (45.7% in) |
+| Georgia 2022 Insurance Commissioner | GA-G-insurance_commissioner-2022-11-08 | Laws Robinson (16.3%) | King (90.1%) | King (98.8%) | King +8.2 | 9:31 pm (43.9% in) |
+| Georgia 2022 Labor Commissioner | GA-G-labor_commissioner-2022-11-08 | Boddie (16.3%) | Thompson (90.3%) | Thompson (99.1%) | Thompson +6.8 | 9:31 pm (44.4% in) |
+| Georgia 2022 Lieutenant Governor | GA-G-LG-2022-11-08 | Bailey (16.3%) | Jones (90.3%) | Jones (99.2%) | Jones +5.0 | 9:32 pm (66.7% in) |
+| Georgia 2022 Senate | GA-G-S-2022-11-08 | Warnock (55.6%) | Walker (93.7%) | Warnock (99.5%) | Warnock +1.0 | Wed 12:17 am (94.3% in) |
 
 #### Races that moved 1.5+ pts after 6 am ET
 
@@ -324,22 +359,22 @@ What the curves show (`state_curves.md`):
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
 | Georgia | midnight ET | 20% | +38.2 | DeKalb 5.5% (+67); Fulton 5.0% (+46); Gwinnett 2.2% (+26); Cobb 2.0% (+18) | 12:00 AM |
-| Georgia | 6 am ET | 5% | +42.7 | Fulton 1.6% (+56); DeKalb 1.0% (+70); Chatham 0.5% (+42); Houston 0.4% (+18) | 5:52 AM |
+| Georgia | 6 am ET | 6% | +42.7 | Fulton 1.6% (+56); DeKalb 1.0% (+70); Chatham 0.5% (+42); Houston 0.4% (+18) | 5:52 AM |
 
 #### 2026 primaries, runoffs and specials
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Georgia | 2026-03-10 | U.S. House | GA-S_T-H-14-2026-03-10 | 54.6 / 85.3 / 99.9 / 99.9 | Harris +2.5 | 1.9 | 19:35 (24.8%) |
-| Georgia | 2026-04-07 | U.S. House | GA-S_NSR-H-14-2026-04-07 | 41.0 / 74.2 / 99.9 / 99.9 | Fuller +11.8 | 11.17 | 19:37 (27.5%) |
-| Georgia | 2026-05-19 | Governor | GA-D-G-2026-05-19 | 23.9 / 43.2 / 97.6 / 99.8 | Bottoms +37.6 | 45.89 | 19:46 (18.4%) |
-| Georgia | 2026-05-19 | U.S. House | GA-D-H-1-2026-05-19 | 33.7 / 55.4 / 99.9 / 99.9 | Griggs +9.8 | 11.98 | 19:46 (12.2%) |
-| Georgia | 2026-05-19 | Supreme Court | GA-L-SC-justice_bethel_seat-2026-05-19 | 27.4 / 44.5 / 97.9 / 99.9 | Bethel +2.2 | 6.25 | 20:05 (27.9%) |
-| Georgia | 2026-05-19 | Supreme Court | GA-L-SC-justice_warren_seat-2026-05-19 | 24.3 / 44.6 / 97.9 / 99.9 | Warren +18.6 | 22.52 | 19:44 (10.1%) |
-| Georgia | 2026-05-19 | Governor | GA-R-G-2026-05-19 | 24.7 / 49.7 / 98.3 / 99.9 | Jones +5.8 | 2.71 | 19:37 (12.2%) |
-| Georgia | 2026-05-19 | U.S. House | GA-R-H-1-2026-05-19 | 33.3 / 52.0 / 100.0 / 100.0 | Kingston +35.1 | 39.07 | 19:25 (13.9%) |
-| Georgia | 2026-05-19 | U.S. Senate | GA-R-S-2026-05-19 | 26.2 / 49.7 / 98.3 / 99.9 | Collins +10.3 | 12.89 | 19:36 (12.5%) |
-| Georgia | 2026-07-28 | U.S. House | GA-S_T-H-13-2026-07-28 | 49.1 / 92.6 / 99.9 / 99.9 | Scott +8.6 | 12.42 | 19:05 (10.7%) |
+| Georgia | 2026-03-10 | U.S. House | GA-S_T-H-14-2026-03-10 | 54.6 / 85.3 / 99.9 / 99.9 | Harris +2.5 | 1.9 | 7:35 pm (24.8%) |
+| Georgia | 2026-04-07 | U.S. House | GA-S_NSR-H-14-2026-04-07 | 41.0 / 74.2 / 99.9 / 99.9 | Fuller +11.8 | 11.17 | 7:37 pm (27.5%) |
+| Georgia | 2026-05-19 | Governor | GA-D-G-2026-05-19 | 23.9 / 43.2 / 97.6 / 99.8 | Bottoms +37.6 | 45.89 | 7:46 pm (18.4%) |
+| Georgia | 2026-05-19 | U.S. House | GA-D-H-1-2026-05-19 | 33.7 / 55.4 / 99.9 / 99.9 | Griggs +9.8 | 11.98 | 7:46 pm (12.2%) |
+| Georgia | 2026-05-19 | Supreme Court | GA-L-SC-justice_bethel_seat-2026-05-19 | 27.4 / 44.5 / 97.9 / 99.9 | Bethel +2.2 | 6.25 | 8:05 pm (27.9%) |
+| Georgia | 2026-05-19 | Supreme Court | GA-L-SC-justice_warren_seat-2026-05-19 | 24.3 / 44.6 / 97.9 / 99.9 | Warren +18.6 | 22.52 | 7:44 pm (10.1%) |
+| Georgia | 2026-05-19 | Governor | GA-R-G-2026-05-19 | 24.7 / 49.7 / 98.3 / 99.9 | Jones +5.8 | 2.71 | 7:37 pm (12.2%) |
+| Georgia | 2026-05-19 | U.S. House | GA-R-H-1-2026-05-19 | 33.3 / 52.0 / 100.0 / 100.0 | Kingston +35.1 | 39.07 | 7:25 pm (13.9%) |
+| Georgia | 2026-05-19 | U.S. Senate | GA-R-S-2026-05-19 | 26.2 / 49.7 / 98.3 / 99.9 | Collins +10.3 | 12.89 | 7:36 pm (12.5%) |
+| Georgia | 2026-07-28 | U.S. House | GA-S_T-H-13-2026-07-28 | 49.1 / 92.6 / 99.9 / 99.9 | Scott +8.6 | 12.42 | 7:05 pm (10.7%) |
 
 
 ---
@@ -379,7 +414,7 @@ What the curves show (`state_curves.md`):
 | 2020 | President | 7:39 pm | 95% | Biden led first; Trump ahead 10:00 pm (73% in) | Wed 12:07 am (NYT) | Trump (R) +8.0 |
 | 2022 | Governor | 7:39 pm | 96% | Whaley led first; DeWine ahead 8:03 pm (11% in) | 9:03 pm (AP) | DeWine (R) +25.1 |
 | 2022 | Senate | 7:39 pm | 96% | Ryan led first; Vance ahead 9:28 pm (48% in) | 11:20 pm (AP) | Vance (R) +6.1 |
-| 2024 | President | (timeline starts 8:00 pm) | 95% | Harris led first; Trump ahead 8:24 pm (41% in) (timeline ends 5:40 am Wed) | 9:08 pm (AP) | Trump (R) +11.2 |
+| 2024 | President | before 8:00 pm (timeline starts 8:00 pm) | 95% | Harris led first; Trump ahead 8:24 pm (41% in) (timeline ends 5:40 am Wed) | 9:08 pm (AP) | Trump (R) +11.2 |
 | 2024 | Senate | 7:37 pm | 95% | Moreno led first; Brown ahead 8:02 pm (18% in); lead traded 8:18 pm-8:25 pm, Brown ahead from 8:25 pm (38% in); Moreno ahead 8:57 pm (49% in) | 11:28 pm (AP) | Moreno (R) +3.6 |
 
 What the curves show:
@@ -425,25 +460,25 @@ What the curves show:
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Ohio 2020 President | OH-G-P-2020-11-03 | Biden (63.6%) | Trump (94.7%) | Trump +8.0 | 11-03 22:00 (73.3% in) |
-| Ohio 2022 House 7 | OH-G-H-7-2022-11-08 | Diemer (48.5%) | Miller (95.5%) | Miller +10.7 | 11-08 21:42 (51.9% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Ohio 2020 President | OH-G-P-2020-11-03 | Biden (63.6%) | Trump (94.7%) | Trump (96.2%) | Trump +8.0 | 10:00 pm (73.3% in) |
+| Ohio 2022 House 7 | OH-G-H-7-2022-11-08 | Diemer (48.5%) | Miller (95.5%) | Miller (98.0%) | Miller +10.7 | 9:42 pm (51.9% in) |
 
 #### Where the late vote came from (2020, county detail)
 
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
-| Ohio | midnight ET | 3% | -7.7 | Lucas 0.7% (-5); Franklin 0.5% (+31); Cuyahoga 0.4% (+36); Tuscarawas 0.3% (-12) | 12:00 AM |
-| Ohio | 6 am ET | under 0.5% | - | - | 5:52 AM |
+| Ohio | midnight ET | 5% | -7.7 | Lucas 0.7% (-5); Franklin 0.5% (+31); Cuyahoga 0.3% (+36); Tuscarawas 0.3% (-12) | 12:00 AM |
+| Ohio | 6 am ET | 2% | - (counted after Nov 10, not in the archive) | - | 5:52 AM |
 
 #### 2026 primaries, runoffs and specials
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Ohio | 2026-05-05 | Secretary of State | OH-D-SOS-2026-05-05 | 26.5 / 53.1 / 96.7 / 99.4 | Russo +34.8 | 36.6 | 20:03 (21.5%) |
-| Ohio | 2026-05-05 | U.S. House | OH-R-H-9-2026-05-05 | 15.4 / 51.2 / 92.9 / 99.7 | Merrin +18.8 | 18.44 | 20:01 (13.7%) |
-| Ohio | 2026-05-05 | Secretary of State | OH-R-SOS-2026-05-05 | 20.6 / 59.8 / 97.9 / 99.6 | Sprague +40.4 | 39.73 | 20:04 (14.7%) |
+| Ohio | 2026-05-05 | Secretary of State | OH-D-SOS-2026-05-05 | 26.5 / 53.1 / 96.7 / 99.4 | Russo +34.8 | 36.6 | 8:03 pm (21.5%) |
+| Ohio | 2026-05-05 | U.S. House | OH-R-H-9-2026-05-05 | 15.4 / 51.2 / 92.9 / 99.7 | Merrin +18.8 | 18.44 | 8:01 pm (13.7%) |
+| Ohio | 2026-05-05 | Secretary of State | OH-R-SOS-2026-05-05 | 20.6 / 59.8 / 97.9 / 99.6 | Sprague +40.4 | 39.73 | 8:04 pm (14.7%) |
 
 
 ---
@@ -481,7 +516,7 @@ What the curves show:
 | 2020 | President | 8:09 pm | 50% | Trump led first; Biden ahead Wed 9:02 am (91% in) | Wed 4:42 pm (NYT) | Biden (D) +2.8 |
 | 2020 | Senate | 8:20 pm | 49% | James led first; Peters ahead Wed 1:04 pm (95% in); James ahead Wed 2:13 pm (96% in); Peters ahead Wed 3:52 pm (97% in) | Wed 9:13 pm (NYT) | Peters (D) +1.7 |
 | 2022 | Governor | 8:05 pm | 48% | Whitmer led first | Wed 1:26 am (AP) | Whitmer (D) +10.5 |
-| 2024 | President | (timeline starts 8:00 pm) | 46% | Harris led first; lead traded 10:34 pm-10:38 pm, Trump ahead from 10:38 pm (25% in) (timeline ends 5:40 am Wed) | Wed 12:54 pm (AP) | Trump (R) +1.4 |
+| 2024 | President | 8:07 pm | 46% | Harris led first; lead traded 10:34 pm-10:38 pm, Trump ahead from 10:38 pm (25% in) (timeline ends 5:40 am Wed) | Wed 12:54 pm (AP) | Trump (R) +1.4 |
 | 2024 | Senate | 8:07 pm | 46% | Slotkin led first; Rogers ahead 10:44 pm (25% in); Slotkin ahead Wed 7:31 am (97% in) | Wed 3:12 pm (AP) | Slotkin (D) +0.3 |
 
 What the curves show:
@@ -495,7 +530,8 @@ What the curves show:
 
 **What to expect** (inference):
 - An El-Sayed lead in the first hour or two is likely and means little.
-- Rogers may lead late on election night while the rural and Election Day vote outruns Wayne County. A Rogers lead at midnight is consistent with an El-Sayed win of a few points.
+- Rogers may lead late on election night while the rural and Election Day vote outruns Wayne County.
+- After midnight the count moved **3.5-13.6 points toward the Democrat** in every top race 2020-2024. Even in 2024, the calmest year, a Rogers lead of 3 points at midnight would have flipped.
 - Expect no call before Wednesday unless the margin is wide (2022 Governor, +10.5: 1:26 am).
 
 ### The swing data: Michigan
@@ -505,8 +541,8 @@ What the curves show:
 | State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
 |---|---|---|---|---|---|---|---|
 | Michigan | 2020 | 2 | 13% / 24% / 50% / 81% | +20.5 | +20.6 | +7.2 | 2 of 2 |
-| Michigan | 2022 | 16 | 7% / 15% / 48% / 93% | +15.8 | +5.3 | +2.0 | 11 of 15 |
-| Michigan | 2024 | 15 | 9% / 13% / 46% / 98% | -0.3 | -1.0 | +0.0 | 10 of 15 |
+| Michigan | 2022 | 16 | 7% / 15% / 48% / 93% | +0.6 | +5.3 | +2.0 | 11 of 15 |
+| Michigan | 2024 | 15 | 9% / 13% / 46% / 98% | -2.7 | -2.8 | +0.0 | 6 of 10 |
 
 #### Biggest moves in competitive races
 
@@ -523,15 +559,15 @@ What the curves show:
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Michigan 2020 President | MI-G-P-2020-11-03 | Trump (23.3%) | Trump (49.8%) | Biden +2.8 | 11-04 09:02 (90.6% in) |
-| Michigan 2020 Senate | MI-G-S-2020-11-03 | James (23.8%) | James (49.2%) | Peters +1.7 | 11-04 15:52 (96.9% in) |
-| Michigan 2022 House 7 | MI-G-H-7-2022-11-08 | Barrett (22.2%) | Barrett (53.6%) | Slotkin +5.4 | 11-09 02:32 (95.1% in) |
-| Michigan 2022 House 8 | MI-G-H-8-2022-11-08 | Junge (13.5%) | Junge (49.5%) | Kildee +10.3 | 11-09 00:21 (52.2% in) |
-| Michigan 2024 House 8 | MI-G-H-8-2024-11-05 | - (0.3%) | Junge (29.8%) | McDonald Rivet +6.6 | 11-06 00:05 (32.7% in) |
-| Michigan 2024 President | MI-G-P-2024-11-05 | Harris (12.7%) | Trump (46.4%) | Trump +1.4 | 11-05 22:38 (24.6% in) |
-| Michigan 2024 Senate | MI-G-S-2024-11-05 | Slotkin (12.6%) | Rogers (46.0%) | Slotkin +0.3 | 11-06 07:31 (97.5% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Michigan 2020 President | MI-G-P-2020-11-03 | Trump (23.3%) | Trump (49.8%) | Trump (81.9%) | Biden +2.8 | Wed 9:02 am (90.6% in) |
+| Michigan 2020 Senate | MI-G-S-2020-11-03 | James (23.8%) | James (49.2%) | James (80.1%) | Peters +1.7 | Wed 3:52 pm (96.9% in) |
+| Michigan 2022 House 7 | MI-G-H-7-2022-11-08 | Barrett (22.2%) | Barrett (53.6%) | Slotkin (96.9%) | Slotkin +5.4 | Wed 2:32 am (95.1% in) |
+| Michigan 2022 House 8 | MI-G-H-8-2022-11-08 | Junge (13.5%) | Junge (49.5%) | Kildee (93.4%) | Kildee +10.3 | Wed 12:21 am (52.2% in) |
+| Michigan 2024 House 8 | MI-G-H-8-2024-11-05 | - (0.3%) | Junge (29.8%) | McDonald Rivet (100.0%) | McDonald Rivet +6.6 | Wed 12:05 am (32.7% in) |
+| Michigan 2024 President | MI-G-P-2024-11-05 | Harris (12.7%) | Trump (46.4%) | Trump (95.6%) | Trump +1.4 | 10:38 pm (24.6% in) |
+| Michigan 2024 Senate | MI-G-S-2024-11-05 | Slotkin (12.6%) | Rogers (46.0%) | Rogers (95.7%) | Slotkin +0.3 | Wed 7:31 am (97.5% in) |
 
 #### Races that moved 1.5+ pts after 6 am ET
 
@@ -564,10 +600,10 @@ What the curves show:
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Michigan | 2026-08-04 | U.S. House | MI-D-H-12-2026-08-04 | 1.1 / 15.0 / 40.5 / 94.2 | Tlaib +57.1 | 38.57 | 21:18 (13.6%) |
-| Michigan | 2026-08-04 | U.S. House | MI-D-H-13-2026-08-04 | 2.4 / 5.6 / 47.9 / 93.0 | McKinney +3.8 | 26.21 | 23:33 (47.9%) |
-| Michigan | 2026-08-04 | U.S. House | MI-D-H-7-2026-08-04 | 13.2 / 30.1 / 58.4 / 100.0 | Lawrence +14.9 | 5.95 | 20:42 (10.1%) |
-| Michigan | 2026-08-04 | U.S. Senate | MI-D-S-2026-08-04 | 5.9 / 23.1 / 60.9 / 98.3 | El-Sayed +0.9 | 6.31 | 21:01 (15.2%) |
+| Michigan | 2026-08-04 | U.S. House | MI-D-H-12-2026-08-04 | 1.1 / 15.0 / 40.5 / 94.2 | Tlaib +57.1 | 38.57 | 9:18 pm (13.6%) |
+| Michigan | 2026-08-04 | U.S. House | MI-D-H-13-2026-08-04 | 2.4 / 5.6 / 47.9 / 93.0 | McKinney +3.8 | 26.21 | 11:33 pm (47.9%) |
+| Michigan | 2026-08-04 | U.S. House | MI-D-H-7-2026-08-04 | 13.2 / 30.1 / 58.4 / 100.0 | Lawrence +14.9 | 5.95 | 8:42 pm (10.1%) |
+| Michigan | 2026-08-04 | U.S. Senate | MI-D-S-2026-08-04 | 5.9 / 23.1 / 60.9 / 98.3 | El-Sayed +0.9 | 6.31 | 9:01 pm (15.2%) |
 
 
 ---
@@ -618,21 +654,28 @@ Both races are on the same ballot and counted together, so everything below appl
 | 2020 | President | 7:34 pm | 91% | Trump led first; Biden ahead 8:02 pm (10% in); lead traded 9:13 pm-9:29 pm, Trump ahead from 9:29 pm (75% in) | Wed 1:20 am (NYT) | Trump (R) +5.6 |
 | 2020 | Senate | 7:35 pm | 91% | Hegar led first; lead traded 8:26 pm-8:31 pm, Cornyn ahead from 8:31 pm (46% in) | 10:07 pm (NYT) | Cornyn (R) +9.6 |
 | 2022 | Governor | 8:00 pm | 84% | O’Rourke led first; Abbott ahead 8:37 pm (31% in) | 10:56 pm (AP) | Abbott (R) +10.9 |
-| 2024 | President | (timeline starts 8:00 pm) | 88% | Harris led first; Trump ahead 8:07 pm (18% in) (timeline ends 5:40 am Wed) | 9:13 pm (AP) | Trump (R) +13.7 |
+| 2024 | President | 8:00 pm | 88% | Harris led first; Trump ahead 8:07 pm (18% in) (timeline ends 5:40 am Wed) | 9:13 pm (AP) | Trump (R) +13.7 |
 | 2024 | Senate | 8:00 pm | 88% | Allred led first; lead traded 8:15 pm-8:24 pm, Allred ahead from 8:24 pm (42% in); Cruz ahead 8:34 pm (56% in) | 11:39 pm (AP) | Cruz (R) +8.5 |
 
 What the curves show:
 - **Most of the vote arrives in the first hour:** 62-67% was counted one hour after close in 2020 and 2024.
-- **The early Democratic lead lasts minutes:**
+- **The early Democratic lead usually lasts about half an hour, but not always:**
   - 2024 Senate: Allred led until 8:34 pm.
   - 2020 Senate: Hegar led until 8:31 pm.
   - 2022 Governor: O'Rourke led until 8:37 pm.
-- **After that the count moves another 2-4 points toward the Republican:** 2024 Senate was −4.7 at one hour and finished −8.5.
+  - **2020 President: Biden led until 9:29 pm, with 75% counted, and lost by 5.6.**
+- **The count keeps moving toward the Republican well after the first hour.** In every top race 2020-2024, what was left moved:
+
+  | From | Share counted then | Rest of the count moved toward the Republican by |
+  |---|---|---|
+  | 8:30 pm | 25-45% | 8.5-18.6 pts |
+  | 9:00 pm | 36-67% | 3.8-6.7 pts |
+  | 10:00 pm | 63-79% | 1.9-3.6 pts |
 - One odd point: in 2020 NYT recorded first votes at 7:34 pm ET, before polls closed at 8 pm ET. It was a few hundred votes, probably an early county post. Treat 8:00 pm as the real start.
 
 **What to expect** (inference):
-- If Talarico leads by more than ~4 points at 8:30 pm with most early votes in, he is in good shape. The same arithmetic applies to Hinojosa against Abbott; in 2022 O'Rourke led only until 8:37 pm and lost by 10.9.
-- If he leads by less, the Election Day vote can erase it.
+- An early Talarico lead means little: Biden was +5.0 at 8:30 pm in 2020 and lost by 5.6.
+- Judging from 2020-2024, Talarico needs a lead of about **7+ points at 9:00 pm, or 4+ at 10:00 pm**, to be safe. The same arithmetic applies to Hinojosa against Abbott (O'Rourke 2022 led until 8:37 pm and lost by 10.9).
 - A margin under ~2 points likely pushes the call past midnight. Late mail (to Nov 4) and provisionals matter only within ~0.5 points.
 
 ### The swing data: Texas
@@ -642,7 +685,7 @@ What the curves show:
 | State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
 |---|---|---|---|---|---|---|---|
 | Texas | 2020 | 2 | 66% / 79% / 91% / 99% | -6.4 | -3.4 | +0.4 | 0 of 2 |
-| Texas | 2022 | 41 | 35% / 64% / 82% / 99% | -5.7 | -3.4 | +0.1 | 15 of 41 |
+| Texas | 2022 | 41 | 35% / 64% / 82% / 99% | -5.8 | -3.4 | +0.1 | 15 of 41 |
 | Texas | 2024 | 33 | 70% / 74% / 88% / 100% | -1.3 | -1.0 | +0.2 | 3 of 33 |
 
 #### Biggest moves in competitive races
@@ -660,10 +703,10 @@ What the curves show:
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Texas 2022 Attorney General | TX-G-attorney_general-2022-11-08 | Garza (42.9%) | Paxton (82.0%) | Paxton +9.8 | 11-08 22:02 (49.7% in) |
-| Texas 2024 House 28 | TX-G-H-28-2024-11-05 | Furman (45.8%) | Cuellar (86.1%) | Cuellar +5.6 | 11-05 22:34 (65.6% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Texas 2022 Attorney General | TX-G-attorney_general-2022-11-08 | Garza (42.9%) | Paxton (82.0%) | Paxton (98.1%) | Paxton +9.8 | 10:02 pm (49.7% in) |
+| Texas 2024 House 28 | TX-G-H-28-2024-11-05 | Furman (45.8%) | Cuellar (86.1%) | Cuellar (100.0%) | Cuellar +5.6 | 10:34 pm (65.6% in) |
 
 #### Races that moved 1.5+ pts after 6 am ET
 
@@ -676,38 +719,38 @@ What the curves show:
 
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
-| Texas | midnight ET | 9% | -7.2 | Harris 1.6% (+5); Fort Bend 1.1% (+5); Dallas 0.7% (+25); Travis 0.5% (+18) | 12:00 AM |
+| Texas | midnight ET | 9% | -7.2 | Harris 1.6% (+5); Fort Bend 1.0% (+5); Dallas 0.7% (+25); Travis 0.5% (+18) | 12:00 AM |
 | Texas | 6 am ET | 1% | +23.4 | Webb 0.4% (+25); Tarrant 0.2% (+17); Hunt 0.1% (-49); Fort Bend 0.1% (+21) | 5:52 AM |
 
 #### 2026 primaries, runoffs and specials
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Texas | 2026-03-03 | Comptroller | TX-D-COMP-2026-03-03 | 28.4 / 44.4 / 75.1 / 96.0 | Eckhardt +45.0 | 44.04 | 20:14 (11.0%) |
-| Texas | 2026-03-03 | U.S. House | TX-D-H-18-2026-03-03 | 63.3 / 63.6 / 65.6 / 91.9 | Menefee +1.8 | 5.38 | 20:54 (63.3%) |
-| Texas | 2026-03-03 | U.S. House | TX-D-H-23-2026-03-03 | 2.1 / 49.0 / 65.2 / 91.9 | Padilla Stout +24.9 | 36.49 | 21:20 (43.3%) |
-| Texas | 2026-03-03 | U.S. House | TX-D-H-24-2026-03-03 | 44.8 / 44.8 / 72.7 / 95.7 | Burge +21.9 | 21.2 | 20:03 (43.8%) |
-| Texas | 2026-03-03 | U.S. House | TX-D-H-33-2026-03-03 | - / - / 65.6 / 79.7 | Allred +10.8 | - | 22:30 (65.6%) |
-| Texas | 2026-03-03 | U.S. House | TX-D-H-38-2026-03-03 | 59.5 / 59.5 / 59.5 / 90.9 | McDonough +23.4 | 21.95 | 20:55 (59.5%) |
-| Texas | 2026-03-03 | U.S. House | TX-D-H-9-2026-03-03 | 54.8 / 59.4 / 61.1 / 96.4 | Gutierrez +37.4 | 33.88 | 20:43 (54.8%) |
-| Texas | 2026-03-03 | U.S. Senate | TX-D-S-2026-03-03 | 37.4 / 48.8 / 73.2 / 95.7 | Talarico +6.2 | 7.29 | 20:40 (31.7%) |
-| Texas | 2026-03-03 | Supreme Court | TX-D-SC-7-2026-03-03 | 26.3 / 42.3 / 72.9 / 95.6 | Hawkins +51.2 | 51.4 | 20:17 (11.8%) |
-| Texas | 2026-03-03 | Supreme Court | TX-D-SC-chief_justice-2026-03-03 | 15.5 / 42.3 / 72.8 / 95.6 | Ellis +53.6 | 55.27 | 20:17 (11.7%) |
-| Texas | 2026-03-03 | Comptroller | TX-R-COMP-2026-03-03 | 28.6 / 51.7 / 77.8 / 97.7 | Huffines +33.7 | 37.16 | 20:03 (10.5%) |
-| Texas | 2026-03-03 | U.S. House | TX-R-H-18-2026-03-03 | 59.6 / 59.9 / 62.1 / 96.7 | Whitfield +10.2 | 9.75 | 20:17 (19.2%) |
-| Texas | 2026-03-03 | U.S. House | TX-R-H-19-2026-03-03 | 37.4 / 58.0 / 79.6 / 99.8 | Sell +21.7 | 23.72 | 20:56 (37.3%) |
-| Texas | 2026-03-03 | U.S. House | TX-R-H-2-2026-03-03 | 30.8 / 62.3 / 67.4 / 98.4 | Toth +15.1 | 18.37 | 20:41 (30.8%) |
-| Texas | 2026-03-03 | U.S. House | TX-R-H-23-2026-03-03 | 3.4 / 55.9 / 73.7 / 98.5 | Herrera +1.6 **(comeback)** | -5.55 | 02:26 (87.1%) |
-| Texas | 2026-03-03 | U.S. House | TX-R-H-33-2026-03-03 | 61.8 / 61.8 / 61.8 / 85.2 | Gillespie +13.2 | 12.53 | 20:01 (61.8%) |
-| Texas | 2026-03-03 | U.S. House | TX-R-H-38-2026-03-03 | 63.6 / 63.6 / 63.6 / 95.5 | Bonck +28.0 | 30.71 | 20:55 (63.6%) |
-| Texas | 2026-03-03 | U.S. House | TX-R-H-9-2026-03-03 | 43.8 / 65.5 / 72.6 / 99.2 | Mealer +4.6 | 6.44 | 20:58 (43.8%) |
-| Texas | 2026-03-03 | U.S. Senate | TX-R-S-2026-03-03 | 36.7 / 52.7 / 79.8 / 97.8 | Cornyn +1.2 | 2.14 | 20:04 (10.3%) |
-| Texas | 2026-05-26 | Attorney General | TX-democrat-AG-2026-05-26 | 52.8 / 67.3 / 84.8 / 99.5 | Johnson +21.0 | 19.05 | 20:05 (14.2%) |
-| Texas | 2026-05-26 | U.S. House | TX-democrat-H-35-2026-05-26 | 54.5 / 54.5 / 83.7 / 91.9 | Garcia +27.7 | 18.49 | 20:27 (43.9%) |
-| Texas | 2026-05-26 | Attorney General | TX-republican-AG-2026-05-26 | 57.3 / 72.7 / 92.4 / 99.7 | Middleton +10.5 | 11.48 | 20:05 (13.1%) |
-| Texas | 2026-05-26 | U.S. House | TX-republican-H-35-2026-05-26 | 49.9 / 49.9 / 91.8 / 82.9 | De La Cruz +15.2 | 8.98 | 20:59 (49.9%) |
-| Texas | 2026-05-26 | Railroad Commissioner | TX-republican-RR-term_exp_2032-2026-05-26 | 55.8 / 72.4 / 92.4 / 99.7 | French +1.1 | 3.16 | 20:09 (10.3%) |
-| Texas | 2026-05-26 | U.S. Senate | TX-republican-S-2026-05-26 | 57.1 / 72.3 / 92.8 / 99.7 | Paxton +27.6 | 26.98 | 20:04 (11.3%) |
+| Texas | 2026-03-03 | Comptroller | TX-D-COMP-2026-03-03 | 28.4 / 44.4 / 75.1 / 96.0 | Eckhardt +45.0 | 44.04 | 8:14 pm (11.0%) |
+| Texas | 2026-03-03 | U.S. House | TX-D-H-18-2026-03-03 | 63.3 / 63.6 / 65.6 / 91.9 | Menefee +1.8 | 5.38 | 8:54 pm (63.3%) |
+| Texas | 2026-03-03 | U.S. House | TX-D-H-23-2026-03-03 | 2.1 / 49.0 / 65.2 / 91.9 | Padilla Stout +24.9 | 36.49 | 9:20 pm (43.3%) |
+| Texas | 2026-03-03 | U.S. House | TX-D-H-24-2026-03-03 | 44.8 / 44.8 / 72.7 / 95.7 | Burge +21.9 | 21.2 | 8:03 pm (43.8%) |
+| Texas | 2026-03-03 | U.S. House | TX-D-H-33-2026-03-03 | - / - / 65.6 / 79.7 | Allred +10.8 | - | 10:30 pm (65.6%) |
+| Texas | 2026-03-03 | U.S. House | TX-D-H-38-2026-03-03 | 59.5 / 59.5 / 59.5 / 90.9 | McDonough +23.4 | 21.95 | 8:55 pm (59.5%) |
+| Texas | 2026-03-03 | U.S. House | TX-D-H-9-2026-03-03 | 54.8 / 59.4 / 61.1 / 96.4 | Gutierrez +37.4 | 33.88 | 8:43 pm (54.8%) |
+| Texas | 2026-03-03 | U.S. Senate | TX-D-S-2026-03-03 | 37.4 / 48.8 / 73.2 / 95.7 | Talarico +6.2 | 7.29 | 8:40 pm (31.7%) |
+| Texas | 2026-03-03 | Supreme Court | TX-D-SC-7-2026-03-03 | 26.3 / 42.3 / 72.9 / 95.6 | Hawkins +51.2 | 51.4 | 8:17 pm (11.8%) |
+| Texas | 2026-03-03 | Supreme Court | TX-D-SC-chief_justice-2026-03-03 | 15.5 / 42.3 / 72.8 / 95.6 | Ellis +53.6 | 55.27 | 8:17 pm (11.7%) |
+| Texas | 2026-03-03 | Comptroller | TX-R-COMP-2026-03-03 | 28.6 / 51.7 / 77.8 / 97.7 | Huffines +33.7 | 37.16 | 8:03 pm (10.5%) |
+| Texas | 2026-03-03 | U.S. House | TX-R-H-18-2026-03-03 | 59.6 / 59.9 / 62.1 / 96.7 | Whitfield +10.2 | 9.75 | 8:17 pm (19.2%) |
+| Texas | 2026-03-03 | U.S. House | TX-R-H-19-2026-03-03 | 37.4 / 58.0 / 79.6 / 99.8 | Sell +21.7 | 23.72 | 8:56 pm (37.3%) |
+| Texas | 2026-03-03 | U.S. House | TX-R-H-2-2026-03-03 | 30.8 / 62.3 / 67.4 / 98.4 | Toth +15.1 | 18.37 | 8:41 pm (30.8%) |
+| Texas | 2026-03-03 | U.S. House | TX-R-H-23-2026-03-03 | 3.4 / 55.9 / 73.7 / 98.5 | Herrera +1.6 **(comeback)** | -5.55 | Wed 2:26 am (87.1%) |
+| Texas | 2026-03-03 | U.S. House | TX-R-H-33-2026-03-03 | 61.8 / 61.8 / 61.8 / 85.2 | Gillespie +13.2 | 12.53 | 8:01 pm (61.8%) |
+| Texas | 2026-03-03 | U.S. House | TX-R-H-38-2026-03-03 | 63.6 / 63.6 / 63.6 / 95.5 | Bonck +28.0 | 30.71 | 8:55 pm (63.6%) |
+| Texas | 2026-03-03 | U.S. House | TX-R-H-9-2026-03-03 | 43.8 / 65.5 / 72.6 / 99.2 | Mealer +4.6 | 6.44 | 8:58 pm (43.8%) |
+| Texas | 2026-03-03 | U.S. Senate | TX-R-S-2026-03-03 | 36.7 / 52.7 / 79.8 / 97.8 | Cornyn +1.2 | 2.14 | 8:04 pm (10.3%) |
+| Texas | 2026-05-26 | Attorney General | TX-democrat-AG-2026-05-26 | 52.8 / 67.3 / 84.8 / 99.5 | Johnson +21.0 | 19.05 | 8:05 pm (14.2%) |
+| Texas | 2026-05-26 | U.S. House | TX-democrat-H-35-2026-05-26 | 54.5 / 54.5 / 83.7 / 91.9 | Garcia +27.7 | 18.49 | 8:27 pm (43.9%) |
+| Texas | 2026-05-26 | Attorney General | TX-republican-AG-2026-05-26 | 57.3 / 72.7 / 92.4 / 99.7 | Middleton +10.5 | 11.48 | 8:05 pm (13.1%) |
+| Texas | 2026-05-26 | U.S. House | TX-republican-H-35-2026-05-26 | 49.9 / 49.9 / 91.8 / 82.9 | De La Cruz +15.2 | 8.98 | 8:59 pm (49.9%) |
+| Texas | 2026-05-26 | Railroad Commissioner | TX-republican-RR-term_exp_2032-2026-05-26 | 55.8 / 72.4 / 92.4 / 99.7 | French +1.1 | 3.16 | 8:09 pm (10.3%) |
+| Texas | 2026-05-26 | U.S. Senate | TX-republican-S-2026-05-26 | 57.1 / 72.3 / 92.8 / 99.7 | Paxton +27.6 | 26.98 | 8:04 pm (11.3%) |
 
 
 ---
@@ -747,7 +790,7 @@ What the curves show:
 | 2020 | Senate | 8:10 pm | 81% | Bollier led first; Marshall ahead 9:39 pm (53% in) | 10:58 pm (NYT) | Marshall (R) +11.4 |
 | 2022 | Governor | 8:08 pm | 92% | Kelly led first | Wed 1:24 pm (AP) | Kelly (D) +2.2 |
 | 2022 | Senate | 8:08 pm | 92% | Moran led first; Holland ahead 9:09 pm (30% in); Moran ahead 10:05 pm (58% in) | 9:00 pm (AP) | Moran (R) +23.0 |
-| 2024 | President | (timeline starts 8:00 pm) | 87% | Trump led first; Harris ahead 8:16 pm (6% in); Trump ahead 8:36 pm (8% in); Harris ahead 8:46 pm (30% in); Trump ahead 9:39 pm (47% in) (timeline ends 5:40 am Wed) | 10:39 pm (AP) | Trump (R) +16.1 |
+| 2024 | President | 8:10 pm | 87% | Trump led first; Harris ahead 8:16 pm (6% in); Trump ahead 8:36 pm (8% in); Harris ahead 8:46 pm (30% in); Trump ahead 9:39 pm (47% in) (timeline ends 5:40 am Wed) | 10:39 pm (AP) | Trump (R) +16.1 |
 
 What the curves show:
 
@@ -761,8 +804,9 @@ What the curves show:
 - Late mail under the grace period was roughly 2,000-2,800 ballots in Nov 2024, about 0.2% of the vote (sources conflict ○).
 
 **What to expect** (inference):
-- Hamilton will very likely lead the first hour; that tells you little.
-- The test is around 9:30-10:00 pm with ~55% counted. If Hamilton still leads then, the race is genuinely close.
+- Hamilton will very likely lead until about 10 pm; that tells you little. At 9:30 pm the Democrat led **every** top race 2020-2024, and the rest of the count then moved 17-28 points toward the Republican.
+- Even at 10:00 pm a Democratic lead wasn't safe: Holland led the 2022 Senate race then (39% counted) and lost by 23.
+- At 10:30 pm (about two-thirds counted) the rest still moved 4-8 points toward the Republican. Hamilton needs a lead of about **8+ points at 10:30 pm** to be in good shape (Kelly 2022 was +9.2 then and won by 2.2).
 - A margin of ~5+ points has been called on election night. A margin of 2-3 points may wait until Wednesday.
 
 ### The swing data: Kansas
@@ -772,7 +816,7 @@ What the curves show:
 | State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
 |---|---|---|---|---|---|---|---|
 | Kansas | 2020 | 2 | 35% / 57% / 80% / 92% | -20.4 | -8.7 | -0.5 | 2 of 2 |
-| Kansas | 2022 | 10 | 13% / 23% / 93% / 97% | -18.9 | -18.9 | +0.7 | 10 of 10 |
+| Kansas | 2022 | 10 | 13% / 23% / 93% / 97% | -18.0 | -18.9 | +0.7 | 10 of 10 |
 | Kansas | 2024 | 5 | 30% / 58% / 87% / 96% | -9.0 | -10.6 | +0.4 | 3 of 5 |
 
 #### Biggest moves in competitive races
@@ -790,27 +834,27 @@ What the curves show:
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Kansas 2022 Attorney General | KS-G-attorney_general-2022-11-08 | Mann (13.2%) | Kobach (93.5%) | Kobach +1.7 | 11-08 23:37 (91.6% in) |
-| Kansas 2022 House 1 | KS-G-H-1-2022-11-08 | Beard (21.3%) | Mann (86.3%) | Mann +35.3 | 11-08 22:05 (41.9% in) |
-| Kansas 2022 House 2 | KS-G-H-2-2022-11-08 | Schmidt (26.8%) | LaTurner (91.9%) | LaTurner +15.3 | 11-08 22:14 (56.2% in) |
-| Kansas 2022 Senate | KS-G-S-2022-11-08 | Holland (38.8%) | Moran (92.3%) | Moran +23.0 | 11-08 22:05 (58.0% in) |
-| Kansas 2022 Treasurer | KS-G-treasurer-2022-11-08 | Rogers (13.2%) | Johnson (93.4%) | Johnson +12.8 | 11-08 22:05 (54.1% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Kansas 2022 Attorney General | KS-G-attorney_general-2022-11-08 | Mann (13.2%) | Kobach (93.5%) | Kobach (98.1%) | Kobach +1.7 | 11:37 pm (91.6% in) |
+| Kansas 2022 House 1 | KS-G-H-1-2022-11-08 | Beard (21.3%) | Mann (86.3%) | Mann (96.1%) | Mann +35.3 | 10:05 pm (41.9% in) |
+| Kansas 2022 House 2 | KS-G-H-2-2022-11-08 | Schmidt (26.8%) | LaTurner (91.9%) | LaTurner (97.3%) | LaTurner +15.3 | 10:14 pm (56.2% in) |
+| Kansas 2022 Senate | KS-G-S-2022-11-08 | Holland (38.8%) | Moran (92.3%) | Moran (96.6%) | Moran +23.0 | 10:05 pm (58.0% in) |
+| Kansas 2022 Treasurer | KS-G-treasurer-2022-11-08 | Rogers (13.2%) | Johnson (93.4%) | Johnson (98.1%) | Johnson +12.8 | 10:05 pm (54.1% in) |
 
 #### Where the late vote came from (2020, county detail)
 
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
-| Kansas | midnight ET | 18% | -23.2 | Douglas 4.3% (+39); Sedgwick 1.4% (+9); Finney 0.9% (-25); Geary 0.7% (-15) | 12:00 AM |
-| Kansas | 6 am ET | 6% | -33.3 | Sedgwick 1.4% (+9); Lyon 0.5% (-37); Neosho 0.3% (-65); Johnson 0.3% (+12) | 5:52 AM |
+| Kansas | midnight ET | 20% | -23.2 | Douglas 4.2% (+39); Sedgwick 1.4% (+9); Finney 0.8% (-25); Geary 0.7% (-15) | 12:00 AM |
+| Kansas | 6 am ET | 8% | -33.3 | Sedgwick 1.4% (+9); Lyon 0.5% (-37); Neosho 0.3% (-65); Johnson 0.3% (+12) | 5:52 AM |
 
 #### 2026 primaries, runoffs and specials
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Kansas | 2026-08-04 | Governor | KS-D-G-2026-08-04 | 36.3 / 59.1 / 91.8 / 97.4 | Holscher +10.1 | 6.98 | 20:18 (26.4%) |
-| Kansas | 2026-08-04 | Governor | KS-R-G-2026-08-04 | 21.7 / 50.4 / 88.4 / 98.3 | Masterson +20.8 | 20.57 | 20:19 (10.6%) |
+| Kansas | 2026-08-04 | Governor | KS-D-G-2026-08-04 | 36.3 / 59.1 / 91.8 / 97.4 | Holscher +10.1 | 6.98 | 8:18 pm (26.4%) |
+| Kansas | 2026-08-04 | Governor | KS-R-G-2026-08-04 | 21.7 / 50.4 / 88.4 / 98.3 | Masterson +20.8 | 20.57 | 8:19 pm (10.6%) |
 
 
 ---
@@ -853,7 +897,7 @@ What the curves show:
 | 2020 | President | 8:34 pm | 42% | Trump led first; lead traded 9:55 pm-10:07 pm, Biden ahead from 10:07 pm (12% in); Trump ahead 10:19 pm (13% in); Biden ahead 11:02 pm (26% in) | Wed 3:06 am (NYT) | Biden (D) +9.1 |
 | 2020 | Senate | 8:37 pm | 29% | Collins led first | Wed 1:52 pm (NYT) | Collins (R) +8.6 |
 | 2022 | Governor | 8:08 pm | 63% | Mills led first | Wed 1:01 am (AP) | Mills (D) +13.2 |
-| 2024 | President | (timeline starts 8:00 pm) | 33% | Trump led first; Harris ahead 10:29 pm (11% in) (timeline ends 5:40 am Wed) | Wed 4:23 pm (AP) | Harris (D) +6.9 |
+| 2024 | President | 8:44 pm | 33% | Trump led first; Harris ahead 10:29 pm (11% in) (timeline ends 5:40 am Wed) | Wed 4:23 pm (AP) | Harris (D) +6.9 |
 | 2024 | Senate | 8:44 pm | 33% | King led first | Nov 7 (AP) | King (I) +17.4 |
 
 What the curves show:
@@ -892,9 +936,9 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 
 | State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
 |---|---|---|---|---|---|---|---|
-| Maine | 2020 | 2 | 2% / 9% / 35% / 71% | +10.1 | +7.8 | -3.0 | 2 of 2 |
-| Maine | 2022 | 3 | 2% / 21% / 63% / 83% | +16.8 | +5.4 | -0.0 | 2 of 3 |
-| Maine | 2024 | 6 | 1% / 5% / 33% / 72% | +0.6 | +5.8 | -1.7 | 4 of 6 |
+| Maine | 2020 | 2 | 2% / 9% / 35% / 71% | - | +7.8 | -3.0 | 2 of 2 |
+| Maine | 2022 | 3 | 2% / 21% / 63% / 83% | +12.3 | +5.4 | -0.0 | 2 of 3 |
+| Maine | 2024 | 6 | 1% / 5% / 33% / 72% | - | +7.4 | -1.7 | 3 of 5 |
 
 #### Biggest moves in competitive races
 
@@ -909,10 +953,10 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Maine 2022 House 2 [RCV, 1st round] | ME-G-H-2-2022-11-08 | Poliquin (24.3%) | Golden (63.6%) | Golden +3.7 | 11-08 22:02 (30.8% in) |
-| Maine 2024 House 2 [RCV, 1st round] | ME-G-H-2-2024-11-05 | - (5.9%) | Theriault (34.0%) | Golden +0.6 | 11-06 02:02 (62.1% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Maine 2022 House 2 [RCV, 1st round] | ME-G-H-2-2022-11-08 | Poliquin (24.3%) | Golden (63.6%) | Golden (81.8%) | Golden +3.7 | 10:02 pm (30.8% in) |
+| Maine 2024 House 2 [RCV, 1st round] | ME-G-H-2-2024-11-05 | - (5.9%) | Theriault (34.0%) | Golden (72.3%) | Golden +0.6 | Wed 2:02 am (62.1% in) |
 
 #### Races that moved 1.5+ pts after 6 am ET
 
@@ -929,16 +973,16 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
-| Maine | midnight ET | 57% | +13.5 | Cumberland 16.3% (+41); York 10.4% (+17); Penobscot 5.7% (-10); Kennebec 4.4% (+0) | 12:00 AM |
-| Maine | 6 am ET | 24% | +2.5 | York 4.5% (+8); Cumberland 3.6% (+17); Penobscot 2.1% (-28); Sagadahoc 1.9% (+12) | 5:52 AM |
+| Maine | midnight ET | 58% | +13.5 | Cumberland 15.6% (+41); York 10.0% (+17); Penobscot 5.4% (-10); Kennebec 4.2% (+0) | 12:00 AM |
+| Maine | 6 am ET | 27% | +2.5 | York 4.3% (+8); Cumberland 3.5% (+17); Penobscot 2.0% (-28); Sagadahoc 1.8% (+12) | 5:52 AM |
 
 #### 2026 primaries, runoffs and specials
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Maine | 2026-06-09 | Governor | ME-D-G-2026-06-09 | 0.7 / 18.0 / 59.1 / 83.4 | Shah +3.7 (1st round) **- Pingree won the ranked-choice count** | 0.4 | 21:56 (16.9%) |
-| Maine | 2026-06-09 | U.S. Senate | ME-D-S-2026-06-09 | 0.7 / 17.6 / 61.6 / 83.2 | Platner +52.9 | 54.43 | 21:35 (10.0%) |
-| Maine | 2026-06-09 | Governor | ME-R-G-2026-06-09 | 1.4 / 16.7 / 56.2 / 77.6 | Charles +18.0 (1st round) | 22.24 | 21:43 (10.5%) |
+| Maine | 2026-06-09 | Governor | ME-D-G-2026-06-09 | 0.7 / 18.0 / 59.1 / 83.4 | Shah +3.7 (1st round) **- Pingree won the ranked-choice count** | 0.4 | 9:56 pm (16.9%) |
+| Maine | 2026-06-09 | U.S. Senate | ME-D-S-2026-06-09 | 0.7 / 17.6 / 61.6 / 83.2 | Platner +52.9 | 54.43 | 9:35 pm (10.0%) |
+| Maine | 2026-06-09 | Governor | ME-R-G-2026-06-09 | 1.4 / 16.7 / 56.2 / 77.6 | Charles +18.0 (1st round) | 22.24 | 9:43 pm (10.5%) |
 
 
 ---
@@ -975,7 +1019,7 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 | 2020 | Senate | 10:14 pm | 87% | Greenfield led first; Ernst ahead 11:29 pm (66% in) | Wed 12:38 am (NYT) | Ernst (R) +6.6 |
 | 2022 | Governor | 9:10 pm | 95% | Reynolds led first; DeJear ahead 9:34 pm (5% in); Reynolds ahead 10:09 pm (32% in) | 9:00 pm (AP) | Reynolds (R) +18.5 |
 | 2022 | Senate | 9:10 pm | 95% | Franken led first; Grassley ahead 10:19 pm (41% in) | 11:03 pm (AP) | Grassley (R) +12.2 |
-| 2024 | President | (timeline starts 8:00 pm) | 90% | Harris led first; Trump ahead 10:03 pm (34% in) (timeline ends 5:40 am Wed) | 10:40 pm (AP) | Trump (R) +13.3 |
+| 2024 | President | 9:02 pm | 90% | Harris led first; Trump ahead 10:03 pm (34% in) (timeline ends 5:40 am Wed) | 10:40 pm (AP) | Trump (R) +13.3 |
 
 What the curves show:
 - **The Democrat leads early every time, then the lead ends between 10:00 and 11:30 pm:**
@@ -987,11 +1031,12 @@ What the curves show:
   | 2024 President | Harris +15.3 at one hour | 10:03 pm | Trump +13.3 |
 
 - About 86-95% is counted by midnight. Almost nothing changes after election night.
-- First votes: 9:02-9:12 pm in 2022/2024. In 2020 they came at 10:13 pm, when the absentee wave delayed counts. This settles the "12 vs 71 minutes" question in the report: both are real, and 2020 was the slow year.
+- First votes come within minutes of the close: 9:02-9:12 pm in 2022/2024 and 10:13 pm in 2020. **Iowa's polls closed an hour later until 2021** (9 pm CT, 10 pm ET); SF 413 moved the close to 8 pm CT from 2022 ✔ ([KCRG](https://www.kcrg.com/2021/03/08/gov-reynolds-signs-election-reform-bill-limiting-length-of-absentee-election-day-voting/)). So 2020 was not a slow year: its first votes came 13 minutes after its close.
+- That also means 2020's "midnight" was only 2 hours after the close. The 86-87% counted by then is the same pace as 2022/2024.
 
 **What to expect** (inference):
 - Turek will lead early, likely by double digits.
-- The meaningful read is at ~10:30-11:00 pm, once the absentee batches and most precincts are in.
+- The meaningful read is at about 11:00 pm. At 10:30 pm (about half counted) the rest still moved 4-9 points toward the Republican in 2022/2024. By 11:00 pm (three-quarters counted) it moved under 2 points.
 - With 86-95% counted by midnight, a call is likely on election night unless the margin is under ~1-2 points.
 
 ### The swing data: Iowa
@@ -1000,9 +1045,9 @@ What the curves show:
 
 | State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
 |---|---|---|---|---|---|---|---|
-| Iowa | 2020 | 2 | - / 49% / 87% / 100% | - | -18.6 | -0.4 | 2 of 2 |
+| Iowa | 2020 | 2 | 49% / 87% / 87% / 100% | -18.6 | -2.2 | -0.4 | 0 of 2 |
 | Iowa | 2022 | 11 | 24% / 71% / 94% / 100% | -28.5 | -2.2 | -0.0 | 2 of 11 |
-| Iowa | 2024 | 5 | 10% / 75% / 90% / 99% | -13.1 | +0.5 | +0.0 | 2 of 5 |
+| Iowa | 2024 | 5 | 10% / 75% / 90% / 99% | -14.0 | +0.5 | +0.0 | 2 of 5 |
 
 #### Biggest moves in competitive races
 
@@ -1010,24 +1055,22 @@ What the curves show:
 
 | Race | 2 h after close: counted / margin | Midnight ET | 6 am ET | Final | Move after 2 h | Move after 6 am |
 |---|---|---|---|---|---|---|
-| 2020 President | 48.3% / +12.2 | 86.1% / -5.5 | 99.7% / -7.3 | -8.2 | **-20.4** | -0.9 |
-| 2020 Senate | 49.9% / +10.3 | 87.2% / -4.8 | 99.8% / -6.6 | -6.6 | **-16.9** | +0.0 |
 | 2022 House 1 | 59.9% / +0.6 | 97.2% / -6.8 | 98.6% / -6.6 | -6.8 | **-7.4** | -0.2 |
 | 2024 House 1 | 74.0% / -5.6 | 87.7% / +1.5 | 98.6% / -0.1 | -0.2 | **+5.4** | -0.1 |
 | 2024 House 3 | 89.8% / -0.5 | 95.4% / -2.2 | 99.9% / -3.9 | -3.8 | **-3.3** | +0.0 |
+| 2020 President | 86.1% / -5.5 | 86.1% / -5.5 | 99.7% / -7.3 | -8.2 | **-2.7** | -0.9 |
+| 2022 House 3 | 94.2% / +1.8 | 99.8% / -0.7 | 99.8% / -0.7 | -0.7 | **-2.5** | -0.0 |
 
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Iowa 2020 President | IA-G-P-2020-11-03 | Biden (48.3%) | Trump (86.1%) | Trump +8.2 | 11-03 23:29 (71.2% in) |
-| Iowa 2020 Senate | IA-G-S-2020-11-03 | Greenfield (49.9%) | Ernst (87.2%) | Ernst +6.6 | 11-03 23:29 (66.1% in) |
-| Iowa 2022 Attorney General | IA-G-attorney_general-2022-11-08 | Miller (71.1%) | Bird (94.3%) | Bird +1.7 | 11-08 23:10 (79.5% in) |
-| Iowa 2022 Auditor | IA-G-auditor-2022-11-08 | Sand (71.1%) | Halbur (94.3%) | Sand +0.2 | 11-09 02:01 (99.6% in) |
-| Iowa 2022 House 1 | IA-G-H-1-2022-11-08 | Bohannan (59.9%) | Miller-Meeks (97.2%) | Miller-Meeks +6.8 | 11-08 23:04 (61.9% in) |
-| Iowa 2022 House 3 | IA-G-H-3-2022-11-08 | Axne (94.2%) | Nunn (99.8%) | Nunn +0.7 | 11-08 23:24 (98.6% in) |
-| Iowa 2024 House 1 | IA-G-H-1-2024-11-05 | Miller-Meeks (74.0%) | Bohannan (87.7%) | Miller-Meeks +0.2 | 11-06 00:25 (96.8% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Iowa 2022 Attorney General | IA-G-attorney_general-2022-11-08 | Miller (71.1%) | Bird (94.3%) | Bird (99.6%) | Bird +1.7 | 11:10 pm (79.5% in) |
+| Iowa 2022 Auditor | IA-G-auditor-2022-11-08 | Sand (71.1%) | Halbur (94.3%) | Sand (99.6%) | Sand +0.2 | Wed 2:01 am (99.6% in) |
+| Iowa 2022 House 1 | IA-G-H-1-2022-11-08 | Bohannan (59.9%) | Miller-Meeks (97.2%) | Miller-Meeks (98.6%) | Miller-Meeks +6.8 | 11:04 pm (61.9% in) |
+| Iowa 2022 House 3 | IA-G-H-3-2022-11-08 | Axne (94.2%) | Nunn (99.8%) | Nunn (99.8%) | Nunn +0.7 | 11:24 pm (98.6% in) |
+| Iowa 2024 House 1 | IA-G-H-1-2024-11-05 | Miller-Meeks (74.0%) | Bohannan (87.7%) | Miller-Meeks (98.6%) | Miller-Meeks +0.2 | Wed 12:25 am (96.8% in) |
 
 #### Where the late vote came from (2020, county detail)
 
@@ -1040,9 +1083,9 @@ What the curves show:
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Iowa | 2026-06-02 | U.S. Senate | IA-D-S-2026-06-02 | 47.3 / 91.7 / 99.8 / 100.0 | Turek +25.3 | 25.03 | 21:20 (24.0%) |
-| Iowa | 2026-06-02 | Governor | IA-R-G-2026-06-02 | 34.4 / 90.8 / 99.6 / 100.0 | Lahn +0.8 | 0.82 | 21:19 (12.5%) |
-| Iowa | 2026-06-02 | U.S. Senate | IA-R-S-2026-06-02 | 33.7 / 92.7 / 99.5 / 99.9 | Hinson +48.4 | 49.2 | 21:19 (13.0%) |
+| Iowa | 2026-06-02 | U.S. Senate | IA-D-S-2026-06-02 | 47.3 / 91.7 / 99.8 / 100.0 | Turek +25.3 | 25.03 | 9:20 pm (24.0%) |
+| Iowa | 2026-06-02 | Governor | IA-R-G-2026-06-02 | 34.4 / 90.8 / 99.6 / 100.0 | Lahn +0.8 | 0.82 | 9:19 pm (12.5%) |
+| Iowa | 2026-06-02 | U.S. Senate | IA-R-S-2026-06-02 | 33.7 / 92.7 / 99.5 / 99.9 | Hinson +48.4 | 49.2 | 9:19 pm (13.0%) |
 
 
 ---
@@ -1082,7 +1125,7 @@ What the curves show:
 | 2020 | President | 9:07 pm | 62% | Trump led first; Biden ahead 9:19 pm (26% in); Trump ahead 9:35 pm (28% in) | 9:01 pm (NYT) | Trump (R) +19.1 |
 | 2020 | Senate | 9:08 pm | 65% | Sasse led first | 9:01 pm (NYT) | Sasse (R) +38.3 |
 | 2022 | Governor | 9:07 pm | 74% | Blood led first; Pillen ahead 9:51 pm (39% in) | 11:52 pm (AP) | Pillen (R) +23.4 |
-| 2024 | President | (timeline starts 8:00 pm) | 61% | Harris led first; Trump ahead 10:20 pm (44% in) (timeline ends 5:40 am Wed) | 9:01 pm (AP) | Trump (R) +20.6 |
+| 2024 | President | 9:00 pm | 61% | Harris led first; Trump ahead 10:20 pm (44% in) (timeline ends 5:40 am Wed) | 9:01 pm (AP) | Trump (R) +20.6 |
 | 2024 | Senate | 9:00 pm | 61% | Osborn led first; lead traded 11:15 pm-11:25 pm, Fischer ahead from 11:25 pm (57% in) | Wed 12:06 am (AP) | Fischer (R) +6.7 |
 
 What the curves show:
@@ -1092,7 +1135,8 @@ What the curves show:
 
 **What to expect** (inference):
 - Osborn will likely lead the first hour or two. Ricketts gains as rural Election Day precincts report.
-- If Osborn still leads at ~11:30 pm with 55-60% counted, the race is close.
+- An Osborn lead at 11:30 pm (55-60% counted) is not safe. After 11:30 pm the rest moved 2-11 points toward the Republican in every top race; 2024 Senate moved 6.3 (Osborn +1.5 at 11:00 pm, lost by 6.7).
+- After midnight it still moved 2-9 points. Osborn needs a lead of roughly **9+ points at midnight** to be safe.
 - Douglas County's leftover ballots favor Osborn and are counted later in the week.
 
 ### The swing data: Nebraska
@@ -1120,14 +1164,14 @@ What the curves show:
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Nebraska 2022 House 2 | NE-G-H-2-2022-11-08 | Vargas (67.4%) | Bacon (77.4%) | Bacon +2.7 | 11-08 23:43 (67.5% in) |
-| Nebraska 2024 House 2 | NE-G-H-2-2024-11-05 | Vargas (70.9%) | Vargas (76.4%) | Bacon +1.9 | 11-06 02:46 (83.8% in) |
-| Nebraska 2024 Initiative | NE-I-83085-NE-2024-11-05 | Against (50.1%) | For (61.4%) | For +9.9 | 11-05 23:00 (50.6% in) |
-| Nebraska 2024 Initiative | NE-I-83084-NE-2024-11-05 | For (50.1%) | For (61.4%) | Against +2.0 | 11-06 01:26 (79.6% in) |
-| Nebraska 2024 President (district 1) | NE-G-P-CD_1-2024-11-05 | Harris (44.1%) | Trump (55.7%) | Trump +13.0 | 11-05 23:20 (52.7% in) |
-| Nebraska 2024 Senate | NE-G-S-2024-11-05 | Osborn (50.1%) | Fischer (61.4%) | Fischer +6.7 | 11-05 23:25 (57.1% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Nebraska 2022 House 2 | NE-G-H-2-2022-11-08 | Vargas (67.4%) | Bacon (77.4%) | Bacon (93.4%) | Bacon +2.7 | 11:43 pm (67.5% in) |
+| Nebraska 2024 House 2 | NE-G-H-2-2024-11-05 | Vargas (70.9%) | Vargas (76.4%) | Bacon (94.0%) | Bacon +1.9 | Wed 2:46 am (83.8% in) |
+| Nebraska 2024 Initiative | NE-I-83085-NE-2024-11-05 | Against (50.1%) | For (61.4%) | For (96.1%) | For +9.9 | 11:00 pm (50.6% in) |
+| Nebraska 2024 Initiative | NE-I-83084-NE-2024-11-05 | For (50.1%) | For (61.4%) | Against (96.1%) | Against +2.0 | Wed 1:26 am (79.6% in) |
+| Nebraska 2024 President (district 1) | NE-G-P-CD_1-2024-11-05 | Harris (44.1%) | Trump (55.7%) | Trump (94.8%) | Trump +13.0 | 11:20 pm (52.7% in) |
+| Nebraska 2024 Senate | NE-G-S-2024-11-05 | Osborn (50.1%) | Fischer (61.4%) | Fischer (96.1%) | Fischer +6.7 | 11:25 pm (57.1% in) |
 
 #### Races that moved 1.5+ pts after 6 am ET
 
@@ -1141,8 +1185,8 @@ What the curves show:
 
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
-| Nebraska | midnight ET | 29% | -44.1 | Douglas 5.1% (-10); Lancaster 2.7% (-23); Scotts Bluff 1.6% (-44); Platte 1.6% (-56) | 12:00 AM |
-| Nebraska | 6 am ET | 4% | -31.7 | Platte 1.6% (-56); Douglas 1.2% (+8); Sarpy 0.2% (-35); Dakota 0.2% (-45) | 5:52 AM |
+| Nebraska | midnight ET | 30% | -44.1 | Douglas 5.0% (-10); Lancaster 2.6% (-23); Scotts Bluff 1.6% (-44); Platte 1.6% (-56) | 12:00 AM |
+| Nebraska | 6 am ET | 5% | -31.7 | Platte 1.6% (-56); Douglas 1.2% (+8); Sarpy 0.2% (-35); Dakota 0.1% (-45) | 5:52 AM |
 
 
 ---
@@ -1202,7 +1246,7 @@ What the curves show:
 | 2020 | President | 11:53 pm | 0% | Trump led first; Biden ahead Wed 1:32 am (58% in) | Nov 7 (NYT) | Biden (D) +2.4 |
 | 2022 | Governor | Wed 12:41 am | 0% | Sisolak led first; Lombardo ahead Wed 3:35 am (73% in) | Nov 11 (AP) | Lombardo (R) +1.5 |
 | 2022 | Senate | Wed 12:41 am | 0% | Cortez Masto led first; Laxalt ahead Wed 3:57 am (76% in); Cortez Masto ahead Nov 12 (97% in) | Nov 12 (AP) | Cortez Masto (D) +0.8 |
-| 2024 | President | (timeline starts 8:00 pm) | 0% | Trump led first (timeline ends 5:40 am Wed) | Nov 9 (AP) | Trump (R) +3.1 |
+| 2024 | President | Wed 12:55 am | 0% | Trump led first (timeline ends 5:40 am Wed) | Nov 9 (AP) | Trump (R) +3.1 |
 | 2024 | Senate | Wed 12:54 am | 0% | Brown led first; Rosen ahead Wed 1:02 am (69% in); Brown ahead Wed 1:44 am (71% in); Rosen ahead Nov 7 (92% in) | Nov 9 (AP) | Rosen (D) +1.6 |
 
 What the curves show:
@@ -1248,9 +1292,18 @@ What the curves show:
 
 | State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
 |---|---|---|---|---|---|---|---|
-| Nevada | 2020 | 1 | - / 0% / 0% / 85% | - | +85.9 | +1.8 | 1 of 1 |
+| Nevada | 2020 | 1 | - / 0% / 0% / 85% | - | - | +1.8 | 0 of 0 |
 | Nevada | 2022 | 11 | - / - / - / 82% | - | - | +3.2 | 0 of 0 |
 | Nevada | 2024 | 6 | - / - / - / 87% | - | - | +1.8 | 0 of 0 |
+
+#### Every race where the leader at 2 hours or at midnight lost
+
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Nevada 2022 Secretary of State | NV-G-secretary_of_state-2022-11-08 | - (-%) | - (-%) | Marchant (82.3%) | Aguilar +2.3 | Nov 10 9:35 pm (87.9% in) |
+| Nevada 2022 Senate | NV-G-S-2022-11-08 | - (-%) | - (-%) | Laxalt (82.2%) | Cortez Masto +0.8 | Nov 12 9:14 pm (96.9% in) |
+| Nevada 2022 Treasurer | NV-G-treasurer-2022-11-08 | - (-%) | - (-%) | Fiore (82.3%) | Conine +1.7 | Nov 10 10:58 pm (89.7% in) |
+| Nevada 2024 Senate | NV-G-S-2024-11-05 | - (-%) | - (-%) | Brown (86.6%) | Rosen +1.6 | Nov 7 2:47 am (92.4% in) |
 
 #### Races that moved 1.5+ pts after 6 am ET
 
@@ -1278,8 +1331,8 @@ What the curves show:
 
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
-| Nevada | midnight ET | 100% | +2.7 | Clark 68.4% (+10); Washoe 18.6% (+5); Douglas 2.5% (-29); Lyon 2.2% (-41) | 12:00 AM |
-| Nevada | 6 am ET | 11% | +20.1 | Clark 8.5% (+27); Washoe 1.2% (+11); Douglas 0.4% (-31); Nye 0.2% (-37) | 5:52 AM |
+| Nevada | midnight ET | 100% | +2.7 | Clark 64.9% (+10); Washoe 17.6% (+5); Douglas 2.4% (-29); Lyon 2.1% (-41) | 12:00 AM |
+| Nevada | 6 am ET | 15% | +20.1 | Clark 8.1% (+27); Washoe 1.1% (+11); Douglas 0.4% (-31); Nye 0.2% (-37) | 5:52 AM |
 
 
 ---
@@ -1333,7 +1386,7 @@ What the curves show:
 | 2020 | Senate | 11:07 pm | 83% | Merkley led first | 11:01 pm (NYT) | Merkley (D) +17.6 |
 | 2022 | Governor | 11:03 pm | 53% | Kotek led first | Nov 10 (AP) | Kotek (D) +3.4 |
 | 2022 | Senate | 11:03 pm | 60% | Wyden led first | 11:46 pm (AP) | Wyden (D) +14.9 |
-| 2024 | President | (timeline starts 8:00 pm) | 65% | Harris led first (timeline ends 5:40 am Wed) | 11:23 pm (AP) | Harris (D) +14.4 |
+| 2024 | President | 10:00 pm | 65% | Harris led first (timeline ends 5:40 am Wed) | 11:23 pm (AP) | Harris (D) +14.4 |
 
 What the curves show:
 - **2022 Governor:**
@@ -1404,19 +1457,19 @@ What the curves show:
 
 | State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
 |---|---|---|---|---|---|
-| Oregon | midnight ET | 16% | +0.2 | Clackamas 3.7% (-11); Washington 3.6% (+20); Multnomah 2.8% (+47); Marion 1.5% (-14) | 12:00 AM |
-| Oregon | 6 am ET | 8% | -0.9 | Clackamas 3.7% (-11); Washington 1.7% (+24); Marion 1.1% (-14); Deschutes 0.4% (-17) | 5:52 AM |
+| Oregon | midnight ET | 18% | +0.2 | Clackamas 3.7% (-11); Washington 3.5% (+20); Multnomah 2.8% (+47); Marion 1.4% (-14) | 12:00 AM |
+| Oregon | 6 am ET | 9% | -0.9 | Clackamas 3.7% (-11); Washington 1.7% (+24); Marion 1.1% (-14); Deschutes 0.4% (-17) | 5:52 AM |
 
 #### 2026 primaries, runoffs and specials
 
 | State | Date | Race | NYT race id | Counted 1 h / 2 h / midnight / 6 am | Leader at the end, margin | Margin at 2 h | Ahead for good from (ET) |
 |---|---|---|---|---|---|---|---|
-| Oregon | 2026-05-19 | Governor | OR-D-G-2026-05-19 | 60.4 / 61.3 / 60.4 / 72.9 | Kotek +80.5 | 81.1 | 23:00 (49.3%) |
-| Oregon | 2026-05-19 | U.S. House | OR-D-H-3-2026-05-19 | 61.3 / 61.9 / 61.3 / 73.1 | Dexter +80.9 | 83.67 | 23:00 (57.6%) |
-| Oregon | 2026-05-19 | U.S. Senate | OR-D-S-2026-05-19 | 60.1 / 60.9 / 60.1 / 72.5 | Merkley +87.0 | 87.3 | 23:00 (49.2%) |
-| Oregon | 2026-05-19 | Measure | OR-I-83580-OR-2026-05-19 | 60.3 / 61.3 / 60.3 / 73.0 | No +66.0 | 66.36 | 23:00 (45.8%) |
-| Oregon | 2026-05-19 | Governor | OR-R-G-2026-05-19 | 61.9 / 63.2 / 61.9 / 75.3 | Drazan +7.5 | 10.84 | 23:00 (42.8%) |
-| Oregon | 2026-05-19 | U.S. Senate | OR-R-S-2026-05-19 | 62.2 / 63.6 / 62.2 / 75.8 | Smith +2.4 | 3.59 | 23:00 (43.2%) |
+| Oregon | 2026-05-19 | Governor | OR-D-G-2026-05-19 | 60.4 / 61.3 / 60.4 / 72.9 | Kotek +80.5 | 81.1 | 11:00 pm (49.3%) |
+| Oregon | 2026-05-19 | U.S. House | OR-D-H-3-2026-05-19 | 61.3 / 61.9 / 61.3 / 73.1 | Dexter +80.9 | 83.67 | 11:00 pm (57.6%) |
+| Oregon | 2026-05-19 | U.S. Senate | OR-D-S-2026-05-19 | 60.1 / 60.9 / 60.1 / 72.5 | Merkley +87.0 | 87.3 | 11:00 pm (49.2%) |
+| Oregon | 2026-05-19 | Measure | OR-I-83580-OR-2026-05-19 | 60.3 / 61.3 / 60.3 / 73.0 | No +66.0 | 66.36 | 11:00 pm (45.8%) |
+| Oregon | 2026-05-19 | Governor | OR-R-G-2026-05-19 | 61.9 / 63.2 / 61.9 / 75.3 | Drazan +7.5 | 10.84 | 11:00 pm (42.8%) |
+| Oregon | 2026-05-19 | U.S. Senate | OR-R-S-2026-05-19 | 62.2 / 63.6 / 62.2 / 75.8 | Smith +2.4 | 3.59 | 11:00 pm (43.2%) |
 
 
 ---
@@ -1479,7 +1532,7 @@ What the curves show:
 | 2020 | Senate | Wed 2:49 am | 0% | Sullivan led first | Nov 11 (NYT) | Sullivan (R) +12.7 |
 | 2022 | Governor | Wed 1:09 am | 0% | Dunleavy led first | Nov 23 (AP) | Dunleavy (R) +26.1 |
 | 2022 | Senate | Wed 1:09 am | 0% | Tshibaka led first; Murkowski ahead Nov 18 (99% in) | Nov 23 (AP) | Murkowski (R) +7.4 |
-| 2024 | President | (timeline starts 8:00 pm) | 0% | Trump led first (timeline ends 5:40 am Wed) | Wed 4:59 pm (AP) | Trump (R) +13.1 |
+| 2024 | President | Wed 1:07 am | 0% | Trump led first (timeline ends 5:40 am Wed) | Wed 4:59 pm (AP) | Trump (R) +13.1 |
 
 What the curves show:
 - **2020** (a mail-heavy year): Sullivan was ~−28 at the end of election night with ~37% counted and won by 12.7. The count moved **~15 points toward the Democrat** as mail came in.
@@ -1514,10 +1567,10 @@ What the curves show:
 
 #### Every race where the leader at 2 hours or at midnight lost
 
-| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Winner, final margin | Winner ahead for good from (ET) |
-|---|---|---|---|---|---|
-| Alaska 2022 Senate [RCV, 1st round] | AK-G-S-2022-11-08 | Tshibaka (55.8%) | - (-%) | Murkowski +0.8 | 11-18 22:08 (98.6% in) |
-| Alaska 2024 Measure | AK-I-83139-AK-2024-11-05 | Yes (30.4%) | - (-%) | No +0.2 | 11-18 19:01 (97.8% in) |
+| Race | NYT race id | Led at 2 h (share counted) | Led at midnight ET | Led at 6 am ET | Winner, final margin | Winner ahead for good from (ET) |
+|---|---|---|---|---|---|---|
+| Alaska 2022 Senate [RCV, 1st round] | AK-G-S-2022-11-08 | Tshibaka (55.8%) | - (-%) | Tshibaka (77.3%) | Murkowski +0.8 | Nov 18 10:08 pm (98.6% in) |
+| Alaska 2024 Measure | AK-I-83139-AK-2024-11-05 | Yes (30.4%) | - (-%) | Yes (73.4%) | No +0.2 | Nov 18 7:01 pm (97.8% in) |
 
 #### Races that moved 1.5+ pts after 6 am ET
 
@@ -1547,24 +1600,24 @@ What the curves show:
 | Ohio | 2022 | 21 | 29% / 56% / 97% / 98% | -18.7 | -6.0 | +0.2 | 12 of 21 |
 | Ohio | 2024 | 17 | 41% / 61% / 97% / 98% | -10.2 | -3.1 | +0.1 | 3 of 17 |
 | Michigan | 2020 | 2 | 13% / 24% / 50% / 81% | +20.5 | +20.6 | +7.2 | 2 of 2 |
-| Michigan | 2022 | 16 | 7% / 15% / 48% / 93% | +15.8 | +5.3 | +2.0 | 11 of 15 |
-| Michigan | 2024 | 15 | 9% / 13% / 46% / 98% | -0.3 | -1.0 | +0.0 | 10 of 15 |
+| Michigan | 2022 | 16 | 7% / 15% / 48% / 93% | +0.6 | +5.3 | +2.0 | 11 of 15 |
+| Michigan | 2024 | 15 | 9% / 13% / 46% / 98% | -2.7 | -2.8 | +0.0 | 6 of 10 |
 | Texas | 2020 | 2 | 66% / 79% / 91% / 99% | -6.4 | -3.4 | +0.4 | 0 of 2 |
-| Texas | 2022 | 41 | 35% / 64% / 82% / 99% | -5.7 | -3.4 | +0.1 | 15 of 41 |
+| Texas | 2022 | 41 | 35% / 64% / 82% / 99% | -5.8 | -3.4 | +0.1 | 15 of 41 |
 | Texas | 2024 | 33 | 70% / 74% / 88% / 100% | -1.3 | -1.0 | +0.2 | 3 of 33 |
 | Kansas | 2020 | 2 | 35% / 57% / 80% / 92% | -20.4 | -8.7 | -0.5 | 2 of 2 |
-| Kansas | 2022 | 10 | 13% / 23% / 93% / 97% | -18.9 | -18.9 | +0.7 | 10 of 10 |
+| Kansas | 2022 | 10 | 13% / 23% / 93% / 97% | -18.0 | -18.9 | +0.7 | 10 of 10 |
 | Kansas | 2024 | 5 | 30% / 58% / 87% / 96% | -9.0 | -10.6 | +0.4 | 3 of 5 |
-| Maine | 2020 | 2 | 2% / 9% / 35% / 71% | +10.1 | +7.8 | -3.0 | 2 of 2 |
-| Maine | 2022 | 3 | 2% / 21% / 63% / 83% | +16.8 | +5.4 | -0.0 | 2 of 3 |
-| Maine | 2024 | 6 | 1% / 5% / 33% / 72% | +0.6 | +5.8 | -1.7 | 4 of 6 |
-| Iowa | 2020 | 2 | - / 49% / 87% / 100% | - | -18.6 | -0.4 | 2 of 2 |
+| Maine | 2020 | 2 | 2% / 9% / 35% / 71% | - | +7.8 | -3.0 | 2 of 2 |
+| Maine | 2022 | 3 | 2% / 21% / 63% / 83% | +12.3 | +5.4 | -0.0 | 2 of 3 |
+| Maine | 2024 | 6 | 1% / 5% / 33% / 72% | - | +7.4 | -1.7 | 3 of 5 |
+| Iowa | 2020 | 2 | 49% / 87% / 87% / 100% | -18.6 | -2.2 | -0.4 | 0 of 2 |
 | Iowa | 2022 | 11 | 24% / 71% / 94% / 100% | -28.5 | -2.2 | -0.0 | 2 of 11 |
-| Iowa | 2024 | 5 | 10% / 75% / 90% / 99% | -13.1 | +0.5 | +0.0 | 2 of 5 |
+| Iowa | 2024 | 5 | 10% / 75% / 90% / 99% | -14.0 | +0.5 | +0.0 | 2 of 5 |
 | Nebraska | 2020 | 2 | 34% / 49% / 62% / 88% | -12.8 | -8.7 | +0.1 | 1 of 2 |
 | Nebraska | 2022 | 7 | 39% / 50% / 74% / 96% | -13.0 | -6.9 | +1.1 | 6 of 7 |
 | Nebraska | 2024 | 8 | 32% / 47% / 59% / 95% | -15.3 | -7.0 | +0.4 | 6 of 8 |
-| Nevada | 2020 | 1 | - / 0% / 0% / 85% | - | +85.9 | +1.8 | 1 of 1 |
+| Nevada | 2020 | 1 | - / 0% / 0% / 85% | - | - | +1.8 | 0 of 0 |
 | Nevada | 2022 | 11 | - / - / - / 82% | - | - | +3.2 | 0 of 0 |
 | Nevada | 2024 | 6 | - / - / - / 87% | - | - | +1.8 | 0 of 0 |
 | Oregon | 2020 | 2 | 82% / 84% / 82% / 90% | -3.2 | -3.2 | -1.5 | 0 of 2 |
@@ -1609,7 +1662,7 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 | Texas recount rules "not researched" (report) | Automatic only on a tie; request allowed within 10% of the leader's vote ✔. |
 | Nebraska recount "1% of total vote" (AP) | 1% of the leading candidate's votes (statute) ✔. |
 | Georgia "no automatic recount" (AP, May 2026) | Out of date. June 2026 law: automatic full hand recount for Governor at 0.5% or less ✔. |
-| Iowa "first results 12 minutes vs 71 minutes" (conflict) | Both are right: 2022/2024 about 2-12 minutes, 2020 73 minutes. |
+| Iowa "first results 12 minutes vs 71 minutes" (conflict); this guide's earlier "2020 was the slow year" | Neither: Iowa polls closed at 10 pm ET in 2020 (9 pm CT; moved to 8 pm CT from 2022 by SF 413). First votes came 2-13 minutes after the close in all three years. |
 | Georgia: "the Libertarian withdrew" (report) | The Libertarian Party never qualified for the ballot (July 2026). The outcome is the same: a two-candidate race. |
 | Nebraska: "Burbank withdrew and endorsed Osborn" (report) | She withdrew July 17. The state party (chair Jane Kleeb) endorsed Osborn and declined to replace her. Burbank had said she'd back him if she had no path. |
 | Kansas recounts: request-only, the requester pays (report) | Request-only, but in a general election decided by 0.5% or less the state pays and no bond is needed (K.S.A. 25-3107). |
@@ -1620,6 +1673,7 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 **Also corrected later:**
 - Maine's first-round leader *can* lose the ranked-choice count: the 2026 Democratic governor primary went to Pingree after Shah led round one.
 - Ranked-choice races are now measured on first-round votes in the swing data.
+- Iowa 2020: polls closed at 10 pm ET that year (9 pm CT, an hour later than now), so its first votes came 13 minutes after the close, not 73. The swing tables now use that close.
 - Michigan's model probability moved from 73.0% to 76.3% on Oct 21, just above the 75% cut. On Oct 22 it fell to 63.4% after the model audit fixed duplicated and mismatched poll inputs and the model was retrained (`model_audit/MODEL_AUDIT.md`).
 
 ### Still unconfirmed
@@ -1649,7 +1703,7 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 | Statutes and official calendars | Linked inline above |
 | NYT results files 2020-2024 | `data/raw/nyt/` |
 | Rebuilding the history tables | `py "State election results/scripts/build_state_guide.py"` |
-| Full research report with all citations | `reports/Vote count timing in close 2026 races.md` (nine states) and `reports/Vote count timing Nevada and Oregon.md` (Oct 22) |
+| Full research report with all citations | `reports/Vote count timing in close 2026 races.md` (the first nine states) and `reports/Vote count timing Nevada and Oregon.md` (Oct 22) |
 | Nevada and Oregon statutes re-read 2026-10-22 | [NRS ch. 293](https://www.leg.state.nv.us/NRS/NRS-293.html) (revised 9/9/2026); [ORS ch. 254](https://www.oregonlegislature.gov/bills_laws/ors/ors254.html), [258](https://www.oregonlegislature.gov/bills_laws/ors/ors258.html), [260](https://www.oregonlegislature.gov/bills_laws/ors/ors260.html) (2025 edition) |
 
 **Market liquidity figures:** pred-arb's `data/raw/kalshi_markets.csv` and `polymarket_markets.csv`, fetched 2026-10-19/20.

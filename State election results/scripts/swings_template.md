@@ -13,6 +13,8 @@ county results. No number in a table was typed by hand.*
   - Positive: the count moved toward the Democrat/independent after that point.
   - Negative: toward the Republican.
 - **Poll close used (ET):** GA 7:00, OH 7:30, MI/TX/KS/ME 8:00, IA/NE 9:00, NV 10:00, OR 11:00, AK midnight.
+  Iowa 2020 uses 10:00: its polls closed an hour later until SF 413 (2021).
+- **A move is measured only from a point with 3%+ counted.** A handful of early votes is not a margin; Nevada 2020 had 0% at 2 hours.
   - "6 am" means 6 am ET the morning after, roughly the end of election-night counting.
 - **What's included:** every statewide office, House seat and ballot measure NYT covered in these eleven states, not only Governor and Senate.
   More races means more examples of how each state's counties report.
@@ -62,7 +64,7 @@ What stands out:
 - **Michigan:** swings go both ways depending on which big county reports when.
   - 2022 House 7 (Slotkin) was −15.5 at two hours and won by 5.4.
   - 2024 House 3 was +36 at two hours and won by 10.
-- **Iowa 2020:** Biden +12 and Greenfield +10 at about half counted; they lost by 8.2 and 6.6.
+- **Iowa 2020:** Biden +12 and Greenfield +10 one hour after the close (about half counted); both trailed by midnight and lost by 8.2 and 6.6.
 
 ## 4. Every race where the leader at 2 hours or at midnight lost
 
@@ -77,6 +79,7 @@ Patterns:
 - **Michigan and Georgia 2020:** the reversals ran Republican → Democrat and came **the next day**.
 - **Iowa 2022 Auditor and 2024 House 1:** very close races traded the lead late at night.
 - **Nebraska 2024 House 2:** the lead changed at 2:46 am.
+- **Led at 6 am and lost (the new column):** Nevada's 2022 Senate, Secretary of State and Treasurer and 2024 Senate. In each, the Republican led when election night ended and the Democrat passed them on Nov 7-12 as late mail was counted. Also Michigan 2020 President and Senate and 2024 Senate, Georgia 2020 President, and Alaska 2022 Senate (first-choice count).
 
 ## 5. Races that moved after election night (1.5+ pts after 6 am ET)
 
@@ -104,6 +107,9 @@ Margin among early/mail ("advance") votes minus margin among Election Day votes,
 
 Votes counted after midnight ET and after 6 am ET in 2020, how they split, and the counties they came from.
 Computed from Internet Archive copies of NYT's county file, roughly hourly overnight; the snapshot used is shown.
+The share still to count is measured against the certified total. The split and the counties cover what was counted by
+the last archive copy (Nov 10, 3:15 pm ET), which holds 95-99.9% of the certified vote (Nevada 95%, Maine 96%, Ohio and
+Kansas 97%). Alaska is left out: its last copy predates most of its count.
 
 {{COUNTY_2020}}
 
@@ -111,13 +117,13 @@ Computed from Internet Archive copies of NYT's county file, roughly hourly overn
   - Half the 2020 vote was counted after midnight, breaking Biden +16.
   - The 18% counted after 6 am went **Biden +35**, nearly all Wayne County (+58).
 - **Georgia:** the 20% after midnight went Biden +38 (DeKalb +67, Fulton +46).
-- **Maine:** the 57% after midnight went Biden +13.5 (Cumberland +41). But the last 24% after 6 am went only +2.5. Rural towns finish last, which is the late Republican move in section 5.
+- **Maine:** the 58% after midnight went Biden +13.5 (Cumberland +41). But the last 27% after 6 am went only +2.5. Rural towns finish last, which is the late Republican move in section 5.
 - **Kansas:**
   - After midnight it was mostly Douglas County (Lawrence, +39 Biden), which had reported nothing by midnight.
   - Rural counties outweighed it, so the late vote still went Trump +23.
 - **Nebraska:** rural counties that hadn't reported (Platte, Scotts Bluff) made the post-midnight vote Trump +44. Omaha's (Douglas) late votes were slightly Republican that year.
-- **Nevada:** almost nothing had posted by midnight ET (the first handful of votes came at 11:53 pm). The 11% still out at 6 am broke **Biden +20**, mostly Clark County (+27). That is the multi-day late-mail tail.
-- **Oregon:** the 16% counted after midnight split about evenly (+0.2), and the last 8% after 6 am leaned slightly Republican (−0.9; Clackamas and Marion). That matches Oregon's 2020 late move toward Republicans; 2022 and 2024 went the other way.
+- **Nevada:** almost nothing had posted by midnight ET (the first handful of votes came at 11:53 pm). The 15% still out at 6 am broke **Biden +20** (the part counted by Nov 10), mostly Clark County (+27). That is the multi-day late-mail tail.
+- **Oregon:** the 18% counted after midnight split about evenly (+0.2), and the last 9% after 6 am leaned slightly Republican (−0.9; Clackamas and Marion). That matches Oregon's 2020 late move toward Republicans; 2022 and 2024 went the other way.
 
 ## 8. 2026 primaries, runoffs and specials (this year's rules)
 
