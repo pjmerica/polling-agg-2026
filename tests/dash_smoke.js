@@ -4,9 +4,11 @@
 // the pipeline and before committing, so data that would crash the live
 // page is never published. A syntax check can't catch these.
 // Usage: node tools/dash_smoke.js docs [tools/dash_exercise.js]
+//        node tools/dash_smoke.js docs/election-night.html   (any other page in docs/)
 const fs = require('fs'), path = require('path'), vm = require('vm');
-const dir = process.argv[2];
-const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
+const arg = process.argv[2];
+const dir = arg.endsWith('.html') ? path.dirname(arg) : arg;
+const html = fs.readFileSync(arg.endsWith('.html') ? arg : path.join(dir, 'index.html'), 'utf8');
 const els = {};
 function mk(id) {
   const e = { id, innerHTML: '', textContent: '', value: '', style: {}, dataset: {}, checked: false, children: [],

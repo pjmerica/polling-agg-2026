@@ -2,6 +2,7 @@
 from the NYT files, so no number in those tables is typed by hand.
 
 Template tokens: {{HISTORY:<state slug>}}  e.g. {{HISTORY:georgia}}
+                 {{EARLY_VOTE}}  ballots already cast (scripts/early_vote.py's latest download)
 
 Per race (2020/2022/2024): when the first votes posted, share of the final vote counted by
 midnight ET, who led early and when the lead changed hands, the call time, and the final margin.
@@ -16,6 +17,7 @@ import json
 import os
 import re
 
+import early_vote
 from state_curves import CLOSE_ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -158,13 +160,18 @@ def forecast():
     return json.loads(s[s.index("=") + 1:].strip().rstrip(";"))
 
 
-def fill_numbers(text, data=None):
+def fill_numbers(text, data=None, html=False):
     """Model and market numbers come from the published forecast, never typed:
     {{MODEL:<race id>}} 'Bottoms 55.0%' (the model's favorite), {{MARKET:<race id>}} the market's
     chance for that same candidate, {{MATCHUP:<race id>}} 'Bottoms (D) 55.0% vs Jackson (R)',
-    {{ASOF}} the model run and market refresh times."""
+    {{ASOF}} the model run and market refresh times.
+    html=True wraps each number in <span class="lv" data-lv="kind:race id">, which
+    docs/election-night.html refreshes from forecast_data.js when it loads."""
     data = data or forecast()
     races = {r["id"]: r for r in data["races"]}
+
+    def live(kind, rid, txt):
+        return f'<span class="lv" data-lv="{kind}:{rid}">{txt}</span>' if html else txt
 
     def fav(rid):
         r = races[rid]
@@ -172,36 +179,43 @@ def fill_numbers(text, data=None):
 
     def model(m):
         r, c = fav(m.group(1))
-        return f"{surname(c[0]['name'])} {100 * c[0]['win']:.1f}%"
+        return live("model", m.group(1), f"{surname(c[0]['name'])} {100 * c[0]['win']:.1f}%")
 
     def market(m):
         r, c = fav(m.group(1))
         mk = r.get("market")
         if not mk or mk.get("prob") is None:
-            return "no market"
+            return live("market", m.group(1), "no market")
         p = mk["prob"] if mk["name"] == c[0]["name"] else 1 - mk["prob"]
-        return f"{surname(c[0]['name'])} {100 * p:.0f}%"
+        return live("market", m.group(1), f"{surname(c[0]['name'])} {100 * p:.0f}%")
 
     def matchup(m):
         r, c = fav(m.group(1))
         a, b = c[0], c[1]
-        return (f"{surname(a['name'])} ({PARTY.get(a['party'], a['party'])}) {100 * a['win']:.1f}% vs "
-                f"{surname(b['name'])} ({PARTY.get(b['party'], b['party'])})")
+        return live("matchup", m.group(1), f"{surname(a['name'])} ({PARTY.get(a['party'], a['party'])}) {100 * a['win']:.1f}% vs "
+                    f"{surname(b['name'])} ({PARTY.get(b['party'], b['party'])})")
 
     asof = (f"Model numbers: forecast run of {data['predictions_as_of'][:16].replace('T', ' ')} UTC. "
             f"Market numbers: {data['generated_at'][:16].replace('T', ' ')} UTC refresh.")
     text = re.sub(r"\{\{MODEL:([\w-]+)\}\}", model, text)
     text = re.sub(r"\{\{MARKET:([\w-]+)\}\}", market, text)
     text = re.sub(r"\{\{MATCHUP:([\w-]+)\}\}", matchup, text)
-    return text.replace("{{ASOF}}", asof)
+    return text.replace("{{ASOF}}", live("asof", "", asof))
 
 
-def main():
+def render(fill=True):
+    """The guide's text. fill=False leaves the model/market tokens for the caller (build_master.py
+    fills them once over the whole master guide, as plain text or as live spans)."""
     tmpl = open(os.path.join(HERE, "state_guide_template.md"), encoding="utf-8").read()
-    out = fill_numbers(tmpl)
+    out = fill_numbers(tmpl) if fill else tmpl
     for state in ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
                   "nevada", "oregon"]:
         out = out.replace("{{HISTORY:%s}}" % state, history(state))
+    return out.replace("{{EARLY_VOTE}}", early_vote.table())
+
+
+def main():
+    out = render()
     assert "{{" not in out, "unfilled token in template"
     with open(os.path.join(ROOT, "STATE_BY_STATE.md"), "w", encoding="utf-8") as f:
         f.write(out)

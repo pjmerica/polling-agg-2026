@@ -9,7 +9,8 @@ means X) and projected to a final result.
 
 | Path | What |
 |---|---|
-| `MASTER.md` | **Start here.** The one file to read: states at a glance, betting assessment, then per state the rules, history and swing data (built by `scripts/build_master.py`, which also rebuilds STATE_BY_STATE.md) |
+| `MASTER.md` | **Start here.** The one file to read: states at a glance, betting assessment, ballots already cast, then per state the rules, history, swing data and county benchmarks (built by `scripts/build_master.py`, which also rebuilds STATE_BY_STATE.md) |
+| `../docs/election-night.html` | The same guide as a dashboard page ([live](https://pjmerica.github.io/polling-agg-2026/election-night.html)): model and market numbers refresh from `docs/forecast_data.js` on load, and every county table has a statewide-result slider and a box that turns a finished county's result into an implied statewide margin (built by `scripts/build_election_night.py`; data in `docs/election_night_counties.js`) |
 | `STATE_BY_STATE.md` | State-by-state guide to how and when votes come in, checked against primary sources (built by `scripts/build_state_guide.py` from `scripts/state_guide_template.md`) |
 | `VOLATILITY.md` | Which states' counts swing the most, nationally: every President/Senate/Governor race in all 50 states and DC, 2020-2024, ranked by swing size and by how often the leader during the count lost (built by `scripts/volatility.py` from `fetch_nyt_history.py --all`) |
 | `SWINGS.md` | How far the count moved after polls close in every race NYT covered in the eleven states, 2020-2026: biggest swings, comebacks, late movers, early vs Election Day splits, 2020 county detail, 2026 primaries (built by `scripts/swing_analysis.py` + `scripts/build_swings_report.py`) |
@@ -20,6 +21,8 @@ means X) and projected to a final result.
 | `research_notes/` | Sourced notes behind the report |
 | `scripts/fetch_nyt_history.py` | NYT results JSON for 2020/2022/2024 (11 states; `--all` fetches every state into `data/raw/nyt_all/` for `volatility.py`): final county results (2022/24 split by vote type) and a statewide count timeline |
 | `scripts/fetch_wayback_2020.py` | County-by-county count over election week 2020, from Internet Archive captures of NYT's national file (one per 10 min where captured) |
+| `scripts/county_benchmarks.py` | County benchmarks: each county's share of the statewide vote (2022) and its expected two-party share at any statewide result (uniform swing on recent results), early/mail vs Election Day where NYT split every county (GA, TX, IA), 2020 reporting speed, and a backtest on every 2022/2024 race -> `data/processed/county_benchmarks.json/.csv`, `county_backtest.csv` |
+| `scripts/early_vote.py` | Ballots already cast, from the UF Election Lab tracker -> `data/processed/early_vote_2026.csv` and the guide's section 2c (rerun to refresh) |
 | `scripts/capture_live.py` | Records NYT's 2026 files every 2 minutes on election night (every county, every change), for all 13 races |
 | `scripts/watch_sources.py` | Searches news feeds for AP "What to expect" pieces and county results schedules -> `sources/watch_log.csv` |
 | `sources/README.md` | Every source on when/how each state reports (AP 2026 editions, official documents, county schedules) |
@@ -44,16 +47,40 @@ Remove them after the election: `Get-ScheduledTask -TaskName "StateResults-*" | 
 |---|---|---|---|
 | NYT 2020 race files | county (final) | statewide timeline, hundreds of points | absentee vs total per county |
 | Wayback 2020 national file | **county, over time** | captures ~10-60 min apart on election night | absentee vs total |
-| NYT 2022 race files | county / Maine town (final) | statewide timeline (votes, expected-vote %) | GA, MI, OH: mail / early / Election Day per county |
+| NYT 2022 race files | county / Maine town (final) | statewide timeline (votes, expected-vote %) | GA: mail / early / Election Day for every county; MI and OH only Wayne and Hamilton; OR all mail |
 | NYT 2024 race files | county / Maine town (final) | statewide timeline with "advance" vs total | GA, TX: full split per county; IA, TX pres: advance vs Election Day |
 | NYT 2026 primaries | county | statewide timeline | as above; current laws (MI Aug 4 saved) |
+| Alaska Division of Elections precinct files, 2022/2024 | precinct -> House district (final) | none | Election Day / absentee / early rows per district (`data/raw/ak_doe/`, downloaded by `county_benchmarks.py`) |
+| UF Election Lab early-vote tracker | state (daily) | one file per day in `data/raw/early_vote/` | mail returned, early in person, voters' registered party |
 
 County-level timing for 2022 and 2024 does not survive publicly: state result sites (Clarity etc.)
 keep only the latest version, and archive captures of the NYT race files are a handful per race.
 2020 is the only year with real county timing; 2022/2024 give the statewide pace and the
 early-vs-Election-Day mix. Nov 3, 2026 is recorded by `capture_live.py`.
 
+## Rebuilding
+
+After a model refresh or new early-vote numbers, in this order (from the repo root):
+
+```
+py "State election results/scripts/early_vote.py"
+py "State election results/scripts/county_benchmarks.py"
+py "State election results/scripts/build_competitive.py"
+py "State election results/scripts/build_master.py"
+py "State election results/scripts/build_election_night.py"
+node tests/dash_smoke.js docs/election-night.html
+```
+
+The page's model and market numbers refresh by themselves (they come from `docs/forecast_data.js`,
+which CI rewrites); rebuild for new early-vote numbers, text changes or a race crossing 75%.
+
 ## Simulator design (to build)
+
+Built so far (Oct 23): step 2 without the errors. `county_benchmarks.py` gives each county's expected
+two-party share for any statewide result (uniform swing on the log-odds scale) and, where NYT split
+every county by vote type (GA, TX, IA), its early/mail vs Election Day shares. A backtest on every
+2022/2024 race puts the typical county miss at 1-5 points. Correlated county errors, release timing
+and the Monte Carlo are still to do.
 
 Per state, per county (Maine: town), per vote type (early in person / mail / Election Day / late):
 

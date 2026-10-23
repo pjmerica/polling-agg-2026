@@ -1,22 +1,22 @@
 # Competitive 2026 Governor and Senate races
 
-Source: `docs/forecast_data.js` (model run 2026-10-22 18:05 UTC, polls through 2026-10-21). Competitive = the model's favorite has a win probability of 75% or less. Built by `scripts/build_competitive.py`; numbers move with every model refresh, so rebuild before relying on it.
+Source: `docs/forecast_data.js` (model run 2026-10-23 03:37 UTC, polls through 2026-10-22). Competitive = the model's favorite has a win probability of 75% or less. Built by `scripts/build_competitive.py`; numbers move with every model refresh, so rebuild before relying on it.
 
 ## By state
 
 | State | Competitive races |
 |---|---|
 | Alaska | Senate |
-| Ohio | Governor, Senate (special) |
 | Texas | Senate, Governor |
 | Georgia | Governor |
 | Kansas | Senate |
+| Ohio | Governor, Senate (special) |
 | Nebraska | Senate |
 | Michigan | Senate |
 | Iowa | Senate |
+| Maine | Senate |
 | Nevada | Governor |
 | Oregon | Governor |
-| Maine | Senate |
 
 13 races in 11 states.
 
@@ -25,18 +25,18 @@ Source: `docs/forecast_data.js` (model run 2026-10-22 18:05 UTC, polls through 2
 | State | Race | Model favorite | Model win % | Model margin (pts, separate model) | Main opponent | Market (side priced) | Surveys |
 |---|---|---|---|---|---|---|---|
 | Alaska | Senate | Mary Peltola (DEM) | 51.9% | -0.2 | Dan Sullivan (REP) | Mary Peltola (DEM) 75% | 21 |
-| Ohio | Governor | Amy Acton (DEM) | 54.9% | +0.8 | Vivek Ramaswamy (REP) | Amy Acton (DEM) 84% | 33 |
-| Texas | Senate | James Talarico (DEM) | 55.0% | +1.2 | Ken Paxton (REP) | James Talarico (DEM) 67% | 61 |
+| Texas | Senate | James Talarico (DEM) | 55.0% | +1.2 | Ken Paxton (REP) | James Talarico (DEM) 66% | 61 |
 | Georgia | Governor | Keisha Lance Bottoms (DEM) | 55.0% | -0.7 | Rick Jackson (REP) | Keisha Lance Bottoms (DEM) 61% | 17 |
-| Kansas | Senate | Roger Marshall (REP) | 58.8% | +0.9 | Adam Hamilton (DEM) | Adam Hamilton (DEM) 38% | 14 |
+| Kansas | Senate | Roger Marshall (REP) | 58.8% | +0.9 | Adam Hamilton (DEM) | Adam Hamilton (DEM) 39% | 14 |
+| Ohio | Governor | Amy Acton (DEM) | 58.8% | +0.9 | Vivek Ramaswamy (REP) | Amy Acton (DEM) 82% | 34 |
 | Ohio | Senate (special) | Sherrod Brown (DEM) | 59.6% | +0.9 | Jon Husted (REP) | Sherrod Brown (DEM) 69% | 39 |
-| Nebraska | Senate | Pete Ricketts (REP) | 62.2% | +3.6 | Dan Osborn (IND) | Dan Osborn (IND) 26% | 14 |
+| Nebraska | Senate | Pete Ricketts (REP) | 62.2% | +3.6 | Dan Osborn (IND) | Dan Osborn (IND) 25% | 15 |
 | Michigan | Senate | Abdul El-Sayed (DEM) | 63.4% | +3.0 | Mike Rogers (REP) | Abdul El-Sayed (DEM) 70% | 53 |
-| Iowa | Senate | Ashley Hinson (REP) | 68.2% | +0.9 | Josh Turek (DEM) | Josh Turek (DEM) 43% | 34 |
-| Nevada | Governor | Joe Lombardo (REP) | 69.5% | +3.3 | Aaron Ford (DEM) | Aaron Ford (DEM) 66% | 14 |
-| Oregon | Governor | Tina Kotek (DEM) | 70.1% | +4.5 | Christine Drazan (REP) | Tina Kotek (DEM) 83% | 7 |
-| Maine | Senate | Troy Jackson (DEM) | 71.6% | +1.9 | Susan Collins (REP) | Troy Jackson (DEM) 66% | 26 |
-| Texas | Governor | Greg Abbott (REP) | 74.0% | +4.9 | Gina Hinojosa (DEM) | Gina Hinojosa (DEM) 32% | 54 |
+| Iowa | Senate | Ashley Hinson (REP) | 68.2% | +0.9 | Josh Turek (DEM) | Josh Turek (DEM) 42% | 34 |
+| Maine | Senate | Troy Jackson (DEM) | 68.7% | +1.5 | Susan Collins (REP) | Troy Jackson (DEM) 65% | 27 |
+| Nevada | Governor | Joe Lombardo (REP) | 69.5% | +3.3 | Aaron Ford (DEM) | Aaron Ford (DEM) 67% | 14 |
+| Oregon | Governor | Tina Kotek (DEM) | 70.1% | +4.5 | Christine Drazan (REP) | Tina Kotek (DEM) 82% | 7 |
+| Texas | Governor | Greg Abbott (REP) | 74.0% | +4.9 | Gina Hinojosa (DEM) | Gina Hinojosa (DEM) 31% | 54 |
 
 ## Just outside the cut (favorite 75-80%)
 
@@ -44,12 +44,12 @@ Not part of the vote-timing research; listed so a model shift is easy to spot.
 
 | State | Race | Model favorite | Model win % | Model margin (pts, separate model) | Main opponent | Market (side priced) | Surveys |
 |---|---|---|---|---|---|---|---|
-| Kansas | Governor | Ty Masterson (REP) | 77.1% | +4.6 | Cindy Holscher (DEM) | Cindy Holscher (DEM) 26% | 7 |
+| Kansas | Governor | Ty Masterson (REP) | 77.1% | +4.6 | Cindy Holscher (DEM) | Cindy Holscher (DEM) 25% | 7 |
 | Wisconsin | Governor | David Crowley (DEM) | 79.5% | +5.4 | Tom Tiffany (REP) | David Crowley (DEM) 80% | 9 |
 
 ## Market favors a different candidate
 
-- Nevada Governor: model Joe Lombardo 69.5%, market implies Joe Lombardo about 34%
+- Nevada Governor: model Joe Lombardo 69.5%, market implies Joe Lombardo about 33%
 
 ## Not in the forecast
 

@@ -1,13 +1,16 @@
 """Build MASTER.md: the one file to read. Stitches together, per state, the rules and history from
-STATE_BY_STATE.md and that state's swing data from the swings analysis, around the text in
-scripts/master_template.md.
+STATE_BY_STATE.md, that state's swing data from the swings analysis and its county benchmarks,
+around the text in scripts/master_template.md.
 
 Tokens in the template:
-  {{GUIDE:<n>}}     a numbered top-level section of STATE_BY_STATE.md (e.g. 1, 2, 2b, 12, 13, 14)
-  {{STATE:<slug>}}  that state's STATE_BY_STATE.md section plus its swing tables
+  {{GUIDE:<n>}}     a numbered top-level section of STATE_BY_STATE.md (e.g. 1, 2, 2b, 2c, 12, 13, 14)
+  {{STATE:<slug>}}  that state's STATE_BY_STATE.md section plus its swing tables and county benchmarks
   {{PACE_ALL}} {{EARLY_EDAY}}   cross-state tables from the swings analysis
+  {{COUNTY_BACKTEST}}           how county benchmarks did in past races (county_benchmarks.py)
 
-Runs both builders first, so everything is regenerated from data.
+County benchmarks come from data/processed/county_benchmarks.json (run county_benchmarks.py first).
+Runs the guide builder too, so everything is regenerated from data. render(html=True) is the
+dashboard page's version (build_election_night.py).
 
     py "State election results/scripts/build_master.py"
 """
@@ -17,6 +20,7 @@ import re
 
 import build_state_guide
 import build_swings_report as sw
+import county_benchmarks as cb
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
@@ -24,8 +28,7 @@ SLUG = {"georgia": "GA", "ohio": "OH", "michigan": "MI", "texas": "TX", "kansas"
         "maine": "ME", "iowa": "IA", "nebraska": "NE", "alaska": "AK", "nevada": "NV", "oregon": "OR"}
 
 
-def guide_sections():
-    text = open(os.path.join(ROOT, "STATE_BY_STATE.md"), encoding="utf-8").read()
+def guide_sections(text):
     parts = re.split(r"(?m)^## (\S+?)\. ", text)
     # parts: [preamble, num, body, num, body, ...]
     out = {}
@@ -53,10 +56,11 @@ def swing_block(rows, code, slug):
     return "\n".join(out)
 
 
-def main():
-    build_state_guide.main()
+def render(html=False):
+    """MASTER.md's text. html=True: model and market numbers become live spans, and each county table
+    a placeholder for the page's interactive version."""
     rows = sw.load()
-    sections = guide_sections()
+    sections = guide_sections(build_state_guide.render(fill=False))
     tmpl = open(os.path.join(HERE, "master_template.md"), encoding="utf-8").read()
 
     def guide(m):
@@ -67,13 +71,16 @@ def main():
         slug = m.group(1)
         num = next(n for n, (t, _) in sections.items() if t.lower().startswith(slug))
         title, body = sections[num]
-        return (f"## {title}\n\n{body}\n\n### The swing data: {title.split(':')[0]}\n\n"
-                f"{swing_block(rows, SLUG[slug], slug)}\n\n---\n")
+        name = title.split(":")[0]
+        return (f"## {title}\n\n{body}\n\n### The swing data: {name}\n\n"
+                f"{swing_block(rows, SLUG[slug], slug)}\n\n### County benchmarks: {name}\n\n"
+                f"{cb.state_markdown(slug, html=html)}\n\n---\n")
 
     out = re.sub(r"\{\{GUIDE:(\w+)\}\}", guide, tmpl)
     out = re.sub(r"\{\{STATE:(\w+)\}\}", state, out)
     out = out.replace("{{PACE_ALL}}", sw.state_pace(rows)).replace("{{EARLY_EDAY}}", sw.early_eday(rows))
-    out = build_state_guide.fill_numbers(out).replace("{{N_RACES}}", str(len(rows)))
+    out = out.replace("{{COUNTY_BACKTEST}}", cb.backtest_markdown())
+    out = build_state_guide.fill_numbers(out, html=html).replace("{{N_RACES}}", str(len(rows)))
     # national volatility ranks (scripts/volatility.py)
     vol = list(csv.DictReader(open(os.path.join(ROOT, "data", "processed", "volatility_states.csv"), encoding="utf-8")))
     vol.sort(key=lambda x: int(x["rank"]))
@@ -81,6 +88,12 @@ def main():
     out = out.replace("{{VOL_OURS}}", ", ".join(f"{x['name']} {x['rank']}" for x in vol if x["competitive"] == "True"))
     out = out.replace("{{VOL_N}}", str(len(vol)))
     assert "{{" not in out, "unfilled token"
+    return out
+
+
+def main():
+    build_state_guide.main()
+    out = render()
     with open(os.path.join(ROOT, "MASTER.md"), "w", encoding="utf-8") as f:
         f.write(out)
     print("wrote MASTER.md")

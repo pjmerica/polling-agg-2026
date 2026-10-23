@@ -7,14 +7,19 @@ past elections, and where that creates opportunities as results come in.*
 *Built by `scripts/build_master.py` from `STATE_BY_STATE.md` (rules, checked against primary sources)
 and the swings analysis ({{N_RACES}} races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
 generated from data. {{ASOF}} They move daily. Nevada, Oregon and Texas Governor were added on
-Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%.*
+Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%. County benchmarks, ballots
+already cast and the Oct 23 open-item checks were added on Oct 23.*
+
+*The same guide is a page on the dashboard, [election-night.html](https://pjmerica.github.io/polling-agg-2026/election-night.html).
+There the model and market numbers update with each forecast run, and every county table has a slider for the
+statewide result plus a box that turns a county's finished result into an implied statewide margin.*
 
 **Contents**
 1. The states at a glance
 2. Which state is the best opportunity as results come in
-3. What is certain and what isn't, plus patterns across states
-4. State by state: rules, how results come in, history, swing data
-5. Cross-state tables
+3. What is certain and what isn't, ballots already cast, patterns across states
+4. State by state: rules, how results come in, history, swing data, county benchmarks
+5. Cross-state tables, including how reliable county benchmarks have been
 6. Corrections, open questions, sources
 
 ---
@@ -146,17 +151,21 @@ From `VOLATILITY.md`, which measures every President, Senate and Governor race i
 - **Fees are real per leg** (`utils/fees.py`). Small edges disappear.
 - **The tools that make this usable are already set up:**
   - The election-night recorder (`capture_live.py`) saves every county every 2 minutes from 6:30 pm ET. It now includes Nevada, Oregon and Texas Governor, and keeps running for three weeks.
-  - The next step is the simulator in the README, which turns "X% counted, these counties out" into a projected final.
-  - Without the simulator, the tables in this file are rules of thumb.
+  - **County benchmarks** (end of each state section, and the calculator on the dashboard page) turn a finished county's result into an implied statewide margin. In past races the largest county alone was usually within 2 points of the statewide result, but 4-5 points off in four races and 7 in one (section 5). Use several counties.
+  - The full simulator in the README, which turns "X% counted, these counties out" into a projected final, is still to build. Until then the tables in this file are rules of thumb.
 - **2026 differs from history:** new laws (Michigan pre-processing, Georgia's 8 pm rule, Ohio's ended grace period), Clark County's new ballots, slower USPS postmarks (Oregon rejected 13% of its late mail in May for late postmarks) and a more Democratic early vote. Expect the patterns, not the exact sizes.
 
 ---
 
-## 3. What is certain and what isn't, plus patterns across states
+## 3. What is certain and what isn't, ballots already cast, patterns across states
 
 ### Is there any source that says for certain when votes will be counted?
 
 {{GUIDE:2b}}
+
+### Ballots already cast
+
+{{GUIDE:2c}}
 
 ### Patterns across states
 
@@ -166,10 +175,11 @@ From `VOLATILITY.md`, which measures every President, Senate and Governor race i
 
 # 4. State by state
 
-In poll-closing order. Each state has three parts:
+In poll-closing order. Each state has four parts:
 - rules and how results get reported, checked against primary sources: ✔ re-read, ◐ read by a researcher, ○ secondary;
 - generated history tables;
-- the swing data for that state.
+- the swing data for that state;
+- **county benchmarks**: each county's expected share of the statewide vote, and what each candidate needs there for a statewide tie or a 3-point win either way. Uniform swing on recent results, explained in each table's notes (`scripts/county_benchmarks.py`).
 
 {{STATE:georgia}}
 {{STATE:ohio}}
@@ -194,6 +204,22 @@ In poll-closing order. Each state has three parts:
 Shown only where NYT tagged a full share of early votes.
 
 {{EARLY_EDAY}}
+
+### How reliable county benchmarks have been
+
+The county benchmarks' method, run on every 2022 and 2024 race here, predicting each from the races before it. It is given the true statewide result, so this measures only how far counties stray from uniform swing. In 2026 the statewide result is unknown and turnout can shift, so real misses will be larger.
+- **Typical county miss:** the vote-weighted root-mean-square gap between a county's actual two-party margin and its benchmark.
+- **Largest county alone:** the statewide margin you would have estimated from the biggest county's final result, minus the real one.
+
+{{COUNTY_BACKTEST}}
+
+**What it says:**
+- **The typical county miss is 1-5 points.** Nebraska's 2024 Senate race is the exception: Osborn's independent coalition missed by 8, and 82% of the vote was in counties off by 5+.
+- **One county is not enough.**
+  - Wayne County alone would have put Harris 4.0 points too low in 2024; Johnson County, Kansas, would have put Kelly 4.3 too low in 2022.
+  - Douglas County, Nebraska would have put Osborn 7.2 too low.
+  - Among the five largest counties, a single county's error reached 9-10 points (Kansas and Iowa 2022 governor races).
+- **Several finished counties together are much better than any one.** The page's calculator averages them by size.
 
 ---
 
