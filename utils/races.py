@@ -163,9 +163,10 @@ SENATE_RACES_2026 = [
          open_seat=True, open_reason="retiring",
          primary_date="2026-05-19"),
 
-    # Louisiana — incumbent running
+    # Louisiana — open: Cassidy is not on the November ballot (Letlow is the R nominee; checked 2026-10-23)
     Race("2026-SEN-LA", 2026, "SEN", "Louisiana", "LA",
          incumbent_party="R", incumbent_name="Bill Cassidy",
+         open_seat=True, open_reason="not-on-ballot",
          primary_date="2026-05-16"),
 
     # Maine — incumbent running
@@ -239,9 +240,10 @@ SENATE_RACES_2026 = [
          special=True, primary_date="2026-05-05",
          general_date="2026-11-03"),
 
-    # Oklahoma — incumbent running (Markwayne Mullin, Class II)
+    # Oklahoma — open: Mullin (Class II) is not on the November ballot (Hern is the R nominee; checked 2026-10-23)
     Race("2026-SEN-OK", 2026, "SEN", "Oklahoma", "OK",
          incumbent_party="R", incumbent_name="Markwayne Mullin",
+         open_seat=True, open_reason="not-on-ballot",
          primary_date="2026-06-16"),
 
     # Oregon — incumbent running
@@ -271,9 +273,10 @@ SENATE_RACES_2026 = [
          incumbent_party="R", incumbent_name="Bill Hagerty",
          primary_date="2026-08-06"),
 
-    # Texas — incumbent running
+    # Texas — open: Cornyn is not on the November ballot (Paxton is the R nominee; checked 2026-10-23)
     Race("2026-SEN-TX", 2026, "SEN", "Texas", "TX",
          incumbent_party="R", incumbent_name="John Cornyn",
+         open_seat=True, open_reason="not-on-ballot",
          primary_date="2026-03-03"),
 
     # Virginia — incumbent running
@@ -472,9 +475,10 @@ GOVERNOR_RACES_2026 = [
          incumbent_party="D", incumbent_name="Josh Shapiro",
          primary_date="2026-05-19"),
 
-    # Rhode Island — incumbent running (Dan McKee)
+    # Rhode Island — open: McKee is not on the November ballot (Foulkes is the D nominee; checked 2026-10-23)
     Race("2026-GOV-RI", 2026, "GOV", "Rhode Island", "RI",
          incumbent_party="D", incumbent_name="Dan McKee",
+         open_seat=True, open_reason="not-on-ballot",
          primary_date="2026-09-08"),
 
     # South Carolina — open (Henry McMaster term-limited)

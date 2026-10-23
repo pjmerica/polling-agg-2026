@@ -70,6 +70,10 @@ jobs:
         continue-on-error: true
         run: node tests/dash_smoke.js docs/election-night.html
 
+      - name: Map page smoke test (reported, never blocks the refresh)
+        continue-on-error: true
+        run: node tests/dash_smoke.js docs/map.html
+
       - name: Commit and push if changed
         run: |
           git config user.name  "github-actions[bot]"
