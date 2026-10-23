@@ -152,14 +152,14 @@ These are rules of thumb drawn from the tables above, not forecasts.
 
 | Race | What history suggests |
 |---|---|
-| **Kansas Senate** (Marshall R vs Hamilton D) | Expect Hamilton ahead early. A Hamilton lead under ~10-15 pts at 2 h (~10 pm ET) has historically been erased: Kelly's +20 became +2.2 in 2022. |
-| **Iowa Senate** (Hinson R vs Turek D) | Ignore the first hour (Democratic absentee batches). By 11 pm ET ~75% is in. The margin moved only ~2 more pts in 2022/2024, but 19 in 2020, when only half was in by then. |
-| **Nebraska Senate** (Ricketts R vs Osborn I) | Osborn led by 18 at 9 pm in 2024 and lost by 6.7. Expect a 7-9 pt move toward Ricketts after the first two hours. |
+| **Kansas Senate** (Marshall R vs Hamilton D) | Expect Hamilton ahead early. A lead at 2 h (10 pm ET) is not safe: the rest of the count moved 9-23 pts toward the Republican in the top races (Kelly's +20.3 became +2.2 in 2022; Holland's +0.3 became -23). At 10:30 pm a lead of ~8+ has held. |
+| **Iowa Senate** (Hinson R vs Turek D) | Ignore the first hour (Democratic absentee batches). By 11 pm ET ~75% is in, and the margin moved under 2 more pts in 2022/2024. In 2020 polls closed an hour later, so only half was in at 11 pm and 17-20 pts still moved. |
+| **Nebraska Senate** (Ricketts R vs Osborn I) | Osborn led by 18 at 9 pm in 2024 and lost by 6.7. After 11 pm (2 h) the top races still moved 4.5-14.5 pts toward the Republican (8.2 in the 2024 Senate race); a lead needs ~9+ at midnight to be safe. |
 | **Ohio Governor and Senate** | Expect Acton/Brown leads at 7:30-9:30 pm to shrink 3-6 pts (11 in 2020) as Election Day votes come in. Almost nothing moves after midnight. |
-| **Georgia Governor** | Since early votes now report by 8 pm, the 2024 pattern (little movement after 2 h) is the best guide. Down-ballot 2022 shows how big the early Democratic lead can look when the early vote is strongly D. |
+| **Georgia Governor** | Since early votes now report by 8 pm, the 2024 pattern (little movement after 2 h for most races) is the best guide, but the 2024 presidential race still moved 3.2 pts toward the Democrat after 9 pm as metro Atlanta finished. Down-ballot 2022 shows how big the early Democratic lead can look when the early vote is strongly D. |
 | **Michigan Senate** | Expect the lead to change hands, possibly twice. The final answer may need Wayne County's late batch (Wednesday morning in 2024). |
 | **Texas Senate** | The early-vote dump is most of the vote. The margin at 10 pm ET (2 h after close) has been within ~1-3.5 pts of the final (median). |
-| **Maine Senate** | Expect Jackson to gain through the night (+5-8 after 2 h historically), then give back 0-3 pts as rural towns finish. If no one tops 50%, the ranked-choice count decides, and the first-round leader can lose. |
+| **Maine Senate** | Expect Jackson to gain through the night (+4-8 after 2 h historically), then give back 0-3 pts as rural towns finish. If no one tops 50%, the ranked-choice count decides, and the first-round leader can lose. |
 | **Alaska Senate** | Sullivan likely leads election night. Mail counted Nov 10-18 moved the margin 2-3 pts toward Democrats in 2022/2024 (16 in 2020). Then ranked-choice tabulation. |
 
 ## Reproduce

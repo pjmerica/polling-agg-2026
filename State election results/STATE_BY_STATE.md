@@ -866,6 +866,14 @@ Things said earlier in this project (in chat, the report or the notes) that the 
 | Kansas 2020 Senate "AP call shortly after 10 pm" (report) | NYT's own call was 10:58 pm; AP's exact time is still unconfirmed. |
 | Nevada, Oregon and Texas Governor "just outside the 75% cut" (this guide, Oct 21) | The model audit's retrain (Oct 22) put all three inside it. They're now covered: sections 6, 11 and 12. |
 | Nevada "no automatic recount" vs Oregon (report) | Confirmed in both statutes: Nevada recounts only on demand (NRS 293.403); Oregon recounts automatically at 0.2% (ORS 258.280) ✔. |
+| Texas: "the Democrat leads for the first 15-35 min"; "a Talarico lead of 4+ at 8:30 pm is good shape"; "after the first hour the count moves another 2-4 points" (this guide, Oct 21) | Biden led Texas until 9:29 pm in 2020, and was +5.0 at 8:30 pm before losing by 5.6. After 9 pm the rest moved 3.8-6.7 pts toward the Republican. A safe lead is ~7+ pts at 9 pm or 4+ at 10 pm (section 6). |
+| Kansas: "if Hamilton still leads at 9:30-10 pm, the race is genuinely close" (this guide) | At 9:30 pm the Democrat led every top race 2020-2024, and Holland led at 10 pm in 2022 and lost by 23. A safe lead is ~8+ pts at 10:30 pm (section 7). |
+| Nebraska: "if Osborn still leads at 11:30 pm, the race is close" (this guide) | After 11:30 pm the rest moved 2-11 pts toward the Republican in every top race. A safe lead is ~9+ pts at midnight (section 10). |
+| 2020 county detail: Nevada "11% still out at 6 am" (SWINGS.md) | 15% of the certified vote: the last archive copy, used as the final, held only 95% of Nevada's votes. All shares are now measured against certified totals. |
+| Swing tables: Nevada 2020 "moved +86 after 2 hours" | Noise from a handful of early votes; a move is now measured only from a point with 3%+ counted. |
+| History tables: every 2024 presidential row said "timeline starts 8:00 pm" | Only Georgia and Ohio report before 8 pm. The real first votes elsewhere: Texas 8:00 pm, Iowa 9:02 pm, Oregon 10:00 pm, Nevada 12:55 am, Alaska 1:07 am. |
+| Comebacks table counted only the leader at 2 hours or at midnight (SWINGS.md) | It now includes the leader at 6 am, which adds Nevada's 2022 Senate, Secretary of State and Treasurer races and its 2024 Senate race. |
+| Master guide: Maine "moved 5-8 pts"; "Georgia and Ohio 93-99% by midnight" | 4-8 pts (2024 Senate moved 4.2); Georgia and Ohio 94-98% in 2022 and 2024, but Georgia 2020 only 80%. |
 
 ## 15. What is still unconfirmed
 
