@@ -69,7 +69,9 @@ def fetch(ab, fp):
     path = os.path.join(RAW, f"{RELEASE}_{ab}_{kind}.json")
     if not os.path.exists(path):
         os.makedirs(RAW, exist_ok=True)
-        req = urllib.request.Request(API.format(rel=RELEASE, geo=f"{level}|04000US{fp}"), headers={"User-Agent": "Mozilla/5.0"})
+        # an honest agent string: Census Reporter answers a bare "Mozilla/5.0" with 403 (2026-10-23)
+        req = urllib.request.Request(API.format(rel=RELEASE, geo=f"{level}|04000US{fp}"),
+                                     headers={"User-Agent": "polling-agg-2026 (census blocs)"})
         with urllib.request.urlopen(req, timeout=180) as r:
             data = r.read()
         json.loads(data)  # fail here, not later, on an error page

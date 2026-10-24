@@ -29,6 +29,8 @@ const ctx = { document, window: {}, console, localStorage: { getItem(){ return n
   location: { hash: '', search: '', href: '' }, history: { replaceState(){} , pushState(){} },
   setTimeout: (f) => { try { f(); } catch (e) { errors.push('timeout: ' + e.stack.split('\n')[0]); } return 0; },
   clearTimeout(){}, setInterval(){ return 0; }, requestAnimationFrame: f => f(), navigator: { clipboard: {} },
+  // window-level listeners (2026-10-23: predictions.html's bare addEventListener('keydown') threw here)
+  addEventListener(){}, removeEventListener(){},
   Chart: function(){ return { destroy(){}, update(){} }; }, Plotly: new Proxy({}, { get: () => () => Promise.resolve() }), URLSearchParams, Intl, Date, Math, JSON };
 ctx.window = ctx; ctx.self = ctx;
 vm.createContext(ctx);

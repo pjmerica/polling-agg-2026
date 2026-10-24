@@ -6,10 +6,12 @@
 <title>2026 Forecast Map</title>
 <!-- Data: forecast_data.js (the model's projections, rebuilt by CI), data.js (every race on the ballot, with each
      venue's party-winner book, rebuilt by every market refresh), us_map_geo.js (state shapes and the House tile
-     grid, scripts/build_map_geo.py). 2026-10-23. -->
+     grid, scripts/build_map_geo.py), us_house_2026_geo.js (the 435 districts on the lines in force for November
+     2026, with ACS profiles: scripts/build_house_map.py + build_district_demographics.py). 2026-10-23. -->
 <script src="forecast_data.js"></script>
 <script src="data.js"></script>
 <script src="us_map_geo.js"></script>
+<script src="us_house_2026_geo.js"></script>
 <style>
 :root {
   --bg: #0b0e14; --panel: #121722; --panel2: #171d2b; --line: #222a3b; --line2: #2c3549;
@@ -45,7 +47,9 @@ a:hover { text-decoration: underline; }
               padding: 7px 16px; border-radius: 7px; cursor: pointer; }
 .seg button.on { background: var(--panel2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line2); }
 .seg.src button.on { background: #6d8bff26; color: #fff; box-shadow: inset 0 0 0 1px #6d8bff66; }
-@media (max-width: 600px) { .seg button { padding: 7px 11px; } .bar .tally { margin-left: 0; } }
+@media (max-width: 600px) { .seg button { padding: 7px 10px; } .bar .tally { margin-left: 0; } }
+.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
+.chk input { accent-color: var(--accent); }
 .tally { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.74rem; }
 .tally span { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
 .tally b { color: var(--text); font-variant-numeric: tabular-nums; }
@@ -58,18 +62,32 @@ a:hover { text-decoration: underline; }
 #map .lab { font-size: 10px; font-weight: 700; fill: #fff; paint-order: stroke; stroke: #0b0e14cc; stroke-width: 2.4px;
             pointer-events: none; text-anchor: middle; dominant-baseline: central; }
 #map .tl { font-size: 11px; font-weight: 700; fill: var(--muted); }
+/* district map: strokes stay the same width at any zoom */
+#map .ds { stroke: var(--bg); stroke-width: 0.5px; vector-effect: non-scaling-stroke; cursor: pointer; }
+#map .ds:hover { stroke: #fff; stroke-width: 1.5px; }
+#map .ds.sel { stroke: #fff; stroke-width: 2.2px; }
+#map .sb { fill: none; stroke: #0b0e14; stroke-width: 1.5px; vector-effect: non-scaling-stroke; pointer-events: none; }
+#map .dn { font-weight: 700; fill: #fff; paint-order: stroke; stroke: #0b0e14cc; pointer-events: none;
+           text-anchor: middle; dominant-baseline: central; }
+#map.zoomed { cursor: grab; touch-action: none; }
 .mapscroll { overflow-x: auto; }
+.zoom { position: absolute; top: 18px; right: 18px; display: none; gap: 4px; z-index: 5; }
+.zoom.on { display: flex; }
+.zoom button { background: #121722e6; border: 1px solid var(--line2); color: var(--text); font: inherit; font-size: 0.82rem;
+               font-weight: 700; min-width: 32px; height: 32px; padding: 0 9px; border-radius: 8px; cursor: pointer; }
+.zoom button:hover { border-color: var(--accent); }
 @media (max-width: 600px) {
   #map .lab { display: none; }              /* unreadable at phone width; tap a state for its numbers */
-  #map.house { min-width: 760px; }          /* the House grid scrolls sideways instead of shrinking */
+  #map.tiles { min-width: 760px; }          /* the House squares scroll sideways instead of shrinking */
   .mapcard { padding: 8px; }
+  .zoom { top: 10px; right: 10px; }
 }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 2px 0; font-size: 0.74rem; color: var(--muted); }
 .legend span { display: inline-flex; align-items: center; gap: 5px; }
 .note { font-size: 0.78rem; color: var(--faint); margin: 8px 2px 0; }
 
 .tip { position: fixed; z-index: 60; pointer-events: none; background: #0b0e14f5; border: 1px solid var(--line2);
-       border-radius: 10px; padding: 9px 11px; font-size: 0.78rem; display: none; max-width: 320px; box-shadow: 0 6px 24px #0008; }
+       border-radius: 10px; padding: 9px 11px; font-size: 0.78rem; display: none; max-width: 340px; box-shadow: 0 6px 24px #0008; }
 .detail { margin-top: 12px; }
 .card { background: var(--panel); border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14px; }
 .rname { font-weight: 750; font-size: 0.95rem; }
@@ -81,6 +99,13 @@ a:hover { text-decoration: underline; }
 .pill { font-size: 0.7rem; font-weight: 750; padding: 2px 8px; border-radius: 999px; white-space: nowrap; display: inline-block; }
 .meta { margin-top: 8px; font-size: 0.74rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .warn { color: var(--toss); }
+.demo { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 0.74rem; color: var(--muted); }
+.dbar { display: flex; height: 7px; border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+.dbar i { display: block; height: 100%; }
+.dl { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 3px; }
+.dl span { display: inline-flex; align-items: center; gap: 4px; }
+.dl span i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.dl.rdl { color: var(--text); }
 
 .list { margin: 26px 0 10px; }
 .list h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
@@ -112,15 +137,20 @@ a:hover { text-decoration: underline; }
 
   <div class="bar">
     <div class="seg src" id="src" role="tablist" aria-label="Whose numbers">
-      <button data-s="model" class="on" role="tab">Our model</button><button data-s="kalshi" role="tab">Kalshi</button>
+      <button data-s="model" class="on" role="tab">Our model</button><button data-s="kalshi" role="tab">Kalshi</button><button data-s="polymarket" role="tab">Polymarket</button>
     </div>
     <div class="seg" id="tabs" role="tablist" aria-label="Office">
       <button data-v="Senate" class="on" role="tab">Senate</button><button data-v="House" role="tab">House</button><button data-v="Governor" role="tab">Governor</button>
     </div>
+    <div class="seg" id="hv" role="tablist" aria-label="House view" style="display:none">
+      <button data-h="map" class="on" role="tab">Map</button><button data-h="tiles" role="tab">Squares</button>
+    </div>
+    <label class="chk" id="polled-wrap"><input type="checkbox" id="polled"> Polled races only</label>
     <div class="tally" id="tally"></div>
   </div>
 
   <div class="mapcard">
+    <div class="zoom" id="zoom"><button data-z="in" aria-label="Zoom in">+</button><button data-z="out" aria-label="Zoom out">&minus;</button><button data-z="all" id="zoom-all">All states</button></div>
     <div class="mapscroll"><svg id="map" viewBox="0 0 975 610" role="img" aria-label="Map of 2026 races shaded by confidence"></svg></div>
     <div class="legend" id="legend"></div>
     <div class="note" id="note"></div>
@@ -136,11 +166,13 @@ a:hover { text-decoration: underline; }
   <section class="how">
     <h3>How to read it</h3>
     <ul>
-      <li><b>Our model:</b> each race's shade is the model's win probability for its favorite: Safe 95%+, Likely 80-95%, Lean 60-80%, Tossup under 60%. These are the same tiers as the <a href="predictions.html">forecast page</a>, where every race has an explainer. <b>No projection</b> means the race has no public polls, which the model needs.</li>
-      <li><b>Kalshi:</b> the same tiers applied to Kalshi's price for each party to win the seat. Prices are normalized so the outcomes add up to 100% (the venue's built-in margin removed), from the dashboard's last market refresh. Gray races have no Kalshi party market.</li>
-      <li><b>House:</b> each square is one district, inside its state's tile. Squares run from the most Democratic to the most Republican, then the unshaded ones, so a square's place isn't the district's location. Tiles sit in a fixed grid, not on a true map, so every state stays visible and every district gets the same space.</li>
+      <li><b>Our model:</b> each race's shade is the model's chance that its favored party wins the seat (that party's candidates combined): Safe 95%+, Likely 80-95%, Lean 60-80%, Tossup under 60%. These are the forecast page's tiers; the <a href="predictions.html">forecast page</a> rates each candidate and explains every race.</li>
+      <li><b>No polls:</b> races no pollster has covered, most House seats, use the model's no-polls version: which party holds the seat, its past results (the new map's lean where districts were redrawn for 2026), the national environment, fundraising and the candidates' experience. Tick <b>Polled races only</b> to gray them out.</li>
+      <li><b>Kalshi and Polymarket:</b> the same tiers applied to each venue's price for each party to win the seat. Prices are normalized so the outcomes add up to 100% (the venue's built-in margin removed), from the dashboard's last market refresh. Gray races have no party market on that venue.</li>
+      <li><b>House map:</b> the 435 districts on the lines in force for November 3, 2026. Nine states redrew since 2024 (Texas, California, North Carolina, Ohio, Utah, Florida, Tennessee, Louisiana and Alabama); Missouri and Virginia vote on their old maps after courts blocked the new ones. Click a state to zoom in, use + and &minus;, and drag to move around. <b>Squares</b> shows each state's districts as equal squares instead, so small urban districts are as easy to see as rural ones.</li>
+      <li><b>District profiles</b> (in each district's card): the Census Bureau's 2020-2024 American Community Survey. For the 173 redrawn districts there are no official figures yet, so they are summed from block groups on the new lines; the same method reproduces the official figures for the old lines to within about 0.1 point. Redrawn districts also show the same-numbered district on the 2024 lines.</li>
       <li><b>Fragile</b> races are ones where the model's pick flips if every poll is off by 3 points in one direction, which has happened in past cycles.</li>
-      <li>The model updates with every model run and Kalshi with every market refresh. The states' shapes come from the Census Bureau's cartographic boundaries (via us-atlas).</li>
+      <li>The model updates with every model run and the venues with every market refresh. Shapes: the Census Bureau's cartographic boundaries (states via us-atlas; 119th Congress districts) and each redrawn state's official 2026 plan.</li>
     </ul>
   </section>
 </div>
@@ -151,6 +183,8 @@ a:hover { text-decoration: underline; }
   const F = (typeof FORECAST !== 'undefined') ? FORECAST : { races: [] };
   const BALLOT = (typeof RACES !== 'undefined') ? RACES : [];
   const M = (typeof US_MAP !== 'undefined') ? US_MAP : null;
+  const H = (typeof US_HOUSE !== 'undefined') ? US_HOUSE : null;
+  const VENUE = { kalshi: 'Kalshi', polymarket: 'Polymarket' };
   const PARTY = { DEM: 'D', REP: 'R', IND: 'I' };
   const PNAME = { D: 'Democrat', R: 'Republican', I: 'Independent' };
   const PCOL = { DEM: '#60a5fa', REP: '#f87171', IND: '#a78bfa', D: '#60a5fa', R: '#f87171', I: '#a78bfa' };
@@ -188,10 +222,16 @@ a:hover { text-decoration: underline; }
   for (const r of (F.races || [])) {
     if (!r.cands || !r.cands.length || !fc[r.office]) continue;
     r.cands = r.cands.slice().sort((a, b) => (b.win || 0) - (a.win || 0));
-    r._rt = mkRt(letter(r.cands[0].party), r.cands[0].win || 0);
+    // the map shades SEAT control: each side's combined chance, so several candidates of one
+    // party (Louisiana's all-party first round, California top-two) don't split the party's colour
+    r._sides = { D: 0, R: 0, I: 0 };
+    for (const c of r.cands) r._sides[letter(c.party)] += (c.win || 0);
+    const fav = ['D', 'R', 'I'].reduce((a, x) => r._sides[x] > r._sides[a] ? x : a, 'D');
+    r._rt = mkRt(fav, r._sides[fav]);
     const key = r.office === 'House' ? `${r.state}-${parseInt(r.district, 10) || 1}` : r.state;
     fc[r.office][key] = r;
   }
+  const topOf = (r, side) => r.cands.find(c => letter(c.party) === side) || null;
   const ballot = { Senate: {}, House: {}, Governor: {} };
   const seats = {};
   for (const b of BALLOT) {
@@ -210,19 +250,50 @@ a:hover { text-decoration: underline; }
   };
 
   // ---------- one race under the chosen source ----------
-  const st = { src: 'model', office: 'Senate', sel: null, all: false };
-  function book(b) {  // Kalshi's normalized party book -> [[side, p], ...] best first
-    const k = b && b.kalshi;
+  // hv: the House tab's view (district map or squares); vb: the district map's zoomed viewBox (null = whole country)
+  // zst: the state a click zoomed to (null when zoomed with the buttons)
+  const st = { src: 'model', office: 'Senate', sel: null, all: false, polledOnly: false, hv: 'map', vb: null, zst: null };
+  function book(b, venue) {  // a venue's normalized party book -> [[side, p], ...] best first
+    const k = b && b[venue];
     if (!k || typeof k !== 'object') return null;
     const out = ['D', 'R', 'I'].filter(x => typeof k[x] === 'number').map(x => [x, k[x]]);
     return out.length >= 2 ? out.sort((a, c) => c[1] - a[1]) : null;
   }
+  const venuePrice = (b, venue, side) => book(b, venue) ? (b[venue][side] || 0) : null;
+  const otherVenue = v => v === 'kalshi' ? 'polymarket' : 'kalshi';
   function view(office, key) {
     const r = fc[office][key] || null, b = ballot[office][key] || null;
-    if (st.src === 'model') return r ? { rt: r._rt, r, b, lean: 1 - modelSide(r, 'R') } : null;
-    const bk = book(b);
+    if (st.src === 'model') {
+      if (!r || (st.polledOnly && r.basis === 'fundamentals')) return null;
+      return { rt: r._rt, r, b, lean: 1 - r._sides.R };
+    }
+    const bk = book(b, st.src);
     if (!bk) return null;
-    return { rt: mkRt(bk[0][0], bk[0][1]), bk, r, b, vol: b.kalshi.vol, lean: 1 - (b.kalshi.R || 0) };
+    const k = b[st.src];
+    return { rt: mkRt(bk[0][0], bk[0][1]), bk, r, b, vol: k.vol, lean: 1 - (k.R || 0) };
+  }
+
+  // ---------- district profiles (ACS 2020-2024, us_house_2026_geo.js) ----------
+  const hid = key => { const [s, d] = key.split('-'); return `${s}-${String(d).padStart(2, '0')}`; };
+  const hkey = id => { const [s, d] = id.split('-'); return `${s}-${parseInt(d, 10)}`; };
+  const DCOL = { White: '#94a3b8', Black: '#c084fc', Hispanic: '#34d399', Asian: '#fb923c', Other: '#475569' };
+  const p0 = x => x == null ? '-' : Math.round(x * 100) + '%';
+  const money = x => x == null ? '-' : '$' + (x >= 1e5 ? Math.round(x / 1e3) : (x / 1e3).toFixed(1)) + 'K';
+  function demoHtml(key, r) {
+    const d = H && H.districts ? H.districts[hid(key)] : null;
+    if (!d || !d.demo || !d.demo.now) return '';
+    const [pop, wnh, blk, hsp, asn, ba, inc] = d.demo.now;
+    const parts = [['White', wnh], ['Black', blk], ['Hispanic', hsp], ['Asian', asn]];
+    const oth = Math.max(0, 1 - parts.reduce((s, [, x]) => s + (x || 0), 0));
+    const bar = parts.concat([['Other', oth]]).map(([t, x]) => `<i style="width:${((x || 0) * 100).toFixed(1)}%;background:${DCOL[t]}"></i>`).join('');
+    let s = `<div class="demo"><div class="dbar">${bar}</div>` +
+      `<div class="dl">${parts.map(([t, x]) => `<span><i style="background:${DCOL[t]}"></i>${t} ${p0(x)}</span>`).join('')}</div>` +
+      `<div class="dl"><span>College grads ${p0(ba)}</span><span>Median household income ${money(inc)}</span><span>Pop. ${pop == null ? '-' : Math.round(pop / 1e3) + 'K'}</span></div>`;
+    if (d.rd) {
+      const o = d.demo.old;
+      s += `<div class="dl rdl">Redrawn for 2026` + (o ? `. On the 2024 lines ${esc(label('House', key, r))} was White ${p0(o[1])}, Black ${p0(o[2])}, Hispanic ${p0(o[3])}, college grads ${p0(o[5])}.` : '.') + '</div>';
+    }
+    return s + '</div>';
   }
 
   // ---------- tooltip and detail card ----------
@@ -238,13 +309,14 @@ a:hover { text-decoration: underline; }
   function body(office, key) {
     const v = view(office, key), r = fc[office][key] || null, b = ballot[office][key] || null;
     const name = esc(label(office, key, r));
+    const demo = office === 'House' ? demoHtml(key, r) : '';
     if (!v) {
       const why = !b ? `No ${office.toLowerCase()} race in 2026.`
-        : st.src === 'model' ? 'On the ballot. No public polls, so the model makes no projection.'
-        : 'On the ballot. Kalshi has no party market for this race.';
+        : st.src === 'model' ? (r && r.basis === 'fundamentals' ? 'No public polls (hidden by "Polled races only").' : 'On the ballot, but the model has no projection.')
+        : `On the ballot. ${VENUE[st.src]} has no party market for this race.`;
       const hl = heldLine(r, b);
-      const other = st.src === 'kalshi' && r ? `<div class="meta"><span>Model: ${esc(surname(r.cands[0].name))} ${pct(r.cands[0].win || 0)}</span></div>` : '';
-      return `<div class="rname">${name}</div><div class="rsub">${why}</div>` + (hl ? `<div class="meta"><span>${hl}</span></div>` : '') + other;
+      const other = st.src !== 'model' && r ? `<div class="meta"><span>Model: ${esc(surname(r.cands[0].name))} ${pct(r.cands[0].win || 0)}</span></div>` : '';
+      return `<div class="rname">${name}</div><div class="rsub">${why}</div>` + (hl ? `<div class="meta"><span>${hl}</span></div>` : '') + other + demo;
     }
     const head = `<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div class="rname">${name}</div>` +
       `<div class="rsub">${heldLine(r, b)}</div></div>${pill(v.rt)}</div>`;
@@ -253,24 +325,28 @@ a:hover { text-decoration: underline; }
     if (st.src === 'model') {
       rows = r.cands.filter((c, i) => i < 2 || (c.win || 0) >= 0.01).slice(0, 4).map(c =>
         `<div class="cand"><span><span class="pb" style="background:${PCOL[c.party] || '#94a3b8'}">${esc(PARTY[c.party] || c.party.slice(0, 3))}</span>${esc(c.name)}</span><b>${pct(c.win || 0)}</b></div>`).join('');
+      const side = v.rt.side, others = r.cands.filter(c => letter(c.party) === side).length;
+      if (others > 1) meta.push(`${PNAME[side]}s combined: ${pct(r._sides[side])}`);
       const m = margin(r);
       if (m) meta.push(`Model margin: ${esc(surname(m.name))} +${m.v.toFixed(1)}`);
-      const k = book(b);
-      if (k) { const side = letter(r.cands[0].party), kp = (b.kalshi[side] || 0); meta.push(`Kalshi: ${esc(surname(r.cands[0].name))} ${pct(kp, 0)}`); }
-      if (r.n_surveys) meta.push(`${r.n_surveys} surveys`);
+      const mk = Object.keys(VENUE).map(vn => [vn, venuePrice(b, vn, side)]).filter(x => x[1] != null);
+      if (mk.length) meta.push(`Markets, same side: ${mk.map(([vn, p]) => `${VENUE[vn]} ${pct(p, 0)}`).join(', ')}`);
+      meta.push(r.basis === 'fundamentals' ? 'No polls: the no-polls model' : `${r.n_surveys || 0} surveys`);
     } else {
       rows = v.bk.map(([side, p]) => {
         const who = candFor(r, side);
         return `<div class="cand"><span><span class="pb" style="background:${PCOL[side]}">${side}</span>${esc(who || PNAME[side])}</span><b>${pct(p)}</b></div>`;
       }).join('');
-      if (v.vol) meta.push(`Kalshi volume ${fmtVol(v.vol)}`);
+      if (v.vol) meta.push(`${VENUE[st.src]} volume ${fmtVol(v.vol)}`);
+      const ov = otherVenue(st.src), op = venuePrice(b, ov, v.rt.side);
+      if (op != null) meta.push(`${VENUE[ov]}, same side: ${pct(op, 0)}`);
       if (r) {
         const mp = modelSide(r, v.rt.side);
         meta.push(`Our model, same side: ${pct(mp)} (${gap(mp, v.rt.p)})`);
-      } else meta.push('Our model: no projection (no polls)');
+      } else meta.push('Our model: no projection');
     }
-    const fragile = st.src === 'model' && r && r.fragile ? '<span class="warn">Fragile: the pick flips if every poll is off by 3 points one way</span>' : '';
-    return head + `<div class="cands">${rows}</div><div class="meta">${meta.map(x => `<span>${x}</span>`).join('')}${fragile}</div>`;
+    const fragile = st.src === 'model' && r && r.fragile && r.basis !== 'fundamentals' ? '<span class="warn">Fragile: the pick flips if every poll is off by 3 points one way</span>' : '';
+    return head + `<div class="cands">${rows}</div><div class="meta">${meta.map(x => `<span>${x}</span>`).join('')}${fragile}</div>` + demo;
   }
   const tip = document.getElementById('tip');
   function showTip(e, office, key) {
@@ -330,18 +406,58 @@ a:hover { text-decoration: underline; }
       const w = k * P - (P - S);
       const left = x0 + (C - w) / 2, top = y0 + 17;
       keys.forEach((key, i) => {
-        s += `<rect class="sq" data-k="${key}" x="${left + (i % k) * P}" y="${top + Math.floor(i / k) * P}" width="${S}" height="${S}" rx="1.5" fill="${fill('House', key)}"></rect>`;
+        s += `<rect class="sq${st.sel === key ? ' sel' : ''}" data-k="${key}" x="${left + (i % k) * P}" y="${top + Math.floor(i / k) * P}" width="${S}" height="${S}" rx="1.5" fill="${fill('House', key)}"></rect>`;
       });
     }
     return { svg: s, box: `0 0 ${cols * C} ${rows * C}` };
   }
+  // the district map: the real 2026 lines, zoomable (viewBox) and kept at the frame's 975:610 shape
+  const FULL = [0, 0, 975, 610];
+  const zoomOf = () => 975 / (st.vb || FULL)[2];
+  const vbStr = vb => vb.map(x => +x.toFixed(2)).join(' ');
+  function boxFor(ab) {
+    const b = H && H.boxes ? H.boxes[ab] : null;
+    if (!b) return null;
+    let [x0, y0, x1, y1] = b, w = x1 - x0, h = y1 - y0;
+    const pad = Math.max(w, h) * 0.08;
+    x0 -= pad; y0 -= pad; w += 2 * pad; h += 2 * pad;
+    const A = 975 / 610;
+    if (w / h > A) { const nh = w / A; y0 -= (nh - h) / 2; h = nh; } else { const nw = h * A; x0 -= (nw - w) / 2; w = nw; }
+    return w >= 975 ? null : [x0, y0, w, h];
+  }
+  // Alaska and Hawaii are insets placed south-west of Texas: zoomed in anywhere else they would look like
+  // islands off Mexico, so they are drawn only on the whole-country view or when zoomed to them
+  const shown = ab => !st.vb || !(ab === 'AK' || ab === 'HI') || st.zst === ab;
+  function drawDistricts() {
+    const z = zoomOf(), u = H.unit;
+    let s = `<g transform="scale(${u})">`, sel = '';
+    for (const id in H.districts) {
+      if (!shown(id.split('-')[0])) continue;
+      const key = hkey(id), p = `<path class="ds${st.sel === key ? ' sel' : ''}" data-k="${key}" d="${H.districts[id].d}" fill="${fill('House', key)}"></path>`;
+      if (st.sel === key) sel = p; else s += p;
+    }
+    s += '</g>';
+    let borders = '';
+    for (const ab in H.states) if (shown(ab)) borders += `<path class="sb" d="${H.states[ab]}"></path>`;
+    s += `<g transform="scale(${u})">${borders}${sel}</g>`;
+    if (z >= 2) {  // district numbers once there is room for them
+      const fs = (11 / z).toFixed(2), sw = (2.6 / z).toFixed(2);
+      for (const id in H.districts) {
+        const d = H.districts[id], ab = id.split('-')[0];
+        if (!shown(ab)) continue;
+        s += `<text class="dn" x="${d.lx}" y="${d.ly}" style="font-size:${fs}px;stroke-width:${sw}px">${(seats[ab] || 0) === 1 ? 'AL' : parseInt(id.slice(3), 10)}</text>`;
+      }
+    }
+    return { svg: s, box: vbStr(st.vb || FULL) };
+  }
 
   const svg = document.getElementById('map');
-  const tabs = document.getElementById('tabs'), srcs = document.getElementById('src');
+  const tabs = document.getElementById('tabs'), srcs = document.getElementById('src'), hvs = document.getElementById('hv');
   const TOP = 15;
   const ORDER = ['Safe D', 'Likely D', 'Lean D', 'Tossup', 'Lean I', 'Likely I', 'Safe I', 'Lean R', 'Likely R', 'Safe R'];
   const swatch = l => { const [t, side] = l.split(' '); return l === 'Tossup' ? 'var(--toss)' : COL[side][t]; };
-  const noneLabel = () => st.src === 'model' ? 'No projection' : 'No Kalshi market';
+  const noneLabel = () => st.src === 'model' ? 'No projection' : `No ${VENUE[st.src]} market`;
+  const districtMap = () => st.office === 'House' && st.hv === 'map' && !!(H && H.districts && M);
 
   function all(office) {  // [key, view] for every race on the ballot that has a view
     return Object.keys(ballot[office]).map(k => [k, view(office, k)]).filter(x => x[1]);
@@ -358,14 +474,15 @@ a:hover { text-decoration: underline; }
     const items = [['Safe D', 'var(--safe-d)'], ['Likely D', 'var(--likely-d)'], ['Lean D', 'var(--lean-d)'], ['Tossup', 'var(--toss)'],
                    ['Lean R', 'var(--lean-r)'], ['Likely R', 'var(--likely-r)'], ['Safe R', 'var(--safe-r)']];
     if (all(office).some(([, v]) => v.rt.side === 'I')) items.push(['Independent favored', '#8b5cf6']);
-    items.push([`On the ballot, ${st.src === 'model' ? 'no projection' : 'no Kalshi market'}`, 'var(--none)']);
+    items.push([`On the ballot, ${st.src === 'model' ? 'no projection' : `no ${VENUE[st.src]} market`}`, 'var(--none)']);
     if (office !== 'House') items.push([`No ${office.toLowerCase()} race`, 'var(--off)']);
     return items.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('');
   }
   function thead() {
-    return st.src === 'model'
-      ? '<tr><th>Race</th><th>Confidence</th><th>Favorite</th><th class="n">Win chance</th><th>Runner-up</th><th class="n">Model margin</th><th class="n">Kalshi, same side</th><th>Flags</th></tr>'
-      : '<tr><th>Race</th><th>Kalshi confidence</th><th>Favored</th><th class="n">Kalshi price</th><th class="n">Our model, same side</th><th class="n">Model minus Kalshi</th><th class="n">Volume</th></tr>';
+    if (st.src === 'model')
+      return '<tr><th>Race</th><th>Confidence</th><th>Favorite</th><th class="n">Party’s chance</th><th>Runner-up</th><th class="n">Model margin</th><th class="n" title="Same side as the model’s favorite">Kalshi</th><th class="n" title="Same side as the model’s favorite">Polymarket</th><th>Notes</th></tr>';
+    const V = VENUE[st.src], O = VENUE[otherVenue(st.src)];
+    return `<tr><th>Race</th><th>${V} confidence</th><th>Favored</th><th class="n">${V} price</th><th class="n">Our model, same side</th><th class="n">Model minus ${V}</th><th class="n">${O}, same side</th><th class="n">Volume</th></tr>`;
   }
   function rowsHtml(office) {
     const rs = all(office).sort((a, b) => a[1].rt.p - b[1].rt.p);
@@ -375,18 +492,23 @@ a:hover { text-decoration: underline; }
     return list.map(([key, v]) => {
       const r = v.r, link = r ? `<a href="predictions.html#${encodeURIComponent(r.id)}">${esc(label(office, key, r))}</a>` : esc(label(office, key, r));
       if (st.src === 'model') {
-        const m = margin(r), a = r.cands[0], b = r.cands[1], bk = book(v.b);
-        const kp = bk ? (v.b.kalshi[letter(a.party)] || 0) : null;
-        return `<tr><td>${link}</td><td>${pill(v.rt)}</td><td>${esc(a.name)} (${esc(PARTY[a.party] || a.party)})</td><td class="n">${pct(a.win || 0)}</td>` +
+        const side = v.rt.side, a = topOf(r, side) || r.cands[0];
+        const other = ['D', 'R', 'I'].filter(x => x !== side).sort((x, y) => r._sides[y] - r._sides[x])[0];
+        const b = topOf(r, other), m = margin(r);
+        const kp = venuePrice(v.b, 'kalshi', side), pp = venuePrice(v.b, 'polymarket', side);
+        const notes = (r.basis === 'fundamentals' ? '<span class="mut">No polls</span>' : '') +
+          (r.fragile && r.basis !== 'fundamentals' ? '<span class="warn">Fragile</span>' : '');
+        return `<tr><td>${link}</td><td>${pill(v.rt)}</td><td>${esc(a.name)} (${esc(PARTY[a.party] || a.party)})</td><td class="n">${pct(v.rt.p)}</td>` +
           `<td>${b ? esc(b.name) + ' (' + esc(PARTY[b.party] || b.party) + ')' : '-'}</td>` +
           `<td class="n">${m ? esc(surname(m.name)) + ' +' + m.v.toFixed(1) : '-'}</td>` +
-          `<td class="n">${kp == null ? '-' : pct(kp, 0)}</td><td>${r.fragile ? '<span class="warn">Fragile</span>' : ''}</td></tr>`;
+          `<td class="n">${kp == null ? '-' : pct(kp, 0)}</td><td class="n">${pp == null ? '-' : pct(pp, 0)}</td><td>${notes}</td></tr>`;
       }
       const side = v.rt.side, who = candFor(r, side);
-      const mp = r ? modelSide(r, side) : null;
+      const mp = r ? modelSide(r, side) : null, op = venuePrice(v.b, otherVenue(st.src), side);
       return `<tr><td>${link}</td><td>${pill(v.rt)}</td><td>${esc(who ? who + ' (' + side + ')' : PNAME[side])}</td><td class="n">${pct(v.rt.p)}</td>` +
         `<td class="n">${mp == null ? 'no projection' : pct(mp)}</td>` +
         `<td class="n">${mp == null ? '-' : gap(mp, v.rt.p)}</td>` +
+        `<td class="n">${op == null ? '-' : pct(op, 0)}</td>` +
         `<td class="n">${v.vol ? fmtVol(v.vol) : '-'}</td></tr>`;
     }).join('');
   }
@@ -400,58 +522,127 @@ a:hover { text-decoration: underline; }
   }
   function setText(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
   function render() {
-    const office = st.office;
-    const out = !M ? { svg: '', box: '0 0 975 610' } : office === 'House' ? drawHouse() : drawStates(office);
+    const office = st.office, dm = districtMap();
+    const out = !M ? { svg: '', box: '0 0 975 610' } : office === 'House' ? (dm ? drawDistricts() : drawHouse()) : drawStates(office);
     if (svg) {
       svg.setAttribute('viewBox', out.box);
-      if (svg.classList) svg.classList.toggle('house', office === 'House');
+      if (svg.classList) {
+        svg.classList.toggle('tiles', office === 'House' && !dm);
+        svg.classList.toggle('zoomed', dm && !!st.vb);
+      }
       svg.innerHTML = out.svg;
     }
+    const zb = document.getElementById('zoom');
+    if (zb && zb.classList) zb.classList.toggle('on', dm);
+    const za = document.getElementById('zoom-all');
+    if (za && za.style) za.style.display = st.vb ? '' : 'none';
+    if (hvs && hvs.style) hvs.style.display = office === 'House' ? '' : 'none';
     const nv = all(office).length, nb = Object.keys(ballot[office]).length;
     const what = office === 'House' ? 'districts' : `${office.toLowerCase()} races`;
+    const nrd = H && H.districts ? Object.values(H.districts).filter(d => d.rd).length : 0;
+    const houseNote = office !== 'House' ? ''
+      : dm ? ` Districts are drawn on the lines in force for November 3; ${nrd} were redrawn since 2024. Click a state to zoom in, then drag to move around.`
+      : ' Each square is a district; squares run from the most Democratic to the most Republican, so their order isn’t geographic.';
     if (st.src === 'model') {
+      const all_ = Object.values(fc[office]), np_ = all_.filter(r => r.basis === 'fundamentals').length;
       setText('title', 'How sure the model is, race by race');
-      setText('lede', "Each race is shaded by the model's confidence in its pick: dark when the favorite is near-certain, light when it's a lean, gold when it's a tossup. Gray races are on the ballot but have no public polls, so the model doesn't project them. Hover or tap a race for the numbers.");
+      setText('lede', "Each race is shaded by the model's confidence that its favored party wins the seat: dark when it's near-certain, light when it's a lean, gold when it's a tossup. Races no pollster has covered use the model's no-polls version; tick <b>Polled races only</b> to see which are which. Hover or tap a race for the numbers.");
       setText('asof', F.predictions_as_of ? `Model run ${esc(String(F.predictions_as_of).slice(0, 16).replace('T', ' '))} UTC · polls through ${esc(F.polls_as_of || '-')}` : '');
-      setText('note', `${nv} of ${nb} ${what} have a projection.` + (office === 'House' ? ' Each square is a district; squares run from the most Democratic to the most Republican, so their order isn’t geographic.' : ''));
+      setText('note', `${nv} of ${nb} ${what} shown: ${all_.length - np_} from polls${st.polledOnly ? '' : `, ${np_} from the no-polls model`}.` + houseNote);
     } else {
+      const V = VENUE[st.src];
       const upd = BALLOT.length && BALLOT[0].updated_at ? String(BALLOT[0].updated_at).slice(0, 16).replace('T', ' ') : '';
-      setText('title', 'How sure Kalshi is, race by race');
-      setText('lede', "The same map with Kalshi's prices instead of the model: each race is shaded by the price of its favored party, after removing the venue's built-in margin. Gray races have no Kalshi party market. Hover or tap a race to compare with the model.");
-      setText('asof', upd ? `Kalshi prices from the dashboard's market refresh of ${esc(upd)} UTC` : '');
-      setText('note', `Kalshi prices ${nv} of ${nb} ${what}.` + (office === 'House' ? ' Each square is a district; squares run from the most Democratic to the most Republican, so their order isn’t geographic.' : ''));
+      setText('title', `How sure ${V} is, race by race`);
+      setText('lede', `The same map with ${V}'s prices instead of the model: each race is shaded by the price of its favored party, after removing the venue's built-in margin. Gray races have no ${V} party market. Hover or tap a race to compare with the model and the other venue.`);
+      setText('asof', upd ? `${V} prices from the dashboard's market refresh of ${esc(upd)} UTC` : '');
+      setText('note', `${V} prices ${nv} of ${nb} ${what}.` + houseNote);
     }
+    const pw = document.getElementById('polled-wrap');
+    if (pw && pw.style) pw.style.display = st.src === 'model' ? '' : 'none';
     setText('tally', tally(office));
     setText('legend', legend(office));
-    setText('list-title', `${office}: least certain first` + (st.src === 'kalshi' ? ' (Kalshi)' : ''));
+    setText('list-title', `${office}: least certain first` + (st.src !== 'model' ? ` (${VENUE[st.src]})` : ''));
     setText('thead', thead());
     setText('rows', rowsHtml(office));
     detail();
   }
-  function hash() { try { history.replaceState(null, '', '#' + (st.src === 'kalshi' ? 'kalshi-' : '') + st.office.toLowerCase()); } catch (err) { /* file:// or sandbox */ } }
+  function hash() {
+    const h = (st.src !== 'model' ? st.src + '-' : '') + st.office.toLowerCase() + (st.office === 'House' && st.hv === 'tiles' ? '-squares' : '');
+    try { history.replaceState(null, '', '#' + h); } catch (err) { /* file:// or sandbox */ }
+  }
   function mark(group, attr, val) { if (group) for (const x of group.querySelectorAll('button')) x.classList.toggle('on', x.dataset[attr] === val); }
+  const btn = e => e.target && e.target.closest ? e.target.closest('button') : null;
 
   if (tabs) tabs.addEventListener('click', e => {
-    const b = e.target && e.target.closest ? e.target.closest('button') : null;
+    const b = btn(e);
     if (!b || !b.dataset || !b.dataset.v) return;
     st.office = b.dataset.v; st.sel = null; st.all = false;
     mark(tabs, 'v', st.office); hash(); hideTip(); render();
   });
   if (srcs) srcs.addEventListener('click', e => {
-    const b = e.target && e.target.closest ? e.target.closest('button') : null;
+    const b = btn(e);
     if (!b || !b.dataset || !b.dataset.s) return;
     st.src = b.dataset.s; st.all = false;
     mark(srcs, 's', st.src); hash(); hideTip(); render();
   });
+  if (hvs) hvs.addEventListener('click', e => {
+    const b = btn(e);
+    if (!b || !b.dataset || !b.dataset.h) return;
+    st.hv = b.dataset.h;
+    mark(hvs, 'h', st.hv); hash(); hideTip(); render();
+  });
+  function zoomTo(vb) { st.vb = vb; if (!vb) st.zst = null; hideTip(); render(); }
+  function zoomBy(f) {
+    const vb = st.vb || FULL, w = Math.max(975 / 40, vb[2] / f);
+    if (w >= 975) return zoomTo(null);
+    const h = w * 610 / 975, cx = vb[0] + vb[2] / 2, cy = vb[1] + vb[3] / 2;
+    zoomTo([cx - w / 2, cy - h / 2, w, h]);
+  }
+  const zoomBar = document.getElementById('zoom');
+  if (zoomBar) zoomBar.addEventListener('click', e => {
+    const b = btn(e);
+    if (!b || !b.dataset) return;
+    if (b.dataset.z === 'in') zoomBy(1.8);
+    else if (b.dataset.z === 'out') zoomBy(1 / 1.8);
+    else if (b.dataset.z === 'all') zoomTo(null);
+  });
+  // drag to pan the zoomed district map (pointer events: mouse, pen and touch alike)
+  let drag = null, dragged = false;
   if (svg) {
+    svg.addEventListener('pointerdown', e => {
+      if (!districtMap() || !st.vb) return;
+      drag = { x: e.clientX, y: e.clientY, vb: st.vb.slice(), moved: false };
+    });
+    document.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+      drag.moved = true;
+      const rect = svg.getBoundingClientRect ? svg.getBoundingClientRect() : null;
+      if (!rect || !rect.width) return;
+      const k = drag.vb[2] / rect.width;
+      st.vb = [drag.vb[0] - dx * k, drag.vb[1] - dy * k, drag.vb[2], drag.vb[3]];
+      svg.setAttribute('viewBox', vbStr(st.vb));
+      hideTip();
+    });
+    document.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = true; drag = null; });
     svg.addEventListener('mousemove', e => {
+      if (drag && drag.moved) return;
       const k = e.target && e.target.dataset ? e.target.dataset.k : null;
       if (k) showTip(e, st.office, k); else hideTip();
     });
     svg.addEventListener('mouseleave', hideTip);
     svg.addEventListener('click', e => {
+      if (dragged) { dragged = false; return; }
       const k = e.target && e.target.dataset ? e.target.dataset.k : null;
       if (!k) return;
+      if (districtMap()) {
+        // from the whole-country view a click zooms to the district's state; zoomed in, it selects
+        if (!st.vb) { st.zst = k.split('-')[0]; st.vb = boxFor(st.zst); st.sel = k; }
+        else st.sel = st.sel === k ? null : k;
+        hideTip(); render();
+        return;
+      }
       st.sel = st.sel === k ? null : k;
       for (const x of svg.querySelectorAll('.sel')) x.classList.remove('sel');
       if (st.sel && e.target.classList) e.target.classList.add('sel');
@@ -460,15 +651,20 @@ a:hover { text-decoration: underline; }
   }
   const more = document.getElementById('more');
   if (more) more.addEventListener('click', () => { st.all = !st.all; setText('rows', rowsHtml(st.office)); });
+  const polled = document.getElementById('polled');
+  if (polled) polled.addEventListener('change', () => { st.polledOnly = !!polled.checked; hideTip(); render(); });
 
-  // #senate, #house, #governor, #kalshi-senate ...
-  const h = (location.hash || '').slice(1).toLowerCase();
-  if (h.startsWith('kalshi')) st.src = 'kalshi';
-  const off = { senate: 'Senate', house: 'House', governor: 'Governor' }[h.replace('kalshi-', '').replace('kalshi', '')];
+  // #senate, #house, #governor, #kalshi-senate, #polymarket-house, #house-squares ...
+  const h = (location.hash || '').slice(1).toLowerCase().split('-');
+  for (const v in VENUE) if (h.includes(v)) st.src = v;
+  const off = h.map(x => ({ senate: 'Senate', house: 'House', governor: 'Governor' }[x])).find(Boolean);
   if (off) st.office = off;
+  if (h.includes('squares')) st.hv = 'tiles';
   mark(tabs, 'v', st.office);
   mark(srcs, 's', st.src);
+  mark(hvs, 'h', st.hv);
   render();
+  window.MAP_TEST = { st, render, boxFor, zoomBy };   // for tests/map_exercise.js (smoke test)
 })();
 </script>
 </body>

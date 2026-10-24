@@ -89,7 +89,7 @@ jobs:
 
       - name: Map page smoke test (reported, never blocks the refresh)
         continue-on-error: true
-        run: node tests/dash_smoke.js docs/map.html
+        run: node tests/dash_smoke.js docs/map.html tests/map_exercise.js
 
       - name: Commit and push if changed
         run: |
