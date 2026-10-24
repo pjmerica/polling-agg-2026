@@ -160,8 +160,9 @@ a:hover { text-decoration: underline; }
 <div class="wrap">
   <section class="hero">
     <h2>Who the model thinks wins each race</h2>
-    <p>Win probabilities and projected margins from the polling model for every 2026 Senate, governor and House
-       race it has polls for. Open any race to see the factors behind the number.</p>
+    <p>Win probabilities for every 2026 Senate, governor and House race. Races with polls use the polling model,
+       which also projects margins; races no pollster has covered use the no-polls model and are marked <b>No polls</b>.
+       Open any race to see the factors behind the number.</p>
     <div class="asof" id="asof"></div>
   </section>
   <section class="chambers" id="chambers"></section>
@@ -181,6 +182,11 @@ a:hover { text-decoration: underline; }
     <option value="D">Democrat favored</option>
     <option value="R">Republican favored</option>
     <option value="O">Independent / other favored</option>
+  </select>
+  <select id="basis-sel" aria-label="Polled or not">
+    <option value="all">All races</option>
+    <option value="polls">Races with polls</option>
+    <option value="fundamentals">Races without polls</option>
   </select>
   <select id="sort-sel" aria-label="Sort">
     <option value="close">Closest races first</option>
@@ -205,7 +211,11 @@ a:hover { text-decoration: underline; }
       <li><b>Ratings</b>: the leader at 95%+ is <i>Safe</i>, 80-95% <i>Likely</i>, 60-80% <i>Lean</i>, under 60% <i>Tossup</i>.</li>
       <li><b>Fragile</b> means the pick flips if every poll in the country is off by 3 points in one direction, which has happened in past cycles.</li>
       <li><b>Markets</b> are the average of Kalshi and Polymarket for the same outcome, shown only for comparison. They are not an input to the model.</li>
-      <li>Races with no polling are not modeled and are not shown.</li>
+      <li><b>No polls</b>: races no pollster has covered (most House seats) use the no-polls model, trained on the same
+          races since 1998 without their polls. It weighs which party holds the seat, the seat's past results (the new map's
+          lean where districts were redrawn for 2026), the national environment, fundraising and the candidates' experience.
+          It has no margin projection or polling stress test. Most of these are safe seats, and its picks match the markets'
+          in nearly every one.</li>
     </ul>
   </section>
 </div>
@@ -314,8 +324,10 @@ a:hover { text-decoration: underline; }
     const nR = rs.filter(r => r._rt.side === 'R' && r._rt.tier !== 'Tossup').length;
     const nT = rs.filter(r => r._rt.tier === 'Tossup').length;
     const nI = rs.filter(r => r._rt.side === 'I' && r._rt.tier !== 'Tossup').length;
+    const np = rs.filter(r => r.basis === 'fundamentals').length;
+    const title = np ? `${off} (${np} without polls)` : off === 'House' ? 'House (polled races)' : off;
     const el = document.createElement('div'); el.className = 'chamber';
-    el.innerHTML = `<h3>${off === 'House' ? 'House (polled races)' : off}</h3>
+    el.innerHTML = `<h3>${title}</h3>
       <div class="tally"><div class="d">${nD}<small>Dem favored</small></div>
       <div class="mid">${nT} tossup${nT === 1 ? '' : 's'}${nI ? `<br>${nI} independent` : ''}<br>${rs.length} races</div>
       <div class="r" style="text-align:right">${nR}<small>Rep favored</small></div></div>
@@ -333,7 +345,7 @@ a:hover { text-decoration: underline; }
     .forEach(([l, c]) => lg.insertAdjacentHTML('beforeend', `<span><i style="background:${c}"></i>${l}</span>`));
 
   // ── cards ──
-  const state = { office: 'all', rating: 'all', sort: 'close', q: '' };
+  const state = { office: 'all', rating: 'all', basis: 'all', sort: 'close', q: '' };
   function card(r) {
     const rt = r._rt, el = document.createElement('article'); el.className = 'card'; el.id = r.id;
     const major = r.cands.filter(c => (c.win || 0) >= 0.005 || r.cands.indexOf(c) < 2);
@@ -348,6 +360,7 @@ a:hover { text-decoration: underline; }
     const chips = [];
     if (r.fragile) chips.push(`<span class="chip warn" title="The pick flips if all polls are off by 3 points in one direction">Fragile</span>`);
     if (rt.same) chips.push(`<span class="chip">${pab(a.party)} vs ${pab(a.party)}</span>`);
+    if (r.basis === 'fundamentals') chips.push(`<span class="chip" title="No public polls in this race: the no-polls model's estimate">No polls</span>`);
     el.innerHTML = `
       <div class="card-head"><div><div class="race-name">${esc(r._name)}</div><div class="race-sub">${esc(raceSub(r))}</div></div>
         <span class="pill" style="${pillStyle(rt)}">${esc(rt.label)}</span></div>
@@ -356,7 +369,7 @@ a:hover { text-decoration: underline; }
       ${r.notes && r.notes.length ? `<div class="note">${esc(r.notes[0])}</div>` : ''}
       <div class="foot-row"><div class="foot">
         ${m ? `<span>Margin <b>${esc(last(m.name))} +${m.v.toFixed(1)}</b></span>` : ''}
-        <span>${r.n_surveys || a.n_polls} poll${(r.n_surveys || a.n_polls) === 1 ? '' : 's'}</span>
+        ${r.basis === 'fundamentals' ? '' : `<span>${r.n_surveys || a.n_polls} poll${(r.n_surveys || a.n_polls) === 1 ? '' : 's'}</span>`}
         ${mk ? `<span>Markets: ${esc(last(mk.name))} <b>${pct(mk.mkt)}</b></span>` : ''}
         ${chips.join('')}
       </div><button class="why" data-id="${esc(r.id)}">Why?</button></div>`;
@@ -372,6 +385,7 @@ a:hover { text-decoration: underline; }
     else if (state.rating === 'nontoss') rs = rs.filter(r => r._rt.tier !== 'Tossup');
     else if (['D', 'R'].includes(state.rating)) rs = rs.filter(r => r._rt.side === state.rating);
     else if (state.rating === 'O') rs = rs.filter(r => r._rt.side === 'I');
+    if (state.basis !== 'all') rs = rs.filter(r => (r.basis || 'polls') === state.basis);
     if (state.q) rs = rs.filter(r => r._search.includes(state.q));
     const by = {
       close: (a, b) => a._rt.p - b._rt.p,
@@ -392,10 +406,12 @@ a:hover { text-decoration: underline; }
     state.office = b.dataset.v; render(); }));
   document.getElementById('rating-sel').addEventListener('change', e => { state.rating = e.target.value; render(); });
   document.getElementById('sort-sel').addEventListener('change', e => { state.sort = e.target.value; render(); });
+  document.getElementById('basis-sel').addEventListener('change', e => { state.basis = e.target.value; render(); });
   document.getElementById('q').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); render(); });
 
   function jumpTo(r) {
-    state.office = 'all'; state.rating = 'all'; state.q = '';
+    state.office = 'all'; state.rating = 'all'; state.basis = 'all'; state.q = '';
+    document.getElementById('basis-sel').value = 'all';
     document.getElementById('q').value = ''; document.getElementById('rating-sel').value = 'all';
     document.querySelectorAll('#office-seg button').forEach(x => x.classList.toggle('on', x.dataset.v === 'all'));
     render();

@@ -1,5 +1,10 @@
 """Forecast page data -> docs/forecast_data.js (rendered by docs/predictions.html). 2026-10-08.
 
+Since 2026-10-23 every race on the ballot: the poll model's races (basis "polls") plus, for the
+races no pollster covers, the no-polls model's (basis "fundamentals",
+data/processed/model_fundamentals_predictions_2026.csv from the model repo's
+models/fundamentals/predict_unpolled.py), with no stress test and a note saying so.
+
 Every race the general-election model predicts, with EVERY candidate (independents included),
 the model's win probability and projected margin, the +/-3-pt polling-miss stress test, the
 per-race explainer (model_explanations_2026.json), and the market price for context.
@@ -48,7 +53,84 @@ NOTES = {
                  "multi-candidate fields, so treat these numbers with extra caution."),
     "RCV": ("Ranked-choice race: the model uses the final-round head-to-head polls "
             "between the two expected finalists."),
+    "FUND": ("No public polls in this race, so this is the no-polls model: which party holds the "
+             "seat, its past results (the new map's lean where districts were redrawn), the national "
+             "environment, fundraising and the candidates' experience."),
+    "SAME_PARTY": ("Several candidates share a party here, and the no-polls model can barely tell "
+                   "them apart, so read the party's combined chance rather than any one candidate's."),
 }
+
+
+def _party_books():
+    """Each venue's vetted party-winner book by agg race id (analysis/model_compare's loaders,
+    the same prices data.js carries), for the market column of races the poll model skips."""
+    try:
+        from analysis.model_compare import load_party_markets, norm_pair
+    except Exception:
+        return {}, None
+    books = {}
+    for name, csv, col in (("kalshi", "kalshi_markets.csv", "market_title"),
+                           ("polymarket", "polymarket_markets.csv", "question")):
+        p = os.path.join(REPO, "data", "raw", csv)
+        if os.path.exists(p):
+            try:
+                books[name] = load_party_markets(p, col)
+            except Exception:
+                books[name] = {}
+    return books, norm_pair
+
+
+def _fund_races(seen, books, norm_pair):
+    """Races no pollster covers, from the no-polls model (models/fundamentals/predict_unpolled.py
+    in the model repo, 2026-10-23), so every race on the ballot has a model number."""
+    fpath = os.path.join(PROC, "model_fundamentals_predictions_2026.csv")
+    if not os.path.exists(fpath):
+        return []
+    fund = pd.read_csv(fpath)
+    epath = os.path.join(PROC, "model_fundamentals_explanations_2026.json")
+    explain = json.load(open(epath, encoding="utf-8")).get("races", {}) if os.path.exists(epath) else {}
+    out = []
+    for rid, g in fund.groupby("race_id", sort=False):
+        if rid in seen:
+            continue
+        first = g.iloc[0]
+        st, off, di = first["state"], first["office"], first["district"]
+        aid = _agg_id(st, off, di)
+        meta = RACE_BY_ID.get(aid)
+        cands = [dict(name=r.candidate,
+                      party=str(r.display_party if pd.notna(r.display_party) else r.party)[:3].upper(),
+                      win=_num(r.win_prob_norm), win_r3=None, win_d3=None, margin=None,
+                      poll_avg=None, n_polls=0)
+                 for r in g.sort_values("win_prob_norm", ascending=False).itertuples()]
+        notes = [NOTES["FUND"]]
+        parties = [c["party"] for c in cands if c["party"] in ("DEM", "REP")]
+        if len(parties) != len(set(parties)):
+            notes.append(NOTES["SAME_PARTY"])
+        if st == "LA" and off == "House":
+            notes.append(NOTES["LA_House"])
+        market = None
+        dem = next((c for c in cands if c["party"] == "DEM"), None)
+        # same-party top two: the party market says nothing about which one (the polled rule below)
+        same_top = len(cands) >= 2 and cands[0]["party"] == cands[1]["party"] and cands[0]["party"] in ("DEM", "REP")
+        if dem and norm_pair and parties.count("DEM") == 1 and not same_top:
+            qs = []
+            for b in books.values():
+                bk = b.get(aid) or {}
+                d, r_ = (bk.get("DEM") or {}).get("prob"), (bk.get("REP") or {}).get("prob")
+                if d is not None:
+                    qs.append(norm_pair(d, r_))
+            qs = [q for q in qs if q is not None]
+            if qs:
+                market = dict(prob=round(sum(qs) / len(qs), 4), side="DEM", name=dem["name"])
+        out.append(dict(
+            id=rid, agg_id=aid, state=st, state_name=STATE_NAMES.get(st, st), office=off,
+            district=("" if pd.isna(di) else str(di).split(".")[0]), special=(str(di) == "S"),
+            incumbent=(meta.incumbent_name if meta else None),
+            incumbent_party=(meta.incumbent_party if meta else None),
+            open_seat=(bool(meta.open_seat) if meta else None),
+            fragile=False, n_surveys=0, basis="fundamentals", cands=cands, market=market,
+            notes=notes, explain=explain.get(rid)))
+    return out
 
 
 def _agg_id(state, office, district):
@@ -120,6 +202,7 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
             open_seat=(bool(meta.open_seat) if meta else None),
             fragile=bool(first.get("bias_fragile", 0)),
             n_surveys=int(g["n_surveys"].max()) if "n_surveys" in g and g["n_surveys"].notna().any() else None,
+            basis="polls",
             cands=cands,
             market=(dict(prob=round(sum(mkt) / len(mkt), 4),
                          side=c.get("slot_market") or "DEM",
@@ -127,6 +210,8 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
             notes=notes,
             explain=explain.get(rid),
         ))
+    books, norm_pair = _party_books()
+    races += _fund_races({r["id"] for r in races}, books, norm_pair)
     payload = dict(
         generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         predictions_as_of=predictions_as_of, polls_as_of=polls_as_of, races=races)

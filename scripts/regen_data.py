@@ -212,6 +212,15 @@ agg['label'] = agg.apply(label, axis=1)
 # Our model produces a clean per-race probability; use it where available, keep the market
 # number only as a labeled fallback.
 _mp = _safe_read_csv(ROOT / 'data/processed/model_predictions_2026.csv')
+# races no pollster covers: the model's no-polls version (2026-10-23, model repo
+# models/fundamentals/predict_unpolled.py), so every race carries a model number; the same
+# both-parties and Louisiana rules below apply to them
+_fp = _safe_read_csv(ROOT / 'data/processed/model_fundamentals_predictions_2026.csv')
+_nopoll_ids = set()
+if not _mp.empty and not _fp.empty:
+    _fp = _fp[~_fp['race_id'].isin(set(_mp['race_id']))]
+    _nopoll_ids = set(_fp['race_id'])
+    _mp = pd.concat([_mp, _fp[[c for c in _mp.columns if c in _fp.columns]]], ignore_index=True)
 if not _mp.empty:
     _mp['dem'] = _mp['party'].astype(str).str.upper().str.startswith('DEM')
     _dem = (_mp[_mp['dem']].groupby('race_id')['win_prob_norm'].sum())
@@ -261,10 +270,13 @@ if not _mp.empty:
     agg['implied_prob_avg'] = agg.apply(
         lambda r: r['model_dem_prob'] if r.get('model_dem_prob') == r.get('model_dem_prob')
         and r['model_dem_prob'] is not None else r['implied_prob_avg'], axis=1)
-    agg['prob_source'] = agg['model_dem_prob'].apply(
-        lambda v: 'model' if v == v and v is not None else 'market')
-    n_model = int(agg['prob_source'].eq('model').sum())
-    print(f"  data.js: model Dem-prob applied to {n_model} races (market fallback for the rest)")
+    _nopoll_agg = {to_agg_id(rid) for rid in _nopoll_ids}
+    agg['prob_source'] = [
+        ('model-nopolls' if rid in _nopoll_agg else 'model') if v == v and v is not None else 'market'
+        for rid, v in zip(agg['race_id'], agg['model_dem_prob'])]
+    n_model = int(agg['prob_source'].str.startswith('model').sum())
+    print(f"  data.js: model Dem-prob applied to {n_model} races "
+          f"({int(agg['prob_source'].eq('model-nopolls').sum())} from the no-polls model; market fallback for the rest)")
 
 with open(ROOT / 'docs/data.js', 'w') as f:
     f.write('const RACES = ')

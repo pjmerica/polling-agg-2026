@@ -101,7 +101,9 @@ jobs:
               data/processed/model_primary_predictions_2026.csv \
               data/processed/model_primary_predictions_meta.json \
               data/processed/model_primary_explanations_2026.json \
-              data/processed/model_explanations_2026.json"
+              data/processed/model_explanations_2026.json \
+              data/processed/model_fundamentals_predictions_2026.csv \
+              data/processed/model_fundamentals_explanations_2026.json"
             for i in 1 2 3; do
               if git push; then break; fi
               echo "Push rejected (attempt $i)"

@@ -39,3 +39,22 @@ def test_same_party_race_has_no_market(tmp_path, monkeypatch):
         c = r["cands"]
         if len(c) >= 2 and c[0]["party"] == c[1]["party"] and c[0]["party"] in ("DEM", "REP"):
             assert r["market"] is None, r["id"]
+
+
+def test_every_ballot_race_has_a_model_number(tmp_path, monkeypatch):
+    """Since 2026-10-23 every race on the ballot is scored: races no pollster covers come from the
+    no-polls model (model_fundamentals_predictions_2026.csv, basis "fundamentals") with no stress
+    test, no margin and a note saying so, and no race appears twice."""
+    if not (ROOT / "data" / "processed" / "model_fundamentals_predictions_2026.csv").exists():
+        return  # the model refresh has not written the no-polls file yet
+    monkeypatch.setattr(B, "OUT", str(tmp_path / "forecast_data.js"))
+    races = B.build()["races"]
+    ids = [r["id"] for r in races]
+    assert len(ids) == len(set(ids)), "a polled race was also added from the no-polls model"
+    assert len(races) >= 500, len(races)   # 506 general-election races on the 2026 ballot
+    fund = [r for r in races if r["basis"] == "fundamentals"]
+    assert fund
+    for r in fund:
+        assert r["notes"][0] == B.NOTES["FUND"], r["id"]
+        assert not r["fragile"] and r["n_surveys"] == 0, r["id"]
+        assert all(c["win_r3"] is None and c["margin"] is None for c in r["cands"]), r["id"]
