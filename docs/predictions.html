@@ -463,14 +463,19 @@ a:hover { text-decoration: underline; }
         <div class="stat"><div class="v" style="color:${psoft(top.party)}">${pct(top.win)}</div><div class="l">${esc(top.name)} wins</div></div>
         ${m ? `<div class="stat"><div class="v">+${m.v.toFixed(1)}</div><div class="l">Projected margin, ${esc(m.name)}</div></div>` : ''}
         <div class="stat"><div class="v" style="color:${ratingColor(r._rt)}">${esc(r._rt.label)}</div><div class="l">Rating</div></div>
-      </div></div>`;
+      </div>
+      <div class="hint"><a href="map.html#${r.office === 'House' ? `house-${r.state.toLowerCase()}-${+r.district || 1}`
+        : `${r.office.toLowerCase()}-${r.state.toLowerCase()}`}">See it on the map &rarr;</a></div></div>`;
+    // no-polls races have no poll average and no margin model: show only the win chances
+    const noPolls = r.basis === 'fundamentals';
     html += `<div class="sec"><h4>Candidates</h4><table class="tbl"><thead><tr><th>Candidate</th><th class="n">Win</th>
-        <th class="n">Poll avg</th><th class="n">Margin</th></tr></thead><tbody>
+        ${noPolls ? '' : '<th class="n">Poll avg</th><th class="n">Margin</th>'}</tr></thead><tbody>
         ${r.cands.map(c => `<tr><td><span class="pb" style="background:${psoft(c.party)}">${esc(pab(c.party))}</span> ${esc(c.name)}</td>
-          <td class="n">${pct(c.win, 1)}</td><td class="n">${c.poll_avg == null ? '-' : c.poll_avg.toFixed(1) + '%'}</td>
-          <td class="n">${c.margin == null ? '-' : (c.margin >= 0 ? '+' : '') + c.margin.toFixed(1)}</td></tr>`).join('')}
+          <td class="n">${pct(c.win, 1)}</td>${noPolls ? '' : `<td class="n">${c.poll_avg == null ? '-' : c.poll_avg.toFixed(1) + '%'}</td>
+          <td class="n">${c.margin == null ? '-' : (c.margin >= 0 ? '+' : '') + c.margin.toFixed(1)}</td>`}</tr>`).join('')}
         </tbody></table>
-        <div class="hint">Margin is each candidate's projected result against their strongest opponent.</div></div>`;
+        <div class="hint">${noPolls ? "No public polls in this race, so these are the no-polls model's chances; it projects no margin."
+          : "Margin is each candidate's projected result against their strongest opponent."}</div></div>`;
     if (stress.length) {
       html += `<div class="sec"><h4>If the polls are off</h4><table class="tbl"><thead><tr><th>Candidate</th>
           <th class="n">Polls overstate Dems by 3</th><th class="n">As polled</th><th class="n">Polls overstate Reps by 3</th></tr></thead><tbody>
@@ -487,7 +492,7 @@ a:hover { text-decoration: underline; }
     if (ex && (ex.win || ex.margin)) {
       const cand = r.cands.find(c => c.name === ex.candidate) || { name: ex.candidate, party: ex.party };
       html += `<div class="sec"><h4>Why: the factors behind ${esc(ex.candidate)}'s numbers</h4>
-        <div class="tabs2"><button data-k="win" class="on">Win probability</button><button data-k="margin">Margin</button></div>
+        <div class="tabs2"><button data-k="win" class="on">Win probability</button>${ex.margin ? '<button data-k="margin">Margin</button>' : ''}</div>
         <div id="ex-pane"></div></div>`;
       document.getElementById('d-body').innerHTML = html;
       const pane = document.getElementById('ex-pane');

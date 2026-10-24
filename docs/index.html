@@ -431,7 +431,7 @@ html, body { overflow-x: hidden; }
   const raceName = r => r.office === 'House'
     ? (AT_LARGE.has(r.state) ? r.state_name + ' At-Large' : `${r.state_name} ${ord(+r.district)}`) : r.state_name;
   const raceSub = r => (r.office === 'House' ? 'U.S. House' : r.office === 'Senate' ? 'U.S. Senate' : 'Governor')
-    + (r.special ? ' (special)' : '');
+    + (r.special ? ' (special)' : '') + (r.basis === 'fundamentals' ? ' · no polls' : '');
   const sumP = (r, p) => r.cands.filter(c => c.party === p).reduce((s, c) => s + (c.win || 0), 0);
   // same tiers as predictions.html: leader's probability >= .95 Safe, .8 Likely, .6 Lean
   function rating(r) {
@@ -495,8 +495,11 @@ html, body { overflow-x: hidden; }
     }).join('') || '<tr><td colspan="7" class="fc-muted">No races match.</td></tr>';
 
     const asof = String(FORECAST.predictions_as_of || '').slice(0, 10);
+    const np = races.filter(r => r.basis === 'fundamentals').length;
     document.getElementById('fc-asof').textContent =
-      `Model win probability for every race with polling (${races.length} races). Predictions as of ${asof || 'n/a'}, polls through ${FORECAST.polls_as_of || 'n/a'}. ` +
+      `Model win probability for every race on the ballot (${races.length} races` +
+      (np ? `; the ${np} with no public polls use the no-polls model and say "no polls"` : '') +
+      `). Predictions as of ${asof || 'n/a'}, polls through ${FORECAST.polls_as_of || 'n/a'}. ` +
       `Explain opens the factors behind each number. Rating: leader at 95%+ Safe, 80%+ Likely, 60%+ Lean, else Tossup.`;
   }
   ['fc-office', 'fc-rating', 'fc-sort'].forEach(id => document.getElementById(id).addEventListener('change', render));

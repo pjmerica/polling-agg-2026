@@ -566,8 +566,10 @@ a:hover { text-decoration: underline; }
     setText('rows', rowsHtml(office));
     detail();
   }
+  // #house, #kalshi-senate, #house-squares, and with a race selected #senate-pa / #house-tx-28
   function hash() {
-    const h = (st.src !== 'model' ? st.src + '-' : '') + st.office.toLowerCase() + (st.office === 'House' && st.hv === 'tiles' ? '-squares' : '');
+    let h = (st.src !== 'model' ? st.src + '-' : '') + st.office.toLowerCase() + (st.office === 'House' && st.hv === 'tiles' ? '-squares' : '');
+    if (st.sel) h += '-' + st.sel.toLowerCase();
     try { history.replaceState(null, '', '#' + h); } catch (err) { /* file:// or sandbox */ }
   }
   function mark(group, attr, val) { if (group) for (const x of group.querySelectorAll('button')) x.classList.toggle('on', x.dataset[attr] === val); }
@@ -640,26 +642,38 @@ a:hover { text-decoration: underline; }
         // from the whole-country view a click zooms to the district's state; zoomed in, it selects
         if (!st.vb) { st.zst = k.split('-')[0]; st.vb = boxFor(st.zst); st.sel = k; }
         else st.sel = st.sel === k ? null : k;
-        hideTip(); render();
+        hideTip(); hash(); render();
         return;
       }
       st.sel = st.sel === k ? null : k;
       for (const x of svg.querySelectorAll('.sel')) x.classList.remove('sel');
       if (st.sel && e.target.classList) e.target.classList.add('sel');
-      detail();
+      hash(); detail();
     });
   }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && st.vb) zoomTo(null); });
   const more = document.getElementById('more');
   if (more) more.addEventListener('click', () => { st.all = !st.all; setText('rows', rowsHtml(st.office)); });
   const polled = document.getElementById('polled');
   if (polled) polled.addEventListener('change', () => { st.polledOnly = !!polled.checked; hideTip(); render(); });
 
-  // #senate, #house, #governor, #kalshi-senate, #polymarket-house, #house-squares ...
+  // #senate, #house, #governor, #kalshi-senate, #polymarket-house, #house-squares, and a race:
+  // #senate-pa selects Pennsylvania; #house-tx-28 zooms to Texas with TX-28 selected
   const h = (location.hash || '').slice(1).toLowerCase().split('-');
   for (const v in VENUE) if (h.includes(v)) st.src = v;
   const off = h.map(x => ({ senate: 'Senate', house: 'House', governor: 'Governor' }[x])).find(Boolean);
   if (off) st.office = off;
   if (h.includes('squares')) st.hv = 'tiles';
+  const abTok = h.find(x => x.length === 2 && NAMES[x.toUpperCase()]), dTok = h.find(x => /^\d+$/.test(x));
+  if (abTok) {
+    const ab = abTok.toUpperCase();
+    if (st.office !== 'House') st.sel = ballot[st.office][ab] ? ab : null;
+    else {
+      const key = `${ab}-${dTok ? parseInt(dTok, 10) : 1}`;
+      if (ballot.House[key] && (dTok || seats[ab] === 1)) st.sel = key;
+      if (districtMap()) { st.zst = ab; st.vb = boxFor(ab); }
+    }
+  }
   mark(tabs, 'v', st.office);
   mark(srcs, 's', st.src);
   mark(hvs, 'h', st.hv);
