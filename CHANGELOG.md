@@ -15,6 +15,12 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[8abb1881]` model refresh: 2026-10-25T13:26Z (dispatched by hand) - publishes the model repo's research of the 2026 no-polls nominees' prior offices (ffebd47, 2ec0915). After the 10-24 reconciliation, the next gap was the 198 nominees in races without polls whose office level rested on no evidence (a blank, or a Wikipedia results row with no description). All 198 were checked by web search.
+  - 48 held an office. Among them: IN-1 Regnitz (Porter County commissioner), PA-17 Guy (Beaver County sheriff), OR-5 Adair (Deschutes County commissioner), NY-4 Driscoll (Hempstead receiver of taxes), MI-11 Baker (Troy mayor) and TN-8 Kuhn (Shelby County Criminal Court clerk). 151 held none.
+  - The office classifier now reads elected local titles it had missed: county legislators, town and township boards, selectmen, borough councils, court clerks, constables and similar.
+  - No-polls numbers: no race changes favourite. The biggest move is IN-1, Mrvan 87 -> 84; polled races are unchanged.
+  - Not retrained: only 2 training rows changed (both 2012-2016 losers). Details in the model repo HANDOFF 2026-10-25.
+
 - `[62812337]` model refresh: 2026-10-24T21:36Z (dispatched by hand) - publishes the model repo's retrain (b2b78e6) on the reconciled office-level table (1d4d35d). The user asked for the bio-table drift to be fixed with research, then for a documented retrain.
   - The 10-15 hand corrections had lived only in the built `candidate_bios.csv`. All 149 people were re-researched into the manual source file.
   - Appointed secretaries of state and regents now read 0.5, and running mates' offices no longer count.
