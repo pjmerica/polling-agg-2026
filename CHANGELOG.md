@@ -15,6 +15,12 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[df8564b3]` model refresh: 2026-10-25T15:00Z (dispatched by hand) - publishes the model repo's retrain (c1fa289) on the researched office levels. The user asked for a retrain after the nominee research below. Primary models stay frozen.
+  - Win model: byte-identical, so every polled race's win chance and the competitive Senate/Governor list (13) are unchanged.
+  - Margin model: the tuner went back to its 10-22 settings on another near-tie. Held-out 2018-24 MAE is 5.50 (was 5.80); 2026 margins move a median 0.6 pts.
+  - No-polls model: re-tuned. Held-out race accuracy .829 (was .823), Brier .093 unchanged. No unpolled race changes favourite; median move 0.4 pts. Biggest: MI-1 Bergman 57 -> 49 (Barr 40, minor candidates the rest), NY-11 Malliotakis 80 -> 73, CA-5 McClintock 92 -> 85; IN-1 Mrvan is 86.
+  - MI-1 (model D 45% vs market 12%) and CA-1 (60% vs 96%) remain the only unpolled races more than 25 pts from the markets. Details in the model repo HANDOFF 2026-10-25 (later).
+
 - `[8abb1881]` model refresh: 2026-10-25T13:26Z (dispatched by hand) - publishes the model repo's research of the 2026 no-polls nominees' prior offices (ffebd47, 2ec0915). After the 10-24 reconciliation, the next gap was the 198 nominees in races without polls whose office level rested on no evidence (a blank, or a Wikipedia results row with no description). All 198 were checked by web search.
   - 48 held an office. Among them: IN-1 Regnitz (Porter County commissioner), PA-17 Guy (Beaver County sheriff), OR-5 Adair (Deschutes County commissioner), NY-4 Driscoll (Hempstead receiver of taxes), MI-11 Baker (Troy mayor) and TN-8 Kuhn (Shelby County Criminal Court clerk). 151 held none.
   - The office classifier now reads elected local titles it had missed: county legislators, town and township boards, selectmen, borough councils, court clerks, constables and similar.
