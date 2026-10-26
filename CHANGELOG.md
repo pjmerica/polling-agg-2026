@@ -15,6 +15,12 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[224b62fb]` model refresh: 2026-10-26T16:17Z (dispatched by hand) - publishes the model repo's prior-margin fix and retrain (7ea6bc1), from the model audit's prior_margin checklist. The prior-margin feature (the same office's last D-minus-R result in the state) read races that were not a Democrat against a Republican as landslides.
+  - ME-Sen read King's 2024 win (R+23.8); it now reads Collins vs Gideon 2020 (R+8.6). AK-Sen read Murkowski vs Tshibaka 2022, R vs R (R+32.7); it now reads 2020 (R+12.7). NV-2 read Amodei vs nobody (R+55.0); it now reads Amodei vs Kidd, the independent in the Democratic slot (R+19.0).
+  - Rule: a race whose top two were not D vs R (an independent or third party with 20%+, or a same-party final) is skipped. Dem-slot independents count as the Democrat. Races one party sat out, with token opposition, keep their value. 40 training races and 6 live races change; 9 regression tests added (the model repo's first).
+  - At the old settings the fix is neutral on 2018-24 held-out scores. The retrain's tuners all moved on near-ties: win Brier .064 and race accuracy .875 (was .063 / .879), margin MAE 5.66 (was 5.50), no-polls race accuracy .818 (was .829). Published per the user's call to keep the tuners' picks.
+  - 2026: polled races move a median 0.3 pts, at most 2.9 (TX-Sen); no favourite flips and the 13 competitive Senate/Governor races are unchanged. AK-Sen Peltola 51%, ME-Sen Jackson 67%. No-polls: 9 races move 5+ pts from the re-tune (NY-11, PA-9, CA-5, CA-1), no flips.
+
 - `[df8564b3]` model refresh: 2026-10-25T15:00Z (dispatched by hand) - publishes the model repo's retrain (c1fa289) on the researched office levels. The user asked for a retrain after the nominee research below. Primary models stay frozen.
   - Win model: byte-identical, so every polled race's win chance and the competitive Senate/Governor list (13) are unchanged.
   - Margin model: the tuner went back to its 10-22 settings on another near-tie. Held-out 2018-24 MAE is 5.50 (was 5.80); 2026 margins move a median 0.6 pts.
