@@ -15,7 +15,7 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[f2843926]` Election-night guide: county reporting order 2018-2024 from archived NYT captures, with what repeats across years (2026-10-26) - user asked why the guide had nothing on which counties report first, and for the reporting rules plus 2020, 2022 and 2018 history with the commonalities between years.
+- `[34a266e9]` Election-night guide: county reporting order 2018-2024 from archived NYT captures, with what repeats across years (2026-10-26) - user asked why the guide had nothing on which counties report first, and for the reporting rules plus 2020, 2022 and 2018 history with the commonalities between years.
   - New `fetch_wayback_counties.py` collects every Internet Archive capture of NYT's county-level results files for 2018 (9-14 per state), 2022 (2-46) and 2024 (1-9); 2020 already had 140.
   - New `county_reporting.py`: how far each county runs ahead of or behind its state's count (each capture compares a county with its own state at the same moment, so sparse years still count), counties still under 90% the next morning, which way the uncounted vote leans at 50% and 80% counted, and rank correlations between years.
   - Each state section on `docs/election-night.html` gains "County reporting order" (the state's reporting rules from the timing reports, a county table, what repeats); section 5 gains a cross-state table and a "what repeats" summary.
