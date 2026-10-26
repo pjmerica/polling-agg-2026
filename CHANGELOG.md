@@ -15,6 +15,12 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[f2843926]` Election-night guide: county reporting order 2018-2024 from archived NYT captures, with what repeats across years (2026-10-26) - user asked why the guide had nothing on which counties report first, and for the reporting rules plus 2020, 2022 and 2018 history with the commonalities between years.
+  - New `fetch_wayback_counties.py` collects every Internet Archive capture of NYT's county-level results files for 2018 (9-14 per state), 2022 (2-46) and 2024 (1-9); 2020 already had 140.
+  - New `county_reporting.py`: how far each county runs ahead of or behind its state's count (each capture compares a county with its own state at the same moment, so sparse years still count), counties still under 90% the next morning, which way the uncounted vote leans at 50% and 80% counted, and rank correlations between years.
+  - Each state section on `docs/election-night.html` gains "County reporting order" (the state's reporting rules from the timing reports, a county table, what repeats); section 5 gains a cross-state table and a "what repeats" summary.
+  - Findings: the order repeats moderately (rank correlation mostly +0.2 to +0.7). Democratic metro counties come last in Georgia, Michigan, Nevada and Ohio (DeKalb, Wayne, Clark); rural counties come last in Texas, Kansas, Iowa and Nebraska (vote still out 9-21 points more Republican). Georgia finished by morning in 2022, where Fulton, DeKalb and Chatham were still under 90% at 7 a.m. in 2020.
+
 - `[224b62fb]` model refresh: 2026-10-26T16:17Z (dispatched by hand) - publishes the model repo's prior-margin fix and retrain (7ea6bc1), from the model audit's prior_margin checklist. The prior-margin feature (the same office's last D-minus-R result in the state) read races that were not a Democrat against a Republican as landslides.
   - ME-Sen read King's 2024 win (R+23.8); it now reads Collins vs Gideon 2020 (R+8.6). AK-Sen read Murkowski vs Tshibaka 2022, R vs R (R+32.7); it now reads 2020 (R+12.7). NV-2 read Amodei vs nobody (R+55.0); it now reads Amodei vs Kidd, the independent in the Democratic slot (R+19.0).
   - Rule: a race whose top two were not D vs R (an independent or third party with 20%+, or a same-party final) is skipped. Dem-slot independents count as the Democrat. Races one party sat out, with token opposition, keep their value. 40 training races and 6 live races change; 9 regression tests added (the model repo's first).
