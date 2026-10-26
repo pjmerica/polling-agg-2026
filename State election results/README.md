@@ -21,6 +21,8 @@ means X) and projected to a final result.
 | `research_notes/` | Sourced notes behind the report |
 | `scripts/fetch_nyt_history.py` | NYT results JSON for 2020/2022/2024 (11 states; `--all` fetches every state into `data/raw/nyt_all/` for `volatility.py`): final county results (2022/24 split by vote type) and a statewide count timeline |
 | `scripts/fetch_wayback_2020.py` | County-by-county count over election week 2020, from Internet Archive captures of NYT's national file (one per 10 min where captured) |
+| `scripts/fetch_wayback_counties.py` | The same for 2018, 2022 and 2024 from whatever the Internet Archive kept: 9-14 captures per state in 2018 (NYT's national races file), about 2-46 in 2022 and 1-9 in 2024 (each state's results files) -> `data/raw/wayback_counties/{year}/{state}/` |
+| `scripts/county_reporting.py` | County reporting order, 2018-2024: how far each county runs ahead of or behind its state's count, which counties are still counting the next morning, which way the uncounted vote leans at 50% and 80% counted, and what repeats across years -> `data/processed/county_reporting.json/.csv`; the guide's "County reporting order" sections |
 | `scripts/county_benchmarks.py` | County benchmarks: each county's share of the statewide vote (2022) and its expected two-party share at any statewide result (uniform swing on recent results), early/mail vs Election Day where NYT split every county (GA, TX, IA), 2020 reporting speed, and a backtest on every 2022/2024 race -> `data/processed/county_benchmarks.json/.csv`, `county_backtest.csv` |
 | `scripts/early_vote.py` | Ballots already cast, from the UF Election Lab tracker -> `data/processed/early_vote_2026.csv` and the guide's section 2c (rerun to refresh) |
 | `scripts/census_blocs.py` | Demographic voting blocs from the Census Bureau's ACS 2020-2024 county estimates (via Census Reporter; api.census.gov now needs a key): each county's bloc, how each bloc voted 2020-2024, its 2020->2024 shift against the state's, and what it needs in 2026 -> `data/processed/census_units.csv`, `bloc_results.csv`, `census_blocs.json` |
@@ -48,6 +50,7 @@ Remove them after the election: `Get-ScheduledTask -TaskName "StateResults-*" | 
 |---|---|---|---|
 | NYT 2020 race files | county (final) | statewide timeline, hundreds of points | absentee vs total per county |
 | Wayback 2020 national file | **county, over time** | captures ~10-60 min apart on election night | absentee vs total |
+| Wayback 2018 / 2022 / 2024 NYT files | **county, over time** | 9-14 / 2-46 / 1-9 captures per state (`fetch_wayback_counties.py`) | none |
 | NYT 2022 race files | county / Maine town (final) | statewide timeline (votes, expected-vote %) | GA: mail / early / Election Day for every county; MI and OH only Wayne and Hamilton; OR all mail |
 | NYT 2024 race files | county / Maine town (final) | statewide timeline with "advance" vs total | GA, TX: full split per county; IA, TX pres: advance vs Election Day |
 | NYT 2026 primaries | county | statewide timeline | as above; current laws (MI Aug 4 saved) |
@@ -55,10 +58,11 @@ Remove them after the election: `Get-ScheduledTask -TaskName "StateResults-*" | 
 | UF Election Lab early-vote tracker | state (daily) | one file per day in `data/raw/early_vote/` | mail returned, early in person, voters' registered party |
 | Census ACS 2020-2024 5-year (Census Reporter API) | county; Alaska House district | none | demographics only: race/ethnicity (B03002), education (B15003), income (B19013), in `data/raw/census/` |
 
-County-level timing for 2022 and 2024 does not survive publicly: state result sites (Clarity etc.)
-keep only the latest version, and archive captures of the NYT race files are a handful per race.
-2020 is the only year with real county timing; 2022/2024 give the statewide pace and the
-early-vs-Election-Day mix. Nov 3, 2026 is recorded by `capture_live.py`.
+County-level timing for 2018, 2022 and 2024 survives only in the archive's captures of NYT's files:
+state result sites (Clarity etc.) keep only the latest version. 2020 is the only year captured every
+few minutes; the other years give a handful of moments per state, which `county_reporting.py` uses
+by comparing each county with its own state at the same moment. Nov 3, 2026 is recorded by
+`capture_live.py`.
 
 ## Rebuilding
 
@@ -68,6 +72,7 @@ After a model refresh or new early-vote numbers, in this order (from the repo ro
 py "State election results/scripts/early_vote.py"
 py "State election results/scripts/county_benchmarks.py"
 py "State election results/scripts/census_blocs.py"
+py "State election results/scripts/county_reporting.py"      (after county_benchmarks: it reads the county leans)
 py "State election results/scripts/build_competitive.py"
 py "State election results/scripts/build_master.py"
 py "State election results/scripts/build_election_night.py"

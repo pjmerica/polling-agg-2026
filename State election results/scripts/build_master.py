@@ -23,6 +23,7 @@ import re
 import build_state_guide
 import build_swings_report as sw
 import census_blocs
+import county_reporting
 import county_benchmarks as cb
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -77,13 +78,15 @@ def render(html=False):
         name = title.split(":")[0]
         return (f"## {title}\n\n{body}\n\n### The swing data: {name}\n\n"
                 f"{swing_block(rows, SLUG[slug], slug)}\n\n### County benchmarks: {name}\n\n"
-                f"{cb.state_markdown(slug, html=html)}\n\n### Voting blocs: {name}\n\n"
+                f"{cb.state_markdown(slug, html=html)}\n\n### County reporting order: {name}\n\n"
+                f"{county_reporting.state_markdown(slug)}\n\n### Voting blocs: {name}\n\n"
                 f"{census_blocs.state_markdown(slug)}\n\n---\n")
 
     out = re.sub(r"\{\{GUIDE:(\w+)\}\}", guide, tmpl)
     out = re.sub(r"\{\{STATE:(\w+)\}\}", state, out)
     out = out.replace("{{PACE_ALL}}", sw.state_pace(rows)).replace("{{EARLY_EDAY}}", sw.early_eday(rows))
     out = out.replace("{{COUNTY_BACKTEST}}", cb.backtest_markdown()).replace("{{BLOC_SUMMARY}}", census_blocs.summary_markdown())
+    out = out.replace("{{REPORTING_ORDER}}", county_reporting.summary_markdown())
     out = build_state_guide.fill_numbers(out, html=html).replace("{{N_RACES}}", str(len(rows)))
     # national volatility ranks (scripts/volatility.py)
     vol = list(csv.DictReader(open(os.path.join(ROOT, "data", "processed", "volatility_states.csv"), encoding="utf-8")))

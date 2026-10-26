@@ -238,6 +238,21 @@ The county benchmarks' method, run on every 2022 and 2024 race here, predicting 
   - Among the five largest counties, a single county's error reached 9-10 points (Kansas and Iowa 2022 governor races).
 - **Several finished counties together are much better than any one.** The page's calculator averages them by size.
 
+### County reporting order across years
+
+Built from election-night captures of NYT's results files in the Internet Archive: 9-14 per state in 2018, 140 in 2020 (one every ~10 minutes), about 12-30 in 2022 and 1-9 in 2024 (`county_reporting.py`). "Same county order" is the rank correlation of each county's lateness between years; "late vote leaned" is the lean of the vote still uncounted minus the lean of the vote already counted, when the state was about 80% counted (D = the uncounted vote was more Democratic). Each state section has the county table.
+
+{{REPORTING_ORDER}}
+
+**What repeats across years:**
+- **The county order repeats, but only moderately.** Between years the rank correlation is mostly +0.2 to +0.7. It is highest in Oregon (+0.59 to +0.66), Nevada 2022-2024 (+0.75), Michigan 2018-2020 (+0.63), Georgia 2018-2020 (+0.58) and Texas 2020-2024 (+0.55). Read a county's past timing as a tendency, not a schedule.
+- **Two shapes, and each state keeps its own.**
+  - **Democratic metro counties come last** in Georgia, Michigan, Nevada and Ohio. DeKalb was behind the state in every Georgia year with captures, and when Georgia was half to 90% counted the uncounted vote was 22-46 points more Democratic than the counted vote (2018, 2020). Wayne and Monroe ran behind in every Michigan year; Wayne, Kent, Genesee and Monroe were still under 90% the next morning in both 2020 and 2022, and the vote still out at 80% counted was 10-13 points more Democratic in 2020 and 2022. In Nevada the more Democratic the county, the later it reported in all three years with data, and Clark was still under 90% the next morning in both years with a morning capture (2020, 2022). In Ohio the vote left at 80% counted was 12-21 points more Democratic (2018, 2020).
+  - **Rural counties come last** in Texas, Kansas, Iowa and Nebraska. The vote still out was 9-21 points more Republican at 50-80% counted in every year with captures there (Texas 2018, 2020, 2024; Kansas 2018, 2020; Iowa 2020; Nebraska 2020, 2024). El Paso, Hidalgo and Lubbock ran behind Texas in every year; the big suburban counties (Collin, Denton, Williamson) ran ahead.
+- **Oregon and Maine have no steady partisan tilt** at 80% counted. Oregon's first drop is Portland-heavy (the vote still out at half counted was 21 points more Republican in 2020), then Washington, Clackamas and Marion are the counties still counting the next morning. In Maine, rural Aroostook, Somerset, Kennebec, Oxford and Knox are the repeat next-morning stragglers.
+- **Georgia's count got faster.** In 2020 Fulton, DeKalb and Chatham were still under 90% at 7 a.m. the next day; by 9:42 a.m. after the 2022 election every county had finished.
+- **Limits.** 2020 was a record mail year, and several states have changed their counting rules since (each state's rules line). Only 2020 is captured every few minutes; 2018, 2022 and 2024 have a handful of captures, so Alaska, Iowa, Kansas and Ohio have one usable year for the order measure.
+
 ### How each voting bloc moved, 2020 to 2024
 
 The 2020-to-2024 presidential shift in each bloc **minus the state's own shift** (points of two-party margin). Positive means the bloc moved toward the Democrat relative to the whole state, negative toward the Republican. Alaska is left out: its House districts were redrawn for 2022.

@@ -6,7 +6,7 @@ past elections, and where that creates opportunities as results come in.*
 
 *Built by `scripts/build_master.py` from `STATE_BY_STATE.md` (rules, checked against primary sources)
 and the swings analysis (406 races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
-generated from data. Model numbers: forecast run of 2026-10-23 03:37 UTC. Market numbers: 2026-10-23 08:54 UTC refresh. They move daily. Nevada, Oregon and Texas Governor were added on
+generated from data. Model numbers: forecast run of 2026-10-26 16:17 UTC. Market numbers: 2026-10-26 16:17 UTC refresh. They move daily. Nevada, Oregon and Texas Governor were added on
 Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%. County benchmarks, ballots
 already cast, census voting blocs and the Oct 23 open-item checks were added on Oct 23.*
 
@@ -30,17 +30,17 @@ Listed in poll-closing order.
 
 | # | State | Competitive race(s) | Model favorite (win %) | Market, same candidate | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Georgia | Governor | Bottoms (D) 55.0% vs Jackson (R) | Bottoms 61% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
-| 2 | Ohio | Governor; Senate (special) | Acton (D) 58.8% vs Ramaswamy (R); Brown (D) 59.6% vs Husted (R) | Acton 82%; Brown 69% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
-| 3 | Michigan | Senate | El-Sayed (D) 63.4% vs Rogers (R) | El-Sayed 70% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
-| 4 | Texas | Senate; Governor | Talarico (D) 55.0% vs Paxton (R); Abbott (R) 74.0% vs Hinojosa (D) | Talarico 66%; Abbott 69% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
-| 5 | Kansas | Senate | Marshall (R) 58.8% vs Hamilton (D) | Marshall 61% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
-| 6 | Maine | Senate (ranked-choice) | Jackson (D) 68.7% vs Collins (R) | Jackson 65% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
-| 7 | Iowa | Senate | Hinson (R) 68.2% vs Turek (D) | Hinson 58% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
-| 8 | Nebraska | Senate | Ricketts (R) 62.2% vs Osborn (I); no Democrat on the ballot | Ricketts 75% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
-| 9 | Nevada | Governor | Lombardo (R) 69.5% vs Ford (D) | Lombardo 33% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
-| 10 | Oregon | Governor | Kotek (D) 70.1% vs Drazan (R) | Kotek 82% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
-| 11 | Alaska | Senate (ranked-choice) | Peltola (D) 51.9% vs Sullivan (R) | Peltola 75% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
+| 1 | Georgia | Governor | Bottoms (D) 55.7% vs Jackson (R) | Bottoms 62% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
+| 2 | Ohio | Governor; Senate (special) | Acton (D) 55.0% vs Ramaswamy (R); Brown (D) 56.3% vs Husted (R) | Acton 82%; Brown 68% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
+| 3 | Michigan | Senate | El-Sayed (D) 65.3% vs Rogers (R) | El-Sayed 67% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
+| 4 | Texas | Senate; Governor | Talarico (D) 56.4% vs Paxton (R); Abbott (R) 74.8% vs Hinojosa (D) | Talarico 64%; Abbott 68% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
+| 5 | Kansas | Senate | Marshall (R) 58.9% vs Hamilton (D) | Marshall 61% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
+| 6 | Maine | Senate (ranked-choice) | Jackson (D) 67.2% vs Collins (R) | Jackson 60% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
+| 7 | Iowa | Senate | Hinson (R) 67.4% vs Turek (D) | Hinson 58% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
+| 8 | Nebraska | Senate | Ricketts (R) 61.3% vs Osborn (I); no Democrat on the ballot | Ricketts 72% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
+| 9 | Nevada | Governor | Lombardo (R) 68.3% vs Ford (D) | Lombardo 32% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
+| 10 | Oregon | Governor | Kotek (D) 70.5% vs Drazan (R) | Kotek 82% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
+| 11 | Alaska | Senate (ranked-choice) | Peltola (D) 51.0% vs Sullivan (R) | Peltola 74% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
 
 Notes on the table:
 - **Market column:** the market's chance for the model's favorite (where the market priced the other candidate, 100 minus that price). Under 50% means the market favors the other candidate: Nevada.
@@ -75,7 +75,7 @@ count moves more precisely than the market does, and from acting faster.*
 | Special case | **Oregon Governor** | Nevada's mirror image: Kotek's numbers look **worst** at the end of election night (detail below) | The market already prices Kotek 82%, and it's thin (Kalshi ~130K contracts; Polymarket ~$113K liquidity, Oct 19). Only interesting if election night shows Drazan ahead or Kotek's price drops. |
 | Avoid during the count | **Georgia** | Fast (94-98% counted by midnight in 2022 and 2024; 80% in 2020), and its direction has flipped by year: toward the Democrat in 2020 and 2024, toward the Republican in 2022. | Little time and no reliable direction to trade. |
 
-**1. Nevada Governor** (Lombardo R vs Ford D; model Lombardo 69.5%, market Lombardo 33%, so the market favors Ford)
+**1. Nevada Governor** (Lombardo R vs Ford D; model Lombardo 68.3%, market Lombardo 32%, so the market favors Ford)
 - **Long window:**
   - Nothing posts until the last voter in line has voted. First votes came at 11:53 pm-12:55 am ET in 2020-2024, and the first big drop at ~1-2 am.
   - Election Day drop-offs (54,000-57,000 in Clark in 2022/2024) are counted Wednesday to Saturday, and more than 100,000 ballots were left after election night each time.
@@ -93,7 +93,7 @@ count moves more precisely than the market does, and from acting faster.*
   - The research puts the line at **~25,000-30,000 votes (about 2-2.5 points)**: a smaller Lombardo lead on Wednesday morning is at risk, a larger one should hold.
   - Watch Clark's and Washoe's counts of Election Day drop-offs, and whether the Secretary of State again publishes outstanding ballots by county.
 
-**2. Michigan Senate** (El-Sayed D vs Rogers R; model El-Sayed 63.4%, market El-Sayed 70%)
+**2. Michigan Senate** (El-Sayed D vs Rogers R; model El-Sayed 65.3%, market El-Sayed 67%)
 - **Long window:** only 46-50% is counted by midnight ET in every recent general. The 2024 Senate race was called at 3:12 pm the next day.
 - **Repeating order:** Wayne County (Detroit) and the other big counties report late.
   - 2020: the 18% counted after 6 am went Biden +35, almost all Wayne.
@@ -131,20 +131,20 @@ count moves more precisely than the market does, and from acting faster.*
   | Nebraska | ~9+ at midnight |
   | Ohio | ~1+ at 10 pm in 2022/2024; in 2020 the count moved 8 more pts toward the Republican after 10 pm |
 - **2026:** Talarico and Hinojosa (Texas), Acton and Brown (Ohio), Hamilton (Kansas), Osborn (Nebraska) and Turek (Iowa) should all lead early.
-- The Ohio Governor gap (model Acton 58.8%, market Acton 82%) is a **pre-election** disagreement, not a live-count one.
+- The Ohio Governor gap (model Acton 55.0%, market Acton 82%) is a **pre-election** disagreement, not a live-count one.
 
-**4. Maine Senate** (Jackson D vs Collins R; model Jackson 68.7%, market Jackson 65%)
+**4. Maine Senate** (Jackson D vs Collins R; model Jackson 67.2%, market Jackson 60%)
 - **Slow:** only 29-63% is counted by midnight ET.
 - **Repeating pattern:** in every top race we have, the count moved 4-8 pts toward the non-Republican after the first two hours, then 0-3 pts back after 6 am. Most of that move happens while under a quarter of the vote is in, so the window is the first two hours.
 - **Liquid:** ~4.4M Kalshi contracts; ~$2.3M Polymarket volume.
 - **Ranked-choice wrinkle:** if no one tops 50% of *all* ballots (blanks count against the leader), the ranked-choice count decides about a week later, a second chance for prices to be wrong.
 
 **Special case: Alaska Senate** (Peltola D vs Sullivan R)
-- **The disagreement:** our model says Peltola 51.9%; the market says Peltola 75%.
+- **The disagreement:** our model says Peltola 51.0%; the market says Peltola 74%.
 - **What the count pattern implies:** Sullivan should lead on election night. Mail counted Nov 10-18 has moved the margin 2-3 pts toward Democrats (16 in 2020). That pattern **agrees with the market's direction**.
 - **The trade it suggests:** if Sullivan's election-night lead pushes the market toward him, that may be a better entry for a Peltola position than today.
 
-**Special case: Oregon Governor** (Kotek D vs Drazan R; model Kotek 70.1%, market Kotek 82%)
+**Special case: Oregon Governor** (Kotek D vs Drazan R; model Kotek 70.5%, market Kotek 82%)
 - **The first release** at 11 pm ET holds most of the vote and showed Kotek's high point in 2022 (+9.8). By 1 am she was down to +1.0.
 - **Wednesday to Friday** (Multnomah and Washington Election Day drop-offs) took her back to +3.7 by Friday midday; the final was +3.4.
 - **The rule of thumb:** a Drazan lead under ~2 points at the end of election night is at real risk, and a Kotek lead should grow.
@@ -316,7 +316,7 @@ In poll-closing order. Each state has five parts:
 
 **Race.**
 - Keisha Lance Bottoms (D) vs Rick Jackson (R); open seat.
-- Model: Bottoms 55.0%. Market: Bottoms 61%.
+- Model: Bottoms 55.7%. Market: Bottoms 62%.
 - Ballot: two candidates. The Libertarian Party failed to qualify for the 2026 ballot (its petition drive fell short in July: [AJC](https://www.ajc.com/politics/2026/07/libertarians-wont-be-on-the-ballot-in-georgia-meaning-likely-no-runoffs/), [WABE](https://www.wabe.org/georgia-libertarians-end-efforts-to-get-on-2026-general-election-ballot/) ○). Only write-ins could add a third name, so runoff risk is close to zero.
 - A majority is required. A general-election runoff, if needed, is **Tue Dec 1** ✔ ([georgia.gov](https://georgia.gov/events/2026-12-01/election-day-general-election-runoff)).
 
@@ -463,6 +463,50 @@ What the curves show (`state_curves.md`):
 | Fayette | 1.5% | R +3.2 | **48.5%** (Jackson +3.1) | 50.3% (Bottoms +0.6) | 46.6% (Jackson +6.7) | Bottoms +4.4 / Jackson +19.6 (69% early/mail) | 94% / 94% |
 | All other 144 counties | 43.5% | | 36.2% (Jackson +27.6) | | | | |
 
+### County reporting order: Georgia
+
+**Rules that set the order.** Since SB 189 (2024) every county must report all advance and absentee votes by 8 p.m. or within an hour of its last poll closing; 2018-2022 had no such deadline. Metro Election Day precincts come last.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 44, 2024 7. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Muscogee | 1.6% | D+25 | +14 | +11 |  |  | 9:05 pm | 10:33 pm |
+| Coweta | 1.6% | R+34 | +18 | -2 |  |  | 11:18 pm | 1:04 am Wed |
+| Paulding | 1.7% | R+25 | +8 | +8 |  |  | 9:37 pm | 11:05 pm |
+| Clayton | 2.2% | D+74 | +10 | +5 |  |  | 9:37 pm | 11:56 pm |
+| Hall | 1.8% | R+45 | -1 | +11 |  |  | 9:05 pm | 10:21 pm |
+| Cherokee | 2.9% | R+39 | -13 | +21 |  |  | 8:45 pm | 9:37 pm |
+| Richmond | 1.7% | D+37 | -2 | +4 |  |  | 10:10 pm | 11:56 pm |
+| Gwinnett | 8.0% | D+19 | +6 | -13 |  |  | 11:56 pm | 1:46 am Wed |
+| Houston | 1.5% | R+11 | +14 | -23 |  |  | 11:56 pm |  |
+| Henry | 2.5% | D+30 | -16 | +5 |  |  | 8:45 pm | 1:04 am Wed |
+| Fulton | 10.5% | D+48 | -3 | -16 |  |  | 11:20 pm |  |
+| Columbia | 1.6% | R+26 | -5 | -14 |  |  | 11:18 pm | 1:46 am Wed |
+| Cobb | 7.8% | D+16 | -21 | -0 |  |  | 9:55 pm | 1:46 am Wed |
+| Chatham | 2.7% | D+20 | -17 | -6 |  |  | 10:10 pm |  |
+| Forsyth | 2.5% | R+33 | -15 | -18 |  |  | 11:56 pm | 1:04 am Wed |
+| DeKalb | 7.5% | D+69 | -41 | -30 |  |  | 1:46 am Wed | 12:28 pm Wed |
+| The other 143 | 42.0% |  | +13 | +11 |  |  |  |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2018-2020 +0.58 (moderate).
+**Behind the state in every year with captures:** Chatham, Columbia, DeKalb, Forsyth.
+**Ahead of the state every year:** Muscogee, Paulding.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2018 -0.34, 2020 -0.25.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2018 | 46% | 9:51 pm | R+10 | D+12 | D 22 pts |
+| 2018 | 90% | 12:49 am Wed | R+3 | D+43 | D 46 pts |
+| 2020 | 50% | 9:55 pm | R+14 | D+15 | D 29 pts |
+| 2020 | 80% | 12:00 am Wed | R+7 | D+29 | D 36 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 94% counted): Fulton 85%, DeKalb 86%, Chatham 80%, Houston 73%, Walton 89%, Dougherty 78%.
+- **2022** (9:42 am Wed, state 100% counted): none.
+
 ### Voting blocs: Georgia
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -507,8 +551,8 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 58.8% | Acton 82% |
-| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 59.6% | Brown 69% |
+| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 55.0% | Acton 82% |
+| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 56.3% | Brown 68% |
 
 **Rules for Nov 3**
 - **Deadlines and ballot processing:**
@@ -659,6 +703,47 @@ What the curves show:
 | Medina | 1.9% | R +25.0 | **43.8%** (Husted +12.4) | 45.4% (Husted +9.2) | 42.2% (Husted +15.6) | 97% / 99% |
 | All other 73 counties | 37.8% | | 36.1% (Husted +27.8) | | | |
 
+### County reporting order: Ohio
+
+**Rules that set the order.** Boards may pre-process and pre-scan absentees but not tabulate or release anything before polls close at 7:30 p.m. (ORC 3509.06). Every county's first dump is mail plus early in-person votes.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 38, 2024 5. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Trumbull | 1.7% | R+4 |  | +13 |  |  |  | 9:55 pm |
+| Warren | 2.4% | R+22 |  | +13 |  |  |  | 9:55 pm |
+| Lorain | 2.7% | D+8 |  | +12 |  |  |  | 9:55 pm |
+| Delaware | 2.2% | D+4 |  | +11 |  |  |  | 9:55 pm |
+| Medina | 1.8% | R+12 |  | +11 |  |  |  | 10:10 pm |
+| Lake | 2.2% | R+2 |  | +8 |  |  |  | 10:10 pm |
+| Montgomery | 4.5% | D+12 |  | +6 |  |  |  | 10:50 pm |
+| Mahoning | 2.0% | D+3 |  | +2 |  |  |  | 11:05 pm |
+| Butler | 3.1% | R+16 |  | +1 |  |  | 8:45 pm | 11:05 pm |
+| Summit | 4.8% | D+19 |  | -3 |  |  | 8:45 pm | 11:05 pm |
+| Clermont | 1.9% | R+26 |  | -4 |  |  | 9:05 pm | 1:46 am Wed |
+| Cuyahoga | 10.3% | D+42 |  | -4 |  |  | 9:20 pm | 11:30 pm |
+| Franklin | 10.6% | D+39 |  | -4 |  |  |  | 11:30 pm |
+| Hamilton | 7.3% | D+25 |  | -7 |  |  | 8:45 pm | 11:05 pm |
+| Stark | 3.2% | R+10 |  | -18 |  |  | 10:33 pm | 10:50 pm |
+| Lucas | 3.3% | D+24 |  | -19 |  |  | 10:21 pm |  |
+| The other 72 | 35.9% |  |  | +3 |  |  |  |  |
+
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 -0.07.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2018 | 68% | 9:51 pm | R+5 | D+15 | D 21 pts |
+| 2020 | 53% | 8:45 pm | D+1 | even | R 1 pts |
+| 2020 | 79% | 10:21 pm | R+2 | D+10 | D 12 pts |
+| 2024 | 41% | 8:31 pm | R+1 | D+1 | D 2 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 98% counted): none.
+- **2022** (6:03 am Wed, state 98% counted): none.
+
 ### Voting blocs: Ohio
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -704,7 +789,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Abdul El-Sayed (D) vs Mike Rogers (R); open seat.
-- Model: El-Sayed 63.4%. Market: El-Sayed 70%.
+- Model: El-Sayed 65.3%. Market: El-Sayed 67%.
 - In the Aug 4 primary El-Sayed led Stevens 48.5-47.5 with 96% counted on Wednesday morning, and AP called it just before 10 am Wednesday ✔ ([FOX 2 via Fox 4](https://www.fox4news.com/news/abdul-el-sayed-projected-defeat-haley-stevens-democratic-senate-primary-race.amp)).
 
 **Rules for Nov 3**
@@ -852,6 +937,51 @@ What the curves show:
 | Jackson | 1.5% | R +21.6 | **40.0%** (Rogers +20.0) | 41.5% (Rogers +16.9) | 38.5% (Rogers +23.0) | 20% / 82% |
 | All other 68 counties | 29.0% | | 38.5% (Rogers +22.9) | | | |
 
+### County reporting order: Michigan
+
+**Rules that set the order.** No result may be released before 8 p.m. (MCL 168.765a). Jurisdictions of 5,000+ may now tabulate absentees up to 8 days early, wider than in 2018-2022. AP: Wayne, Oakland, Macomb, Kent, Genesee and Washtenaw release relatively few results in their first updates.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 8, 2024 7. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Ottawa | 3.1% | R+21 | +39 | +18 | +3 |  | 9:55 pm | 1:46 am Wed |
+| Oakland | 14.0% | D+12 | +8 | +14 | +15 |  | 10:21 pm |  |
+| Saginaw | 1.9% | R+1 | +13 | +7 | +13 |  | 10:50 pm |  |
+| Muskegon | 1.7% | even | +23 | +5 | -3 |  | 11:56 pm |  |
+| Kent | 6.6% | D+6 | +25 | +5 | -9 |  | 10:50 pm |  |
+| Livingston | 2.3% | R+22 | -5 | +11 | +13 |  | 11:18 pm |  |
+| Genesee | 3.9% | D+7 | +19 | +7 | -8 |  | 10:33 pm | 12:03 pm Wed |
+| Macomb | 8.8% | R+12 | +14 | +1 | -8 |  |  |  |
+| Kalamazoo | 2.6% | D+18 | +3 | +0 | -6 |  | 11:56 pm | 11:04 pm Wed |
+| Berrien | 1.5% | R+9 | -10 | -2 | +7 |  | 12:28 am Wed |  |
+| Washtenaw | 4.0% | D+46 | -7 | +8 | -7 |  | 11:18 pm | 4:21 am Wed |
+| Ingham | 2.7% | D+32 | -7 | -5 | +1 |  | 12:44 am Wed |  |
+| St. Clair | 1.7% | R+33 | -37 | +8 | +6 |  | 11:18 pm |  |
+| Jackson | 1.5% | R+20 | -12 | -19 | +6 |  | 1:46 am Wed | 12:03 pm Wed |
+| Wayne | 15.2% | D+32 | -19 | -16 | -15 |  |  |  |
+| Monroe | 1.5% | R+26 | -39 | -36 | -26 |  |  |  |
+| The other 67 | 27.1% |  | -6 | -2 | +6 |  |  |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2018-2020 +0.63 (strong), 2018-2022 +0.15 (weak), 2020-2022 +0.27 (weak).
+**Behind the state in every year with captures:** Monroe, Wayne.
+**Ahead of the state every year:** Oakland, Saginaw.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2018 +0.27, 2020 +0.19, 2022 -0.13.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2018 | 76% | 12:49 am Wed | D+1 | even | R 2 pts |
+| 2020 | 50% | 12:00 am Wed | even | D+1 | D 1 pts |
+| 2020 | 82% | 5:52 am Wed | R+2 | D+11 | D 13 pts |
+| 2022 | 80% | 2:50 am Wed | R+2 | D+8 | D 10 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 85% counted): Wayne 70%, Oakland 87%, Macomb 75%, Kent 81%, Genesee 87%, Ingham 74%, Kalamazoo 85%, Monroe 56% and 6 more.
+- **2022** (6:21 am Wed, state 93% counted): Wayne 81%, Kent 86%, Washtenaw 82%, Genesee 87%, Monroe 64%.
+- **In two or more years:** Wayne, Kent, Genesee, Monroe.
+
 ### Voting blocs: Michigan
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -890,8 +1020,8 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Senate (open) | James Talarico (D) vs Ken Paxton (R). Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27). | Talarico 55.0% | Talarico 66% |
-| Governor | Greg Abbott (R, incumbent) vs Gina Hinojosa (D) | Abbott 74.0% | Abbott 69% |
+| Senate (open) | James Talarico (D) vs Ken Paxton (R). Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27). | Talarico 56.4% | Talarico 64% |
+| Governor | Greg Abbott (R, incumbent) vs Gina Hinojosa (D) | Abbott 74.8% | Abbott 68% |
 
 Both races are on the same ballot and counted together, so everything below applies to both.
 
@@ -1087,6 +1217,51 @@ What the curves show:
 | Hays | 1.1% | D +5.7 | **61.0%** (Hinojosa +21.9) | 62.6% (Hinojosa +25.1) | 59.4% (Hinojosa +18.7) | Hinojosa +21.6 / Hinojosa +23.8 (84% early/mail) | 99% / 100% |
 | All other 239 counties | 34.5% | | 32.0% (Abbott +36.0) | | | | |
 
+### County reporting order: Texas
+
+**Rules that set the order.** Counties of 100,000+ may count early ballots from the end of early voting but release nothing before 7 p.m. local; early-vote totals post first and Election Day totals are due within 24 hours. El Paso and Hudspeth close at 9 p.m. ET.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 15, 2020 140, 2022 8, 2024 5. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Denton | 3.8% | D+1 |  | +17 |  | +30 |  |  |
+| Collin | 4.4% | D+3 |  | +12 |  | +30 | 8:45 pm | 8:45 pm |
+| Williamson | 2.6% | D+12 |  | +9 |  | +30 | 8:45 pm | 10:50 pm |
+| Travis | 5.5% | D+54 |  | +7 |  | +28 | 8:45 pm | 8:45 pm |
+| Montgomery | 2.5% | R+36 |  | +5 |  | +26 | 8:45 pm | 11:56 pm |
+| Bexar | 6.7% | D+27 |  | +6 |  | +25 | 8:45 pm | 11:30 pm |
+| Tarrant | 7.4% | D+9 |  | +5 |  | +25 | 8:45 pm | 11:05 pm |
+| Dallas | 8.0% | D+37 |  | +11 |  | +14 |  | 10:50 pm |
+| Nueces | 1.1% | D+4 |  | +8 |  | +15 | 8:45 pm | 11:30 pm |
+| Fort Bend | 3.1% | D+17 |  | -37 |  | +30 | 11:30 pm | 12:44 am Wed |
+| Harris | 14.1% | D+21 |  | +7 |  | -15 |  | 1:04 am Wed |
+| Galveston | 1.4% | R+14 |  | +3 |  | -14 | 8:45 pm | 12:18 am Wed |
+| El Paso | 2.2% | D+35 |  | -18 |  | -19 | 9:37 pm | 1:46 am Wed |
+| Brazoria | 1.4% | R+6 |  | +9 |  | -55 | 8:45 pm | 10:21 pm |
+| Bell | 1.1% | R+4 |  | +6 |  | -55 | 8:45 pm | 10:21 pm |
+| Hidalgo | 1.9% | D+21 |  | -15 |  | -55 | 9:37 pm | 1:46 am Wed |
+| The other 238 | 33.0% |  |  | -9 |  | -18 |  |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2020-2024 +0.55 (moderate).
+**Behind the state in every year with captures:** El Paso, Hidalgo.
+**Ahead of the state every year:** Bexar, Collin, Dallas, Denton, Nueces, Travis, Williamson.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.15, 2024 +0.17.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2018 | 68% | 9:51 pm | D+4 | R+6 | R 10 pts |
+| 2020 | 81% | 10:10 pm | D+3 | R+8 | R 11 pts |
+| 2024 | 42% | 8:24 pm | D+10 | R+8 | R 19 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2018** (11:31 am Wed, state 100% counted): none.
+- **2020** (7:01 am Wed, state 99% counted): Webb 32%.
+- **2022** (9:43 am Wed, state 100% counted): none.
+- **2024** (1:14 pm Wed, state 99% counted): none.
+
 ### Voting blocs: Texas
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -1136,7 +1311,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates.
-- Model: Marshall 58.8%. Market: Marshall 61%.
+- Model: Marshall 58.9%. Market: Marshall 61%.
 
 **Rules for Nov 3**
 - **Polls:**
@@ -1263,6 +1438,46 @@ What the curves show:
 | Cowley | 1.1% | R +41.0 | **38.9%** (Marshall +22.1) | 40.5% (Marshall +19.0) | 37.4% (Marshall +25.2) | 97% / 97% |
 | All other 90 counties | 27.3% | | 31.4% (Marshall +37.2) | | | |
 
+### County reporting order: Kansas
+
+**Rules that set the order.** Advance ballots report first. Four Mountain-time counties close at 9 p.m. ET. Sedgwick adds drop-box and polling-place mail in a Wednesday update; mail postmarked by Nov 3 counts through Nov 6 (injunction).
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 26, 2024 2. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Johnson | 25.7% | D+24 |  | +17 |  |  |  | 9:37 pm |
+| Reno | 2.0% | R+18 |  | +14 |  |  | 8:45 pm | 9:37 pm |
+| Butler | 2.4% | R+26 |  | +12 |  |  | 9:05 pm | 10:21 pm |
+| Riley | 1.8% | D+20 |  | +12 |  |  | 8:45 pm | 10:10 pm |
+| Ellis | 1.0% | R+30 |  | +10 |  |  | 9:37 pm | 9:55 pm |
+| Leavenworth | 2.6% | R+5 |  | +9 |  |  | 9:37 pm | 9:55 pm |
+| Cowley | 1.0% | R+22 |  | +7 |  |  | 9:12 pm | 10:50 pm |
+| Harvey | 1.3% | R+3 |  | +6 |  |  | 9:12 pm | 11:18 pm |
+| Saline | 1.8% | R+14 |  | +6 |  |  | 9:37 pm | 10:50 pm |
+| Sedgwick | 15.9% | D+4 |  | +4 |  |  | 8:45 pm |  |
+| Crawford | 1.3% | R+6 |  | +1 |  |  | 10:10 pm | 10:50 pm |
+| Shawnee | 6.4% | D+19 |  | +0 |  |  | 11:18 pm | 11:18 pm |
+| McPherson | 1.1% | R+25 |  | -4 |  |  | 10:21 pm | 1:04 am Wed |
+| Miami | 1.3% | R+24 |  | -5 |  |  | 9:55 pm | 1:46 am Wed |
+| Wyandotte | 3.8% | D+44 |  | -13 |  |  | 11:30 pm | 11:30 pm |
+| Douglas | 4.5% | D+53 |  | -37 |  |  |  |  |
+| The other 89 | 26.1% |  |  | -16 |  |  |  |  |
+
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.00.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2018 | 53% | 9:51 pm | D+7 | R+8 | R 15 pts |
+| 2020 | 53% | 9:37 pm | D+7 | R+8 | R 16 pts |
+| 2020 | 80% | 12:00 am Wed | D+2 | R+8 | R 10 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 92% counted): Sedgwick 87%, Lyon 52%, Neosho 37%.
+- **2022** (9:42 am Wed, state 97% counted): Montgomery 87%.
+
 ### Voting blocs: Kansas
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -1299,7 +1514,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race and ballot.**
 - Troy Jackson (D) vs Susan Collins (R, incumbent).
-- Model: Jackson 68.7%. Market: Jackson 65%.
+- Model: Jackson 67.2%. Market: Jackson 60%.
 - Only Collins and Jackson are printed on the ballot.
 - **Six declared write-in candidates make this a ranked-choice race** ✔ (Spectrum News, Aug 26): Andrews, Olson, Oswald, Steinberger, Turcotte, Webb.
 - Votes for an undeclared write-in, such as Graham Platner (who withdrew July 10), count as blank ✔.
@@ -1443,6 +1658,48 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 | Oxford | 4.1% | R +13.1 | **40.9%** (Collins +18.2) | 42.4% (Collins +15.2) | 39.4% (Collins +21.2) | 47% / 68% |
 | All other 8 counties | 21.5% | | 45.5% (Collins +9.0) | | | |
 
+### County reporting order: Maine
+
+**Rules that set the order.** About 500 towns, not counties, report, with two business days to file; the county rows here add up the towns. A Senate race under 50% goes to a central ranked-choice count 8-10 days later.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 2, 2024 5. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Androscoggin | 7.1% | R+12 | +9 | +14 | +7 | +6 | 11:18 pm | 12:18 am Wed |
+| York | 15.6% | D+4 | +6 | +3 | +10 | +4 | 1:04 am Wed |  |
+| Hancock | 4.4% | D+4 | +13 | -4 | +9 | -1 | 12:18 am Wed |  |
+| Lincoln | 3.0% | D+2 | -3 | -2 | -1 | +8 | 12:18 am Wed |  |
+| Kennebec | 8.9% | R+9 | +3 | +3 | -11 | +6 | 12:00 am Wed | 3:02 pm Wed |
+| Franklin | 2.2% | R+14 | +5 | -11 | +3 | +4 | 12:28 am Wed |  |
+| Cumberland | 24.1% | D+28 | +1 | +6 | -2 | -5 | 1:13 am Wed |  |
+| Oxford | 4.1% | R+18 | +13 | -3 | -8 | -6 | 1:04 am Wed |  |
+| Penobscot | 10.3% | R+19 | -10 | -4 | +6 | +3 | 1:46 am Wed |  |
+| Somerset | 3.4% | R+34 | -11 | -8 | -5 | +4 |  |  |
+| Aroostook | 4.3% | R+34 | -8 | -3 | -9 | -1 | 12:28 am Wed | 3:02 pm Wed |
+| Waldo | 3.1% | R+4 | -10 | -0 | -4 | -11 | 12:28 am Wed |  |
+| Knox | 3.2% | D+12 | -6 | -10 | -1 | -9 | 10:48 am Wed |  |
+| Piscataquis | 1.2% | R+35 | -1 | -10 | -28 | +1 | 12:03 pm Wed |  |
+| Washington | 2.1% | R+29 | -9 | -29 | +3 | -9 | 12:03 pm Wed |  |
+| Sagadahoc | 3.0% | D+8 | -26 | -18 | -12 | -1 | 12:03 pm Wed |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2018-2020 +0.46 (moderate), 2018-2022 +0.39 (moderate), 2018-2024 +0.22 (weak), 2020-2022 +0.23 (weak), 2020-2024 +0.29 (weak), 2022-2024 +0.21 (weak).
+**Ahead of the state every year:** Androscoggin.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2018 +0.19, 2020 +0.32, 2022 +0.26, 2024 -0.15.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2020 | 50% | 12:31 am Wed | R+1 | even | D 1 pts |
+| 2020 | 81% | 12:03 pm Wed | D+2 | R+9 | R 10 pts |
+| 2022 | 83% | 9:42 am Wed | even | R+1 | R 1 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 76% counted): York 73%, Penobscot 73%, Kennebec 82%, Aroostook 61%, Hancock 67%, Oxford 68%, Somerset 67%, Knox 48% and 6 more.
+- **2022** (9:42 am Wed, state 83% counted): Cumberland 81%, Kennebec 74%, Aroostook 76%, Oxford 75%, Somerset 68%, Knox 86%, Waldo 72%, Lincoln 86% and 4 more.
+- **In two or more years:** Kennebec, Aroostook, Oxford, Somerset, Knox, Waldo, Sagadahoc, Lincoln, Franklin, Washington, Piscataquis.
+
 ### Voting blocs: Maine
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -1476,7 +1733,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Ashley Hinson (R) vs Josh Turek (D); open seat after Ernst retired ✔ (AP Jun 2026).
-- Model: Hinson 68.2%. Market: Hinson 58%. The market is much less sure than the model.
+- Model: Hinson 67.4%. Market: Hinson 58%. The market is much less sure than the model.
 
 **Rules for Nov 3 ✔**
 - **Polls and deadlines:**
@@ -1603,6 +1860,45 @@ What the curves show:
 | Marion | 1.2% | R +38.3 | **36.9%** (Hinson +26.1) | 38.5% (Hinson +23.1) | 35.5% (Hinson +29.1) | Hinson +9.3 / Hinson +35.6 (36% early/mail) | 100% / 100% |
 | All other 84 counties | 40.7% | | 38.1% (Hinson +23.8) | | | | |
 
+### County reporting order: Iowa
+
+**Rules that set the order.** Each county's absentee board releases one absentee total, only when its count is complete (target 10 p.m. CT). Polls closed at 10 p.m. ET in 2018 and 2020 and 9 p.m. ET from 2022.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 19, 2024 2. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Johnson | 5.1% | D+51 |  | +32 |  |  | 10:21 pm | 10:33 pm |
+| Cerro Gordo | 1.4% | D+3 |  | +23 |  |  | 10:21 pm | 11:30 pm |
+| Warren | 1.9% | R+6 |  | +22 |  |  | 10:21 pm | 11:18 pm |
+| Black Hawk | 3.9% | D+15 |  | +18 |  |  | 10:33 pm | 11:05 pm |
+| Polk | 15.3% | D+25 |  | +17 |  |  | 10:50 pm | 10:50 pm |
+| Dubuque | 3.2% | D+6 |  | +17 |  |  | 10:21 pm | 11:56 pm |
+| Dallas | 3.5% | D+9 |  | +17 |  |  | 10:50 pm | 10:50 pm |
+| Linn | 7.6% | D+23 |  | +15 |  |  | 10:21 pm | 11:56 pm |
+| Muscatine | 1.2% | R+2 |  | +11 |  |  | 10:50 pm | 11:30 pm |
+| Clinton | 1.4% | R+3 |  | +3 |  |  | 10:21 pm | 1:04 am Wed |
+| Scott | 5.3% | D+10 |  | -4 |  |  | 11:18 pm | 11:56 pm |
+| Pottawattamie | 2.6% | R+8 |  | -5 |  |  | 10:50 pm | 12:18 am Wed |
+| Marion | 1.2% | R+26 |  | -24 |  |  | 11:56 pm | 11:56 pm |
+| Woodbury | 2.6% | R+12 |  | -28 |  |  | 11:56 pm | 1:04 am Wed |
+| Jasper | 1.2% | R+13 |  | -40 |  |  | 12:18 am Wed | 12:18 am Wed |
+| Story | 3.1% | D+26 |  | -65 |  |  | 12:44 am Wed | 12:44 am Wed |
+| The other 83 | 39.5% |  |  | -11 |  |  |  |  |
+
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.20.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2020 | 52% | 11:05 pm | D+10 | R+11 | R 21 pts |
+| 2020 | 86% | 11:56 pm | D+1 | R+10 | R 11 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 100% counted): none.
+- **2022** (9:42 am Wed, state 100% counted): Warren 88%.
+
 ### Voting blocs: Iowa
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -1641,7 +1937,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
   - The state Democratic Party voted not to fill the vacancy; party chair Jane Kleeb endorsed Osborn (Ballotpedia, Nebraska Examiner, WOWT ○).
   - Before the primary, Burbank said she would back Osborn if she had no path to victory.
   - Our forecast data also has no Democrat.
-- Model: Ricketts 62.2%. Market: Ricketts 75%.
+- Model: Ricketts 61.3%. Market: Ricketts 72%.
 
 **Rules for Nov 3 ✔**
 - **Polls:** close 8 pm Central and 7 pm Mountain, so **9:00 pm ET everywhere** ([Neb. Rev. Stat. 32-908](https://nebraskalegislature.gov/laws/statutes.php?statute=32-908)).
@@ -1760,6 +2056,48 @@ What the curves show:
 | Gage | 1.2% | R +15.3 | **46.1%** (Ricketts +7.8) | 47.7% (Ricketts +4.5) | 44.5% (Ricketts +11.0) | 60% / 99% |
 | All other 78 counties | 24.4% | | 33.1% (Ricketts +33.7) | | | |
 
+### County reporting order: Nebraska
+
+**Rules that set the order.** All polls close at 9 p.m. ET. More than three-quarters of counties report all or nearly all early votes first; Douglas and Lancaster report few Election Day votes at first, and Douglas has 15,000-18,000 ballots left after election night.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 2, 2024 3. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Hall | 2.4% | R+11 | +14 | +18 |  | +31 | 9:37 pm | 12:28 am Wed |
+| Sarpy | 10.0% | D+8 | +19 | +16 |  | +9 | 9:37 pm |  |
+| Douglas | 28.6% | D+24 | +11 | +1 |  | +23 | 11:05 pm | 1:04 am Wed |
+| Lancaster | 16.7% | D+24 | -0 | +15 |  | +3 | 9:37 pm | 12:28 am Wed |
+| Dodge | 1.7% | R+5 | +15 | +4 |  | -21 | 9:55 pm |  |
+| Gage | 1.2% | R+8 | +7 | -1 |  | -13 | 10:10 pm | 1:13 am Wed |
+| Buffalo | 2.4% | R+21 | -8 | +15 |  | -15 | 10:10 pm | 12:44 am Wed |
+| Adams | 1.5% | R+18 | -15 | -4 |  | +10 | 1:04 am Wed | 1:04 am Wed |
+| Lincoln | 1.8% | R+24 | -18 | -6 |  | -0 | 11:20 pm |  |
+| Madison | 1.6% | R+29 | -9 | -23 |  | -9 | 4:21 am Wed | 4:21 am Wed |
+| Cass | 1.6% | R+9 | -17 | -5 |  | -22 | 11:56 pm | 1:46 am Wed |
+| Washington | 1.3% | R+18 | -15 | -51 |  | -36 |  |  |
+| Platte | 1.6% | R+34 | -18 | -65 |  | -20 |  | 12:28 pm Wed |
+| Saunders | 1.4% | R+19 | -58 | -22 |  | -23 | 1:04 am Wed |  |
+| Scotts Bluff | 1.6% | R+19 | -43 | -39 |  | -36 | 4:21 am Wed | 4:21 am Wed |
+| The other 78 | 24.3% |  | -9 | -8 |  | -25 |  |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2018-2020 +0.29 (weak), 2018-2024 +0.35 (moderate), 2020-2024 +0.26 (weak).
+**Behind the state in every year with captures:** Madison, Platte, Saunders, Scotts Bluff, Washington.
+**Ahead of the state every year:** Hall, Sarpy.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2018 +0.09, 2020 -0.16, 2024 +0.29.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2020 | 52% | 11:05 pm | D+4 | R+5 | R 9 pts |
+| 2020 | 77% | 12:44 am Wed | D+3 | R+8 | R 11 pts |
+| 2024 | 46% | 10:35 pm | D+9 | R+7 | R 16 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 96% counted): Platte 39%, Dakota 79%.
+- **2022** (9:43 am Wed, state 96% counted): Dodge 81%.
+
 ### Voting blocs: Nebraska
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -1796,7 +2134,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Joe Lombardo (R, incumbent) vs Aaron D. Ford (D, attorney general). Also on the ballot: Danielle Ford (no party) and the "None of these candidates" line ◐ ([Clark County Fall 2026 newsletter](https://www.clarkcountynv.gov/adobe/assets/urn:aaid:aem:228bc80b-da3b-42da-bc72-25cce75470d1/original/as/cced-newsletter-fall2026.pdf)).
-- Model: Lombardo 69.5%. Market: Lombardo 33%. **The market favors Ford; the model favors Lombardo.** That is the largest model-market disagreement on this list.
+- Model: Lombardo 68.3%. Market: Lombardo 32%. **The market favors Ford; the model favors Lombardo.** That is the largest model-market disagreement on this list.
 - "None of these candidates" votes are posted in every result but never decide the winner; only votes for named candidates count ✔ ([NRS 293.269](https://www.leg.state.nv.us/NRS/NRS-293.html)). The researcher found no majority or runoff rule, so it's a plurality race ◐.
 - No Senate race in Nevada this year. NV-1, NV-3 and the down-ballot statewide races come out of the same county batches.
 - Latest public poll found: Noble Predictive Insights (Oct 7-13) Lombardo 40, Ford 37, 23% undecided ○ ([KTNV](https://www.ktnv.com/news/new-poll-shows-lombardo-has-slight-lead-in-2026-governor-matchup)).
@@ -1958,6 +2296,39 @@ What the curves show:
 | Churchill | 1.0% | R +51.6 | **25.2%** (Lombardo +49.7) | 26.4% (Lombardo +47.3) | 24.0% (Lombardo +52.0) | 0% / 95% |
 | All other 9 counties | 2.1% | | 22.4% (Lombardo +55.3) | | | |
 
+### County reporting order: Nevada
+
+**Rules that set the order.** Nothing is released until the last voter in line statewide has voted. Election Day drop-off mail is not counted that night (Clark: about 54,000-57,000 ballots, posted from Wednesday); Washoe then posts at 3 p.m. and 8 p.m. ET daily.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 46, 2024 9. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Elko | 1.6% | R+58 |  | +4 | +2 | +1 | 1:04 am Wed |  |
+| Clark | 68.1% | D+7 |  | -3 | +4 | +3 | 1:46 am Wed | 9:01 pm Sat |
+| Lyon | 2.2% | R+44 |  | +8 | -12 | +3 | 1:04 am Wed | 1:46 am Wed |
+| Carson City | 2.2% | R+9 |  | +6 | -1 | -7 | 1:46 am Wed | 1:46 am Wed |
+| Washoe | 18.5% | D+4 |  | +7 | -12 | -9 | 1:46 am Wed | 4:21 am Wed |
+| Douglas | 2.6% | R+32 |  | +1 | -14 | -3 |  |  |
+| Nye | 1.9% | R+40 |  | -0 | -4 | -35 |  |  |
+| The other 10 | 2.9% |  |  | +7 | +10 | +5 |  |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2020-2022 +0.13 (weak), 2020-2024 +0.38 (moderate), 2022-2024 +0.75 (strong).
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 -0.38, 2022 -0.48, 2024 -0.47.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2020 | 78% | 4:21 am Wed | even | D+3 | D 3 pts |
+| 2022 | 82% | 5:22 am Wed | even | R+1 | R 1 pts |
+| 2024 | 87% | 3:50 pm Wed | D+1 | R+1 | R 2 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 85% counted): Clark 82%, Douglas 83%, Nye 84%, Elko 89%.
+- **2022** (7:20 am Wed, state 82% counted): Clark 87%, Washoe 67%, Douglas 73%, Carson City 81%, Lyon 68%, Nye 74%, Elko 85%, Humboldt 88%.
+- **In two or more years:** Clark, Douglas, Nye, Elko.
+
 ### Voting blocs: Nevada
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -1991,7 +2362,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Tina Kotek (D, incumbent; also the Working Families nominee) vs Christine Drazan (R; also the Libertarian nominee), a rematch of 2022. Pacific Green nominee Brett Smith is the only other name ○ ([Wikipedia](https://en.wikipedia.org/wiki/2026_Oregon_gubernatorial_election)).
-- Model: Kotek 70.1%. Market: Kotek 82%.
+- Model: Kotek 70.5%. Market: Kotek 82%.
 - In 2022 Kotek won by 66,727 votes (3.4 points) while independent Betsy Johnson took 8.6%. Smith polls 3-6%, so this year is closer to a two-way race ○.
 - Recent polls: Kotek 46-44 (Oregonian/DHM) and 46-42 (GBAO, a Kotek internal), after three polls with Drazan ahead by 1-4 ○ ([OPB, Oct 8](https://www.opb.org/article/2026/10/08/new-polls-kotek-may-lead/)).
 
@@ -2145,6 +2516,51 @@ What the curves show:
 | Douglas | 2.8% | R +38.7 | **23.4%** (Drazan +53.2) | 24.7% (Drazan +50.7) | 22.2% (Drazan +55.6) | 77% / 98% |
 | All other 27 counties | 23.9% | | 35.9% (Drazan +28.1) | | | |
 
+### County reporting order: Oregon
+
+**Rules that set the order.** All-mail. The first drop, about 11 p.m. ET, holds about two-thirds of the vote; Election Day drop-offs (about 25% of ballots, 31-32% in Multnomah and Washington) are counted Wednesday to Friday.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 29, 2024 2. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Jackson | 5.4% | R+22 |  | +9 | +13 | +15 | 11:18 pm | 11:18 pm |
+| Benton | 2.3% | D+26 |  | +6 | +11 | +15 | 11:30 pm | 11:30 pm |
+| Linn | 3.1% | R+41 |  | +4 | +8 | +15 | 11:56 pm | 11:56 pm |
+| Lane | 9.5% | D+9 |  | +6 | +10 | +5 | 11:30 pm | 11:30 pm |
+| Coos | 1.6% | R+36 |  | +3 | +7 | +5 | 11:56 pm | 4:21 am Wed |
+| Deschutes | 5.4% | R+7 |  | +1 | +8 | +6 | 11:56 pm |  |
+| Klamath | 1.6% | R+58 |  | +3 | +4 | +6 | 11:56 pm |  |
+| Josephine | 2.2% | R+44 |  | +2 | -3 | +12 | 11:56 pm | 11:56 pm |
+| Polk | 2.1% | R+21 |  | +3 | +0 | +5 | 11:30 pm |  |
+| Multnomah | 19.4% | D+54 |  | +7 | +3 | -6 | 11:18 pm |  |
+| Douglas | 2.7% | R+53 |  | +3 | -5 | +3 | 11:30 pm | 4:21 am Wed |
+| Washington | 13.1% | D+18 |  | -5 | -15 | -0 | 11:56 pm | 9:31 pm Wed |
+| Columbia | 1.4% | R+30 |  | +1 | +5 | -29 | 11:56 pm |  |
+| Marion | 6.6% | R+19 |  | -5 | -4 | -20 | 11:18 pm | 9:31 pm Wed |
+| Yamhill | 2.5% | R+23 |  | -2 | -8 | -29 | 11:56 pm |  |
+| Clackamas | 10.9% | R+8 |  | -22 | -16 | -4 | 11:30 pm |  |
+| The other 20 | 10.2% |  |  | +5 | +10 | +11 |  |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2020-2022 +0.59 (moderate), 2020-2024 +0.66 (strong), 2022-2024 +0.65 (strong).
+**Ahead of the state every year:** Benton, Jackson.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.10, 2022 -0.06, 2024 +0.03.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2018 | 76% | 12:49 am Wed | even | D+5 | D 5 pts |
+| 2020 | 52% | 11:30 pm | D+11 | R+10 | R 21 pts |
+| 2020 | 82% | 11:56 pm | D+1 | even | R 0 pts |
+| 2022 | 81% | 11:37 pm Wed | R+1 | D+3 | D 3 pts |
+| 2024 | 91% | 8:25 pm Fri | R+1 | D+6 | D 7 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 91% counted): Washington 87%, Clackamas 64%, Marion 82%.
+- **2022** (6:03 am Wed, state 74% counted): Multnomah 65%, Washington 65%, Clackamas 53%, Lane 87%, Marion 70%, Deschutes 80%, Douglas 74%, Yamhill 62% and 10 more.
+- **In two or more years:** Washington, Clackamas, Marion.
+
 ### Voting blocs: Oregon
 
 Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
@@ -2193,7 +2609,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
   | Heikes | 1.1% | 1,741 |
 
   Peltola led by 8.1 points in an all-party primary.
-- Model: Peltola 51.9%, the closest race on our list. Market: Peltola 75%.
+- Model: Peltola 51.0%, the closest race on our list. Market: Peltola 74%.
 - **Why the second Sullivan matters on election night** (inference):
   - Votes for the second Sullivan and for Heikes are first-round votes that are not the incumbent's.
   - They make it less likely that anyone tops 50% of first choices, so the ranked-choice count on Nov 18 is more likely.
@@ -2312,6 +2728,38 @@ What the curves show:
 | District 4 (Juneau, Douglas) | 2.9% | D +39.2 | **75.2%** (Peltola +50.4) | 76.4% (Peltola +52.7) | 73.9% (Peltola +47.9) |
 | District 15 (Anchorage: Southwest) | 2.9% | R +2.6 | **55.0%** (Peltola +10.0) | 56.6% (Peltola +13.2) | 53.4% (Peltola +6.8) |
 | All other 25 House districts | 52.6% | | 50.5% (Peltola +1.1) | | |
+
+### County reporting order: Alaska
+
+**Rules that set the order.** Election night counts only Election Day votes and early votes cast through Oct 29; absentees are counted on Nov 10, 13 and 18. Alaska reports by House district, not county.
+
+**How far each district ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 3, 2024 3. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| District | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| ED 24 | 2.9% |  |  | +15 |  |  | 4:21 am Wed |  |
+| ED 26 | 2.8% |  |  | +14 |  |  | 4:21 am Wed |  |
+| ED 34 | 3.0% |  |  | +13 |  |  |  |  |
+| ED 11 | 3.0% |  |  | +12 |  |  |  |  |
+| ED 28 | 3.6% |  |  | +7 |  |  |  |  |
+| ED 10 | 3.1% |  |  | +7 |  |  |  |  |
+| ED 33 | 3.1% |  |  | +5 |  |  |  |  |
+| ED 4 | 2.9% |  |  | +2 |  |  |  |  |
+| Alaska | 100.0% |  | +0 |  | +0 | +0 |  |  |
+| ED 14 | 3.2% |  |  | -2 |  |  |  |  |
+| ED 31 | 3.5% |  |  | -14 |  |  |  |  |
+| ED 12 | 3.1% |  |  | -16 |  |  |  |  |
+| ED 9 | 3.1% |  |  | -19 |  |  |  |  |
+| ED 29 | 3.0% |  |  | -19 |  |  |  |  |
+| ED 30 | 2.8% |  |  | -21 |  |  |  |  |
+| ED 35 | 2.8% |  |  | -25 |  |  |  |  |
+| The other 25 | -46.0% |  |  | +2 |  |  |  |  |
+
+
+**Still counting the next morning** (districts with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (7:01 am Wed, state 37% counted): ED 28 44%, ED 31 23%, ED 14 35%, ED 12 20%, ED 10 43%, ED 9 17%, ED 33 42%, ED 34 50% and 32 more.
+- **2022** (11:10 am Wed, state 83% counted): Alaska 83%.
 
 ### Voting blocs: Alaska
 
@@ -2445,6 +2893,33 @@ The county benchmarks' method, run on every 2022 and 2024 race here, predicting 
   - Douglas County, Nebraska would have put Osborn 7.2 too low.
   - Among the five largest counties, a single county's error reached 9-10 points (Kansas and Iowa 2022 governor races).
 - **Several finished counties together are much better than any one.** The page's calculator averages them by size.
+
+### County reporting order across years
+
+Built from election-night captures of NYT's results files in the Internet Archive: 9-14 per state in 2018, 140 in 2020 (one every ~10 minutes), about 12-30 in 2022 and 1-9 in 2024 (`county_reporting.py`). "Same county order" is the rank correlation of each county's lateness between years; "late vote leaned" is the lean of the vote still uncounted minus the lean of the vote already counted, when the state was about 80% counted (D = the uncounted vote was more Democratic). Each state section has the county table.
+
+| State | Years with captures | Same county order each year? | Late vote leaned (state ~80% counted) | Big counties behind every year | Still counting next morning, 2+ years |
+|---|---|---|---|---|---|
+| Georgia | 2018 (14), 2020 (140), 2022 (44), 2024 (7) | moderate (+0.58) | 2018 D46, 2020 D36 | Chatham, Columbia, DeKalb, Forsyth | none |
+| Ohio | 2018 (14), 2020 (140), 2022 (38), 2024 (5) | one year only | 2018 D21, 2020 D12 | none | none |
+| Michigan | 2018 (14), 2020 (140), 2022 (8), 2024 (7) | weak to strong (+0.15 to +0.63) | 2018 R2, 2020 D13, 2022 D10 | Monroe, Wayne | Wayne, Kent, Genesee, Monroe |
+| Texas | 2018 (15), 2020 (140), 2022 (8), 2024 (5) | moderate (+0.55) | 2018 R10, 2020 R11 | El Paso, Hidalgo, Lubbock | none |
+| Kansas | 2018 (14), 2020 (140), 2022 (26), 2024 (2) | one year only | 2020 R10 | none | none |
+| Maine | 2018 (14), 2020 (140), 2022 (2), 2024 (5) | weak to moderate (+0.21 to +0.46) | 2020 R10, 2022 R1 | none | Kennebec, Aroostook, Oxford, Somerset, Knox |
+| Iowa | 2018 (14), 2020 (140), 2022 (19), 2024 (2) | one year only | 2020 R11 | none | none |
+| Nebraska | 2018 (14), 2020 (140), 2022 (2), 2024 (3) | weak to moderate (+0.26 to +0.35) | 2020 R11 | Madison, Platte, Saunders, Scotts Bluff, Washington | none |
+| Nevada | 2018 (14), 2020 (140), 2022 (46), 2024 (9) | weak to strong (+0.13 to +0.75) | 2020 D3, 2022 R1, 2024 R2 | none | Clark, Douglas, Nye, Elko |
+| Oregon | 2018 (14), 2020 (140), 2022 (29), 2024 (2) | moderate to strong (+0.59 to +0.66) | 2018 D5, 2020 R0, 2022 D3, 2024 D7 | none | Washington, Clackamas, Marion |
+| Alaska | 2018 (14), 2020 (140), 2022 (3), 2024 (3) | one year only |  | none | none |
+
+**What repeats across years:**
+- **The county order repeats, but only moderately.** Between years the rank correlation is mostly +0.2 to +0.7. It is highest in Oregon (+0.59 to +0.66), Nevada 2022-2024 (+0.75), Michigan 2018-2020 (+0.63), Georgia 2018-2020 (+0.58) and Texas 2020-2024 (+0.55). Read a county's past timing as a tendency, not a schedule.
+- **Two shapes, and each state keeps its own.**
+  - **Democratic metro counties come last** in Georgia, Michigan, Nevada and Ohio. DeKalb was behind the state in every Georgia year with captures, and when Georgia was half to 90% counted the uncounted vote was 22-46 points more Democratic than the counted vote (2018, 2020). Wayne and Monroe ran behind in every Michigan year; Wayne, Kent, Genesee and Monroe were still under 90% the next morning in both 2020 and 2022, and the vote still out at 80% counted was 10-13 points more Democratic in 2020 and 2022. In Nevada the more Democratic the county, the later it reported in all three years with data, and Clark was still under 90% the next morning in both years with a morning capture (2020, 2022). In Ohio the vote left at 80% counted was 12-21 points more Democratic (2018, 2020).
+  - **Rural counties come last** in Texas, Kansas, Iowa and Nebraska. The vote still out was 9-21 points more Republican at 50-80% counted in every year with captures there (Texas 2018, 2020, 2024; Kansas 2018, 2020; Iowa 2020; Nebraska 2020, 2024). El Paso, Hidalgo and Lubbock ran behind Texas in every year; the big suburban counties (Collin, Denton, Williamson) ran ahead.
+- **Oregon and Maine have no steady partisan tilt** at 80% counted. Oregon's first drop is Portland-heavy (the vote still out at half counted was 21 points more Republican in 2020), then Washington, Clackamas and Marion are the counties still counting the next morning. In Maine, rural Aroostook, Somerset, Kennebec, Oxford and Knox are the repeat next-morning stragglers.
+- **Georgia's count got faster.** In 2020 Fulton, DeKalb and Chatham were still under 90% at 7 a.m. the next day; by 9:42 a.m. after the 2022 election every county had finished.
+- **Limits.** 2020 was a record mail year, and several states have changed their counting rules since (each state's rules line). Only 2020 is captured every few minutes; 2018, 2022 and 2024 have a handful of captures, so Alaska, Iowa, Kansas and Ohio have one usable year for the order measure.
 
 ### How each voting bloc moved, 2020 to 2024
 
