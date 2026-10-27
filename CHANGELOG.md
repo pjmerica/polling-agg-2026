@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` State election results on the Oct 27 evening forecast: Kansas Governor added, South Carolina Senate recorded (2026-10-27).
+- `[e4fce189]` State election results on the Oct 27 evening forecast: Kansas Governor added, South Carolina Senate recorded (2026-10-27).
   - 12 Senate/Governor races at 75% or less after the evening retrain (AK-Sen, GA-Gov, IA-Sen, KS-Gov, KS-Sen, ME-Sen, NE-Sen, NV-Gov, OH-Gov, OH-Sen special, SC-Sen, TX-Sen). KS-Gov joins the guide (county benchmarks on 2024 President and the 2022 Kelly-Schmidt race; the Kansas guide covers its counting), so the page tracks 14 races.
   - South Carolina Senate has no vote-count guide yet; `capture_live.py` records it (and KS-Gov) on election night.
 
