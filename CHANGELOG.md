@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` State election results rebuilt on the Oct 27 forecast (2026-10-27) - user: "rebuild it".
+- `[b4cd9500]` State election results rebuilt on the Oct 27 forecast (2026-10-27) - user: "rebuild it".
   - Ran the README rebuild order (early vote, county benchmarks, Census blocs, county reporting, race list, MASTER, election-night page). `competitive_races.md`: 7 races at 75% or less (AK-Sen, KS-Sen, MI-Sen, TX-Sen, OH-Gov, OH-Sen special, NV-Gov); VT-Gov, IA-Sen and NE-Sen just outside.
   - The 13 state guides and `capture_live.py`'s 13 races are kept; the MASTER intro and the page's live table now say the 13 are the Oct 22 list and point to the current one.
 
