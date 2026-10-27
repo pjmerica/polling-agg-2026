@@ -2,7 +2,7 @@
 
 *Covers the competitive Governor and Senate races (model favorite at 75% or less): 13 races in eleven states.
 Written 2026-10-21; Nevada, Oregon and the Texas governor race added 2026-10-22, after the model audit moved them
-under 75% (`model_audit/MODEL_AUDIT.md`). Open items rechecked and ballots already cast (section 2c) added 2026-10-23. Model numbers: forecast run of 2026-10-26 16:17 UTC. Market numbers: 2026-10-26 16:17 UTC refresh. Both are filled in from the published forecast each
+under 75% (`model_audit/MODEL_AUDIT.md`). Open items rechecked and ballots already cast (section 2c) added 2026-10-23. Model numbers: forecast run of 2026-10-27 17:04 UTC. Market numbers: 2026-10-27 17:04 UTC refresh. Both are filled in from the published forecast each
 time this file is rebuilt. All times are Eastern (ET). Daylight saving time ends Nov 1, so ET means EST (UTC-5).*
 
 **How each fact was checked**
@@ -20,17 +20,17 @@ Listed in poll-closing order.
 
 | # | State | Competitive race(s) | Model favorite (win %) | Market, same candidate | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Georgia | Governor | Bottoms (D) 55.7% vs Jackson (R) | Bottoms 62% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
-| 2 | Ohio | Governor; Senate (special) | Acton (D) 55.0% vs Ramaswamy (R); Brown (D) 56.3% vs Husted (R) | Acton 82%; Brown 68% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
-| 3 | Michigan | Senate | El-Sayed (D) 65.3% vs Rogers (R) | El-Sayed 67% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
-| 4 | Texas | Senate; Governor | Talarico (D) 56.4% vs Paxton (R); Abbott (R) 74.8% vs Hinojosa (D) | Talarico 64%; Abbott 68% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
-| 5 | Kansas | Senate | Marshall (R) 58.9% vs Hamilton (D) | Marshall 61% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
-| 6 | Maine | Senate (ranked-choice) | Jackson (D) 67.2% vs Collins (R) | Jackson 60% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
-| 7 | Iowa | Senate | Hinson (R) 67.4% vs Turek (D) | Hinson 58% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
-| 8 | Nebraska | Senate | Ricketts (R) 61.3% vs Osborn (I); no Democrat on the ballot | Ricketts 72% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
-| 9 | Nevada | Governor | Lombardo (R) 68.3% vs Ford (D) | Lombardo 32% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
-| 10 | Oregon | Governor | Kotek (D) 70.5% vs Drazan (R) | Kotek 82% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
-| 11 | Alaska | Senate (ranked-choice) | Peltola (D) 51.0% vs Sullivan (R) | Peltola 74% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
+| 1 | Georgia | Governor | Bottoms (D) 80.2% vs Jackson (R) | Bottoms 62% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
+| 2 | Ohio | Governor; Senate (special) | Acton (D) 55.8% vs Ramaswamy (R); Brown (D) 64.5% vs Husted (R) | Acton 79%; Brown 68% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
+| 3 | Michigan | Senate | El-Sayed (D) 70.8% vs Rogers (R) | El-Sayed 69% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
+| 4 | Texas | Senate; Governor | Paxton (R) 62.5% vs Talarico (D); Abbott (R) 87.8% vs Hinojosa (D) | Paxton 34%; Abbott 66% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
+| 5 | Kansas | Senate | Marshall (R) 73.7% vs Hamilton (D) | Marshall 60% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
+| 6 | Maine | Senate (ranked-choice) | Jackson (D) 85.4% vs Collins (R) | Jackson 62% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
+| 7 | Iowa | Senate | Hinson (R) 77.2% vs Turek (D) | Hinson 58% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
+| 8 | Nebraska | Senate | Ricketts (R) 78.0% vs Osborn (I); no Democrat on the ballot | Ricketts 72% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
+| 9 | Nevada | Governor | Lombardo (R) 65.0% vs Ford (D) | Lombardo 25% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
+| 10 | Oregon | Governor | Kotek (D) 90.4% vs Drazan (R) | Kotek 82% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
+| 11 | Alaska | Senate (ranked-choice) | Sullivan (R) 54.5% vs Peltola (D) | Sullivan 26% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
 
 Notes on the table:
 - **Market column:** the market's chance for the model's favorite (where the market priced the other candidate, 100 minus that price). Under 50% means the market favors the other candidate: Nevada.
@@ -120,17 +120,17 @@ Source: the University of Florida Election Lab's [2026 early-vote tracker](https
 
 | State | As of | Already voted | Share of 2022's total vote | Mail returned / sent or requested | Early in person | Voters' registered party (D / R / other) | Note |
 |---|---|---|---|---|---|---|---|
-| Georgia | 10/23/2026 | 1,468K | 37.0% | 71K / 152K | 1,397K | - | Nearly all in person; Georgia has no party registration. |
-| Ohio | 10/22/2026 | 838K | 19.9% | 349K / 708K | 489K | - | In person estimated by the tracker (a ballot sent and received the same day); no party registration. |
-| Michigan | 10/22/2026 | 921K | 20.5% | 921K / 2,142K | - | - | Mail and clerk-office absentee only; Michigan's early in-person voting starts later (at least 9 days before Nov 3). No party registration. |
-| Texas | 10/23/2026 | 2,275K | 27.9% | 112K / 112K | 2,163K | - | Texas doesn't report requests, so mail = mail ballots returned; no party registration. |
-| Kansas | 10/22/2026 | 122K | 12.1% | 24K / 99K | 98K | 60K / 47K / 16K |  |
-| Maine | 10/20/2026 | 135K | 19.9% | 135K / 201K | - | 71K / 27K / 38K | Absentee only (Maine counts in-person absentee as absentee); as of Oct 20. |
-| Iowa | 10/22/2026 | 167K | 13.6% | 51K / 161K | 116K | 86K / 52K / 28K |  |
-| Nebraska | 10/23/2026 | 136K | 20.0% | 116K / 237K | 20K | 56K / 57K / 23K |  |
-| Nevada | 10/22/2026 | 285K | 27.8% | 178K / 2,081K | 107K | 113K / 101K / 71K | Nevada mails every active voter a ballot, so requests are ballots sent. |
-| Oregon | 10/22/2026 | 272K | 13.6% | 272K / 3,117K | - | 137K / 73K / 62K | All-mail state: requests are ballots sent to every voter. |
-| Alaska | 10/22/2026 | 26K | 9.9% | 9K / 46K | 17K | - | No party breakdown. |
+| Georgia | 10/27/2026 | 1,955K | 49.3% | 91K / 158K | 1,864K | - | Nearly all in person; Georgia has no party registration. |
+| Ohio | 10/26/2026 | 1,084K | 25.8% | 447K / 721K | 636K | - | In person estimated by the tracker (a ballot sent and received the same day); no party registration. |
+| Michigan | 10/27/2026 | 1,392K | 30.9% | 1,198K / 2,164K | 195K | - | Mail and clerk-office absentee only; Michigan's early in-person voting starts later (at least 9 days before Nov 3). No party registration. |
+| Texas | 10/27/2026 | 4,543K | 55.7% | 208K / 208K | 4,334K | - | Texas doesn't report requests, so mail = mail ballots returned; no party registration. |
+| Kansas | 10/27/2026 | 245K | 24.3% | 52K / 106K | 193K | 112K / 99K / 34K |  |
+| Maine | 10/26/2026 | 196K | 28.8% | 196K / 248K | - | 97K / 42K / 57K | Absentee only (Maine counts in-person absentee as absentee); as of Oct 20. |
+| Iowa | 10/27/2026 | 307K | 24.9% | 113K / 161K | 194K | 152K / 100K / 56K |  |
+| Nebraska | 10/27/2026 | 170K | 24.8% | 142K / 243K | 28K | 68K / 73K / 29K |  |
+| Nevada | 10/27/2026 | 444K | 43.4% | 263K / 2,088K | 181K | 179K / 154K / 112K | Nevada mails every active voter a ballot, so requests are ballots sent. |
+| Oregon | 10/26/2026 | 518K | 25.9% | 518K / 3,117K | - | 236K / 154K / 127K | All-mail state: requests are ballots sent to every voter. |
+| Alaska | 10/26/2026 | 46K | 17.3% | 16K / 48K | 31K | - | No party breakdown. |
 
 How to read it:
 - **Most first results are these ballots.** Their size and lean set the early lead.
@@ -151,7 +151,7 @@ How to read it:
 
 **Race.**
 - Keisha Lance Bottoms (D) vs Rick Jackson (R); open seat.
-- Model: Bottoms 55.7%. Market: Bottoms 62%.
+- Model: Bottoms 80.2%. Market: Bottoms 62%.
 - Ballot: two candidates. The Libertarian Party failed to qualify for the 2026 ballot (its petition drive fell short in July: [AJC](https://www.ajc.com/politics/2026/07/libertarians-wont-be-on-the-ballot-in-georgia-meaning-likely-no-runoffs/), [WABE](https://www.wabe.org/georgia-libertarians-end-efforts-to-get-on-2026-general-election-ballot/) ○). Only write-ins could add a third name, so runoff risk is close to zero.
 - A majority is required. A general-election runoff, if needed, is **Tue Dec 1** ✔ ([georgia.gov](https://georgia.gov/events/2026-12-01/election-day-general-election-runoff)).
 
@@ -211,8 +211,8 @@ What the curves show (`state_curves.md`):
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 55.0% | Acton 82% |
-| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 56.3% | Brown 68% |
+| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 55.8% | Acton 79% |
+| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 64.5% | Brown 68% |
 
 **Rules for Nov 3**
 - **Deadlines and ballot processing:**
@@ -267,7 +267,7 @@ What the curves show:
 
 **Race.**
 - Abdul El-Sayed (D) vs Mike Rogers (R); open seat.
-- Model: El-Sayed 65.3%. Market: El-Sayed 67%.
+- Model: El-Sayed 70.8%. Market: El-Sayed 69%.
 - In the Aug 4 primary El-Sayed led Stevens 48.5-47.5 with 96% counted on Wednesday morning, and AP called it just before 10 am Wednesday ✔ ([FOX 2 via Fox 4](https://www.fox4news.com/news/abdul-el-sayed-projected-defeat-haley-stevens-democratic-senate-primary-race.amp)).
 
 **Rules for Nov 3**
@@ -322,8 +322,8 @@ What the curves show:
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Senate (open) | James Talarico (D) vs Ken Paxton (R). Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27). | Talarico 56.4% | Talarico 64% |
-| Governor | Greg Abbott (R, incumbent) vs Gina Hinojosa (D) | Abbott 74.8% | Abbott 68% |
+| Senate (open) | James Talarico (D) vs Ken Paxton (R). Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27). | Paxton 62.5% | Paxton 34% |
+| Governor | Greg Abbott (R, incumbent) vs Gina Hinojosa (D) | Abbott 87.8% | Abbott 66% |
 
 Both races are on the same ballot and counted together, so everything below applies to both.
 
@@ -392,7 +392,7 @@ What the curves show:
 
 **Race.**
 - Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates.
-- Model: Marshall 58.9%. Market: Marshall 61%.
+- Model: Marshall 73.7%. Market: Marshall 60%.
 
 **Rules for Nov 3**
 - **Polls:**
@@ -448,7 +448,7 @@ What the curves show:
 
 **Race and ballot.**
 - Troy Jackson (D) vs Susan Collins (R, incumbent).
-- Model: Jackson 67.2%. Market: Jackson 60%.
+- Model: Jackson 85.4%. Market: Jackson 62%.
 - Only Collins and Jackson are printed on the ballot.
 - **Six declared write-in candidates make this a ranked-choice race** ✔ (Spectrum News, Aug 26): Andrews, Olson, Oswald, Steinberger, Turcotte, Webb.
 - Votes for an undeclared write-in, such as Graham Platner (who withdrew July 10), count as blank ✔.
@@ -521,7 +521,7 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 
 **Race.**
 - Ashley Hinson (R) vs Josh Turek (D); open seat after Ernst retired ✔ (AP Jun 2026).
-- Model: Hinson 67.4%. Market: Hinson 58%. The market is much less sure than the model.
+- Model: Hinson 77.2%. Market: Hinson 58%. The market is much less sure than the model.
 
 **Rules for Nov 3 ✔**
 - **Polls and deadlines:**
@@ -580,7 +580,7 @@ What the curves show:
   - The state Democratic Party voted not to fill the vacancy; party chair Jane Kleeb endorsed Osborn (Ballotpedia, Nebraska Examiner, WOWT ○).
   - Before the primary, Burbank said she would back Osborn if she had no path to victory.
   - Our forecast data also has no Democrat.
-- Model: Ricketts 61.3%. Market: Ricketts 72%.
+- Model: Ricketts 78.0%. Market: Ricketts 72%.
 
 **Rules for Nov 3 ✔**
 - **Polls:** close 8 pm Central and 7 pm Mountain, so **9:00 pm ET everywhere** ([Neb. Rev. Stat. 32-908](https://nebraskalegislature.gov/laws/statutes.php?statute=32-908)).
@@ -626,7 +626,7 @@ What the curves show:
 
 **Race.**
 - Joe Lombardo (R, incumbent) vs Aaron D. Ford (D, attorney general). Also on the ballot: Danielle Ford (no party) and the "None of these candidates" line ◐ ([Clark County Fall 2026 newsletter](https://www.clarkcountynv.gov/adobe/assets/urn:aaid:aem:228bc80b-da3b-42da-bc72-25cce75470d1/original/as/cced-newsletter-fall2026.pdf)).
-- Model: Lombardo 68.3%. Market: Lombardo 32%. **The market favors Ford; the model favors Lombardo.** That is the largest model-market disagreement on this list.
+- Model: Lombardo 65.0%. Market: Lombardo 25%. **The market favors Ford; the model favors Lombardo.** That is the largest model-market disagreement on this list.
 - "None of these candidates" votes are posted in every result but never decide the winner; only votes for named candidates count ✔ ([NRS 293.269](https://www.leg.state.nv.us/NRS/NRS-293.html)). The researcher found no majority or runoff rule, so it's a plurality race ◐.
 - No Senate race in Nevada this year. NV-1, NV-3 and the down-ballot statewide races come out of the same county batches.
 - Latest public poll found: Noble Predictive Insights (Oct 7-13) Lombardo 40, Ford 37, 23% undecided ○ ([KTNV](https://www.ktnv.com/news/new-poll-shows-lombardo-has-slight-lead-in-2026-governor-matchup)).
@@ -723,7 +723,7 @@ What the curves show:
 
 **Race.**
 - Tina Kotek (D, incumbent; also the Working Families nominee) vs Christine Drazan (R; also the Libertarian nominee), a rematch of 2022. Pacific Green nominee Brett Smith is the only other name ○ ([Wikipedia](https://en.wikipedia.org/wiki/2026_Oregon_gubernatorial_election)).
-- Model: Kotek 70.5%. Market: Kotek 82%.
+- Model: Kotek 90.4%. Market: Kotek 82%.
 - In 2022 Kotek won by 66,727 votes (3.4 points) while independent Betsy Johnson took 8.6%. Smith polls 3-6%, so this year is closer to a two-way race ○.
 - Recent polls: Kotek 46-44 (Oregonian/DHM) and 46-42 (GBAO, a Kotek internal), after three polls with Drazan ahead by 1-4 ○ ([OPB, Oct 8](https://www.opb.org/article/2026/10/08/new-polls-kotek-may-lead/)).
 
@@ -819,7 +819,7 @@ What the curves show:
   | Heikes | 1.1% | 1,741 |
 
   Peltola led by 8.1 points in an all-party primary.
-- Model: Peltola 51.0%, the closest race on our list. Market: Peltola 74%.
+- Model: Sullivan 54.5%, the closest race on our list. Market: Sullivan 26%.
 - **Why the second Sullivan matters on election night** (inference):
   - Votes for the second Sullivan and for Heikes are first-round votes that are not the incumbent's.
   - They make it less likely that anyone tops 50% of first choices, so the ranked-choice count on Nov 18 is more likely.

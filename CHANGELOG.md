@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` State election results rebuilt on the Oct 27 forecast (2026-10-27) - user: "rebuild it".
+  - Ran the README rebuild order (early vote, county benchmarks, Census blocs, county reporting, race list, MASTER, election-night page). `competitive_races.md`: 7 races at 75% or less (AK-Sen, KS-Sen, MI-Sen, TX-Sen, OH-Gov, OH-Sen special, NV-Gov); VT-Gov, IA-Sen and NE-Sen just outside.
+  - The 13 state guides and `capture_live.py`'s 13 races are kept; the MASTER intro and the page's live table now say the 13 are the Oct 22 list and point to the current one.
+
 - `[a9a4e1ed]` Model refresh: district presidential lean added next to the state lean, all three general models retrained (2026-10-27) - user: "keep a column for state presidential lean and district presidential lean".
   - Model repo af1cddd: House races get `dist_pres_lean_cand`, their own district's presidential margin minus the nation's on that year's lines (The Downballot's presidential-by-district tables, 2002-2026), beside the unchanged state lean. CO-5 D 79 -> 47 (market 41); no-polls MI-1 48 -> 13 and CA-1 63 -> 87, now near the markets.
   - Re-tuned settings also move statewide races: TX-Sen flips to Paxton (D 56 -> 38; market D 66), ME-Sen 60 -> 85, GA-Gov 68 -> 80. 8 polled favourite flips in all, 5 toward the market favourite. Senate/Governor races at 75% or less: 9 -> 7. The `State election results` race list is still not rebuilt.

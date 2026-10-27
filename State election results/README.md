@@ -14,7 +14,7 @@ means X) and projected to a final result.
 | `STATE_BY_STATE.md` | State-by-state guide to how and when votes come in, checked against primary sources (built by `scripts/build_state_guide.py` from `scripts/state_guide_template.md`) |
 | `VOLATILITY.md` | Which states' counts swing the most, nationally: every President/Senate/Governor race in all 50 states and DC, 2020-2024, ranked by swing size and by how often the leader during the count lost (built by `scripts/volatility.py` from `fetch_nyt_history.py --all`) |
 | `SWINGS.md` | How far the count moved after polls close in every race NYT covered in the eleven states, 2020-2026: biggest swings, comebacks, late movers, early vs Election Day splits, 2020 county detail, 2026 primaries (built by `scripts/swing_analysis.py` + `scripts/build_swings_report.py`) |
-| `competitive_races.md` | The races (model favorite at 75% or less), built from `docs/forecast_data.js` by `scripts/build_competitive.py`: 13 races in 11 states as of Oct 22 |
+| `competitive_races.md` | The races (model favorite at 75% or less), built from `docs/forecast_data.js` by `scripts/build_competitive.py`: 13 races in 11 states as of Oct 22; 7 after the Oct 27 retrain (the other six stay in the guide) |
 | `reports/Vote count timing in close 2026 races.md` | Rules and history per state (the first nine states): poll closes, ballot order, deadlines, RCV, recounts, past call times |
 | `reports/Vote count timing Nevada and Oregon.md` | The same for Nevada and Oregon, added Oct 22 when the model audit put their governor races under 75% |
 | `model_audit/MODEL_AUDIT.md` | Audit of the forecast's inputs (Oct 21-22): what was wrong, what was fixed, before/after poll numbers and win chances |
