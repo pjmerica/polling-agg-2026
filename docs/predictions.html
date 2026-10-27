@@ -359,6 +359,7 @@ a:hover { text-decoration: underline; }
     const m = r._m, mk = r._mk;
     const chips = [];
     if (r.fragile) chips.push(`<span class="chip warn" title="The pick flips if all polls are off by 3 points in one direction">Fragile</span>`);
+    if (r.split) chips.push(`<span class="chip warn" title="The win model and the separate margin model pick different favourites (the margin model has ${esc(r.split)} ahead)">Models split</span>`);
     if (rt.same) chips.push(`<span class="chip">${pab(a.party)} vs ${pab(a.party)}</span>`);
     if (r.basis === 'fundamentals') chips.push(`<span class="chip" title="No public polls in this race: the no-polls model's estimate">No polls</span>`);
     el.innerHTML = `
@@ -392,7 +393,7 @@ a:hover { text-decoration: underline; }
       state: (a, b) => a._name.localeCompare(b._name) || a.office.localeCompare(b.office),
       dem: (a, b) => b._lean - a._lean,
       rep: (a, b) => a._lean - b._lean,
-      gap: (a, b) => (b._mk ? Math.abs(b._mk.model - b._mk.mkt) : -1) - (a._mk ? Math.abs(a._mk.model - a._mk.mkt) : -1),
+      gap: (a, b) => (b._mk && !b.split ? Math.abs(b._mk.model - b._mk.mkt) : -1) - (a._mk && !a.split ? Math.abs(a._mk.model - a._mk.mkt) : -1),
     };
     rs.sort(by[state.sort]);
     const g = document.getElementById('grid'); g.innerHTML = '';
@@ -445,7 +446,7 @@ a:hover { text-decoration: underline; }
       const label = f.label && f.label !== f.f ? f.label : f.f.replace(/_/g, ' ');
       const imp = (pos ? '+' : '−') + Math.abs(f.imp).toFixed(1) + ' pts';
       return `<div class="factor" title="Click for a description">
-        <div><div class="f-name">${esc(label)}</div><div class="f-val">value: ${esc(fmtVal(f.val))}</div>
+        <div><div class="f-name">${esc(label)}</div><div class="f-val">value: ${esc(fmtVal(f.val))}${block.vs && f.vs_val !== undefined ? ` · ${esc(last(block.vs))}: ${esc(fmtVal(f.vs_val))}` : ''}</div>
           ${f.desc ? `<div class="f-desc">${esc(f.desc)}</div>` : ''}</div>
         <div class="dv"><div class="axis"></div>
           <div class="b" style="${pos ? `left:50%;width:${w}%;background:${candCol}` : `right:50%;width:${w}%;background:#6b7489`}"></div></div>
@@ -487,7 +488,8 @@ a:hover { text-decoration: underline; }
     if (mk) html += `<div class="sec"><h4>Model vs markets</h4><div class="big">
         <div class="stat"><div class="v">${pct(mk.model)}</div><div class="l">Model: ${esc(mk.name)}</div></div>
         <div class="stat"><div class="v">${pct(mk.mkt)}</div><div class="l">Markets (Kalshi / Polymarket avg)</div></div>
-        <div class="stat"><div class="v" style="color:${mk.model - mk.mkt >= 0 ? 'var(--dem-soft)' : 'var(--rep-soft)'}">${(mk.model - mk.mkt >= 0 ? '+' : '−') + Math.abs((mk.model - mk.mkt) * 100).toFixed(0)}</div><div class="l">Gap (pts)</div></div></div></div>`;
+        ${r.split ? `<div class="stat"><div class="v" style="color:var(--muted)">-</div><div class="l">No edge: models split</div></div>`
+          : `<div class="stat"><div class="v" style="color:${mk.model - mk.mkt >= 0 ? 'var(--dem-soft)' : 'var(--rep-soft)'}">${(mk.model - mk.mkt >= 0 ? '+' : '−') + Math.abs((mk.model - mk.mkt) * 100).toFixed(0)}</div><div class="l">Gap (pts)</div></div>`}</div></div>`;
     if (r.notes && r.notes.length) html += `<div class="sec">${r.notes.map(n => `<div class="note">${esc(n)}</div>`).join('')}</div>`;
     if (ex && (ex.win || ex.margin)) {
       const cand = r.cands.find(c => c.name === ex.candidate) || { name: ex.candidate, party: ex.party };
@@ -498,11 +500,18 @@ a:hover { text-decoration: underline; }
       const pane = document.getElementById('ex-pane');
       const show = k => {
         const b = ex[k]; if (!b) { pane.innerHTML = '<div class="hint">Not available for this race.</div>'; return; }
-        const chain = k === 'win'
-          ? `A typical candidate starts at <b>${pct(b.base)}</b>; these factors move ${esc(last(ex.candidate))}'s raw score to <b>${pct(b.pred)}</b>,
-             which becomes <b>${pct(cand.win)}</b> after weighing it against the opponents' scores.`
-          : `A typical candidate's projected margin is <b>${b.base >= 0 ? '+' : ''}${b.base.toFixed(1)}</b>; these factors move
-             ${esc(last(ex.candidate))} to <b>${b.pred >= 0 ? '+' : ''}${b.pred.toFixed(1)}</b> against the strongest opponent.`;
+        const two = r.cands.length === 2;
+        const chain = !b.vs
+          ? (k === 'win'
+            ? `A typical candidate starts at <b>${pct(b.base)}</b>; these factors move ${esc(last(ex.candidate))}'s raw score to <b>${pct(b.pred)}</b>,
+               which becomes <b>${pct(cand.win)}</b> after weighing it against the opponents' scores.`
+            : `A typical candidate's projected margin is <b>${b.base >= 0 ? '+' : ''}${b.base.toFixed(1)}</b>; these factors move
+               ${esc(last(ex.candidate))} to <b>${b.pred >= 0 ? '+' : ''}${b.pred.toFixed(1)}</b> against the strongest opponent.`)
+          : (k === 'win'
+            ? `An even race starts at <b>50%</b>. Each factor compares ${esc(last(ex.candidate))} with ${esc(last(b.vs))}, and together they
+               move ${esc(last(ex.candidate))} to <b>${pct(b.pred)}</b> head to head${two ? '' : `, or <b>${pct(cand.win)}</b> once the rest of the field takes its share`}.`
+            : `An even race starts at <b>0</b>. Each factor compares ${esc(last(ex.candidate))} with ${esc(last(b.vs))}, and together they
+               add up to the projected margin of <b>${b.pred >= 0 ? '+' : ''}${b.pred.toFixed(1)}</b>.`);
         pane.innerHTML = `<div class="chain">${chain}</div>${factorRows(b, k, cand)}
           <div class="hint">Bars to the right help ${esc(last(ex.candidate))}, bars to the left hurt.
           ${k === 'win' ? 'Each number is roughly how many points of win chance that factor adds or removes on its own.' : 'Each number is how many points of margin that factor adds or removes.'}

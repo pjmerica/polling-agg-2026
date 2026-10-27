@@ -58,3 +58,21 @@ def test_every_ballot_race_has_a_model_number(tmp_path, monkeypatch):
         assert r["notes"][0] == B.NOTES["FUND"], r["id"]
         assert not r["fragile"] and r["n_surveys"] == 0, r["id"]
         assert all(c["win_r3"] is None and c["margin"] is None for c in r["cands"]), r["id"]
+
+
+def test_models_split_is_flagged(tmp_path, monkeypatch):
+    """Audit item 3 (2026-10-27): where the margin model's favourite is not the win model's, the
+    race carries `split` (the margin favourite) and a note, so the forecast page and map can mute
+    the model-vs-market gap the way Model vs Markets does."""
+    monkeypatch.setattr(B, "OUT", str(tmp_path / "forecast_data.js"))
+    for r in B.build()["races"]:
+        c = r["cands"]
+        if r.get("basis") == "fundamentals" or any(x["margin"] is None for x in c) or len(c) < 2:
+            assert not r.get("split"), r["id"]
+            continue
+        mfav = max(c, key=lambda x: x["margin"])["name"]
+        if mfav != c[0]["name"]:
+            assert r["split"] == mfav, r["id"]
+            assert any(n.startswith("Models split") for n in r["notes"]), r["id"]
+        else:
+            assert r["split"] is None, r["id"]

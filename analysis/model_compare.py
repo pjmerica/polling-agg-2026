@@ -387,37 +387,21 @@ def main():
         mrid = market_race_id(g.iloc[0])
         dem = g[g["party"] == "DEM"]
         rep = g[g["party"] == "REP"]
-        # LEADING matchup only: the feed can still carry several same-party candidates from
-        # hypothetical primary-season matchup polls. Those are ALTERNATIVE nominees, not
-        # co-candidates — summing their probabilities double-counts (ME-Sen once showed a
-        # fake 87% "Dem" prob = six alternative Dems summed). model_dem = leading Dem's raw
-        # win prob renormalized against the leading Rep's (matches the market's D/(D+R) vig
-        # normalization). Races with a leftover multi-candidate field get flagged.
-        d_top = dem.loc[dem["win_prob"].idxmax()] if len(dem) else None
-        r_top = rep.loc[rep["win_prob"].idxmax()] if len(rep) else None
-        dp = float(d_top["win_prob"]) if d_top is not None else None
-        rp = float(r_top["win_prob"]) if r_top is not None else None
-        # TOP-TWO / TOP-FOUR states (CA, WA; AK top-four): after the primary, several
-        # same-party candidates are REAL co-candidates on the November ballot, not leftover
-        # hypotheticals - so the party's chance is the SUM of its candidates' (2026-09-25).
-        # Before this, a D-v-D race (CA-7 Matsui v Vang, CA-11, CA-34) showed the LEADING
-        # Democrat's 53-76% as P(Dem wins) against markets correctly at ~100%.
+        d_top = dem.loc[dem["win_prob_norm"].idxmax()] if len(dem) else None
+        r_top = rep.loc[rep["win_prob_norm"].idxmax()] if len(rep) else None
+        # ONE NUMBER (2026-10-27, audit item 2): the model repo publishes race-level win
+        # probabilities (win_prob_norm sums to 1 in every race), and the party's chance is the
+        # SUM of its candidates' - the same number the forecast page, the map and the Dashboard
+        # tab (regen_data.py) show. This replaced D/(D+R) of each party's LEADING candidate's
+        # raw probability, which differed from the other pages by the third-party share and
+        # counted a minor-party candidate as the Democrat when no Democrat was polled (AK-1,
+        # WI-6, LA-5). Leftover hypothetical nominees (ME-Sen once summed six alternative Dems to
+        # 87%) are kept out by the model repo's publish gate (test_one_nominee_per_party); in
+        # top-two / top-four states (CA, WA, AK) same-party candidates are real co-candidates.
         multi_ok = st in TOP_N_STATES
-        if multi_ok and (len(dem) or len(rep)):
-            dsum = float(dem["win_prob_norm"].sum()) if len(dem) else 0.0
-            # share of the WHOLE field, not D/(D+R) (2026-10-08): with an independent as the
-            # real opponent (CA-6 Kiley) D/(D+R) had no R side and read 100% Dem
-            tot = float(g["win_prob_norm"].sum())
-            model_dem = dsum / tot if tot > 0 else None
-        elif dp is not None and rp is not None:
-            model_dem = dp / (dp + rp) if (dp + rp) > 0 else None
-        elif dp is not None:
-            # no Rep polled: every Dem in the field is a Dem - their chances add up
-            model_dem = float(dem["win_prob_norm"].sum())
-        elif rp is not None:
-            model_dem = 1.0 - float(rep["win_prob_norm"].sum())
-        else:
-            model_dem = None
+        # no Democrat in the field reads 0% (the missing-slot guard below blanks the edge when
+        # the markets price a Democrat as live)
+        model_dem = float(dem["win_prob_norm"].sum()) if len(dem) else (0.0 if len(rep) else None)
         unresolved = bool((len(dem) > 1 or len(rep) > 1) and not multi_ok)
         dem_display = (d_top["display_party"] if d_top is not None
                        and "display_party" in dem.columns else "DEM")
@@ -494,12 +478,14 @@ def main():
         row["models_agree"] = None
         if mpreds is not None:
             mg = mpreds[mpreds["race_id"] == rid]
-            md_ = mg[mg["party"] == "DEM"]["pred_margin"]
-            mr_ = mg[mg["party"] == "REP"]["pred_margin"]
+            # race-level margins (2026-10-27): D-R = best Dem's predicted share minus the best
+            # Rep's (pred_share); older files (per-candidate margins) are symmetrized instead
+            col = "pred_share" if "pred_share" in mg.columns else "pred_margin"
+            md_ = mg[mg["party"] == "DEM"][col]
+            mr_ = mg[mg["party"] == "REP"][col]
             if len(md_) and len(mr_):
-                # per-candidate margins aren't race-consistent; symmetrize to a signed D-R
-                # number, using each party's LEADING candidate (same rule as model_dem)
-                row["model_margin_dem"] = round((float(md_.max()) - float(mr_.max())) / 2, 2)
+                dr = float(md_.max()) - float(mr_.max())
+                row["model_margin_dem"] = round(dr if col == "pred_share" else dr / 2, 2)
             if len(mg) and model_dem is not None:
                 margin_pick = mg.loc[mg["pred_margin"].idxmax()]
                 win_pick_party = "DEM" if model_dem >= 0.5 else "REP"
@@ -524,8 +510,8 @@ def main():
         # in CI (checkout resets them, faking freshness).
         predictions_as_of=_predictions_as_of(args.preds),
         polls_as_of=_predictions_meta().get("polls_max_end_date"),
-        note="model_dem = leading Dem-slot candidate's win prob renormalized against the "
-             "leading Rep's (matches the market's D/(D+R) vig normalization); when the slot "
+        note="model_dem = the sum of the Dem-slot candidates' race win probabilities (the same "
+             "number the forecast page, map and Dashboard show); when the slot "
              "candidate is an independent (slot_market='IND') the market side is the "
              "independent-win market. edge = model - market (positive = model likes the "
              "Dem-slot candidate more than the market). Only races in states whose primaries "

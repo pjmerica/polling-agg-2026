@@ -167,7 +167,7 @@ a:hover { text-decoration: underline; }
   <section class="how">
     <h3>How to read it</h3>
     <ul>
-      <li><b>Our model:</b> each race's shade is the model's chance that its favored party wins the seat (that party's candidates combined): Safe 95%+, Likely 80-95%, Lean 60-80%, Tossup under 60%. These are the forecast page's tiers; the <a href="predictions.html">forecast page</a> rates each candidate and explains every race.</li>
+      <li><b>Our model:</b> each race's shade is the model's chance that its favored party wins the seat (that party's candidates combined), from light at 51% to deep near 100%; gold means the favorite is under 51%. The labels are the forecast page's tiers (Safe 95%+, Likely 80-95%, Lean 60-80%, Tossup under 60%); the <a href="predictions.html">forecast page</a> rates each candidate and explains every race.</li>
       <li><b>No polls:</b> races no pollster has covered, most House seats, use the model's no-polls version: which party holds the seat, its past results (the new map's lean where districts were redrawn for 2026), the national environment, fundraising and the candidates' experience. Tick <b>Polled races only</b> to gray them out.</li>
       <li><b>Kalshi and Polymarket:</b> the same tiers applied to each venue's price for each party to win the seat. Prices are normalized so the outcomes add up to 100% (the venue's built-in margin removed), from the dashboard's last market refresh. Gray races have no party market on that venue.</li>
       <li><b>House map:</b> the 435 districts on the lines in force for November 3, 2026. Nine states redrew since 2024 (Texas, California, North Carolina, Ohio, Utah, Florida, Tennessee, Louisiana and Alabama); Missouri and Virginia vote on their old maps after courts blocked the new ones. Click a state to zoom in, use + and &minus;, and drag to move around. <b>Squares</b> shows each state's districts as equal squares instead, so small urban districts are as easy to see as rural ones.</li>
@@ -199,11 +199,25 @@ a:hover { text-decoration: underline; }
   // ---------- tiers and colours (same as predictions.html) ----------
   const tierOf = p => p >= 0.95 ? 'Safe' : p >= 0.8 ? 'Likely' : p >= 0.6 ? 'Lean' : 'Tossup';
   const mkRt = (side, p) => { const tier = tierOf(p); return { tier, side, p, label: tier === 'Tossup' ? 'Tossup' : `${tier} ${side}` }; };
-  const COL = { D: { Safe: 'var(--safe-d)', Likely: 'var(--likely-d)', Lean: 'var(--lean-d)' },
-                R: { Safe: 'var(--safe-r)', Likely: 'var(--likely-r)', Lean: 'var(--lean-r)' },
-                I: { Safe: '#7c3aed', Likely: '#8b5cf6', Lean: '#c4b5fd' } };
-  const color = rt => rt.tier === 'Tossup' ? 'var(--toss)' : COL[rt.side][rt.tier];
-  const darkText = rt => rt.tier === 'Safe' || rt.tier === 'Likely';
+  // GRADIENT (user call 2026-10-27): every race is shaded continuously by its favored party's chance,
+  // light at 51% to deep near 100%; gold only when the favorite is under 51% (a coin flip). The
+  // Safe/Likely/Lean/Tossup words stay the forecast page's tiers.
+  const EVEN = 0.51;
+  const STOPS = { D: [[0.5, '#dbe8fe'], [0.6, '#93c5fd'], [0.8, '#3b82f6'], [0.95, '#1d4ed8'], [1, '#1e3a8a']],
+                  R: [[0.5, '#fee2e2'], [0.6, '#fca5a5'], [0.8, '#ef4444'], [0.95, '#b91c1c'], [1, '#7f1d1d']],
+                  I: [[0.5, '#ede9fe'], [0.6, '#c4b5fd'], [0.8, '#8b5cf6'], [0.95, '#7c3aed'], [1, '#4c1d95']] };
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  function shade(side, p) {
+    if (p < EVEN) return 'var(--toss)';
+    const st_ = STOPS[side] || STOPS.I, q = Math.min(Math.max(p, 0.5), 1);
+    let i = 1; while (i < st_.length - 1 && q > st_[i][0]) i++;
+    const [p0, c0] = st_[i - 1], [p1, c1] = st_[i], t = (q - p0) / (p1 - p0);
+    const a = hex(c0), b = hex(c1);
+    return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * t)).join(',')})`;
+  }
+  const gradCss = side => `linear-gradient(90deg, ${STOPS[side].map(([q, c]) => `${c} ${((q - 0.5) * 200).toFixed(0)}%`).join(', ')})`;
+  const color = rt => shade(rt.side, rt.p);
+  const darkText = rt => rt.p >= EVEN && rt.p >= 0.78;   // true = white text on a deep shade
   const pill = rt => `<span class="pill" style="background:${color(rt)};color:${darkText(rt) ? '#fff' : '#0b0e14'}">${esc(rt.label)}</span>`;
   function margin(r) {  // half the gap between the top two candidates' margins (separate margin model)
     const [a, b] = r.cands;
@@ -346,10 +360,11 @@ a:hover { text-decoration: underline; }
         meta.push(`Our model, same side: ${pct(mp)} (${gap(mp, v.rt.p)})`);
       } else meta.push('Our model: no projection');
     }
-    const fragile = st.src === 'model' && r && r.fragile && r.basis !== 'fundamentals' ? '<span class="warn">Fragile: the pick flips if every poll is off by 3 points one way</span>' : '';
+    const fragile = (st.src === 'model' && r && r.fragile && r.basis !== 'fundamentals' ? '<span class="warn">Fragile: the pick flips if every poll is off by 3 points one way</span>' : '') +
+      (st.src === 'model' && r && r.split ? `<span class="warn">Models split: the margin model has ${esc(r.split)} ahead</span>` : '');
     // the forecast's race notes (Louisiana's Nov 3 first round, ranked choice, same-party fields);
     // the no-polls note is already the "No polls" line above
-    const notes = (r && r.notes || []).filter(n => !/^No public polls/.test(n))
+    const notes = (r && r.notes || []).filter(n => !/^No public polls/.test(n) && !/^Models split/.test(n))
       .map(n => `<div class="rnote">${esc(n)}</div>`).join('');
     return head + `<div class="cands">${rows}</div><div class="meta">${meta.map(x => `<span>${x}</span>`).join('')}${fragile}</div>` + notes + demo;
   }
@@ -459,8 +474,14 @@ a:hover { text-decoration: underline; }
   const svg = document.getElementById('map');
   const tabs = document.getElementById('tabs'), srcs = document.getElementById('src'), hvs = document.getElementById('hv');
   const TOP = 15;
-  const ORDER = ['Safe D', 'Likely D', 'Lean D', 'Tossup', 'Lean I', 'Likely I', 'Safe I', 'Lean R', 'Likely R', 'Safe R'];
-  const swatch = l => { const [t, side] = l.split(' '); return l === 'Tossup' ? 'var(--toss)' : COL[side][t]; };
+  // tally keys: the forecast tiers, with tossups split by which side has the edge, and "Even" for
+  // the gold coin flips under 51%
+  const ORDER = ['Safe D', 'Likely D', 'Lean D', 'Tossup D', 'Even', 'Tossup I', 'Lean I', 'Likely I', 'Safe I',
+                 'Tossup R', 'Lean R', 'Likely R', 'Safe R'];
+  const MID = { Safe: 0.975, Likely: 0.875, Lean: 0.7, Tossup: 0.555 };
+  const tallyKey = rt => rt.p < EVEN ? 'Even' : rt.tier === 'Tossup' ? `Tossup ${rt.side}` : rt.label;
+  const tallyText = l => l === 'Even' ? 'Even (50-51%)' : /^Tossup /.test(l) ? `Tossup, ${l.slice(-1)} edge` : l;
+  const swatch = l => { if (l === 'Even') return 'var(--toss)'; const [t, side] = l.split(' '); return shade(side, MID[t]); };
   const noneLabel = () => st.src === 'model' ? 'No projection' : `No ${VENUE[st.src]} market`;
   const districtMap = () => st.office === 'House' && st.hv === 'map' && !!(H && H.districts && M);
 
@@ -470,18 +491,19 @@ a:hover { text-decoration: underline; }
   function tally(office) {
     const c = {};
     const vs = all(office);
-    for (const [, v] of vs) c[v.rt.label] = (c[v.rt.label] || 0) + 1;
+    for (const [, v] of vs) { const k = tallyKey(v.rt); c[k] = (c[k] || 0) + 1; }
     const total = Object.keys(ballot[office]).length;
-    return ORDER.filter(l => c[l]).map(l => `<span><i style="background:${swatch(l)}"></i>${l} <b>${c[l]}</b></span>`).join('') +
+    return ORDER.filter(l => c[l]).map(l => `<span><i style="background:${swatch(l)}"></i>${tallyText(l)} <b>${c[l]}</b></span>`).join('') +
       `<span><i style="background:var(--none)"></i>${noneLabel()} <b>${Math.max(0, total - vs.length)}</b></span>`;
   }
   function legend(office) {
-    const items = [['Safe D', 'var(--safe-d)'], ['Likely D', 'var(--likely-d)'], ['Lean D', 'var(--lean-d)'], ['Tossup', 'var(--toss)'],
-                   ['Lean R', 'var(--lean-r)'], ['Likely R', 'var(--likely-r)'], ['Safe R', 'var(--safe-r)']];
-    if (all(office).some(([, v]) => v.rt.side === 'I')) items.push(['Independent favored', '#8b5cf6']);
+    const bar = side => `<i style="width:64px;background:${gradCss(side)}"></i>`;
+    const items = [[`${bar('D')}Democrat favored, 51% to 100%`], [`${bar('R')}Republican favored, 51% to 100%`]];
+    if (all(office).some(([, v]) => v.rt.side === 'I')) items.push([`${bar('I')}Independent favored`]);
+    items.push(['Even, favorite under 51%', 'var(--toss)']);
     items.push([`On the ballot, ${st.src === 'model' ? 'no projection' : `no ${VENUE[st.src]} market`}`, 'var(--none)']);
     if (office !== 'House') items.push([`No ${office.toLowerCase()} race`, 'var(--off)']);
-    return items.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('');
+    return items.map(([t, c]) => c ? `<span><i style="background:${c}"></i>${t}</span>` : `<span>${t}</span>`).join('');
   }
   function thead() {
     if (st.src === 'model')
@@ -502,7 +524,8 @@ a:hover { text-decoration: underline; }
         const b = topOf(r, other), m = margin(r);
         const kp = venuePrice(v.b, 'kalshi', side), pp = venuePrice(v.b, 'polymarket', side);
         const notes = (r.basis === 'fundamentals' ? '<span class="mut">No polls</span>' : '') +
-          (r.fragile && r.basis !== 'fundamentals' ? '<span class="warn">Fragile</span>' : '');
+          (r.fragile && r.basis !== 'fundamentals' ? '<span class="warn">Fragile</span>' : '') +
+          (r.split ? '<span class="warn">Models split</span>' : '');
         return `<tr><td>${link}</td><td>${pill(v.rt)}</td><td>${esc(a.name)} (${esc(PARTY[a.party] || a.party)})</td><td class="n">${pct(v.rt.p)}</td>` +
           `<td>${b ? esc(b.name) + ' (' + esc(PARTY[b.party] || b.party) + ')' : '-'}</td>` +
           `<td class="n">${m ? esc(surname(m.name)) + ' +' + m.v.toFixed(1) : '-'}</td>` +
@@ -551,7 +574,7 @@ a:hover { text-decoration: underline; }
     if (st.src === 'model') {
       const all_ = Object.values(fc[office]), np_ = all_.filter(r => r.basis === 'fundamentals').length;
       setText('title', 'How sure the model is, race by race');
-      setText('lede', "Each race is shaded by the model's confidence that its favored party wins the seat: dark when it's near-certain, light when it's a lean, gold when it's a tossup. Races no pollster has covered use the model's no-polls version; tick <b>Polled races only</b> to see which are which. Hover or tap a race for the numbers.");
+      setText('lede', "Each race is shaded by the model's confidence that its favored party wins the seat: the deeper the blue or red, the surer the model; gold only when it's a coin flip (under 51%). Races no pollster has covered use the model's no-polls version; tick <b>Polled races only</b> to see which are which. Hover or tap a race for the numbers.");
       setText('asof', F.predictions_as_of ? `Model run ${esc(String(F.predictions_as_of).slice(0, 16).replace('T', ' '))} UTC · polls through ${esc(F.polls_as_of || '-')}` : '');
       setText('note', `${nv} of ${nb} ${what} shown: ${all_.length - np_} from polls${st.polledOnly ? '' : `, ${np_} from the no-polls model`}.` + houseNote);
     } else {

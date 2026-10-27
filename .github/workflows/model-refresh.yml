@@ -79,6 +79,12 @@ jobs:
         continue-on-error: true
         run: python scripts/regen_data.py
 
+      # one number per race on every page (audit item 2, 2026-10-27): Model vs Markets, the
+      # forecast page / map and the Dashboard must all show the published race odds
+      - name: Check every page shows the published odds
+        working-directory: 'Polling Agg/Polling agg and Prediction markets'
+        run: python -m pytest tests/test_one_number.py -q
+
       - name: Commit and push predictions
         working-directory: 'Polling Agg/Polling agg and Prediction markets'
         run: |

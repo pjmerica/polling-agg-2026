@@ -56,6 +56,9 @@ NOTES = {
     "FUND": ("No public polls in this race, so this is the no-polls model: which party holds the "
              "seat, its past results (the new map's lean where districts were redrawn), the national "
              "environment, fundraising and the candidates' experience."),
+    "SPLIT": ("Models split: the win model favours {win}, but the separate margin model has {margin} "
+              "ahead. Treat this race as a toss-up between the two models, not an edge over the "
+              "markets."),
     "SAME_PARTY": ("Several candidates share a party here, and the no-polls model can barely tell "
                    "them apart, so read the party's combined chance rather than any one candidate's."),
 }
@@ -189,6 +192,16 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
         if len(cands) >= 2 and cands[0]["party"] == cands[1]["party"] and cands[0]["party"] in ("DEM", "REP"):
             mkt = []
         notes = []
+        # MODELS SPLIT (audit item 3, 2026-10-27): the win and margin models are trained separately
+        # and can pick different favourites. Model vs Markets already dims these rows as "no edge";
+        # the forecast page and map flag them and mute the model-vs-market gap
+        with_margin = [x for x in cands if x["margin"] is not None]
+        split = None
+        if len(with_margin) == len(cands) and len(cands) >= 2:
+            mfav = max(with_margin, key=lambda x: x["margin"])
+            if mfav["name"] != cands[0]["name"]:
+                split = mfav["name"]
+                notes.append(NOTES["SPLIT"].format(win=cands[0]["name"], margin=mfav["name"]))
         if st == "LA" and off == "House":
             notes.append(NOTES["LA_House"])
         if (st == "ME" and off in ("Senate", "House")) or st == "AK":
@@ -201,6 +214,7 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
             incumbent_party=(meta.incumbent_party if meta else None),
             open_seat=(bool(meta.open_seat) if meta else None),
             fragile=bool(first.get("bias_fragile", 0)),
+            split=split,
             n_surveys=int(g["n_surveys"].max()) if "n_surveys" in g and g["n_surveys"].notna().any() else None,
             basis="polls",
             cands=cands,
