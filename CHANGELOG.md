@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` Seat ranges, wider stress test, Louisiana runoff odds, same-party notes; every remaining model audit item (2026-10-27) - user: "we are going to do everything before the election".
+- `[2f6ff1bf]` Seat ranges, wider stress test, Louisiana runoff odds, same-party notes; every remaining model audit item (2026-10-27) - user: "we are going to do everything before the election".
   - Forecast page: each chamber card shows the Democrats' median seats, 80% range and control odds (model repo `src/simulate_seats.py`: every race keeps its odds, one shared national error per run, correlation fitted on 1998-2024). The "if the polls are off" table adds 6-point shifts (national misses ran 5-8 points in 2016 and 2020); no-polls races get the same table, moving the national mood.
   - Louisiana House: the model now publishes the chance to win the seat (first round + Dec 12 runoff simulated), so Model vs Markets and the Dashboard use it again (were on market prices since 10-06). LA-6: Republican 98.6%.
   - Polled same-party finals (CA-7, CA-11, CA-34, CA-40) carry a note that the odds rest on that race's polls and the candidates' records.
