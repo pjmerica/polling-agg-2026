@@ -482,9 +482,9 @@ race_id,state,office,district,candidate,cand_key,party,display_party,n_polls,n_s
 2026_NC_House-2,NC,House,2,Deborah Ross,ross d,DEM,DEM,0,0,,,34.0,1,4.0,1.0,0.9865161,0.9487807,0.98590183,0.98733574,0,fundamentals
 2026_NC_House-2,NC,House,2,Eugene Douglass,douglass e,REP,REP,0,0,,,-34.0,0,0.0,,0.04221424,0.040599495,0.053462237,0.04221424,0,fundamentals
 2026_NC_House-2,NC,House,2,Matthew Laszacs,laszacs m,OTH,OTH,0,0,,,,0,0.0,,0.011042199,0.010619822,0.011230155,0.011042199,0,fundamentals
-2026_NC_House-4,NC,House,4,Valerie Foushee,foushee v,DEM,DEM,0,0,,,46.0,1,4.0,0.9876306925730569,0.964775,0.9295689,0.9631287,0.9668718,0,fundamentals
-2026_NC_House-4,NC,House,4,Max Ganorkar,ganorkar m,REP,REP,0,0,,,-46.0,0,0.0,0.012369307426943069,0.056776647,0.054704778,0.06957228,0.056776647,0,fundamentals
-2026_NC_House-4,NC,House,4,Guy Meilleur,meilleur g,OTH,OTH,0,0,,,,0,0.0,,0.016321942,0.01572633,0.01659826,0.016321942,0,fundamentals
+2026_NC_House-4,NC,House,4,Valerie Foushee,foushee v,DEM,DEM,0,0,,,46.0,1,4.0,1.0,0.9801026,0.9271503,0.9791572,0.98130465,0,fundamentals
+2026_NC_House-4,NC,House,4,Max Ganorkar,ganorkar m,REP,REP,0,0,,,-46.0,0,0.0,,0.060688455,0.05740962,0.07646595,0.060688455,0,fundamentals
+2026_NC_House-4,NC,House,4,Guy Meilleur,meilleur g,OTH,OTH,0,0,,,,0,0.0,,0.016321942,0.015440112,0.01659826,0.016321942,0,fundamentals
 2026_NC_House-5,NC,House,5,Virginia Foxx,foxx v,REP,REP,0,0,,,18.0,1,4.0,0.7269399594033467,0.9133991,0.9547307,0.9330954,0.9182951,0,fundamentals
 2026_NC_House-5,NC,House,5,Chuck Hubbard,hubbard c,DEM,DEM,0,0,,,-18.0,0,0.0,0.2730600405966533,0.03369426,0.035218935,0.03255563,0.033016406,0,fundamentals
 2026_NC_House-5,NC,House,5,Robert Luffman,luffman r,OTH,OTH,0,0,,,,0,0.0,,0.009615331,0.010050427,0.009779234,0.009417174,0,fundamentals
@@ -524,10 +524,10 @@ race_id,state,office,district,candidate,cand_key,party,display_party,n_polls,n_s
 2026_NJ_House-5,NJ,House,5,Sean Kirrane,kirrane s,REP,REP,0,0,,,-11.278669980020375,0,0.0,0.016710420400026734,0.0056279907,0.0056367544,0.0062388703,0.0056279907,0,fundamentals
 2026_NJ_House-6,NJ,House,6,Frank Pallone,pallone f,DEM,DEM,0,0,,,15.725712178239668,1,4.0,0.996098176436053,0.97829264,0.99386,0.9776033,0.97960186,0,fundamentals
 2026_NJ_House-6,NJ,House,6,Hillary Herzig,herzig h,REP,REP,0,0,,,-15.725712178239668,0,0.0,0.003901823563946968,0.006043763,0.0061399364,0.006941908,0.005918771,0,fundamentals
-2026_NJ_House-8,NJ,House,8,Rob Menendez,menendez r,DEM,DEM,0,0,,,24.5379005412548,1,4.0,1.0,0.9879094,0.9679634,0.987727,0.9886453,0,fundamentals
-2026_NJ_House-8,NJ,House,8,Aristotle Eliopoulos,eliopoulos a,OTH,IND,0,0,,,,0,0.0,,0.011042199,0.010819255,0.011230155,0.011042199,0,fundamentals
-2026_NJ_House-8,NJ,House,8,Da'Shone Hughey,hughey d,OTH,IND,0,0,,,,0,0.0,,0.011042199,0.010819255,0.011230155,0.011042199,0,fundamentals
-2026_NJ_House-8,NJ,House,8,Craig Honts,honts c,OTH,OTH,0,0,,,,0,,,0.010612292,0.010398028,0.01079301,0.010612292,0,fundamentals
+2026_NJ_House-8,NJ,House,8,Rob Menendez,menendez r,DEM,DEM,0,0,,,24.5379005412548,1,4.0,,0.94148344,0.96643674,0.9377107,0.94488734,0,fundamentals
+2026_NJ_House-8,NJ,House,8,Aristotle Eliopoulos,eliopoulos a,OTH,IND,0,0,,,,0,0.0,,0.011042199,0.011334864,0.011230155,0.011042199,0,fundamentals
+2026_NJ_House-8,NJ,House,8,Da'Shone Hughey,hughey d,OTH,IND,0,0,,,,0,0.0,,0.011042199,0.011334864,0.011230155,0.011042199,0,fundamentals
+2026_NJ_House-8,NJ,House,8,Craig Honts,honts c,OTH,OTH,0,0,,,,0,,,0.010612292,0.010893563,0.01079301,0.010612292,0,fundamentals
 2026_NJ_House-9,NJ,House,9,Nellie Pou,pou n,DEM,DEM,0,0,,,4.892748615828772,1,4.0,0.8556825906831613,0.9753891,0.9747433,0.9742813,0.9768693,0,fundamentals
 2026_NJ_House-9,NJ,House,9,Terrisa Bukovinac,bukovinac t,OTH,IND,0,0,,,,0,0.0,,0.015992615,0.015982026,0.016263457,0.015992615,0,fundamentals
 2026_NJ_House-9,NJ,House,9,Rosie Pino,pino r,REP,REP,0,0,,,-4.892748615828772,0,1.0,0.14431740931683876,0.009280772,0.009274627,0.010783749,0.009280772,0,fundamentals
@@ -672,9 +672,9 @@ race_id,state,office,district,candidate,cand_key,party,display_party,n_polls,n_s
 2026_PA_House-6,PA,House,6,Marty Young,young m,REP,REP,0,0,,,-12.399615515797962,0,0.0,0.18070326715614315,0.015420077,0.015458025,0.017686872,0.015420077,0,fundamentals
 2026_PA_House-9,PA,House,9,Dan Meuser,meuser d,REP,REP,0,0,,,41.01982207359566,1,4.0,0.6672838372217587,0.76087844,0.82788134,0.79970884,0.7722471,0,fundamentals
 2026_PA_House-9,PA,House,9,Rachel Wallace,wallace r,DEM,DEM,0,0,,,-41.01982207359566,0,0.0,0.3327161627782414,0.15818861,0.1721187,0.15054353,0.15818861,0,fundamentals
-2026_SC_House-2,SC,House,2,Joe Wilson,wilson j,REP,REP,0,0,,,19.2884585614366,1,4.0,0.977026516742298,0.9804017,0.9742854,0.98449796,0.98158604,0,fundamentals
-2026_SC_House-2,SC,House,2,Dayna Alane Smith,smith d,OTH,OTH,0,0,,,,0,,,0.015290474,0.015195084,0.015549597,0.014977129,0,fundamentals
-2026_SC_House-2,SC,House,2,Zyon Khalifa,khalifa z,DEM,DEM,0,0,,,-19.2884585614366,0,0.0,0.022973483257702078,0.01058547,0.010519433,0.009853587,0.01058547,0,fundamentals
+2026_SC_House-2,SC,House,2,Joe Wilson,wilson j,REP,REP,0,0,,,19.2884585614366,1,4.0,1.0,0.9804017,0.9391692,0.98449796,0.98158604,0,fundamentals
+2026_SC_House-2,SC,House,2,Zyon Khalifa,khalifa z,DEM,DEM,0,0,,,-19.2884585614366,0,0.0,,0.04821087,0.04618328,0.04512493,0.04821087,0,fundamentals
+2026_SC_House-2,SC,House,2,Dayna Alane Smith,smith d,OTH,OTH,0,0,,,,0,,,0.015290474,0.0146474065,0.015549597,0.014977129,0,fundamentals
 2026_SC_House-3,SC,House,3,Sheri Biggs,biggs s,REP,REP,0,0,,,46.35418919971273,1,4.0,0.8847281133335435,0.96230346,0.97461057,0.970067,0.964542,0,fundamentals
 2026_SC_House-3,SC,House,3,Eunice Lehmacher,lehmacher e,DEM,DEM,0,0,,,-46.35418919971273,0,0.0,0.11527188666645645,0.0144565385,0.0146414265,0.013622199,0.0144565385,0,fundamentals
 2026_SC_House-3,SC,House,3,Brian Corriea,corriea b,OTH,OTH,0,0,,,,0,,,0.010612292,0.010748015,0.01079301,0.010612292,0,fundamentals
