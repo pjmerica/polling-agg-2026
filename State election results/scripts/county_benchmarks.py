@@ -75,6 +75,9 @@ RACES = [
          types=("2024 Senate", "2024/texas-us-senate.json", "allred-c", "cruz-t")),
     dict(id="2026_KS_Senate", state="kansas", seat="Senate",
          bases=[P24, ("2020 Senate (Bollier-Marshall)", "2020/kansas-senate.json", "bollierb", "marshallr")]),
+    # entered the 75% list with the 2026-10-27 evening retrain; Kansas's guide already covers it
+    dict(id="2026_KS_Governor", state="kansas", seat="Governor",
+         bases=[P24, ("2022 Governor (Kelly-Schmidt)", "2022/kansas-governor.json", "kelly-l", "schmidt-d")]),
     dict(id="2026_ME_Senate", state="maine", seat="Senate",
          bases=[P24, ("2020 Senate (Gideon-Collins)", "2020/maine-senate.json", "gideons", "collinss")]),
     dict(id="2026_IA_Senate", state="iowa", seat="Senate",

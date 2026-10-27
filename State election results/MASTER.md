@@ -1,14 +1,14 @@
 # Election night, Nov 3, 2026: master guide
 
-*One file to read through. It covers 13 Governor and Senate races in eleven states: the ones where our model's
-favorite was at 75% or less on Oct 22. After the Oct 27 retrain 7 are still under 75% (Alaska, Kansas, Michigan
-and Texas Senate, Ohio Governor and Senate, Nevada Governor; `competitive_races.md` has the current list); the
-other six stay in for the vote-count research. For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
+*One file to read through. It covers 14 Governor and Senate races in eleven states: the 13 where our model's
+favorite was at 75% or less on Oct 22, plus Kansas Governor, which joined on Oct 27. After the Oct 27 evening
+retrain 12 races are at 75% or less (`competitive_races.md` has the current list); South Carolina Senate is the
+only one this guide does not cover yet (its results are recorded on election night all the same). For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
 past elections, and where that creates opportunities as results come in.*
 
 *Built by `scripts/build_master.py` from `STATE_BY_STATE.md` (rules, checked against primary sources)
 and the swings analysis (406 races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
-generated from data. Model numbers: forecast run of 2026-10-27 17:04 UTC. Market numbers: 2026-10-27 17:04 UTC refresh. They move daily. Nevada, Oregon and Texas Governor were added on
+generated from data. Model numbers: forecast run of 2026-10-27 20:58 UTC. Market numbers: 2026-10-27 20:58 UTC refresh. They move daily. Nevada, Oregon and Texas Governor were added on
 Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%. County benchmarks, ballots
 already cast, census voting blocs and the Oct 23 open-item checks were added on Oct 23.*
 
@@ -32,17 +32,17 @@ Listed in poll-closing order.
 
 | # | State | Competitive race(s) | Model favorite (win %) | Market, same candidate | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Georgia | Governor | Bottoms (D) 80.2% vs Jackson (R) | Bottoms 62% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
-| 2 | Ohio | Governor; Senate (special) | Acton (D) 55.8% vs Ramaswamy (R); Brown (D) 64.5% vs Husted (R) | Acton 79%; Brown 68% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
-| 3 | Michigan | Senate | El-Sayed (D) 70.8% vs Rogers (R) | El-Sayed 69% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
-| 4 | Texas | Senate; Governor | Paxton (R) 62.5% vs Talarico (D); Abbott (R) 87.8% vs Hinojosa (D) | Paxton 34%; Abbott 66% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
-| 5 | Kansas | Senate | Marshall (R) 73.7% vs Hamilton (D) | Marshall 60% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
-| 6 | Maine | Senate (ranked-choice) | Jackson (D) 85.4% vs Collins (R) | Jackson 62% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
-| 7 | Iowa | Senate | Hinson (R) 77.2% vs Turek (D) | Hinson 58% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
-| 8 | Nebraska | Senate | Ricketts (R) 78.0% vs Osborn (I); no Democrat on the ballot | Ricketts 72% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
-| 9 | Nevada | Governor | Lombardo (R) 65.0% vs Ford (D) | Lombardo 25% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
-| 10 | Oregon | Governor | Kotek (D) 90.4% vs Drazan (R) | Kotek 82% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
-| 11 | Alaska | Senate (ranked-choice) | Sullivan (R) 54.5% vs Peltola (D) | Sullivan 26% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
+| 1 | Georgia | Governor | Bottoms (D) 70.8% vs Jackson (R) | Bottoms 62% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
+| 2 | Ohio | Governor; Senate (special) | Acton (D) 74.1% vs Ramaswamy (R); Brown (D) 72.0% vs Husted (R) | Acton 78%; Brown 69% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
+| 3 | Michigan | Senate | El-Sayed (D) 79.4% vs Rogers (R) | El-Sayed 69% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
+| 4 | Texas | Senate; Governor | Talarico (D) 63.8% vs Paxton (R); Abbott (R) 81.5% vs Hinojosa (D) | Talarico 66%; Abbott 66% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
+| 5 | Kansas | Senate | Hamilton (D) 50.5% vs Marshall (R) | Hamilton 40% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
+| 6 | Maine | Senate (ranked-choice) | Jackson (D) 71.8% vs Collins (R) | Jackson 62% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
+| 7 | Iowa | Senate | Turek (D) 50.4% vs Hinson (R) | Turek 41% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
+| 8 | Nebraska | Senate | Ricketts (R) 58.8% vs Osborn (I); no Democrat on the ballot | Ricketts 72% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
+| 9 | Nevada | Governor | Lombardo (R) 58.7% vs Ford (D) | Lombardo 22% (the market favors Ford) | 10:00 pm (nothing posts until the last voter in line has voted) | 11:50 pm-1:00 am | Democrat in the first big drop in 2020 and 2022 (2022: +11-13 with 44% counted), about even in 2024; the Republican gains overnight as Election Day votes post | Fri-Sat after Election Day (2020, 2022, 2024) |
+| 10 | Oregon | Governor | Kotek (D) 77.0% vs Drazan (R) | Kotek 81% | 11:00 pm (Malheur County, Mountain time, 10:00 pm) | 10:00-11:10 pm | Democrat (2022 Governor: +9.8 in the first release, +1.0 by 1 am ET, +3.4 final) | Thursday (2022 Governor: AP at 85% counted); close House races 5-9 days |
+| 11 | Alaska | Senate (ranked-choice) | Peltola (D) 63.9% vs Sullivan (R) | Peltola 74% | midnight (one Aleutian site 1:00 am) | ~12:45-1:10 am (2:47 am in 2020) | Republican on election night; mail counted later moves toward the Democrat | Nov 18 (ranked-choice day); calls in 2020/2022 came Nov 11-23 |
 
 Notes on the table:
 - **Market column:** the market's chance for the model's favorite (where the market priced the other candidate, 100 minus that price). Under 50% means the market favors the other candidate: Nevada.
@@ -74,10 +74,10 @@ count moves more precisely than the market does, and from acting faster.*
 | **3** | **Kansas, Nebraska, Iowa, Ohio, Texas: fade the early Democratic/independent lead** | The **most reliable direction** in the national data. In every 2020-2024 race in these five states, the count moved toward the Republican after the first quarter was in, usually by 15-30 pts. The leader at some point lost in 4 or 5 of each state's 5 races. All five are in the national top eight for volatility (`VOLATILITY.md`). They settle **on election night**, so money turns over quickly. | The window is short: Ohio and Texas post most of their vote in the first hour or two. Thinner markets in Kansas and Nebraska (Kansas ~2.2M Kalshi contracts; Nebraska not on Kalshi in our data). 2026's early vote may be more Democratic than before, so early leads may be bigger, and so may the fade. Most likely already priced in by sharp traders. |
 | **4** | **Maine Senate** | Slow count, liquid market, a repeating early pattern, and ranked-choice complications (detail below) | Nationally it's one of the calmer counts: its 4-8 point move happens while little is counted, and no 2020-2024 Maine race had a leader who went on to lose (`VOLATILITY.md`). No live state feed; towns report piecemeal to AP. The ranked-choice count resolves ~8-10 days later. |
 | Special case | **Alaska Senate** | Big model-market disagreement (detail below) | Settles only after Nov 18 (ranked-choice count), possibly later with a recount, so money is tied up for weeks. The model's poll inputs in Alaska are thin. |
-| Special case | **Oregon Governor** | Nevada's mirror image: Kotek's numbers look **worst** at the end of election night (detail below) | The market already prices Kotek 82%, and it's thin (Kalshi ~130K contracts; Polymarket ~$113K liquidity, Oct 19). Only interesting if election night shows Drazan ahead or Kotek's price drops. |
+| Special case | **Oregon Governor** | Nevada's mirror image: Kotek's numbers look **worst** at the end of election night (detail below) | The market already prices Kotek 81%, and it's thin (Kalshi ~130K contracts; Polymarket ~$113K liquidity, Oct 19). Only interesting if election night shows Drazan ahead or Kotek's price drops. |
 | Avoid during the count | **Georgia** | Fast (94-98% counted by midnight in 2022 and 2024; 80% in 2020), and its direction has flipped by year: toward the Democrat in 2020 and 2024, toward the Republican in 2022. | Little time and no reliable direction to trade. |
 
-**1. Nevada Governor** (Lombardo R vs Ford D; model Lombardo 65.0%, market Lombardo 25%, so the market favors Ford)
+**1. Nevada Governor** (Lombardo R vs Ford D; model Lombardo 58.7%, market Lombardo 22%, so the market favors Ford)
 - **Long window:**
   - Nothing posts until the last voter in line has voted. First votes came at 11:53 pm-12:55 am ET in 2020-2024, and the first big drop at ~1-2 am.
   - Election Day drop-offs (54,000-57,000 in Clark in 2022/2024) are counted Wednesday to Saturday, and more than 100,000 ballots were left after election night each time.
@@ -95,7 +95,7 @@ count moves more precisely than the market does, and from acting faster.*
   - The research puts the line at **~25,000-30,000 votes (about 2-2.5 points)**: a smaller Lombardo lead on Wednesday morning is at risk, a larger one should hold.
   - Watch Clark's and Washoe's counts of Election Day drop-offs, and whether the Secretary of State again publishes outstanding ballots by county.
 
-**2. Michigan Senate** (El-Sayed D vs Rogers R; model El-Sayed 70.8%, market El-Sayed 69%)
+**2. Michigan Senate** (El-Sayed D vs Rogers R; model El-Sayed 79.4%, market El-Sayed 69%)
 - **Long window:** only 46-50% is counted by midnight ET in every recent general. The 2024 Senate race was called at 3:12 pm the next day.
 - **Repeating order:** Wayne County (Detroit) and the other big counties report late.
   - 2020: the 18% counted after 6 am went Biden +35, almost all Wayne.
@@ -133,20 +133,20 @@ count moves more precisely than the market does, and from acting faster.*
   | Nebraska | ~9+ at midnight |
   | Ohio | ~1+ at 10 pm in 2022/2024; in 2020 the count moved 8 more pts toward the Republican after 10 pm |
 - **2026:** Talarico and Hinojosa (Texas), Acton and Brown (Ohio), Hamilton (Kansas), Osborn (Nebraska) and Turek (Iowa) should all lead early.
-- The Ohio Governor gap (model Acton 55.8%, market Acton 79%) is a **pre-election** disagreement, not a live-count one.
+- The Ohio Governor gap (model Acton 74.1%, market Acton 78%) is a **pre-election** disagreement, not a live-count one.
 
-**4. Maine Senate** (Jackson D vs Collins R; model Jackson 85.4%, market Jackson 62%)
+**4. Maine Senate** (Jackson D vs Collins R; model Jackson 71.8%, market Jackson 62%)
 - **Slow:** only 29-63% is counted by midnight ET.
 - **Repeating pattern:** in every top race we have, the count moved 4-8 pts toward the non-Republican after the first two hours, then 0-3 pts back after 6 am. Most of that move happens while under a quarter of the vote is in, so the window is the first two hours.
 - **Liquid:** ~4.4M Kalshi contracts; ~$2.3M Polymarket volume.
 - **Ranked-choice wrinkle:** if no one tops 50% of *all* ballots (blanks count against the leader), the ranked-choice count decides about a week later, a second chance for prices to be wrong.
 
 **Special case: Alaska Senate** (Peltola D vs Sullivan R)
-- **The disagreement:** our model says Sullivan 54.5%; the market says Sullivan 26%.
+- **The disagreement:** our model says Peltola 63.9%; the market says Peltola 74%.
 - **What the count pattern implies:** Sullivan should lead on election night. Mail counted Nov 10-18 has moved the margin 2-3 pts toward Democrats (16 in 2020). That pattern **agrees with the market's direction**.
 - **The trade it suggests:** if Sullivan's election-night lead pushes the market toward him, that may be a better entry for a Peltola position than today.
 
-**Special case: Oregon Governor** (Kotek D vs Drazan R; model Kotek 90.4%, market Kotek 82%)
+**Special case: Oregon Governor** (Kotek D vs Drazan R; model Kotek 77.0%, market Kotek 81%)
 - **The first release** at 11 pm ET holds most of the vote and showed Kotek's high point in 2022 (+9.8). By 1 am she was down to +1.0.
 - **Wednesday to Friday** (Multnomah and Washington Election Day drop-offs) took her back to +3.7 by Friday midday; the final was +3.4.
 - **The rule of thumb:** a Drazan lead under ~2 points at the end of election night is at real risk, and a Kotek lead should grow.
@@ -318,7 +318,7 @@ In poll-closing order. Each state has five parts:
 
 **Race.**
 - Keisha Lance Bottoms (D) vs Rick Jackson (R); open seat.
-- Model: Bottoms 80.2%. Market: Bottoms 62%.
+- Model: Bottoms 70.8%. Market: Bottoms 62%.
 - Ballot: two candidates. The Libertarian Party failed to qualify for the 2026 ballot (its petition drive fell short in July: [AJC](https://www.ajc.com/politics/2026/07/libertarians-wont-be-on-the-ballot-in-georgia-meaning-likely-no-runoffs/), [WABE](https://www.wabe.org/georgia-libertarians-end-efforts-to-get-on-2026-general-election-ballot/) ○). Only write-ins could add a third name, so runoff risk is close to zero.
 - A majority is required. A general-election runoff, if needed, is **Tue Dec 1** ✔ ([georgia.gov](https://georgia.gov/events/2026-12-01/election-day-general-election-runoff)).
 
@@ -442,7 +442,7 @@ What the curves show (`state_curves.md`):
 - **Lean from:** 2024 President and 2022 Senate (Warnock-Walker), averaged; turnout from the 2022 governor race (3,953,408 votes). Shares and margins are two-party (Bottoms vs Jackson).
 - **The tie line** is what Bottoms needs in each county for a statewide tie. A finished county above it means Bottoms is running ahead of a tie statewide; below it, Jackson is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Jackson +0.1 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** tie statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **Early/mail vs Election Day** columns use the 2022 Senate split by vote type, so the early batch can be read before Election Day votes arrive. 2026's mix differs; treat them as rough.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **3.0 pts** from their line even when the statewide result was known. A statewide estimate from Fulton alone was off by 0.0 (2022 Governor), 3.2 (2022 Senate), 2.0 (2024 President) (backtest in section 5).
 
@@ -553,8 +553,8 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 55.8% | Acton 79% |
-| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 64.5% | Brown 68% |
+| Governor (open) | Amy Acton (D) vs Vivek Ramaswamy (R) | Acton 74.1% | Acton 78% |
+| Senate special | Sherrod Brown (D) vs Jon Husted (R, appointed) | Brown 72.0% | Brown 69% |
 
 **Rules for Nov 3**
 - **Deadlines and ballot processing:**
@@ -656,7 +656,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2022 Senate (Ryan-Vance), averaged; turnout from the 2022 governor race (4,125,913 votes). Shares and margins are two-party (Acton vs Ramaswamy).
 - **The tie line** is what Acton needs in each county for a statewide tie. A finished county above it means Acton is running ahead of a tie statewide; below it, Ramaswamy is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Acton +1.3 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Acton +2.7 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 4 past races here (2022-2024), counties landed a typical **2.4 pts** from their line even when the statewide result was known. A statewide estimate from Franklin alone was off by 0.3 (2022 Governor), 1.9 (2022 Senate), 1.0 (2024 Senate), 0.2 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Acton share (margin) | If Acton wins by 3 | If Ramaswamy wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -683,7 +683,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2024 Senate (Brown-Moreno), averaged; turnout from the 2022 governor race (4,125,913 votes). Shares and margins are two-party (Brown vs Husted).
 - **The tie line** is what Brown needs in each county for a statewide tie. A finished county above it means Brown is running ahead of a tie statewide; below it, Husted is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Brown +0.8 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Brown +3.1 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 4 past races here (2022-2024), counties landed a typical **2.4 pts** from their line even when the statewide result was known. A statewide estimate from Franklin alone was off by 0.3 (2022 Governor), 1.9 (2022 Senate), 1.0 (2024 Senate), 0.2 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Brown share (margin) | If Brown wins by 3 | If Husted wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -791,7 +791,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Abdul El-Sayed (D) vs Mike Rogers (R); open seat.
-- Model: El-Sayed 70.8%. Market: El-Sayed 69%.
+- Model: El-Sayed 79.4%. Market: El-Sayed 69%.
 - In the Aug 4 primary El-Sayed led Stevens 48.5-47.5 with 96% counted on Wednesday morning, and AP called it just before 10 am Wednesday ✔ ([FOX 2 via Fox 4](https://www.fox4news.com/news/abdul-el-sayed-projected-defeat-haley-stevens-democratic-senate-primary-race.amp)).
 
 **Rules for Nov 3**
@@ -917,7 +917,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2024 Senate (Slotkin-Rogers), averaged; turnout from the 2022 governor race (4,461,925 votes). Shares and margins are two-party (El-Sayed vs Rogers).
 - **The tie line** is what El-Sayed needs in each county for a statewide tie. A finished county above it means El-Sayed is running ahead of a tie statewide; below it, Rogers is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** El-Sayed +3.2 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** El-Sayed +4.9 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **2.2 pts** from their line even when the statewide result was known. A statewide estimate from Wayne alone was off by 3.4 (2022 Governor), 2.7 (2024 Senate), 4.0 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: El-Sayed share (margin) | If El-Sayed wins by 3 | If Rogers wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -1022,8 +1022,8 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 | Race | Candidates | Model | Market |
 |---|---|---|---|
-| Senate (open) | James Talarico (D) vs Ken Paxton (R). Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27). | Paxton 62.5% | Paxton 34% |
-| Governor | Greg Abbott (R, incumbent) vs Gina Hinojosa (D) | Abbott 87.8% | Abbott 66% |
+| Senate (open) | James Talarico (D) vs Ken Paxton (R). Paxton beat Cornyn in the May 26 runoff ✔ (AP, May 27). | Talarico 63.8% | Talarico 66% |
+| Governor | Greg Abbott (R, incumbent) vs Gina Hinojosa (D) | Abbott 81.5% | Abbott 66% |
 
 Both races are on the same ballot and counted together, so everything below applies to both.
 
@@ -1168,7 +1168,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2024 Senate (Allred-Cruz), averaged; turnout from the 2022 governor race (8,101,271 votes). Shares and margins are two-party (Talarico vs Paxton).
 - **The tie line** is what Talarico needs in each county for a statewide tie. A finished county above it means Talarico is running ahead of a tie statewide; below it, Paxton is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Talarico +1.1 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Talarico +3.1 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **Early/mail vs Election Day** columns use the 2024 Senate split by vote type, so the early batch can be read before Election Day votes arrive. 2026's mix differs; treat them as rough.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **3.8 pts** from their line even when the statewide result was known. A statewide estimate from Harris alone was off by 1.1 (2022 Governor), 0.5 (2024 Senate), 0.7 (2024 President) (backtest in section 5).
 
@@ -1196,7 +1196,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2022 Governor (O'Rourke-Abbott), averaged; turnout from the 2022 governor race (8,101,271 votes). Shares and margins are two-party (Hinojosa vs Abbott).
 - **The tie line** is what Hinojosa needs in each county for a statewide tie. A finished county above it means Hinojosa is running ahead of a tie statewide; below it, Abbott is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Abbott +5.5 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Abbott +3.8 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **Early/mail vs Election Day** columns use the 2024 Senate split by vote type, so the early batch can be read before Election Day votes arrive. 2026's mix differs; treat them as rough.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **3.8 pts** from their line even when the statewide result was known. A statewide estimate from Harris alone was off by 1.1 (2022 Governor), 0.5 (2024 Senate), 0.7 (2024 President) (backtest in section 5).
 
@@ -1313,7 +1313,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates.
-- Model: Marshall 73.7%. Market: Marshall 60%.
+- Model: Hamilton 50.5%. Market: Hamilton 40%.
 
 **Rules for Nov 3**
 - **Polls:**
@@ -1418,7 +1418,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2020 Senate (Bollier-Marshall), averaged; turnout from the 2022 governor race (1,008,998 votes). Shares and margins are two-party (Hamilton vs Marshall).
 - **The tie line** is what Hamilton needs in each county for a statewide tie. A finished county above it means Hamilton is running ahead of a tie statewide; below it, Marshall is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Marshall +0.9 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Hamilton +1.2 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **4.4 pts** from their line even when the statewide result was known. A statewide estimate from Johnson alone was off by 4.3 (2022 Governor), 3.8 (2022 Senate), 0.4 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Hamilton share (margin) | If Hamilton wins by 3 | If Marshall wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -1440,6 +1440,33 @@ What the curves show:
 | Cowley | 1.1% | R +41.0 | **38.9%** (Marshall +22.1) | 40.5% (Marshall +19.0) | 37.4% (Marshall +25.2) | 97% / 97% |
 | All other 90 counties | 27.3% | | 31.4% (Marshall +37.2) | | | |
 
+#### Kansas Governor: Holscher (D) vs Masterson (R)
+
+- **Lean from:** 2024 President and 2022 Governor (Kelly-Schmidt), averaged; turnout from the 2022 governor race (1,008,998 votes). Shares and margins are two-party (Holscher vs Masterson).
+- **The tie line** is what Holscher needs in each county for a statewide tie. A finished county above it means Holscher is running ahead of a tie statewide; below it, Masterson is.
+- **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
+- **Model:** Masterson +2.3 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **How reliable:** in 3 past races here (2022-2024), counties landed a typical **4.4 pts** from their line even when the statewide result was known. A statewide estimate from Johnson alone was off by 4.3 (2022 Governor), 3.8 (2022 Senate), 0.4 (2024 President) (backtest in section 5).
+
+| County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Holscher share (margin) | If Holscher wins by 3 | If Masterson wins by 3 | 2020: counted by midnight / 6 am ET |
+|---|---|---|---|---|---|---|
+| Johnson | 26.0% | D +8.6 | **61.2%** (Holscher +22.5) | 62.8% (Holscher +25.6) | 59.7% (Holscher +19.4) | 96% / 96% |
+| Sedgwick | 15.4% | R +14.1 | **51.3%** (Holscher +2.6) | 53.0% (Holscher +5.9) | 49.7% (Masterson +0.6) | 87% / 87% |
+| Shawnee | 6.5% | D +0.5 | **59.8%** (Holscher +19.5) | 61.3% (Holscher +22.7) | 58.2% (Holscher +16.4) | 96% / 96% |
+| Douglas | 4.7% | D +38.6 | **76.4%** (Holscher +52.9) | 77.6% (Holscher +55.2) | 75.2% (Holscher +50.5) | 0% / 95% |
+| Wyandotte | 3.5% | D +24.2 | **69.6%** (Holscher +39.3) | 71.0% (Holscher +42.0) | 68.2% (Holscher +36.5) | 96% / 96% |
+| Leavenworth | 2.7% | R +23.3 | **47.2%** (Masterson +5.5) | 48.9% (Masterson +2.3) | 45.6% (Masterson +8.8) | 98% / 98% |
+| Butler | 2.4% | R +42.0 | **37.8%** (Masterson +24.5) | 39.3% (Masterson +21.4) | 36.2% (Masterson +27.5) | 98% / 98% |
+| Reno | 2.1% | R +35.2 | **42.1%** (Masterson +15.9) | 43.7% (Masterson +12.7) | 40.5% (Masterson +19.0) | 97% / 97% |
+| Riley | 1.8% | D +1.8 | **60.1%** (Holscher +20.2) | 61.7% (Holscher +23.4) | 58.5% (Holscher +17.1) | 94% / 94% |
+| Saline | 1.8% | R +32.2 | **44.2%** (Masterson +11.7) | 45.8% (Masterson +8.5) | 42.6% (Masterson +14.9) | 97% / 97% |
+| Miami | 1.3% | R +40.3 | **37.9%** (Masterson +24.2) | 39.4% (Masterson +21.1) | 36.4% (Masterson +27.3) | 69% / 98% |
+| Harvey | 1.3% | R +21.5 | **48.5%** (Masterson +3.1) | 50.1% (Holscher +0.2) | 46.8% (Masterson +6.3) | 97% / 97% |
+| Crawford | 1.2% | R +25.7 | **46.2%** (Masterson +7.7) | 47.8% (Masterson +4.4) | 44.6% (Masterson +10.9) | 95% / 95% |
+| McPherson | 1.1% | R +41.9 | **37.6%** (Masterson +24.9) | 39.1% (Masterson +21.8) | 36.0% (Masterson +27.9) | 76% / 91% |
+| Cowley | 1.1% | R +41.0 | **39.5%** (Masterson +21.1) | 41.0% (Masterson +17.9) | 37.9% (Masterson +24.2) | 97% / 97% |
+| All other 90 counties | 27.3% | | 32.5% (Masterson +35.0) | | | |
+
 ### County reporting order: Kansas
 
 **Rules that set the order.** Advance ballots report first. Four Mountain-time counties close at 9 p.m. ET. Sedgwick adds drop-box and polling-place mail in a Wednesday update; mail postmarked by Nov 3 counts through Nov 6 (injunction).
@@ -1448,21 +1475,21 @@ What the curves show:
 
 | County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
 |---|---|---|---|---|---|---|---|---|
-| Johnson | 25.7% | D+24 |  | +17 |  |  |  | 9:37 pm |
-| Reno | 2.0% | R+18 |  | +14 |  |  | 8:45 pm | 9:37 pm |
-| Butler | 2.4% | R+26 |  | +12 |  |  | 9:05 pm | 10:21 pm |
+| Johnson | 25.7% | D+22 |  | +17 |  |  |  | 9:37 pm |
+| Reno | 2.0% | R+16 |  | +14 |  |  | 8:45 pm | 9:37 pm |
+| Butler | 2.4% | R+24 |  | +12 |  |  | 9:05 pm | 10:21 pm |
 | Riley | 1.8% | D+20 |  | +12 |  |  | 8:45 pm | 10:10 pm |
-| Ellis | 1.0% | R+30 |  | +10 |  |  | 9:37 pm | 9:55 pm |
-| Leavenworth | 2.6% | R+5 |  | +9 |  |  | 9:37 pm | 9:55 pm |
-| Cowley | 1.0% | R+22 |  | +7 |  |  | 9:12 pm | 10:50 pm |
+| Ellis | 1.0% | R+25 |  | +10 |  |  | 9:37 pm | 9:55 pm |
+| Leavenworth | 2.6% | R+6 |  | +9 |  |  | 9:37 pm | 9:55 pm |
+| Cowley | 1.0% | R+21 |  | +7 |  |  | 9:12 pm | 10:50 pm |
 | Harvey | 1.3% | R+3 |  | +6 |  |  | 9:12 pm | 11:18 pm |
-| Saline | 1.8% | R+14 |  | +6 |  |  | 9:37 pm | 10:50 pm |
-| Sedgwick | 15.9% | D+4 |  | +4 |  |  | 8:45 pm |  |
-| Crawford | 1.3% | R+6 |  | +1 |  |  | 10:10 pm | 10:50 pm |
-| Shawnee | 6.4% | D+19 |  | +0 |  |  | 11:18 pm | 11:18 pm |
+| Saline | 1.8% | R+12 |  | +6 |  |  | 9:37 pm | 10:50 pm |
+| Sedgwick | 15.9% | D+3 |  | +4 |  |  | 8:45 pm |  |
+| Crawford | 1.3% | R+8 |  | +1 |  |  | 10:10 pm | 10:50 pm |
+| Shawnee | 6.4% | D+20 |  | +0 |  |  | 11:18 pm | 11:18 pm |
 | McPherson | 1.1% | R+25 |  | -4 |  |  | 10:21 pm | 1:04 am Wed |
 | Miami | 1.3% | R+24 |  | -5 |  |  | 9:55 pm | 1:46 am Wed |
-| Wyandotte | 3.8% | D+44 |  | -13 |  |  | 11:30 pm | 11:30 pm |
+| Wyandotte | 3.8% | D+39 |  | -13 |  |  | 11:30 pm | 11:30 pm |
 | Douglas | 4.5% | D+53 |  | -37 |  |  |  |  |
 | The other 89 | 26.1% |  |  | -16 |  |  |  |  |
 
@@ -1516,7 +1543,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race and ballot.**
 - Troy Jackson (D) vs Susan Collins (R, incumbent).
-- Model: Jackson 85.4%. Market: Jackson 62%.
+- Model: Jackson 71.8%. Market: Jackson 62%.
 - Only Collins and Jackson are printed on the ballot.
 - **Six declared write-in candidates make this a ranked-choice race** ✔ (Spectrum News, Aug 26): Andrews, Olson, Oswald, Steinberger, Turcotte, Webb.
 - Votes for an undeclared write-in, such as Graham Platner (who withdrew July 10), count as blank ✔.
@@ -1645,7 +1672,7 @@ In all three, the first-round leader won. But in the **June 2026 Democratic gove
 - **Lean from:** 2024 President and 2020 Senate (Gideon-Collins), averaged; turnout from the 2022 governor race (676,819 votes). Shares and margins are two-party (Jackson vs Collins).
 - **The tie line** is what Jackson needs in each county for a statewide tie. A finished county above it means Jackson is running ahead of a tie statewide; below it, Collins is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Jackson +5.0 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Jackson +3.4 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 2 past races here (2022-2024), counties landed a typical **1.6 pts** from their line even when the statewide result was known. A statewide estimate from Cumberland alone was off by 1.6 (2022 Governor), 2.1 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Jackson share (margin) | If Jackson wins by 3 | If Collins wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -1735,7 +1762,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Ashley Hinson (R) vs Josh Turek (D); open seat after Ernst retired ✔ (AP Jun 2026).
-- Model: Hinson 77.2%. Market: Hinson 58%. The market is much less sure than the model.
+- Model: Turek 50.4%. Market: Turek 41%. The market is much less sure than the model.
 
 **Rules for Nov 3 ✔**
 - **Polls and deadlines:**
@@ -1839,7 +1866,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2022 Senate (Franken-Grassley), averaged; turnout from the 2022 governor race (1,221,146 votes). Shares and margins are two-party (Turek vs Hinson).
 - **The tie line** is what Turek needs in each county for a statewide tie. A finished county above it means Turek is running ahead of a tie statewide; below it, Hinson is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Hinson +3.0 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Turek +0.5 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **Early/mail vs Election Day** columns use the 2024 President split by vote type, so the early batch can be read before Election Day votes arrive. 2026's mix differs; treat them as rough.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **3.0 pts** from their line even when the statewide result was known. A statewide estimate from Polk alone was off by 4.9 (2022 Governor), 2.7 (2022 Senate), 0.2 (2024 President) (backtest in section 5).
 
@@ -1939,7 +1966,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
   - The state Democratic Party voted not to fill the vacancy; party chair Jane Kleeb endorsed Osborn (Ballotpedia, Nebraska Examiner, WOWT ○).
   - Before the primary, Burbank said she would back Osborn if she had no path to victory.
   - Our forecast data also has no Democrat.
-- Model: Ricketts 78.0%. Market: Ricketts 72%.
+- Model: Ricketts 58.8%. Market: Ricketts 72%.
 
 **Rules for Nov 3 ✔**
 - **Polls:** close 8 pm Central and 7 pm Mountain, so **9:00 pm ET everywhere** ([Neb. Rev. Stat. 32-908](https://nebraskalegislature.gov/laws/statutes.php?statute=32-908)).
@@ -2036,7 +2063,7 @@ What the curves show:
 - **Lean from:** 2024 Senate (Osborn-Fischer); turnout from the 2022 governor race (666,795 votes). Shares and margins are two-party (Osborn vs Ricketts).
 - **The tie line** is what Osborn needs in each county for a statewide tie. A finished county above it means Osborn is running ahead of a tie statewide; below it, Ricketts is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Ricketts +2.7 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Ricketts +0.8 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **5.0 pts** from their line even when the statewide result was known. A statewide estimate from Douglas alone was off by 1.6 (2022 Governor), 7.2 (2024 Senate), 0.8 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 Senate (Osborn-Fischer) (two-party margin) | **Tie line**: Osborn share (margin) | If Osborn wins by 3 | If Ricketts wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -2136,7 +2163,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Joe Lombardo (R, incumbent) vs Aaron D. Ford (D, attorney general). Also on the ballot: Danielle Ford (no party) and the "None of these candidates" line ◐ ([Clark County Fall 2026 newsletter](https://www.clarkcountynv.gov/adobe/assets/urn:aaid:aem:228bc80b-da3b-42da-bc72-25cce75470d1/original/as/cced-newsletter-fall2026.pdf)).
-- Model: Lombardo 65.0%. Market: Lombardo 25%. **The market favors Ford; the model favors Lombardo.** That is the largest model-market disagreement on this list.
+- Model: Lombardo 58.7%. Market: Lombardo 22%. **The market favors Ford; the model favors Lombardo.** That is the largest model-market disagreement on this list.
 - "None of these candidates" votes are posted in every result but never decide the winner; only votes for named candidates count ✔ ([NRS 293.269](https://www.leg.state.nv.us/NRS/NRS-293.html)). The researcher found no majority or runoff rule, so it's a plurality race ◐.
 - No Senate race in Nevada this year. NV-1, NV-3 and the down-ballot statewide races come out of the same county batches.
 - Latest public poll found: Noble Predictive Insights (Oct 7-13) Lombardo 40, Ford 37, 23% undecided ○ ([KTNV](https://www.ktnv.com/news/new-poll-shows-lombardo-has-slight-lead-in-2026-governor-matchup)).
@@ -2283,7 +2310,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2022 Governor (Sisolak-Lombardo), averaged; turnout from the 2022 governor race (1,019,071 votes). Shares and margins are two-party (Ford vs Lombardo).
 - **The tie line** is what Ford needs in each county for a statewide tie. A finished county above it means Ford is running ahead of a tie statewide; below it, Lombardo is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** tie statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Ford +0.6 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 4 past races here (2022-2024), counties landed a typical **1.2 pts** from their line even when the statewide result was known. A statewide estimate from Clark alone was off by 0.1 (2022 Governor), 0.4 (2022 Senate), 0.9 (2024 Senate), 0.9 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Ford share (margin) | If Ford wins by 3 | If Lombardo wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -2364,7 +2391,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 **Race.**
 - Tina Kotek (D, incumbent; also the Working Families nominee) vs Christine Drazan (R; also the Libertarian nominee), a rematch of 2022. Pacific Green nominee Brett Smith is the only other name ○ ([Wikipedia](https://en.wikipedia.org/wiki/2026_Oregon_gubernatorial_election)).
-- Model: Kotek 90.4%. Market: Kotek 82%.
+- Model: Kotek 77.0%. Market: Kotek 81%.
 - In 2022 Kotek won by 66,727 votes (3.4 points) while independent Betsy Johnson took 8.6%. Smith polls 3-6%, so this year is closer to a two-way race ○.
 - Recent polls: Kotek 46-44 (Oregonian/DHM) and 46-42 (GBAO, a Kotek internal), after three polls with Drazan ahead by 1-4 ○ ([OPB, Oct 8](https://www.opb.org/article/2026/10/08/new-polls-kotek-may-lead/)).
 
@@ -2502,7 +2529,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2022 Governor (Kotek-Drazan), averaged; turnout from the 2022 governor race (1,950,770 votes). Shares and margins are two-party (Kotek vs Drazan).
 - **The tie line** is what Kotek needs in each county for a statewide tie. A finished county above it means Kotek is running ahead of a tie statewide; below it, Drazan is.
 - **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Kotek +6.5 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Model:** Kotek +4.1 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
 - **How reliable:** in 3 past races here (2022-2024), counties landed a typical **2.3 pts** from their line even when the statewide result was known. A statewide estimate from Multnomah alone was off by 4.7 (2022 Governor), 2.5 (2022 Senate), 1.5 (2024 President) (backtest in section 5).
 
 | County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Kotek share (margin) | If Kotek wins by 3 | If Drazan wins by 3 | 2020: counted by midnight / 6 am ET |
@@ -2611,7 +2638,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
   | Heikes | 1.1% | 1,741 |
 
   Peltola led by 8.1 points in an all-party primary.
-- Model: Sullivan 54.5%, the closest race on our list. Market: Sullivan 26%.
+- Model: Peltola 63.9%, the closest race on our list. Market: Peltola 74%.
 - **Why the second Sullivan matters on election night** (inference):
   - Votes for the second Sullivan and for Heikes are first-round votes that are not the incumbent's.
   - They make it less likely that anyone tops 50% of first choices, so the ranked-choice count on Nov 18 is more likely.
@@ -2709,7 +2736,7 @@ What the curves show:
 - **Lean from:** 2024 President and 2024 House (Peltola-Begich, first choices), averaged; turnout from the 2022 governor race (263,752 votes). Shares and margins are two-party (Peltola vs Sullivan).
 - **The tie line** is what Peltola needs in each House district for a statewide tie. A finished House district above it means Peltola is running ahead of a tie statewide; below it, Sullivan is.
 - **Only a finished House district is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
-- **Model:** Peltola +0.4 statewide (the separate margin model). The dashboard page's slider shows every House district at any statewide result.
+- **Model:** Peltola +2.2 statewide (the separate margin model). The dashboard page's slider shows every House district at any statewide result.
 - **Alaska reports by House district**, not county. The lean is first-choice votes; the ranked-choice count can change the winner. Absentee ballots are counted Nov 10-18, so on election night every district shows only part of its vote. No backtest: the districts were redrawn for 2022.
 
 | House district | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Peltola share (margin) | If Peltola wins by 3 | If Sullivan wins by 3 |

@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` State election results on the Oct 27 evening forecast: Kansas Governor added, South Carolina Senate recorded (2026-10-27).
+  - 12 Senate/Governor races at 75% or less after the evening retrain (AK-Sen, GA-Gov, IA-Sen, KS-Gov, KS-Sen, ME-Sen, NE-Sen, NV-Gov, OH-Gov, OH-Sen special, SC-Sen, TX-Sen). KS-Gov joins the guide (county benchmarks on 2024 President and the 2022 Kelly-Schmidt race; the Kansas guide covers its counting), so the page tracks 14 races.
+  - South Carolina Senate has no vote-count guide yet; `capture_live.py` records it (and KS-Gov) on election night.
+
 - `[2f6ff1bf]` Seat ranges, wider stress test, Louisiana runoff odds, same-party notes; every remaining model audit item (2026-10-27) - user: "we are going to do everything before the election".
   - Forecast page: each chamber card shows the Democrats' median seats, 80% range and control odds (model repo `src/simulate_seats.py`: every race keeps its odds, one shared national error per run, correlation fitted on 1998-2024). The "if the polls are off" table adds 6-point shifts (national misses ran 5-8 points in 2016 and 2020); no-polls races get the same table, moving the national mood.
   - Louisiana House: the model now publishes the chance to win the seat (first round + Dec 12 runoff simulated), so Model vs Markets and the Dashboard use it again (were on market prices since 10-06). LA-6: Republican 98.6%.

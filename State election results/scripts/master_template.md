@@ -1,9 +1,9 @@
 # Election night, Nov 3, 2026: master guide
 
-*One file to read through. It covers 13 Governor and Senate races in eleven states: the ones where our model's
-favorite was at 75% or less on Oct 22. After the Oct 27 retrain 7 are still under 75% (Alaska, Kansas, Michigan
-and Texas Senate, Ohio Governor and Senate, Nevada Governor; `competitive_races.md` has the current list); the
-other six stay in for the vote-count research. For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
+*One file to read through. It covers 14 Governor and Senate races in eleven states: the 13 where our model's
+favorite was at 75% or less on Oct 22, plus Kansas Governor, which joined on Oct 27. After the Oct 27 evening
+retrain 12 races are at 75% or less (`competitive_races.md` has the current list); South Carolina Senate is the
+only one this guide does not cover yet (its results are recorded on election night all the same). For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
 past elections, and where that creates opportunities as results come in.*
 
 *Built by `scripts/build_master.py` from `STATE_BY_STATE.md` (rules, checked against primary sources)
