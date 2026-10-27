@@ -15,6 +15,11 @@ Format: `[hash] commit subject — one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` Model refresh: the model repo's publish gate runs before anything is copied here (2026-10-27) - model audit item 1 (user: "yeah lets go").
+  - Model repo ef28db1: `refresh_dashboard.py` runs its `tests/` on the fresh outputs before the copy, so a failure stops the "Predict + explain + compare" step and nothing commits. Checks: sane odds, win and margin files score the same candidates, every roster race scored once, no withdrawn candidate, one run and poll feed across files, generic ballot within +/-15, live feature fill rates vs training, `candidate_bios.csv` equals a rebuild. The per-candidate model-shape problems (odds not summing to 1, margins not cancelling, two predicted winners, win/margin favourites split) are expected failures until the race-level models.
+  - Its first run caught the no-polls model using `pollster_sd`, a poll feature that is empty for every unpolled race; also fixed there: primary results left out of its training table, and 8 winner-never-polled races trained as all-lost. Retrained: no favourite changes, median 0.2 pts (NY-11 Dem 15 -> 28, NC-8 14 -> 26, MI-1 37 -> 48).
+  - The three model CSVs gain a `cand_key` column; the margin file gets its own meta.
+
 - `[34a266e9]` Election-night guide: county reporting order 2018-2024 from archived NYT captures, with what repeats across years (2026-10-26) - user asked why the guide had nothing on which counties report first, and for the reporting rules plus 2020, 2022 and 2018 history with the commonalities between years.
   - New `fetch_wayback_counties.py` collects every Internet Archive capture of NYT's county-level results files for 2018 (9-14 per state), 2022 (2-46) and 2024 (1-9); 2020 already had 140.
   - New `county_reporting.py`: how far each county runs ahead of or behind its state's count (each capture compares a county with its own state at the same moment, so sparse years still count), counties still under 90% the next morning, which way the uncounted vote leans at 50% and 80% counted, and rank correlations between years.

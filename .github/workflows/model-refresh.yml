@@ -67,6 +67,8 @@ jobs:
         working-directory: 'Polling prediction model'
         # src/refresh_dashboard.py since the 2026-08-08 reorganisation. The repo also keeps
         # a root-level shim at the old path, so this works against either checkout.
+        # PUBLISH GATE (2026-10-26): it runs the model repo's tests/ on the fresh outputs before
+        # copying anything here; a failure stops this step, so nothing below commits.
         run: python -u src/refresh_dashboard.py --no-feeds
 
       # Dashboard tab (docs/data.js) shows the model's Dem-win probability - rebuild it from the
