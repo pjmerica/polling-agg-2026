@@ -43,8 +43,9 @@ def test_same_party_race_has_no_market(tmp_path, monkeypatch):
 
 def test_every_ballot_race_has_a_model_number(tmp_path, monkeypatch):
     """Since 2026-10-23 every race on the ballot is scored: races no pollster covers come from the
-    no-polls model (model_fundamentals_predictions_2026.csv, basis "fundamentals") with no stress
-    test, no margin and a note saying so, and no race appears twice."""
+    no-polls model (model_fundamentals_predictions_2026.csv, basis "fundamentals") with no margin
+    and a note saying so, and no race appears twice. Since 2026-10-27 they carry the no-polls
+    model's stress test (the national mood moved 3 and 6 points), summing to 1 like the base odds."""
     if not (ROOT / "data" / "processed" / "model_fundamentals_predictions_2026.csv").exists():
         return  # the model refresh has not written the no-polls file yet
     monkeypatch.setattr(B, "OUT", str(tmp_path / "forecast_data.js"))
@@ -56,8 +57,11 @@ def test_every_ballot_race_has_a_model_number(tmp_path, monkeypatch):
     assert fund
     for r in fund:
         assert r["notes"][0] == B.NOTES["FUND"], r["id"]
-        assert not r["fragile"] and r["n_surveys"] == 0, r["id"]
-        assert all(c["win_r3"] is None and c["margin"] is None for c in r["cands"]), r["id"]
+        assert r["n_surveys"] == 0, r["id"]
+        assert all(c["margin"] is None for c in r["cands"]), r["id"]
+        for k in ("win_r3", "win_d3"):
+            v = [c[k] for c in r["cands"] if c[k] is not None]
+            assert not v or abs(sum(v) - 1) < 0.02, (r["id"], k)
 
 
 def test_models_split_is_flagged(tmp_path, monkeypatch):

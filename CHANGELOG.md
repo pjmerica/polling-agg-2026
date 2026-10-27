@@ -15,6 +15,12 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` Seat ranges, wider stress test, Louisiana runoff odds, same-party notes; every remaining model audit item (2026-10-27) - user: "we are going to do everything before the election".
+  - Forecast page: each chamber card shows the Democrats' median seats, 80% range and control odds (model repo `src/simulate_seats.py`: every race keeps its odds, one shared national error per run, correlation fitted on 1998-2024). The "if the polls are off" table adds 6-point shifts (national misses ran 5-8 points in 2016 and 2020); no-polls races get the same table, moving the national mood.
+  - Louisiana House: the model now publishes the chance to win the seat (first round + Dec 12 runoff simulated), so Model vs Markets and the Dashboard use it again (were on market prices since 10-06). LA-6: Republican 98.6%.
+  - Polled same-party finals (CA-7, CA-11, CA-34, CA-40) carry a note that the odds rest on that race's polls and the candidates' records.
+  - Model repo: averaged top-3 settings in every model; the economy as four features signed toward the president's party (replacing 144 per-cycle constants); last-60-days poll features; PAC share relative to party; district lean blank for statewide races; the no-polls model race-level and trained on unpolled races too; elected state boards 3, appointed-state judges 0.5, federal judges 0.75. 2026: 8 favourite flips, TX-Sen Talarico 64%, AK-Sen Peltola 64%.
+
 - `[b4cd9500]` State election results rebuilt on the Oct 27 forecast (2026-10-27) - user: "rebuild it".
   - Ran the README rebuild order (early vote, county benchmarks, Census blocs, county reporting, race list, MASTER, election-night page). `competitive_races.md`: 7 races at 75% or less (AK-Sen, KS-Sen, MI-Sen, TX-Sen, OH-Gov, OH-Sen special, NV-Gov); VT-Gov, IA-Sen and NE-Sen just outside.
   - The 13 state guides and `capture_live.py`'s 13 races are kept; the MASTER intro and the page's live table now say the 13 are the Oct 22 list and point to the current one.

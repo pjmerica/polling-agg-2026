@@ -377,13 +377,10 @@ def main():
         st = g["state"].iloc[0]
         if st not in decided:
             continue
-        # Louisiana HOUSE (2026-09-25): after Louisiana v. Callais the state suspended its May
-        # House primaries and moved them to a JUNGLE first round on Nov 3 with a Dec 12 runoff.
-        # There are no nominees; the "general" polls are crowded first-round fields (LA-6: a
-        # Democrat leads a split GOP field at 19%), so a win probability from them is not
-        # comparable to a who-wins-the-seat market. LA's Senate race (spring party primary) stays.
-        if st == "LA" and g["office"].iloc[0] == "House":
-            continue
+        # Louisiana HOUSE: skipped 2026-09-25..10-27 because the model ranked who finishes FIRST in
+        # the Nov 3 all-party round, not who wins the seat. Since 2026-10-27 the model repo
+        # publishes the chance to win the SEAT for polled Louisiana House races (first round plus
+        # the Dec 12 runoff, src/la_runoff.py), the same event the markets price.
         mrid = market_race_id(g.iloc[0])
         dem = g[g["party"] == "DEM"]
         rep = g[g["party"] == "REP"]

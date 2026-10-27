@@ -49,8 +49,11 @@ OFFICE_CODE = {"Senate": "SEN", "Governor": "GOV", "House": "H"}
 # races where the November number is not a normal two-candidate general
 NOTES = {
     "LA_House": ("Louisiana's House races are an all-party first round on Nov 3, with a "
-                 "Dec 12 runoff between the top two if nobody tops 50%. The polls are split "
-                 "multi-candidate fields, so treat these numbers with extra caution."),
+                 "Dec 12 runoff between the top two if nobody tops 50%. Where there are polls, "
+                 "these are chances to win the seat: both rounds are simulated from the model's "
+                 "first-round vote shares, with each party's first-round vote going to its "
+                 "finalist in the runoff. The polls are split multi-candidate fields, so treat "
+                 "these numbers with extra caution."),
     "RCV": ("Ranked-choice race: the model uses the final-round head-to-head polls "
             "between the two expected finalists."),
     "FUND": ("No public polls in this race, so this is the no-polls model: which party holds the "
@@ -59,6 +62,11 @@ NOTES = {
     "SPLIT": ("Models split: the win model favours {win}, but the separate margin model has {margin} "
               "ahead. Treat this race as a toss-up between the two models, not an edge over the "
               "markets."),
+    # polled same-party finals (audit item 9, 2026-10-27): party, the seat's lean and the national
+    # mood are the same for both, and the race-level model's one-split trees cancel them exactly
+    "SAME_PARTY_POLLED": ("Both finalists are {party}s, so party, the seat's lean and the national mood "
+                          "don't separate them: these odds rest on this race's {n} survey{s} and the "
+                          "candidates' own records (incumbency, office held, money, primary result)."),
     "SAME_PARTY": ("Several candidates share a party here, and the no-polls model can barely tell "
                    "them apart, so read the party's combined chance rather than any one candidate's."),
 }
@@ -100,9 +108,10 @@ def _fund_races(seen, books, norm_pair):
         st, off, di = first["state"], first["office"], first["district"]
         aid = _agg_id(st, off, di)
         meta = RACE_BY_ID.get(aid)
+        g = _stress(g)
         cands = [dict(name=r.candidate,
                       party=str(r.display_party if pd.notna(r.display_party) else r.party)[:3].upper(),
-                      win=_num(r.win_prob_norm), win_r3=None, win_d3=None, margin=None,
+                      win=_num(r.win_prob_norm), **_stress_fields(r), margin=None,
                       poll_avg=None, n_polls=0)
                  for r in g.sort_values("win_prob_norm", ascending=False).itertuples()]
         notes = [NOTES["FUND"]]
@@ -131,9 +140,30 @@ def _fund_races(seen, books, norm_pair):
             incumbent=(meta.incumbent_name if meta else None),
             incumbent_party=(meta.incumbent_party if meta else None),
             open_seat=(bool(meta.open_seat) if meta else None),
-            fragile=False, n_surveys=0, basis="fundamentals", cands=cands, market=market,
+            # the no-polls model's own stress test moves the national mood (2026-10-27: shown too)
+            fragile=bool(first.get("bias_fragile", 0) or 0), n_surveys=0, basis="fundamentals",
+            cands=cands, market=market,
             notes=notes, explain=explain.get(rid)))
     return out
+
+
+STRESS = ("R3", "D3", "R6", "D6")   # national shifts (pts) the model re-predicts under
+
+
+def _stress(g):
+    """Each candidate's chance under each national shift, normalised within the race
+    (+/-6 added 2026-10-27, audit item 4: measured national misses run 5-8 pts)."""
+    g = g.copy()
+    for lab in STRESS:
+        col = f"win_prob_{lab}"
+        if col in g.columns:
+            s = g[col].sum()
+            g[col + "_n"] = g[col] / s if s > 0 else None
+    return g
+
+
+def _stress_fields(r):
+    return {f"win_{lab.lower()}": _num(getattr(r, f"win_prob_{lab}_n", None)) for lab in STRESS}
 
 
 def _agg_id(state, office, district):
@@ -161,12 +191,7 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
 
     races = []
     for rid, g in preds.groupby("race_id", sort=False):
-        g = g.copy()
-        # +/-3-pt stress test: raw per-candidate probabilities, normalised within the race
-        for col in ("win_prob_R3", "win_prob_D3"):
-            if col in g.columns:
-                s = g[col].sum()
-                g[col + "_n"] = g[col] / s if s > 0 else None
+        g = _stress(g)
         first = g.iloc[0]
         st, off, di = first["state"], first["office"], first["district"]
         aid = _agg_id(st, off, di)
@@ -178,8 +203,7 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
                 name=r.candidate,
                 party=str(r.display_party if pd.notna(r.display_party) else r.party)[:3].upper(),
                 win=_num(r.win_prob_norm),
-                win_r3=_num(getattr(r, "win_prob_R3_n", None)),
-                win_d3=_num(getattr(r, "win_prob_D3_n", None)),
+                **_stress_fields(r),
                 margin=_num(m.pred_margin, 2) if m is not None else None,
                 poll_avg=_num(r.poll_avg, 1),
                 n_polls=int(r.n_polls) if pd.notna(r.n_polls) else 0,
@@ -192,6 +216,10 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
         if len(cands) >= 2 and cands[0]["party"] == cands[1]["party"] and cands[0]["party"] in ("DEM", "REP"):
             mkt = []
         notes = []
+        if len(cands) >= 2 and cands[0]["party"] == cands[1]["party"] and cands[0]["party"] in ("DEM", "REP"):
+            n = int(g["n_surveys"].max()) if "n_surveys" in g and g["n_surveys"].notna().any() else 0
+            notes.append(NOTES["SAME_PARTY_POLLED"].format(
+                party="Democrat" if cands[0]["party"] == "DEM" else "Republican", n=n, s="" if n == 1 else "s"))
         # MODELS SPLIT (audit item 3, 2026-10-27): the win and margin models are trained separately
         # and can pick different favourites. Model vs Markets already dims these rows as "no edge";
         # the forecast page and map flag them and mute the model-vs-market gap
@@ -226,9 +254,13 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
         ))
     books, norm_pair = _party_books()
     races += _fund_races({r["id"] for r in races}, books, norm_pair)
+    # seat-count ranges and control odds (model repo src/simulate_seats.py, 2026-10-27)
+    spath = os.path.join(PROC, "model_seat_sim_2026.json")
+    seat_sim = json.load(open(spath, encoding="utf-8")) if os.path.exists(spath) else None
     payload = dict(
         generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        predictions_as_of=predictions_as_of, polls_as_of=polls_as_of, races=races)
+        predictions_as_of=predictions_as_of, polls_as_of=polls_as_of, races=races,
+        seat_sim=seat_sim)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("const FORECAST = ")
         json.dump(payload, f, separators=(",", ":"))

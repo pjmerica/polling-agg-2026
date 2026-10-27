@@ -258,12 +258,9 @@ if not _mp.empty:
         code = OFF.get(off)
         return f"{yr}-{code}-{st}" if code else None
     model_dem = {to_agg_id(rid): round(float(v), 4) for rid, v in _dem.items()}
-    # Louisiana HOUSE (2026-10-06, same rule as analysis/model_compare.py): after Louisiana v.
-    # Callais the House races are an all-party JUNGLE round on Nov 3 with a Dec 12 runoff, so
-    # the polls are split first-round fields, not a nominee matchup. LA-6 read 69% Dem from a
-    # Democrat leading a split GOP field in a seat redrawn for Republicans (markets ~7%).
-    # Market price instead. LA's Senate race (spring party primaries) keeps the model.
-    model_dem = {k: v for k, v in model_dem.items() if not str(k).startswith('2026-H-LA-')}
+    # Louisiana HOUSE: on market prices 2026-10-06..10-27 (the model ranked the Nov 3 first round);
+    # since 2026-10-27 the model publishes the chance to win the seat incl. the Dec 12 runoff
+    # (model repo src/la_runoff.py), so the model number is used as for every other race.
     agg['model_dem_prob'] = agg['race_id'].map(model_dem)
     # the tab reads implied_prob_avg — point it at the model where we have it
     agg['market_prob_avg'] = agg['implied_prob_avg']      # keep the old number, labeled
