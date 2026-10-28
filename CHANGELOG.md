@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` capture_live.py holds off sleep while it runs (2026-10-28).
+- `[7239a950]` capture_live.py holds off sleep while it runs (2026-10-28).
   - This PC sleeps in Modern Standby (S0 low power idle), which throttles or suspends background programs, so the election-night captures (every 2 min from Nov 3, 6:30 pm ET) would have stalled once the idle timer fired. The script now calls SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) for its whole run. Closing the lid can still sleep it, and wake timers are enabled on AC only, so on Nov 3 the PC should be plugged in, signed in, lid open.
   - Checked: the NYT URL pattern answers for the 2024 and 2025 generals (special Senate races end in `-special`, as `ohio-us-senate-special` assumes); the 2026 files are not up yet.
 
