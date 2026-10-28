@@ -1,7 +1,7 @@
 {
- "generated_at": "2026-10-27T20:54:28",
+ "generated_at": "2026-10-28T04:23:06",
  "polls_max_end_date": "2026-10-27",
- "n_poll_rows": 3189,
+ "n_poll_rows": 3195,
  "n_races": 177,
  "natl_env": 8.54,
  "natl_env_sources": [
@@ -26,7 +26,7 @@
    8.8
   ]
  ],
- "run_id": "20261027T205342",
+ "run_id": "20261028T042221",
  "feature_fill": {
   "fund_receipts_ln": 0.7198,
   "fund_share": 0.7221,
@@ -44,7 +44,7 @@
   "poll_avg": 1.0,
   "poll_last": 1.0,
   "poll_last30": 1.0,
-  "poll_std": 0.7927,
+  "poll_std": 0.7882,
   "n_polls": 1.0,
   "n_polls_over50": 1.0,
   "frac_polls_over50": 1.0,
