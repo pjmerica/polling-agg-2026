@@ -5,7 +5,7 @@ The page is the master guide (build_master.render(html=True)) rendered to HTML i
 scripts/election_night_template.html, with:
   - model and market numbers that refresh from docs/forecast_data.js when the page loads (CI's model
     refresh rewrites that file daily, so the numbers stay current without rebuilding the page);
-  - a live table of the 14 races;
+  - a live table of the 15 races;
   - each state's county benchmarks as an interactive table: a slider for the statewide result, and
     boxes that turn a finished county's result into the statewide margin it implies.
 

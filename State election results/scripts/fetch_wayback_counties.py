@@ -25,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "data", "raw", "wayback_counties")
 UA = {"User-Agent": "polling-agg research (github.com/pjmerica/polling-agg-2026)"}
 STATES = ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
-          "nevada", "oregon"]
+          "nevada", "oregon", "south-carolina"]
 WINDOW = {2018: ("20181106230000", "20181112000000"),
           2022: ("20221108230000", "20221115000000"),
           2024: ("20241105230000", "20241112000000")}

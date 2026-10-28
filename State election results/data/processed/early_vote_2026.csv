@@ -1,5 +1,6 @@
 state,abbv,as_of,voted,pct_of_2022,turnout_2022,mail_requested,mail_returned,in_person,dem,rep,other,source,file
 Georgia,GA,10/27/2026,1954867,49.3,3964926,157510,91216,1863651,0,0,0,https://mvp.sos.ga.gov/s/voter-absentee-files,US_2026-10-27.csv
+South Carolina,SC,10/26/2026,530558,30.9,1718626,56715,28614,501944,0,0,0,https://scvotes.gov/elections-statistics/voter-participation/,US_2026-10-27.csv
 Ohio,OH,10/26/2026,1083535,25.8,4201368,720703,447240,636295,0,0,0,https://data.ohiosos.gov/portal/election-dashboards,US_2026-10-27.csv
 Michigan,MI,10/27/2026,1392217,30.9,4500400,2163582,1197558,194659,0,0,0,Data provided by Michigan Secretary of State,US_2026-10-27.csv
 Texas,TX,10/27/2026,4542522,55.7,8151590,208468,208468,4334054,0,0,0,https://goelect.txelections.civixapps.com/ivis-evr-ui/evr,US_2026-10-27.csv

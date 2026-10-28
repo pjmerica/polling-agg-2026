@@ -29,7 +29,7 @@ import county_benchmarks as cb
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 SLUG = {"georgia": "GA", "ohio": "OH", "michigan": "MI", "texas": "TX", "kansas": "KS",
-        "maine": "ME", "iowa": "IA", "nebraska": "NE", "alaska": "AK", "nevada": "NV", "oregon": "OR"}
+        "maine": "ME", "iowa": "IA", "nebraska": "NE", "alaska": "AK", "nevada": "NV", "oregon": "OR", "south-carolina": "SC"}
 
 
 def guide_sections(text):
@@ -73,7 +73,7 @@ def render(html=False):
 
     def state(m):
         slug = m.group(1)
-        num = next(n for n, (t, _) in sections.items() if t.lower().startswith(slug))
+        num = next(n for n, (t, _) in sections.items() if t.lower().startswith(slug.replace("-", " ")))
         title, body = sections[num]
         name = title.split(":")[0]
         return (f"## {title}\n\n{body}\n\n### The swing data: {name}\n\n"
@@ -83,7 +83,7 @@ def render(html=False):
                 f"{census_blocs.state_markdown(slug)}\n\n---\n")
 
     out = re.sub(r"\{\{GUIDE:(\w+)\}\}", guide, tmpl)
-    out = re.sub(r"\{\{STATE:(\w+)\}\}", state, out)
+    out = re.sub(r"\{\{STATE:([\w-]+)\}\}", state, out)
     out = out.replace("{{PACE_ALL}}", sw.state_pace(rows)).replace("{{EARLY_EDAY}}", sw.early_eday(rows))
     out = out.replace("{{COUNTY_BACKTEST}}", cb.backtest_markdown()).replace("{{BLOC_SUMMARY}}", census_blocs.summary_markdown())
     out = out.replace("{{REPORTING_ORDER}}", county_reporting.summary_markdown())

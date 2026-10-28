@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` State election results: South Carolina Senate guide (2026-10-27) - user: "continue".
+  - New section 3b (Darline Graham R vs Annie Andrews D): rules from the S.C. Code (7 pm ET close statewide, mail by 7 pm with no grace period, absentee tabulation from 7 am Election Day with nothing released before the close, automatic recount at 1% or less), NYT 2020-24 history and curves, swing data, county benchmarks (2024 President and 2020 Harrison-Graham), county reporting order from the 2020 archive captures, voting blocs, early vote. The guide and page now cover all 12 races now at 75% or less plus three more from the Oct 22 list (15 in twelve states).
+  - Scripts take hyphenated state slugs (`split_name`, `{{STATE:south-carolina}}`).
+
 - `[e4fce189]` State election results on the Oct 27 evening forecast: Kansas Governor added, South Carolina Senate recorded (2026-10-27).
   - 12 Senate/Governor races at 75% or less after the evening retrain (AK-Sen, GA-Gov, IA-Sen, KS-Gov, KS-Sen, ME-Sen, NE-Sen, NV-Gov, OH-Gov, OH-Sen special, SC-Sen, TX-Sen). KS-Gov joins the guide (county benchmarks on 2024 President and the 2022 Kelly-Schmidt race; the Kansas guide covers its counting), so the page tracks 14 races.
   - South Carolina Senate has no vote-count guide yet; `capture_live.py` records it (and KS-Gov) on election night.

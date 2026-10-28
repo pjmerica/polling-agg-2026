@@ -1,7 +1,7 @@
 # How far the count moves after polls close: eleven states, 2020-2026
 
 *Built 2026-10-21 by `scripts/build_swings_report.py`; Nevada and Oregon added 2026-10-22. Every table is generated from NYT's
-minute-by-minute results timelines (406 races: 293 contested general-election races
+minute-by-minute results timelines (411 races: 298 contested general-election races
 2020-2024, plus 2026 primaries, runoffs and specials) and Internet Archive copies of NYT's 2020
 county results. No number in a table was typed by hand.*
 
@@ -54,6 +54,9 @@ Median over every contested general-election race in that state and year.
 | Georgia | 2020 | 2 | 10% / 32% / 79% / 94% | +5.1 | +15.7 | +2.3 | 2 of 2 |
 | Georgia | 2022 | 22 | 27% / 54% / 93% / 100% | -14.3 | -3.1 | +0.0 | 11 of 22 |
 | Georgia | 2024 | 15 | 30% / 69% / 99% / 100% | -0.5 | +0.2 | +0.0 | 5 of 15 |
+| South Carolina | 2020 | 2 | 4% / 18% / 64% / 85% | -20.7 | -5.1 | +2.4 | 1 of 2 |
+| South Carolina | 2022 | 2 | 5% / 32% / 85% / 99% | -7.6 | -5.8 | +0.1 | 1 of 2 |
+| South Carolina | 2024 | 1 | - / 53% / 96% / 98% | - | +1.8 | -0.3 | 0 of 1 |
 | Ohio | 2020 | 1 | 47% / 64% / 95% / 96% | -18.2 | -10.7 | +0.1 | 1 of 1 |
 | Ohio | 2022 | 21 | 29% / 56% / 97% / 98% | -18.7 | -6.0 | +0.2 | 12 of 21 |
 | Ohio | 2024 | 17 | 41% / 61% / 97% / 98% | -10.2 | -3.1 | +0.1 | 3 of 17 |
@@ -98,6 +101,13 @@ Up to five per state, largest move after 2 h first.
 | 2022 Labor Commissioner | 16.3% / +13.1 | 90.3% / -7.5 | 99.1% / -6.9 | -6.8 | **-19.9** | +0.2 |
 | 2022 Insurance Commissioner | 16.3% / +11.6 | 90.1% / -8.9 | 98.8% / -8.3 | -8.2 | **-19.8** | +0.1 |
 | 2022 Agriculture Commissioner | 16.3% / +11.5 | 90.0% / -8.8 | 98.8% / -8.1 | -8.1 | **-19.6** | +0.0 |
+
+**South Carolina**
+
+| Race | 2 h after close: counted / margin | Midnight ET | 6 am ET | Final | Move after 2 h | Move after 6 am |
+|---|---|---|---|---|---|---|
+| 2020 Senate | 17.8% / -5.0 | 63.8% / -15.0 | 85.3% / -12.6 | -10.3 | **-5.3** | +2.3 |
+| 2020 President | 17.7% / -6.8 | 63.8% / -16.8 | 85.3% / -14.2 | -11.7 | **-4.9** | +2.5 |
 
 **Ohio**
 
@@ -284,11 +294,13 @@ Patterns:
 | Nevada 2022 House 1 | 87.4% | +2.9 | +5.6 | **+2.7** |
 | Maine 2020 Senate | 69.7% | -5.9 | -8.6 | **-2.7** |
 | Maine 2024 House 1 | 71.4% | +24.8 | +22.3 | **-2.6** |
+| South Carolina 2020 President | 85.3% | -14.2 | -11.7 | **+2.5** |
 | Georgia 2020 President | 94.4% | -2.2 | +0.2 | **+2.4** |
 | Oregon 2022 House 1 | 68.0% | +33.6 | +36.0 | **+2.4** |
 | Oregon 2022 House 5 | 69.0% | -4.5 | -2.1 | **+2.4** |
 | Oregon 2022 Governor | 73.4% | +1.1 | +3.4 | **+2.4** |
 | Michigan 2022 Governor | 93.4% | +8.2 | +10.5 | **+2.3** |
+| South Carolina 2020 Senate | 85.3% | -12.6 | -10.3 | **+2.3** |
 | Michigan 2022 Secretary of State | 93.4% | +11.6 | +13.9 | **+2.3** |
 | Michigan 2022 Attorney General | 93.5% | +6.3 | +8.6 | **+2.3** |
 | Alaska 2022 House 1 [RCV, 1st round] | 77.3% | +20.7 | +23.0 | **+2.3** |
@@ -335,6 +347,8 @@ Margin among early/mail ("advance") votes minus margin among Election Day votes,
 |---|---|---|---|---|---|
 | Georgia | 2022 | 22 | 64% | +24.0 (+12 to +27) | Governor: early/mail +2.2, Election Day -25.0; Senate: early/mail +10.1, Election Day -15.4 |
 | Georgia | 2024 | 15 | 76% | +4.4 (-4 to +14) | President: early/mail -0.7, Election Day -7.2 |
+| South Carolina | 2022 | 2 | 36% | +22.8 (+21 to +24) | Governor: early/mail -3.7, Election Day -25.0; Senate: early/mail -10.4, Election Day -34.6 |
+| South Carolina | 2024 | 1 | 62% | +8.2 (+8 to +8) | President: early/mail -14.7, Election Day -22.9 |
 | Michigan | 2022 | 2 | 40% | +19.5 (+15 to +24) |  |
 | Texas | 2024 | 33 | 80% | +0.4 (-10 to +19) | President: early/mail -13.2, Election Day -15.8; Senate: early/mail -9.3, Election Day -5.2 |
 | Iowa | 2024 | 5 | 40% | +28.5 (+21 to +30) | President: early/mail +4.4, Election Day -25.4 |

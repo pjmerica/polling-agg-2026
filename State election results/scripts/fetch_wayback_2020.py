@@ -20,7 +20,7 @@ TARGET = "static01.nyt.com/elections-assets/2020/data/api/2020-11-03/national-ma
 CDX = ("https://web.archive.org/cdx/search/cdx?url=" + TARGET +
        "&from=20201103230000&to=20201110235959&fl=timestamp,statuscode&collapse=timestamp:11")
 STATES = {"alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
-          "nevada", "oregon"}
+          "nevada", "oregon", "south-carolina"}
 COUNTY_KEYS = ["fips", "name", "votes", "absentee_votes", "results", "results_absentee", "eevp",
                "tot_exp_vote", "reporting", "precincts", "last_updated", "absentee_count_progress"]
 RACE_KEYS = ["state_slug", "votes", "absentee_votes", "eevp", "tot_exp_vote", "precincts_reporting",

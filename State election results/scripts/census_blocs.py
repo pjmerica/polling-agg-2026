@@ -40,7 +40,8 @@ RELEASE = "acs2024_5yr"
 API = "https://api.censusreporter.org/1.0/data/show/{rel}?table_ids=B03002,B15003,B19013&geo_ids={geo}"
 FIPS = {"georgia": ("GA", "13"), "ohio": ("OH", "39"), "michigan": ("MI", "26"), "texas": ("TX", "48"),
         "kansas": ("KS", "20"), "maine": ("ME", "23"), "iowa": ("IA", "19"), "nebraska": ("NE", "31"),
-        "nevada": ("NV", "32"), "oregon": ("OR", "41"), "alaska": ("AK", "02")}
+        "nevada": ("NV", "32"), "oregon": ("OR", "41"), "alaska": ("AK", "02"),
+        "south-carolina": ("SC", "45")}
 BLOCS = ["Hispanic-majority", "Black 35%+, large counties", "Black 35%+, smaller counties", "Native 25%+",
          "College-educated", "Big diverse metros", "White, non-college", "Everything else"]
 RULES = {

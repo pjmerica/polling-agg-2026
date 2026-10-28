@@ -11,6 +11,7 @@ Writes:
 
     py "State election results/scripts/state_curves.py"
 """
+import re
 import csv
 import datetime as dt
 import glob
@@ -26,12 +27,19 @@ PROC = os.path.join(ROOT, "data", "processed")
 # Later-closing parts (MI UP, TX El Paso, KS west, OR Malheur earlier) are ignored; AK = 8 p.m. AKST.
 # Iowa closed at 9 p.m. CT (10 p.m. ET) until 2021 (SF 413 moved it to 8 p.m. from 2022).
 CLOSE_ET = {"georgia": 19.0, "ohio": 19.5, "michigan": 20.0, "texas": 20.0, "kansas": 20.0,
-            "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "nevada": 22.0, "oregon": 23.0,
+            "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "nevada": 22.0, "oregon": 23.0, "south-carolina": 19.0,
             "alaska": 24.0}
 CHECKPOINTS = [0.5, 1, 1.5, 2, 3, 4, 5, 6, 9, 15, 24, 48]  # hours after poll close
 REP = {"republican", "gop", "rep"}
 ELECTION_DAY = {2020: dt.date(2020, 11, 3), 2022: dt.date(2022, 11, 8), 2024: dt.date(2024, 11, 5)}
 
+
+
+def split_name(name):
+    """'south-carolina-us-senate' -> ('south-carolina', 'us-senate'): a state slug can hold a hyphen
+    (2026-10-27, South Carolina), so split at the race name, not the first hyphen."""
+    m = re.match(r"(.+?)-(president|us-senate|senate|governor|us-house.*)$", name)
+    return (m.group(1), m.group(2)) if m else tuple(name.split("-", 1))
 
 def parse_ts(s):
     return dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
@@ -39,7 +47,7 @@ def parse_ts(s):
 
 def load(path):
     year = int(os.path.basename(os.path.dirname(path)))
-    state, race = os.path.basename(path)[:-5].split("-", 1)
+    state, race = split_name(os.path.basename(path)[:-5])
     d = json.load(open(path, encoding="utf-8"))
     pts = []  # (ts, total, {cand: votes}, {cand: advance votes} or None)
     if year == 2020:

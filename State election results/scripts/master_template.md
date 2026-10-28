@@ -1,9 +1,8 @@
 # Election night, Nov 3, 2026: master guide
 
-*One file to read through. It covers 14 Governor and Senate races in eleven states: the 13 where our model's
-favorite was at 75% or less on Oct 22, plus Kansas Governor, which joined on Oct 27. After the Oct 27 evening
-retrain 12 races are at 75% or less (`competitive_races.md` has the current list); South Carolina Senate is the
-only one this guide does not cover yet (its results are recorded on election night all the same). For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
+*One file to read through. It covers 15 Governor and Senate races in twelve states: the 13 where our model's
+favorite was at 75% or less on Oct 22, plus Kansas Governor and South Carolina Senate, which joined on Oct 27.
+After the Oct 27 evening retrain 12 of them are at 75% or less (`competitive_races.md` has the current list). For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
 past elections, and where that creates opportunities as results come in.*
 
 *Built by `scripts/build_master.py` from `STATE_BY_STATE.md` (rules, checked against primary sources)
@@ -136,7 +135,7 @@ count moves more precisely than the market does, and from acting faster.*
 
 From `VOLATILITY.md`, which measures every President, Senate and Governor race in the 50 states and DC, 2020-2024. A state ranks high when its visible margin moves a lot during the count *and* its leader at some point often lost.
 - **National top ten:** {{VOL_TOP10}}.
-- **Our eleven, by national rank:** {{VOL_OURS}}.
+- **Our twelve, by national rank:** {{VOL_OURS}}.
 - **Volatility isn't the same as opportunity.**
   - The biggest swings (Kansas, Nebraska, Iowa) are also the most predictable and settle within hours, so they're probably priced in.
   - Nevada's swings are small (about 2 points) but always in the same direction. They play out over days, and they changed the leader in 3 of its 5 races.
@@ -201,6 +200,7 @@ In poll-closing order. Each state has five parts:
 - The 2026 rows sum the county benchmarks by bloc. On election night, compare a bloc's finished counties with its line.
 
 {{STATE:georgia}}
+{{STATE:south-carolina}}
 {{STATE:ohio}}
 {{STATE:michigan}}
 {{STATE:texas}}

@@ -24,10 +24,10 @@ RAW = os.path.join(ROOT, "data", "raw")
 OUT = os.path.join(ROOT, "data", "processed", "swings.csv")
 
 STATES = {"alaska": "AK", "georgia": "GA", "ohio": "OH", "kansas": "KS", "texas": "TX",
-          "nebraska": "NE", "maine": "ME", "iowa": "IA", "michigan": "MI", "nevada": "NV", "oregon": "OR"}
+          "nebraska": "NE", "maine": "ME", "iowa": "IA", "michigan": "MI", "nevada": "NV", "oregon": "OR", "south-carolina": "SC"}
 # main poll close, hours after midnight local ET on election day (AK: 8 pm Alaska = midnight ET).
 # Iowa closed at 9 pm CT (10 pm ET) until 2021; SF 413 moved it to 8 pm from 2022 (close_hours).
-CLOSE = {"GA": 19.0, "OH": 19.5, "MI": 20.0, "TX": 20.0, "KS": 20.0, "ME": 20.0,
+CLOSE = {"GA": 19.0, "SC": 19.0, "OH": 19.5, "MI": 20.0, "TX": 20.0, "KS": 20.0, "ME": 20.0,
          "IA": 21.0, "NE": 21.0, "NV": 22.0, "OR": 23.0, "AK": 24.0}
 REP = {"republican", "gop", "rep"}
 MIN_SHARE = 10.0  # who "leads" is only meaningful once some vote is in

@@ -19,7 +19,7 @@ UA = {"User-Agent": "Mozilla/5.0"}
 PREFIXES = ["static01.nyt.com/elections-assets/2022/data/2022-11-08/",
             "static01.nyt.com/elections-assets/pages/data/2024-11-05/",
             "static01.nyt.com/elections-assets/pages/data/2026-"]
-STATES = "alaska|georgia|ohio|kansas|texas|nebraska|maine|iowa|michigan|nevada|oregon"
+STATES = "alaska|georgia|ohio|kansas|texas|nebraska|maine|iowa|michigan|nevada|oregon|south-carolina"
 KEEP = re.compile(rf"results-({STATES})[a-z0-9-]*\.json$")
 SKIP = re.compile(r"state-(senate|house)|mayor|county-judge")
 

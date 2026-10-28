@@ -30,6 +30,13 @@ RACE_LABEL = {"president": "President", "senate": "Senate", "us-senate": "Senate
 MIN_SHARE = 3.0  # ignore lead flips while under 3% of the vote is counted (first-batch noise)
 
 
+
+def split_name(name):
+    """'south-carolina-us-senate' -> ('south-carolina', 'us-senate'): a state slug can hold a hyphen
+    (2026-10-27, South Carolina), so split at the race name, not the first hyphen."""
+    m = re.match(r"(.+?)-(president|us-senate|senate|governor|us-house.*)$", name)
+    return (m.group(1), m.group(2)) if m else tuple(name.split("-", 1))
+
 def ts(s):
     return dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
 
@@ -48,7 +55,7 @@ def clock(t, eday):
 
 def load(path):
     year = int(os.path.basename(os.path.dirname(path)))
-    state, race = os.path.basename(path)[:-5].split("-", 1)
+    state, race = split_name(os.path.basename(path)[:-5])
     d = json.load(open(path, encoding="utf-8"))
     if year == 2020:
         r = d["data"]["races"][0]
@@ -209,7 +216,7 @@ def render(fill=True):
     tmpl = open(os.path.join(HERE, "state_guide_template.md"), encoding="utf-8").read()
     out = fill_numbers(tmpl) if fill else tmpl
     for state in ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
-                  "nevada", "oregon"]:
+                  "nevada", "oregon", "south-carolina"]:
         out = out.replace("{{HISTORY:%s}}" % state, history(state))
     return out.replace("{{EARLY_VOTE}}", early_vote.table())
 

@@ -1,4 +1,4 @@
-"""Ballots already cast in the eleven states, from the University of Florida Election Lab's 2026
+"""Ballots already cast in the twelve states, from the University of Florida Election Lab's 2026
 early-vote tracker (https://election.lab.ufl.edu/early-vote/2026-early-voting/), which compiles each
 state's own files.
 
@@ -19,7 +19,7 @@ ROOT = os.path.join(HERE, "..")
 URL = "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/US.csv"
 RAW = os.path.join(ROOT, "data", "raw", "early_vote")
 OUT = os.path.join(ROOT, "data", "processed", "early_vote_2026.csv")
-ORDER = ["GA", "OH", "MI", "TX", "KS", "ME", "IA", "NE", "NV", "OR", "AK"]
+ORDER = ["GA", "SC", "OH", "MI", "TX", "KS", "ME", "IA", "NE", "NV", "OR", "AK"]
 # What a 0 means in the tracker: not reported, or no such category this early
 NOTES = {
     "GA": "Nearly all in person; Georgia has no party registration.",

@@ -51,7 +51,7 @@ AK_SRC = {
              "Results_per_Precinct_2022.txt"),
 }
 NAMES = {"georgia": "Georgia", "ohio": "Ohio", "michigan": "Michigan", "texas": "Texas", "kansas": "Kansas",
-         "maine": "Maine", "iowa": "Iowa", "nebraska": "Nebraska", "nevada": "Nevada", "oregon": "Oregon",
+         "maine": "Maine", "iowa": "Iowa", "nebraska": "Nebraska", "nevada": "Nevada", "oregon": "Oregon", "south-carolina": "South Carolina",
          "alaska": "Alaska"}
 
 # (label, source, D/I-side key, R key). Sources are NYT files under data/raw/nyt ({s} = state slug) or
@@ -78,6 +78,11 @@ RACES = [
     # entered the 75% list with the 2026-10-27 evening retrain; Kansas's guide already covers it
     dict(id="2026_KS_Governor", state="kansas", seat="Governor",
          bases=[P24, ("2022 Governor (Kelly-Schmidt)", "2022/kansas-governor.json", "kelly-l", "schmidt-d")]),
+    # entered the 75% list with the 2026-10-27 evening retrain; Graham's own 2020 race is the seat's
+    # most recent contest
+    dict(id="2026_SC_Senate", state="south-carolina", seat="Senate",
+         bases=[P24, ("2020 Senate (Harrison-Graham)", "2020/south-carolina-senate.json", "harrisonj", "grahaml")],
+         types=("2024 President", "2024/south-carolina-president.json", "harris-k", "trump-d")),
     dict(id="2026_ME_Senate", state="maine", seat="Senate",
          bases=[P24, ("2020 Senate (Gideon-Collins)", "2020/maine-senate.json", "gideons", "collinss")]),
     dict(id="2026_IA_Senate", state="iowa", seat="Senate",
@@ -95,7 +100,8 @@ RACES = [
                 ("2024 House (Peltola-Begich, first choices)", "ak:2024:U.S. Representative", "Peltola", "Begich")]),
 ]
 SCEN = 3.0  # the "wins by" scenarios, two-party points
-BACKTEST_STATES = ["georgia", "ohio", "michigan", "texas", "kansas", "maine", "iowa", "nebraska", "nevada", "oregon"]
+BACKTEST_STATES = ["georgia", "ohio", "michigan", "texas", "kansas", "maine", "iowa", "nebraska", "nevada", "oregon",
+                   "south-carolina"]
 
 
 def logit(p):

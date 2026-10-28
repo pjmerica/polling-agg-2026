@@ -25,7 +25,7 @@ ALERT = os.path.join(SRC, "NEW_AP_GENERAL.md")
 UA = {"User-Agent": "Mozilla/5.0"}
 
 STATES = ["Alaska", "Georgia", "Ohio", "Kansas", "Texas", "Nebraska", "Maine", "Iowa", "Michigan",
-          "Nevada", "Oregon"]
+          "Nevada", "Oregon", "South Carolina"]
 # Largest / slowest-reporting jurisdictions (see the report), for results-schedule announcements
 COUNTIES = ["Fulton County Georgia", "DeKalb County Georgia", "Franklin County Ohio", "Cuyahoga County",
             "Detroit", "Wayne County Michigan", "Oakland County Michigan", "Harris County", "Dallas County",

@@ -1,8 +1,8 @@
 # How the votes come in: state-by-state guide for Nov 3, 2026
 
-*Covers the competitive Governor and Senate races (model favorite at 75% or less): 13 races in eleven states.
+*Covers the competitive Governor and Senate races (model favorite at 75% or less): 15 races in twelve states.
 Written 2026-10-21; Nevada, Oregon and the Texas governor race added 2026-10-22, after the model audit moved them
-under 75% (`model_audit/MODEL_AUDIT.md`). Open items rechecked and ballots already cast (section 2c) added 2026-10-23. {{ASOF}} Both are filled in from the published forecast each
+under 75% (`model_audit/MODEL_AUDIT.md`). Open items rechecked and ballots already cast (section 2c) added 2026-10-23. Kansas Governor and South Carolina Senate (section 3b) added 2026-10-27, after the evening retrain put them under 75%. {{ASOF}} Both are filled in from the published forecast each
 time this file is rebuilt. All times are Eastern (ET). Daylight saving time ends Nov 1, so ET means EST (UTC-5).*
 
 **How each fact was checked**
@@ -21,10 +21,11 @@ Listed in poll-closing order.
 | # | State | Competitive race(s) | Model favorite (win %) | Market, same candidate | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Georgia | Governor | {{MATCHUP:2026_GA_Governor}} | {{MARKET:2026_GA_Governor}} | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
+| 1b | South Carolina | Senate | {{MATCHUP:2026_SC_Senate}} | {{MARKET:2026_SC_Senate}} | 7:00 pm (whole state) | 7:08-7:13 pm | 2020: Democrat until 8:44 pm; 2022 and 2024: Republican throughout | Election night (2020 Senate called 9:58 pm; 2022 at the close) |
 | 2 | Ohio | Governor; Senate (special) | {{MATCHUP:2026_OH_Governor}}; {{MATCHUP:2026_OH_Senate-S}} | {{MARKET:2026_OH_Governor}}; {{MARKET:2026_OH_Senate-S}} | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
 | 3 | Michigan | Senate | {{MATCHUP:2026_MI_Senate}} | {{MARKET:2026_MI_Senate}} | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
 | 4 | Texas | Senate; Governor | {{MATCHUP:2026_TX_Senate}}; {{MATCHUP:2026_TX_Governor}} | {{MARKET:2026_TX_Senate}}; {{MARKET:2026_TX_Governor}} | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
-| 5 | Kansas | Senate | {{MATCHUP:2026_KS_Senate}} | {{MARKET:2026_KS_Senate}} | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
+| 5 | Kansas | Senate; Governor | {{MATCHUP:2026_KS_Senate}}; {{MATCHUP:2026_KS_Governor}} | {{MARKET:2026_KS_Senate}}; {{MARKET:2026_KS_Governor}} | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
 | 6 | Maine | Senate (ranked-choice) | {{MATCHUP:2026_ME_Senate}} | {{MARKET:2026_ME_Senate}} | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
 | 7 | Iowa | Senate | {{MATCHUP:2026_IA_Senate}} | {{MARKET:2026_IA_Senate}} | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
 | 8 | Nebraska | Senate | {{MATCHUP:2026_NE_Senate}}; no Democrat on the ballot | {{MARKET:2026_NE_Senate}} | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
@@ -63,7 +64,7 @@ Notes on the table:
 
    On the other side, Democratic mail-ballot requests are down sharply in some states, because of worry about the
    USPS (NBC/Penn early-vote analysis, Oct 9 ○). That could shrink the mail share of the first batch.
-5. **Mail-ballot deadlines.** Five of the eleven states count domestic mail ballots that arrive after Election
+5. **Mail-ballot deadlines.** Five of the twelve states count domestic mail ballots that arrive after Election
    Day, if postmarked by it:
    - Alaska: 10 days.
    - Oregon: 7 days, to Tue Nov 10.
@@ -166,7 +167,7 @@ What the curves show (`state_curves.md`):
 - **2022 Governor:** Abrams was +9.0 one hour after close with 27% counted. Kemp led from 8:34 pm and won by 7.5.
 - **2022 Senate:** Warnock was +16.5 at one hour; the lead traded hands for three hours and he finished +1.0.
 - **2020:** the very late count (Atlanta-area mail) took Biden from −15 at two hours after close to +0.2.
-- **2024:** about 98% was counted by midnight, the fastest of the eleven states.
+- **2024:** about 98% was counted by midnight, the fastest of the twelve states.
 
 **After election night**
 
@@ -186,6 +187,47 @@ What the curves show (`state_curves.md`):
 - Inside 0.5%, there is no final result before the hand recount, around Nov 18-20.
 
 ---
+
+## 3b. South Carolina: Senate
+
+*Added 2026-10-27, when the evening retrain put this race under 75%.*
+
+**Race.**
+- Darline Graham (R) vs Annie Andrews (D), plus Kasie Whitener and Mark Hackett ○ ([WRDW](https://wrdw.com/2026/08/26/4-candidates-set-south-carolinas-us-senate-race-november)).
+- Lindsey Graham died on July 11; his sister Darline Graham was appointed to the seat on July 14 and beat Ralph Norman in the Aug 25 Republican runoff ○ ([ABC News 4](https://abcnews4.com/news/local/sen-darline-graham-clears-gop-primary-runoff-moves-on-to-face-annie-andrews-in-november)). Andrews won the Democratic nomination on June 9 ○ ([Fox Carolina](https://www.foxcarolina.com/2026/06/10/lindsey-graham-seeks-5th-senate-term-face-annie-andrews-november/)).
+- Model: {{MODEL:2026_SC_Senate}}. Market: {{MARKET:2026_SC_Senate}}.
+
+**Rules for Nov 3**
+- **Polls:** open 7 am to 7 pm; the whole state is on Eastern time, so everything closes at **7:00 pm ET** ✔ ([S.C. Code 7-13-60](https://www.scstatehouse.gov/code/t07c013.php)).
+- **Early voting:** Monday to Saturday for the two weeks before the election (Oct 19-31), 8:30 am to 6 pm, no Sundays ✔ ([7-13-25](https://www.scstatehouse.gov/code/t07c013.php)). Each center's ballots go to the county board every night.
+- **Mail ballots must arrive by the close of the polls, 7 pm Election Day.** There is no grace period ✔ ([7-15-420(B)](https://www.scstatehouse.gov/code/t07c015.php)). (A WBTV voter guide says 7:30 pm ○; the statute says the close of the polls.)
+- **Processing:** boards may start examining return envelopes at 7 am two days before (Sun Nov 1) and may tabulate absentee ballots from 7 am on Election Day, but nothing may be released before the polls close ✔ ([7-15-420(B), (D), (E)](https://www.scstatehouse.gov/code/t07c015.php)).
+- **Canvass and recount:** county boards meet Friday Nov 6 and report to the state by noon Saturday Nov 7; the State Board of Canvassers meets within 10 days ✔ ([7-17-10, 7-17-20, 7-17-220](https://www.scstatehouse.gov/code/t07c017.php)). **Automatic recount if the margin is 1% or less**, unless the trailing candidate waives it in writing ✔ ([7-17-280](https://www.scstatehouse.gov/code/t07c017.php)).
+
+**How results are reported.**
+- 46 counties report to the State Election Commission's results site.
+- In 2020 the state expected counties to post scanned in-person absentee (early) votes first and mail later; that night Richland, Greenville, Lexington, York and Beaufort had not finished their mail ballots after midnight ○ ([WIS 2020](https://www.wistv.com/2020/11/01/when-do-experts-expect-call-winner-south-carolina-it-depends/), [Post and Courier](https://www.postandcourier.com/columbia/politics/ballot-counting-continues-in-sc-following-record-absentee-turnout/article_d7a107b6-1e54-11eb-818c-7bd30b04f005.html)).
+
+**History** (generated from NYT data)
+
+{{HISTORY:south-carolina}}
+
+What the curves show (`state_curves.csv`):
+
+| Race | Early | Lead changed | Final |
+|---|---|---|---|
+| 2020 Senate | Harrison +10.4 one hour after the close (4% in) | Graham ahead 8:44 pm (15% in) | Graham +10.3 |
+| 2022 Senate | Scott +16.0 one hour after the close (5% in) | Never | Scott +25.9 |
+| 2024 President | Trump +17.9 at 8:30 pm (34% in; the timeline starts at 8 pm) | Never | Trump +17.9 |
+
+- 2020, the big mail year: between 11 pm and 1 am the count ran 4-6 points more Republican than the final, and the late mail moved it back.
+- 2022: the first two hours ran 7-10 points more Democratic than the final; by 10 pm (53% counted) the count was within 4 points of it.
+- Counted by midnight: 64% (2020), 85% (2022), 96% (2024).
+
+**What to expect** (inference):
+- An early Andrews lead means little: Harrison led until 8:44 pm in 2020 and lost by 10.
+- From about 10 pm to midnight the count has run slightly more Republican than the final. A Graham lead of under about 3 points at midnight is not safe if a lot of mail is still out, as in 2020.
+- A margin of 1% or less goes to an automatic recount.
 
 ## 4. Ohio: Governor and Senate special election
 
@@ -352,11 +394,11 @@ What the curves show:
 
 ---
 
-## 7. Kansas: Senate
+## 7. Kansas: Senate and Governor
 
-**Race.**
-- Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates.
-- Model: {{MODEL:2026_KS_Senate}}. Market: {{MARKET:2026_KS_Senate}}.
+**Races.**
+- Senate: Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates. Model: {{MODEL:2026_KS_Senate}}. Market: {{MARKET:2026_KS_Senate}}.
+- Governor (open; added 2026-10-27 when the evening retrain put it under 75%): Ty Masterson (R) vs Cindy Holscher (D). Model: {{MODEL:2026_KS_Governor}}. Market: {{MARKET:2026_KS_Governor}}. Same rules, counties and timing as the Senate race below; the 2022 Governor row of the history table is its closest precedent (Kelly +18.1 one hour after the close, +2.2 final).
 
 **Rules for Nov 3**
 - **Polls:**

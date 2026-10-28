@@ -14,7 +14,7 @@ means X) and projected to a final result.
 | `STATE_BY_STATE.md` | State-by-state guide to how and when votes come in, checked against primary sources (built by `scripts/build_state_guide.py` from `scripts/state_guide_template.md`) |
 | `VOLATILITY.md` | Which states' counts swing the most, nationally: every President/Senate/Governor race in all 50 states and DC, 2020-2024, ranked by swing size and by how often the leader during the count lost (built by `scripts/volatility.py` from `fetch_nyt_history.py --all`) |
 | `SWINGS.md` | How far the count moved after polls close in every race NYT covered in the eleven states, 2020-2026: biggest swings, comebacks, late movers, early vs Election Day splits, 2020 county detail, 2026 primaries (built by `scripts/swing_analysis.py` + `scripts/build_swings_report.py`) |
-| `competitive_races.md` | The races (model favorite at 75% or less), built from `docs/forecast_data.js` by `scripts/build_competitive.py`: 13 races in 11 states as of Oct 22, plus KS-Gov from Oct 27; 12 at 75% or less after the Oct 27 evening retrain (SC-Sen not yet covered) |
+| `competitive_races.md` | The races (model favorite at 75% or less), built from `docs/forecast_data.js` by `scripts/build_competitive.py`: 13 races in 11 states as of Oct 22, plus KS-Gov and SC-Sen from Oct 27; 12 at 75% or less after the Oct 27 evening retrain |
 | `reports/Vote count timing in close 2026 races.md` | Rules and history per state (the first nine states): poll closes, ballot order, deadlines, RCV, recounts, past call times |
 | `reports/Vote count timing Nevada and Oregon.md` | The same for Nevada and Oregon, added Oct 22 when the model audit put their governor races under 75% |
 | `model_audit/MODEL_AUDIT.md` | Audit of the forecast's inputs (Oct 21-22): what was wrong, what was fixed, before/after poll numbers and win chances |
@@ -26,7 +26,7 @@ means X) and projected to a final result.
 | `scripts/county_benchmarks.py` | County benchmarks: each county's share of the statewide vote (2022) and its expected two-party share at any statewide result (uniform swing on recent results), early/mail vs Election Day where NYT split every county (GA, TX, IA), 2020 reporting speed, and a backtest on every 2022/2024 race -> `data/processed/county_benchmarks.json/.csv`, `county_backtest.csv` |
 | `scripts/early_vote.py` | Ballots already cast, from the UF Election Lab tracker -> `data/processed/early_vote_2026.csv` and the guide's section 2c (rerun to refresh) |
 | `scripts/census_blocs.py` | Demographic voting blocs from the Census Bureau's ACS 2020-2024 county estimates (via Census Reporter; api.census.gov now needs a key): each county's bloc, how each bloc voted 2020-2024, its 2020->2024 shift against the state's, and what it needs in 2026 -> `data/processed/census_units.csv`, `bloc_results.csv`, `census_blocs.json` |
-| `scripts/capture_live.py` | Records NYT's 2026 files every 2 minutes on election night (every county, every change), for the 14 covered races plus SC-Sen |
+| `scripts/capture_live.py` | Records NYT's 2026 files every 2 minutes on election night (every county, every change), for all 15 covered races |
 | `scripts/watch_sources.py` | Searches news feeds for AP "What to expect" pieces and county results schedules -> `sources/watch_log.csv` |
 | `sources/README.md` | Every source on when/how each state reports (AP 2026 editions, official documents, county schedules) |
 | `state_curves.md` | Share counted and visible margin by hour after poll close, per state, 2020-2024 |

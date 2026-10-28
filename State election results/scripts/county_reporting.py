@@ -23,6 +23,7 @@ is used for every year). Across years: rank correlation of lateness between year
 Writes data/processed/county_reporting.csv (county x year), county_reporting.json (for build_master).
     py "State election results/scripts/county_reporting.py"
 """
+import re
 import datetime as dt
 import glob
 import json
@@ -36,7 +37,7 @@ ROOT = os.path.join(HERE, "..")
 RAW = os.path.join(ROOT, "data", "raw")
 PROC = os.path.join(ROOT, "data", "processed")
 STATES = ["georgia", "ohio", "michigan", "texas", "kansas", "maine", "iowa", "nebraska", "nevada",
-          "oregon", "alaska"]
+          "oregon", "alaska", "south-carolina"]
 NAME = {s: s.title() for s in STATES}
 YEARS = [2018, 2020, 2022, 2024]
 ELECTION_DAY = {2018: dt.date(2018, 11, 6), 2020: dt.date(2020, 11, 3), 2022: dt.date(2022, 11, 8),
@@ -44,11 +45,18 @@ ELECTION_DAY = {2018: dt.date(2018, 11, 6), 2020: dt.date(2020, 11, 3), 2022: dt
 # main poll close, hours after midnight ET (EST in all four years). Iowa closed at 9 p.m. CT
 # (10 p.m. ET) until SF 413 (2021); 8 p.m. CT from 2022.
 CLOSE_ET = {"georgia": 19.0, "ohio": 19.5, "michigan": 20.0, "texas": 20.0, "kansas": 20.0,
-            "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "nevada": 22.0, "oregon": 23.0,
+            "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "nevada": 22.0, "oregon": 23.0, "south-carolina": 19.0,
             "alaska": 24.0}
 WINDOW = (0.10, 0.95)          # state share counted, for the lateness average
 FINAL_RACE = {2020: ["president"], 2022: ["us-senate", "governor"], 2024: ["president", "us-senate"]}
 
+
+
+def split_name(name):
+    """'south-carolina-us-senate' -> ('south-carolina', 'us-senate'): a state slug can hold a hyphen
+    (2026-10-27, South Carolina), so split at the race name, not the first hyphen."""
+    m = re.match(r"(.+?)-(president|us-senate|senate|governor|us-house.*)$", name)
+    return (m.group(1), m.group(2)) if m else tuple(name.split("-", 1))
 
 def close_et(state, year):
     return 22.0 if state == "iowa" and year <= 2020 else CLOSE_ET[state]
@@ -111,7 +119,7 @@ def finals(year):
     """{(state, family): {key: final votes}} from NYT's final files."""
     out = {}
     for p in glob.glob(os.path.join(RAW, "nyt", str(year), "*.json")):
-        st, fam = os.path.basename(p)[:-5].split("-", 1)
+        st, fam = split_name(os.path.basename(p)[:-5])
         fam = {"senate": "us-senate"}.get(fam, fam) if year == 2020 else fam
         d = json.load(open(p, encoding="utf8"))
         agg = {}
@@ -306,6 +314,9 @@ RULES = {
               "3 p.m. and 8 p.m. ET daily.",
     "oregon": "All-mail. The first drop, about 11 p.m. ET, holds about two-thirds of the vote; Election Day drop-offs "
               "(about 25% of ballots, 31-32% in Multnomah and Washington) are counted Wednesday to Friday.",
+    "south-carolina": "Polls close at 7 p.m. ET statewide. Absentee ballots may be tabulated from 7 a.m. on Election "
+                      "Day but nothing is released before 7 p.m.; mail must arrive by 7 p.m. In 2020 Richland, "
+                      "Greenville, Lexington, York and Beaufort were still counting mail after midnight.",
     "alaska": "Election night counts only Election Day votes and early votes cast through Oct 29; absentees are counted on "
               "Nov 10, 13 and 18. Alaska reports by House district, not county.",
 }

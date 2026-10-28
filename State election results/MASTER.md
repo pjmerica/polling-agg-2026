@@ -1,13 +1,12 @@
 # Election night, Nov 3, 2026: master guide
 
-*One file to read through. It covers 14 Governor and Senate races in eleven states: the 13 where our model's
-favorite was at 75% or less on Oct 22, plus Kansas Governor, which joined on Oct 27. After the Oct 27 evening
-retrain 12 races are at 75% or less (`competitive_races.md` has the current list); South Carolina Senate is the
-only one this guide does not cover yet (its results are recorded on election night all the same). For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
+*One file to read through. It covers 15 Governor and Senate races in twelve states: the 13 where our model's
+favorite was at 75% or less on Oct 22, plus Kansas Governor and South Carolina Senate, which joined on Oct 27.
+After the Oct 27 evening retrain 12 of them are at 75% or less (`competitive_races.md` has the current list). For each state it covers how votes are counted and reported, when results arrive, how far the count has moved in
 past elections, and where that creates opportunities as results come in.*
 
 *Built by `scripts/build_master.py` from `STATE_BY_STATE.md` (rules, checked against primary sources)
-and the swings analysis (406 races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
+and the swings analysis (411 races, 2020-2026, from NYT's minute-by-minute timelines). Every table is
 generated from data. Model numbers: forecast run of 2026-10-27 20:58 UTC. Market numbers: 2026-10-27 20:58 UTC refresh. They move daily. Nevada, Oregon and Texas Governor were added on
 Oct 22, when the model audit (`model_audit/MODEL_AUDIT.md`) moved them under 75%. County benchmarks, ballots
 already cast, census voting blocs and the Oct 23 open-item checks were added on Oct 23.*
@@ -33,10 +32,11 @@ Listed in poll-closing order.
 | # | State | Competitive race(s) | Model favorite (win %) | Market, same candidate | Polls close (ET) | First votes usually appear | Who usually leads early | A close race is usually settled |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Georgia | Governor | Bottoms (D) 70.8% vs Jackson (R) | Bottoms 62% | 7:00 pm | 7:03-7:14 pm | Democrat, then Republican by ~8:30-9:40 pm | Election night / early Wed; an automatic hand recount if within 0.5% |
+| 1b | South Carolina | Senate | Graham (R) 68.0% vs Andrews (D) | Graham 78% | 7:00 pm (whole state) | 7:08-7:13 pm | 2020: Democrat until 8:44 pm; 2022 and 2024: Republican throughout | Election night (2020 Senate called 9:58 pm; 2022 at the close) |
 | 2 | Ohio | Governor; Senate (special) | Acton (D) 74.1% vs Ramaswamy (R); Brown (D) 72.0% vs Husted (R) | Acton 78%; Brown 69% | 7:30 pm | 7:37-7:39 pm | Democrat, then Republican by ~8:25-10:00 pm | Election night (11 pm-12:30 am) |
 | 3 | Michigan | Senate | El-Sayed (D) 79.4% vs Rogers (R) | El-Sayed 69% | 8:00 pm (4 western UP counties 9:00 pm) | 8:03-8:20 pm | 2024: Democrat until ~10:45 pm, Republican overnight, Democrat Wed morning. 2020: Republican until Wed | Wednesday midday to afternoon |
 | 4 | Texas | Senate; Governor | Talarico (D) 63.8% vs Paxton (R); Abbott (R) 81.5% vs Hinojosa (D) | Talarico 66%; Abbott 66% | 8:00 pm (El Paso and Hudspeth 9:00 pm) | ~8:00-8:09 pm | Democrat until 8:31-8:37 pm (2020 President: until 9:29 pm), then Republican | Election night; AP calls no statewide race before 9 pm |
-| 5 | Kansas | Senate | Hamilton (D) 50.5% vs Marshall (R) | Hamilton 40% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
+| 5 | Kansas | Senate; Governor | Hamilton (D) 50.5% vs Marshall (R); Masterson (R) 71.9% vs Holscher (D) | Hamilton 40%; Masterson 72% | 8:00 pm (Mountain-time counties up to 9:00 pm) | 8:08-8:10 pm | Democrat until ~9:35-10:05 pm | Election night if clear; Wednesday if close (2022 Governor: 1:24 pm Wed) |
 | 6 | Maine | Senate (ranked-choice) | Jackson (D) 71.8% vs Collins (R) | Jackson 62% | 8:00 pm | 8:08-8:44 pm | Whoever leads the early towns; the count then moves 4-8 pts toward the non-Republican | First round: Wed/Thu. If no one tops 50% of all ballots: ranked-choice count, about 8-10 days |
 | 7 | Iowa | Senate | Turek (D) 50.4% vs Hinson (R) | Turek 41% | 9:00 pm (10:00 pm until 2021) | 2-13 min after the close (2020: 10:13 pm) | Democrat until ~10:00-11:30 pm | Election night |
 | 8 | Nebraska | Senate | Ricketts (R) 58.8% vs Osborn (I); no Democrat on the ballot | Ricketts 72% | 9:00 pm (whole state) | 9:00-9:08 pm | 2024: Osborn until ~11:25 pm. 2022 Governor: Democrat until 9:51 pm. 2020: Republican | Around midnight; Omaha leftovers counted Friday and the following week |
@@ -155,7 +155,7 @@ count moves more precisely than the market does, and from acting faster.*
 
 From `VOLATILITY.md`, which measures every President, Senate and Governor race in the 50 states and DC, 2020-2024. A state ranks high when its visible margin moves a lot during the count *and* its leader at some point often lost.
 - **National top ten:** Kansas, Nebraska, Virginia, Michigan, Iowa, Rhode Island, Texas, Ohio, North Carolina, Georgia.
-- **Our eleven, by national rank:** Kansas 1, Nebraska 2, Michigan 4, Iowa 5, Texas 7, Ohio 8, Georgia 10, Nevada 17, Alaska 19, Oregon 33, Maine 37.
+- **Our twelve, by national rank:** Kansas 1, Nebraska 2, Michigan 4, Iowa 5, Texas 7, Ohio 8, Georgia 10, Nevada 17, Alaska 19, Oregon 33, Maine 37.
 - **Volatility isn't the same as opportunity.**
   - The biggest swings (Kansas, Nebraska, Iowa) are also the most predictable and settle within hours, so they're probably priced in.
   - Nevada's swings are small (about 2 points) but always in the same direction. They play out over days, and they changed the leader in 3 of its 5 races.
@@ -228,6 +228,7 @@ Source: the University of Florida Election Lab's [2026 early-vote tracker](https
 | State | As of | Already voted | Share of 2022's total vote | Mail returned / sent or requested | Early in person | Voters' registered party (D / R / other) | Note |
 |---|---|---|---|---|---|---|---|
 | Georgia | 10/27/2026 | 1,955K | 49.3% | 91K / 158K | 1,864K | - | Nearly all in person; Georgia has no party registration. |
+| South Carolina | 10/26/2026 | 531K | 30.9% | 29K / 57K | 502K | - |  |
 | Ohio | 10/26/2026 | 1,084K | 25.8% | 447K / 721K | 636K | - | In person estimated by the tracker (a ballot sent and received the same day); no party registration. |
 | Michigan | 10/27/2026 | 1,392K | 30.9% | 1,198K / 2,164K | 195K | - | Mail and clerk-office absentee only; Michigan's early in-person voting starts later (at least 9 days before Nov 3). No party registration. |
 | Texas | 10/27/2026 | 4,543K | 55.7% | 208K / 208K | 4,334K | - | Texas doesn't report requests, so mail = mail ballots returned; no party registration. |
@@ -277,7 +278,7 @@ How to read it:
 
    On the other side, Democratic mail-ballot requests are down sharply in some states, because of worry about the
    USPS (NBC/Penn early-vote analysis, Oct 9 ○). That could shrink the mail share of the first batch.
-5. **Mail-ballot deadlines.** Five of the eleven states count domestic mail ballots that arrive after Election
+5. **Mail-ballot deadlines.** Five of the twelve states count domestic mail ballots that arrive after Election
    Day, if postmarked by it:
    - Alaska: 10 days.
    - Oregon: 7 days, to Tue Nov 10.
@@ -351,7 +352,7 @@ What the curves show (`state_curves.md`):
 - **2022 Governor:** Abrams was +9.0 one hour after close with 27% counted. Kemp led from 8:34 pm and won by 7.5.
 - **2022 Senate:** Warnock was +16.5 at one hour; the lead traded hands for three hours and he finished +1.0.
 - **2020:** the very late count (Atlanta-area mail) took Biden from −15 at two hours after close to +0.2.
-- **2024:** about 98% was counted by midnight, the fastest of the eleven states.
+- **2024:** about 98% was counted by midnight, the fastest of the twelve states.
 
 **After election night**
 
@@ -475,13 +476,13 @@ What the curves show (`state_curves.md`):
 |---|---|---|---|---|---|---|---|---|
 | Muscogee | 1.6% | D+25 | +14 | +11 |  |  | 9:05 pm | 10:33 pm |
 | Coweta | 1.6% | R+34 | +18 | -2 |  |  | 11:18 pm | 1:04 am Wed |
-| Paulding | 1.7% | R+25 | +8 | +8 |  |  | 9:37 pm | 11:05 pm |
-| Clayton | 2.2% | D+74 | +10 | +5 |  |  | 9:37 pm | 11:56 pm |
+| Clayton | 2.2% | D+74 | +10 | +6 |  |  | 9:20 pm | 11:56 pm |
+| Paulding | 1.7% | R+25 | +8 | +7 |  |  | 9:37 pm | 11:05 pm |
 | Hall | 1.8% | R+45 | -1 | +11 |  |  | 9:05 pm | 10:21 pm |
 | Cherokee | 2.9% | R+39 | -13 | +21 |  |  | 8:45 pm | 9:37 pm |
 | Richmond | 1.7% | D+37 | -2 | +4 |  |  | 10:10 pm | 11:56 pm |
 | Gwinnett | 8.0% | D+19 | +6 | -13 |  |  | 11:56 pm | 1:46 am Wed |
-| Houston | 1.5% | R+11 | +14 | -23 |  |  | 11:56 pm |  |
+| Houston | 1.5% | R+11 | +14 | -24 |  |  | 11:56 pm |  |
 | Henry | 2.5% | D+30 | -16 | +5 |  |  | 8:45 pm | 1:04 am Wed |
 | Fulton | 10.5% | D+48 | -3 | -16 |  |  | 11:20 pm |  |
 | Columbia | 1.6% | R+26 | -5 | -14 |  |  | 11:18 pm | 1:46 am Wed |
@@ -493,7 +494,7 @@ What the curves show (`state_curves.md`):
 
 **Same order each year?** Rank correlation of the counties' lateness between years: 2018-2020 +0.58 (moderate).
 **Behind the state in every year with captures:** Chatham, Columbia, DeKalb, Forsyth.
-**Ahead of the state every year:** Muscogee, Paulding.
+**Ahead of the state every year:** Clayton, Muscogee, Paulding.
 **Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2018 -0.34, 2020 -0.25.
 **Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
 
@@ -534,7 +535,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+60.0 | R+60.8 | R+67.0 | R+59.9 | R+60.6 | 0.7 toward R | 1.8 more toward D |
 | Everything else | R+36.8 | R+38.5 | R+45.1 | R+37.9 | R+37.6 | 0.9 toward R | 1.6 more toward D |
 
-**Governor 2026: what Bottoms needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+0.1 statewide)
+**Governor 2026: what Bottoms needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has even statewide)
 
 | Bloc | Share of the expected vote | Bottoms at a statewide tie | 2022 Senate (Warnock vs Walker) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -544,6 +545,195 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | Big diverse metros | 7.6% | **D+18.9** | D+20.9 | 1.9 toward R | D+16.7 |
 | White, non-college | 11.1% | **R+60.2** | R+59.9 | 0.3 toward R | R+60.6 |
 | Everything else | 23.6% | **R+37.7** | R+37.9 | 0.2 toward D | R+37.6 |
+
+---
+
+## South Carolina: Senate
+
+*Added 2026-10-27, when the evening retrain put this race under 75%.*
+
+**Race.**
+- Darline Graham (R) vs Annie Andrews (D), plus Kasie Whitener and Mark Hackett ○ ([WRDW](https://wrdw.com/2026/08/26/4-candidates-set-south-carolinas-us-senate-race-november)).
+- Lindsey Graham died on July 11; his sister Darline Graham was appointed to the seat on July 14 and beat Ralph Norman in the Aug 25 Republican runoff ○ ([ABC News 4](https://abcnews4.com/news/local/sen-darline-graham-clears-gop-primary-runoff-moves-on-to-face-annie-andrews-in-november)). Andrews won the Democratic nomination on June 9 ○ ([Fox Carolina](https://www.foxcarolina.com/2026/06/10/lindsey-graham-seeks-5th-senate-term-face-annie-andrews-november/)).
+- Model: Graham 68.0%. Market: Graham 78%.
+
+**Rules for Nov 3**
+- **Polls:** open 7 am to 7 pm; the whole state is on Eastern time, so everything closes at **7:00 pm ET** ✔ ([S.C. Code 7-13-60](https://www.scstatehouse.gov/code/t07c013.php)).
+- **Early voting:** Monday to Saturday for the two weeks before the election (Oct 19-31), 8:30 am to 6 pm, no Sundays ✔ ([7-13-25](https://www.scstatehouse.gov/code/t07c013.php)). Each center's ballots go to the county board every night.
+- **Mail ballots must arrive by the close of the polls, 7 pm Election Day.** There is no grace period ✔ ([7-15-420(B)](https://www.scstatehouse.gov/code/t07c015.php)). (A WBTV voter guide says 7:30 pm ○; the statute says the close of the polls.)
+- **Processing:** boards may start examining return envelopes at 7 am two days before (Sun Nov 1) and may tabulate absentee ballots from 7 am on Election Day, but nothing may be released before the polls close ✔ ([7-15-420(B), (D), (E)](https://www.scstatehouse.gov/code/t07c015.php)).
+- **Canvass and recount:** county boards meet Friday Nov 6 and report to the state by noon Saturday Nov 7; the State Board of Canvassers meets within 10 days ✔ ([7-17-10, 7-17-20, 7-17-220](https://www.scstatehouse.gov/code/t07c017.php)). **Automatic recount if the margin is 1% or less**, unless the trailing candidate waives it in writing ✔ ([7-17-280](https://www.scstatehouse.gov/code/t07c017.php)).
+
+**How results are reported.**
+- 46 counties report to the State Election Commission's results site.
+- In 2020 the state expected counties to post scanned in-person absentee (early) votes first and mail later; that night Richland, Greenville, Lexington, York and Beaufort had not finished their mail ballots after midnight ○ ([WIS 2020](https://www.wistv.com/2020/11/01/when-do-experts-expect-call-winner-south-carolina-it-depends/), [Post and Courier](https://www.postandcourier.com/columbia/politics/ballot-counting-continues-in-sc-following-record-absentee-turnout/article_d7a107b6-1e54-11eb-818c-7bd30b04f005.html)).
+
+**History** (generated from NYT data)
+
+| Year | Race | First votes (ET) | Counted by midnight ET | Who led, and when the lead changed (ET) | Called (ET) | Final |
+|---|---|---|---|---|---|---|
+| 2020 | President | 7:13 pm | 64% | Biden led first; Trump ahead 8:44 pm (15% in) | 7:57 pm (NYT) | Trump (R) +11.7 |
+| 2020 | Senate | 7:13 pm | 64% | Harrison led first; Graham ahead 8:44 pm (15% in) | 9:58 pm (NYT) | Graham (R) +10.3 |
+| 2022 | Governor | 7:09 pm | 85% | McMaster led first | 8:51 pm (AP) | McMaster (R) +17.4 |
+| 2022 | Senate | 7:08 pm | 85% | Scott led first | 7:00 pm (AP) | Scott (R) +25.9 |
+| 2024 | President | before 8:00 pm (timeline starts 8:00 pm) | 96% | Trump led first (timeline ends 5:40 am Wed) | 8:01 pm (AP) | Trump (R) +17.9 |
+
+What the curves show (`state_curves.csv`):
+
+| Race | Early | Lead changed | Final |
+|---|---|---|---|
+| 2020 Senate | Harrison +10.4 one hour after the close (4% in) | Graham ahead 8:44 pm (15% in) | Graham +10.3 |
+| 2022 Senate | Scott +16.0 one hour after the close (5% in) | Never | Scott +25.9 |
+| 2024 President | Trump +17.9 at 8:30 pm (34% in; the timeline starts at 8 pm) | Never | Trump +17.9 |
+
+- 2020, the big mail year: between 11 pm and 1 am the count ran 4-6 points more Republican than the final, and the late mail moved it back.
+- 2022: the first two hours ran 7-10 points more Democratic than the final; by 10 pm (53% counted) the count was within 4 points of it.
+- Counted by midnight: 64% (2020), 85% (2022), 96% (2024).
+
+**What to expect** (inference):
+- An early Andrews lead means little: Harrison led until 8:44 pm in 2020 and lost by 10.
+- From about 10 pm to midnight the count has run slightly more Republican than the final. A Graham lead of under about 3 points at midnight is not safe if a lot of mail is still out, as in 2020.
+- A margin of 1% or less goes to an automatic recount.
+
+### The swing data: South Carolina
+
+#### How fast it counts and how far it moves (all contested general-election races, median)
+
+| State | Year | Races | Counted 1 h / 2 h / midnight / 6 am (median) | Median move after 1 h | after 2 h | after 6 am | Races that moved 5+ pts after 2 h |
+|---|---|---|---|---|---|---|---|
+| South Carolina | 2020 | 2 | 4% / 18% / 64% / 85% | -20.7 | -5.1 | +2.4 | 1 of 2 |
+| South Carolina | 2022 | 2 | 5% / 32% / 85% / 99% | -7.6 | -5.8 | +0.1 | 1 of 2 |
+| South Carolina | 2024 | 1 | - / 53% / 96% / 98% | - | +1.8 | -0.3 | 0 of 1 |
+
+#### Biggest moves in competitive races
+
+**South Carolina**
+
+| Race | 2 h after close: counted / margin | Midnight ET | 6 am ET | Final | Move after 2 h | Move after 6 am |
+|---|---|---|---|---|---|---|
+| 2020 Senate | 17.8% / -5.0 | 63.8% / -15.0 | 85.3% / -12.6 | -10.3 | **-5.3** | +2.3 |
+| 2020 President | 17.7% / -6.8 | 63.8% / -16.8 | 85.3% / -14.2 | -11.7 | **-4.9** | +2.5 |
+
+
+#### Races that moved 1.5+ pts after 6 am ET
+
+| Race | Counted at 6 am ET | Margin at 6 am | Final | Move after 6 am |
+|---|---|---|---|---|
+| South Carolina 2020 President | 85.3% | -14.2 | -11.7 | **+2.5** |
+| South Carolina 2020 Senate | 85.3% | -12.6 | -10.3 | **+2.3** |
+
+#### Where the late vote came from (2020, county detail)
+
+| State | After | Share of final vote still to count | How those votes split (Biden minus Trump) | Biggest contributors: share of state vote (their split) | Snapshot used (ET) |
+|---|---|---|---|---|---|
+| South-Carolina | midnight ET | 36% | -2.7 | Greenville 9.2% (-16); Richland 7.7% (+39); Horry 4.4% (-22); Charleston 2.7% (+3) | 12:00 AM |
+| South-Carolina | 6 am ET | 15% | +3.0 | Greenville 5.1% (-38); Richland 4.8% (+47); Horry 1.3% (+11); Lexington 1.0% (-1) | 5:52 AM |
+
+
+### County benchmarks: South Carolina
+
+#### South Carolina Senate: Andrews (D) vs Graham (R)
+
+- **Lean from:** 2024 President and 2020 Senate (Harrison-Graham), averaged; turnout from the 2022 governor race (1,702,018 votes). Shares and margins are two-party (Andrews vs Graham).
+- **The tie line** is what Andrews needs in each county for a statewide tie. A finished county above it means Andrews is running ahead of a tie statewide; below it, Graham is.
+- **Only a finished county is a fair test.** A partial count is skewed by vote type: early and mail ballots usually come first, Election Day votes later, and late mail or drop-offs last.
+- **Model:** Graham +2.2 statewide (the separate margin model). The dashboard page's slider shows every county at any statewide result.
+- **Early/mail vs Election Day** columns use the 2024 President split by vote type, so the early batch can be read before Election Day votes arrive. 2026's mix differs; treat them as rough.
+- **How reliable:** in 3 past races here (2022-2024), counties landed a typical **1.9 pts** from their line even when the statewide result was known. A statewide estimate from Greenville alone was off by 0.7 (2022 Governor), 0.5 (2022 Senate), 1.8 (2024 President) (backtest in section 5).
+
+| County | Share of state vote (2022) | 2024 President (two-party margin) | **Tie line**: Andrews share (margin) | If Andrews wins by 3 | If Graham wins by 3 | At a tie: early/mail vs Election Day margin (2024 President mix) | 2020: counted by midnight / 6 am ET |
+|---|---|---|---|---|---|---|---|
+| Greenville | 10.5% | R +22.6 | **47.4%** (Graham +5.3) | 49.0% (Graham +2.1) | 45.8% (Graham +8.4) | Graham +2.1 / Graham +9.6 (58% early/mail) | 10% / 50% |
+| Charleston | 9.0% | D +5.8 | **61.8%** (Andrews +23.6) | 63.3% (Andrews +26.6) | 60.3% (Andrews +20.6) | Andrews +24.2 / Andrews +22.3 (71% early/mail) | 70% / 100% |
+| Horry | 7.9% | R +38.9 | **39.3%** (Graham +21.4) | 40.8% (Graham +18.4) | 37.8% (Graham +24.4) | Graham +20.2 / Graham +23.5 (64% early/mail) | 38% / 81% |
+| Richland | 7.5% | D +35.2 | **74.7%** (Andrews +49.3) | 75.8% (Andrews +51.7) | 73.5% (Andrews +46.9) | Andrews +51.4 / Andrews +45.1 (66% early/mail) | 0% / 38% |
+| Lexington | 5.8% | R +33.9 | **41.3%** (Graham +17.4) | 42.8% (Graham +14.4) | 39.8% (Graham +20.5) | Graham +16.0 / Graham +19.5 (60% early/mail) | 59% / 82% |
+| Spartanburg | 5.7% | R +34.0 | **42.3%** (Graham +15.4) | 43.8% (Graham +12.3) | 40.7% (Graham +18.5) | Graham +14.5 / Graham +16.6 (55% early/mail) | 60% / 99% |
+| York | 5.6% | R +19.4 | **49.1%** (Graham +1.8) | 50.7% (Andrews +1.3) | 47.5% (Graham +5.0) | Andrews +0.1 / Graham +6.2 (70% early/mail) | 62% / 98% |
+| Beaufort | 4.2% | R +14.7 | **51.3%** (Andrews +2.6) | 52.9% (Andrews +5.7) | 49.7% (Graham +0.6) | Andrews +4.7 / Graham +1.7 (66% early/mail) | 52% / 82% |
+| Berkeley | 4.2% | R +16.5 | **50.9%** (Andrews +1.9) | 52.5% (Andrews +5.0) | 49.4% (Graham +1.3) | Andrews +6.5 / Graham +4.7 (59% early/mail) | 100% / 100% |
+| Anderson | 3.7% | R +47.9 | **34.3%** (Graham +31.5) | 35.7% (Graham +28.6) | 32.9% (Graham +34.3) | Graham +28.7 / Graham +34.1 (49% early/mail) | 100% / 100% |
+| Aiken | 3.2% | R +26.3 | **45.3%** (Graham +9.3) | 46.9% (Graham +6.2) | 43.8% (Graham +12.4) | Graham +6.5 / Graham +14.1 (63% early/mail) | 86% / 100% |
+| Dorchester | 2.9% | R +14.9 | **51.7%** (Andrews +3.3) | 53.2% (Andrews +6.5) | 50.1% (Andrews +0.2) | Andrews +4.0 / Andrews +1.6 (71% early/mail) | 82% / 82% |
+| Florence | 2.4% | R +8.1 | **55.3%** (Andrews +10.7) | 56.9% (Andrews +13.8) | 53.8% (Andrews +7.5) | Andrews +12.5 / Andrews +7.4 (64% early/mail) | 90% / 99% |
+| Pickens | 2.4% | R +53.4 | **30.0%** (Graham +39.9) | 31.4% (Graham +37.2) | 28.7% (Graham +42.5) | Graham +38.3 / Graham +42.9 (64% early/mail) | 100% / 100% |
+| All other 32 counties | 25.0% | | 50.6% (Andrews +1.1) | | | | |
+
+### County reporting order: South Carolina
+
+**Rules that set the order.** Polls close at 7 p.m. ET statewide. Absentee ballots may be tabulated from 7 a.m. on Election Day but nothing is released before 7 p.m.; mail must arrive by 7 p.m. In 2020 Richland, Greenville, Lexington, York and Beaufort were still counting mail after midnight.
+
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 104, 2022 16, 2024 4. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+
+| County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
+|---|---|---|---|---|---|---|---|---|
+| Dorchester | 3.0% | D+3 | +13 | +12 |  | +56 | 9:12 pm | 12:18 am Thu |
+| Lancaster | 2.0% | R+8 | +17 | -4 |  | +60 | 11:18 pm |  |
+| Pickens | 2.3% | R+40 | +24 | +19 |  | -11 | 11:18 pm | 11:18 pm |
+| Florence | 2.5% | D+11 | +15 | +15 |  | -11 | 10:21 pm | 1:04 am Wed |
+| Berkeley | 4.1% | D+2 | +1 | +14 |  | -11 | 10:33 pm | 11:56 pm |
+| Aiken | 3.4% | R+9 | +1 | +12 |  | -11 | 10:33 pm |  |
+| Anderson | 3.8% | R+31 | +5 | +7 |  | -11 | 11:56 pm | 11:56 pm |
+| York | 5.7% | R+2 | +10 | +1 |  | -11 | 10:33 pm | 1:46 am Wed |
+| Sumter | 1.9% | D+25 | -15 | +22 |  | -11 | 10:10 pm | 10:21 pm |
+| Lexington | 5.8% | R+17 | +4 | -2 |  | -11 | 11:18 pm |  |
+| Charleston | 8.7% | D+24 | -16 | +5 |  | -11 | 11:18 pm | 1:46 am Wed |
+| Spartanburg | 5.8% | R+15 | -13 | +1 |  | -11 | 11:56 pm | 1:04 am Wed |
+| Horry | 7.4% | R+21 | +0 | -14 |  | -11 | 12:18 am Wed |  |
+| Greenville | 10.4% | R+5 | -8 | -32 |  | -11 |  |  |
+| Beaufort | 4.1% | D+3 | -33 | -9 |  | -11 | 11:18 pm |  |
+| Richland | 7.7% | D+49 | -17 | -53 |  | -11 | 12:03 pm Wed |  |
+| The other 30 | 21.5% |  | +15 | +26 |  | +24 |  |  |
+
+**Same order each year?** Rank correlation of the counties' lateness between years: 2018-2020 +0.48 (moderate), 2018-2024 +0.31 (moderate), 2020-2024 +0.27 (weak).
+**Behind the state in every year with captures:** Beaufort, Greenville, Richland.
+**Ahead of the state every year:** Dorchester.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2018 -0.06, 2020 -0.01, 2024 -0.03.
+**Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
+
+| Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
+|---|---|---|---|---|---|
+| 2018 | 46% | 9:51 pm | R+3 | D+5 | D 7 pts |
+| 2020 | 48% | 10:33 pm | R+2 | D+3 | D 5 pts |
+| 2020 | 76% | 1:46 am Wed | R+4 | D+14 | D 18 pts |
+
+**Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
+
+- **2020** (8:11 am Wed, state 91% counted): Richland 38%, Horry 81%, Lexington 82%, Beaufort 82%, Dorchester 82%.
+- **2022** (6:04 am Wed, state 99% counted): Florence 73%.
+
+### Voting blocs: South Carolina
+
+Counties grouped by their demographics in the Census Bureau's latest estimates (American Community Survey 2020-2024); the rules are at the start of section 4. Margins are two-party; vote shares are of all votes cast.
+
+| Bloc | Counties (largest first) | Hispanic | Black | White | Bachelor's+ | Share of the vote: 2020 / 2022 / 2024 |
+|---|---|---|---|---|---|---|
+| Black 35%+, large counties | Richland | 6% | 47% | 39% | 41% | 7.7% / 7.5% / 7.2% |
+| Black 35%+, smaller counties | Florence, Sumter, Orangeburg, Darlington, Clarendon, Williamsburg and 11 more | 3% | 49% | 43% | 20% | 12.9% / 12.0% / 11.8% |
+| College-educated | Greenville, Charleston, Beaufort | 10% | 18% | 65% | 45% | 22.9% / 23.7% / 22.8% |
+| White, non-college | Horry, Anderson, Pickens, Oconee | 6% | 10% | 77% | 27% | 14.9% / 15.6% / 16.0% |
+| Everything else | Spartanburg, Lexington, York, Berkeley, Aiken, Dorchester and 15 more | 8% | 22% | 64% | 29% | 41.7% / 41.2% / 42.3% |
+
+**How each bloc voted** (two-party margin; 2020 President: Biden vs Trump; 2020 Senate: Harrison vs Graham; 2022 Governor: Cunningham vs McMaster; 2022 Senate: Matthews vs Scott; 2024 President: Harris vs Trump)
+
+| Bloc | 2020 President | 2020 Senate | 2022 Governor | 2022 Senate | 2024 President | President, 2020 to 2024 | Relative to the state |
+|---|---|---|---|---|---|---|---|
+| **Statewide** | R+11.9 | R+10.4 | R+17.6 | R+25.9 | R+18.1 | 6.3 toward R |  |
+| Black 35%+, large counties | D+38.9 | D+38.8 | D+34.7 | D+25.5 | D+35.2 | 3.7 toward R | 2.6 more toward D |
+| Black 35%+, smaller counties | D+10.8 | D+12.8 | D+0.8 | R+3.4 | D+1.9 | 8.8 toward R | 2.5 more toward R |
+| College-educated | R+5.1 | R+5.1 | R+8.8 | R+21.3 | R+10.7 | 5.7 toward R | 0.6 more toward D |
+| White, non-college | R+40.2 | R+38.5 | R+44.7 | R+51.3 | R+44.6 | 4.4 toward R | 1.9 more toward D |
+| Everything else | R+21.8 | R+19.7 | R+27.2 | R+34.7 | R+26.7 | 4.8 toward R | 1.4 more toward D |
+
+**Senate 2026: what Andrews needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+2.2 statewide)
+
+| Bloc | Share of the expected vote | Andrews at a statewide tie | 2020 Senate (Harrison vs Graham) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Black 35%+, large counties | 7.5% | **D+49.3** | D+38.8 | 10.5 toward D | D+35.2 |
+| Black 35%+, smaller counties | 12.0% | **D+21.8** | D+12.8 | 9.0 toward D | D+1.9 |
+| College-educated | 23.7% | **D+7.1** | R+5.1 | 12.2 toward D | R+10.7 |
+| White, non-college | 15.6% | **R+28.3** | R+38.5 | 10.2 toward D | R+44.6 |
+| Everything else | 41.2% | **R+8.6** | R+19.7 | 11.1 toward D | R+26.7 |
 
 ---
 
@@ -720,12 +910,12 @@ What the curves show:
 | Medina | 1.8% | R+12 |  | +11 |  |  |  | 10:10 pm |
 | Lake | 2.2% | R+2 |  | +8 |  |  |  | 10:10 pm |
 | Montgomery | 4.5% | D+12 |  | +6 |  |  |  | 10:50 pm |
-| Mahoning | 2.0% | D+3 |  | +2 |  |  |  | 11:05 pm |
+| Mahoning | 2.0% | D+3 |  | +3 |  |  |  | 11:05 pm |
 | Butler | 3.1% | R+16 |  | +1 |  |  | 8:45 pm | 11:05 pm |
 | Summit | 4.8% | D+19 |  | -3 |  |  | 8:45 pm | 11:05 pm |
-| Clermont | 1.9% | R+26 |  | -4 |  |  | 9:05 pm | 1:46 am Wed |
 | Cuyahoga | 10.3% | D+42 |  | -4 |  |  | 9:20 pm | 11:30 pm |
-| Franklin | 10.6% | D+39 |  | -4 |  |  |  | 11:30 pm |
+| Clermont | 1.9% | R+26 |  | -5 |  |  | 9:05 pm | 1:46 am Wed |
+| Franklin | 10.6% | D+39 |  | -5 |  |  |  | 11:30 pm |
 | Hamilton | 7.3% | D+25 |  | -7 |  |  | 8:45 pm | 11:05 pm |
 | Stark | 3.2% | R+10 |  | -18 |  |  | 10:33 pm | 10:50 pm |
 | Lucas | 3.3% | D+24 |  | -19 |  |  | 10:21 pm |  |
@@ -767,7 +957,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+34.7 | R+48.3 | R+30.5 | R+38.1 | R+29.2 | 3.3 toward R | 0.2 more toward R |
 | Everything else | R+7.4 | R+25.1 | R+4.7 | R+9.7 | R+2.2 | 2.3 toward R | 0.8 more toward D |
 
-**Governor 2026: what Acton needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+1.3 statewide)
+**Governor 2026: what Acton needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+2.7 statewide)
 
 | Bloc | Share of the expected vote | Acton at a statewide tie | 2022 Senate (Ryan vs Vance) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -776,7 +966,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | 37.4% | **R+26.0** | R+30.5 | 4.5 toward D | R+38.1 |
 | Everything else | 27.5% | **D+2.0** | R+4.7 | 6.7 toward D | R+9.7 |
 
-**Senate (special) 2026: what Brown needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+0.8 statewide)
+**Senate (special) 2026: what Brown needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+3.1 statewide)
 
 | Bloc | Share of the expected vote | Brown at a statewide tie | 2024 Senate (Brown vs Moreno) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -953,9 +1143,9 @@ What the curves show:
 | Muskegon | 1.7% | even | +23 | +5 | -3 |  | 11:56 pm |  |
 | Kent | 6.6% | D+6 | +25 | +5 | -9 |  | 10:50 pm |  |
 | Livingston | 2.3% | R+22 | -5 | +11 | +13 |  | 11:18 pm |  |
-| Genesee | 3.9% | D+7 | +19 | +7 | -8 |  | 10:33 pm | 12:03 pm Wed |
+| Genesee | 3.9% | D+7 | +19 | +6 | -8 |  | 10:50 pm | 12:03 pm Wed |
 | Macomb | 8.8% | R+12 | +14 | +1 | -8 |  |  |  |
-| Kalamazoo | 2.6% | D+18 | +3 | +0 | -6 |  | 11:56 pm | 11:04 pm Wed |
+| Kalamazoo | 2.6% | D+18 | +3 | +1 | -6 |  | 11:56 pm | 11:04 pm Wed |
 | Berrien | 1.5% | R+9 | -10 | -2 | +7 |  | 12:28 am Wed |  |
 | Washtenaw | 4.0% | D+46 | -7 | +8 | -7 |  | 11:18 pm | 4:21 am Wed |
 | Ingham | 2.7% | D+32 | -7 | -5 | +1 |  | 12:44 am Wed |  |
@@ -1005,7 +1195,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+18.4 | R+16.8 | R+7.7 | R+22.3 | R+19.9 | 3.9 toward R | 0.3 more toward D |
 | Everything else | R+9.8 | R+12.0 | R+2.9 | R+11.1 | R+10.8 | 1.3 toward R | 2.9 more toward D |
 
-**Senate 2026: what El-Sayed needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+3.2 statewide)
+**Senate 2026: what El-Sayed needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+4.9 statewide)
 
 | Bloc | Share of the expected vote | El-Sayed at a statewide tie | 2024 Senate (Slotkin vs Rogers) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -1247,7 +1437,7 @@ What the curves show:
 
 **Same order each year?** Rank correlation of the counties' lateness between years: 2020-2024 +0.55 (moderate).
 **Behind the state in every year with captures:** El Paso, Hidalgo.
-**Ahead of the state every year:** Bexar, Collin, Dallas, Denton, Nueces, Travis, Williamson.
+**Ahead of the state every year:** Bexar, Collin, Dallas, Denton, Montgomery, Nueces, Travis, Williamson.
 **Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.15, 2024 +0.17.
 **Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
 
@@ -1287,7 +1477,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+65.0 | R+65.8 | R+70.3 | R+67.6 | R+64.7 | 2.7 toward R | 5.5 more toward D |
 | Everything else | R+39.9 | R+42.3 | R+47.2 | R+44.0 | R+40.3 | 4.1 toward R | 4.1 more toward D |
 
-**Senate 2026: what Talarico needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+1.1 statewide)
+**Senate 2026: what Talarico needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+3.1 statewide)
 
 | Bloc | Share of the expected vote | Talarico at a statewide tie | 2024 Senate (Allred vs Cruz) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -1297,7 +1487,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | 5.7% | **R+59.1** | R+64.7 | 5.6 toward D | R+67.6 |
 | Everything else | 23.4% | **R+32.5** | R+40.3 | 7.8 toward D | R+44.0 |
 
-**Governor 2026: what Hinojosa needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+5.5 statewide)
+**Governor 2026: what Hinojosa needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+3.8 statewide)
 
 | Bloc | Share of the expected vote | Hinojosa at a statewide tie | 2022 Governor (O’Rourke vs Abbott) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -1309,11 +1499,11 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 
 ---
 
-## Kansas: Senate
+## Kansas: Senate and Governor
 
-**Race.**
-- Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates.
-- Model: Hamilton 50.5%. Market: Hamilton 40%.
+**Races.**
+- Senate: Roger Marshall (R, incumbent) vs Adam Hamilton (D), plus minor candidates. Model: Hamilton 50.5%. Market: Hamilton 40%.
+- Governor (open; added 2026-10-27 when the evening retrain put it under 75%): Ty Masterson (R) vs Cindy Holscher (D). Model: Masterson 71.9%. Market: Masterson 72%. Same rules, counties and timing as the Senate race below; the 2022 Governor row of the history table is its closest precedent (Kelly +18.1 one hour after the close, +2.2 final).
 
 **Rules for Nov 3**
 - **Polls:**
@@ -1491,16 +1681,16 @@ What the curves show:
 | Miami | 1.3% | R+24 |  | -5 |  |  | 9:55 pm | 1:46 am Wed |
 | Wyandotte | 3.8% | D+39 |  | -13 |  |  | 11:30 pm | 11:30 pm |
 | Douglas | 4.5% | D+53 |  | -37 |  |  |  |  |
-| The other 89 | 26.1% |  |  | -16 |  |  |  |  |
+| The other 89 | 26.1% |  |  | -17 |  |  |  |  |
 
-**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.00.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.03.
 **Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
 
 | Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
 |---|---|---|---|---|---|
-| 2018 | 53% | 9:51 pm | D+7 | R+8 | R 15 pts |
-| 2020 | 53% | 9:37 pm | D+7 | R+8 | R 16 pts |
-| 2020 | 80% | 12:00 am Wed | D+2 | R+8 | R 10 pts |
+| 2018 | 53% | 9:51 pm | D+7 | R+7 | R 14 pts |
+| 2020 | 53% | 9:37 pm | D+7 | R+8 | R 15 pts |
+| 2020 | 80% | 12:00 am Wed | D+2 | R+7 | R 9 pts |
 
 **Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
 
@@ -1528,7 +1718,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+51.2 | R+45.9 | R+28.1 | R+59.5 | R+52.2 | 1.1 toward R | 0.3 more toward D |
 | Everything else | R+13.8 | R+10.2 | D+2.8 | R+24.3 | R+16.6 | 2.8 toward R | 1.4 more toward R |
 
-**Senate 2026: what Hamilton needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+0.9 statewide)
+**Senate 2026: what Hamilton needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+1.2 statewide)
 
 | Bloc | Share of the expected vote | Hamilton at a statewide tie | 2020 Senate (Bollier vs Marshall) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -1536,6 +1726,15 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | College-educated | 32.5% | **D+27.8** | D+12.7 | 15.1 toward D | D+12.4 |
 | White, non-college | 24.9% | **R+36.8** | R+45.9 | 9.2 toward D | R+52.2 |
 | Everything else | 40.8% | **D+1.2** | R+10.2 | 11.4 toward D | R+16.6 |
+
+**Governor 2026: what Holscher needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+2.3 statewide)
+
+| Bloc | Share of the expected vote | Holscher at a statewide tie | 2022 Governor (Kelly vs Schmidt) | Change from it | 2024 President |
+|---|---|---|---|---|---|
+| Hispanic-majority | 1.8% | **R+22.6** | R+19.6 | 3.0 toward R | R+39.7 |
+| College-educated | 32.5% | **D+26.8** | D+25.5 | 1.2 toward D | D+12.4 |
+| White, non-college | 24.9% | **R+34.3** | R+28.1 | 6.2 toward R | R+52.2 |
+| Everything else | 40.8% | **D+0.6** | D+2.8 | 2.2 toward R | R+16.6 |
 
 ---
 
@@ -1748,7 +1947,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+13.6 | R+31.2 | R+10.1 | R+17.7 | 4.1 toward R | 2.2 more toward R |
 | Everything else | D+4.4 | R+13.9 | D+8.9 | D+1.9 | 2.5 toward R | 0.7 more toward R |
 
-**Senate 2026: what Jackson needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+5.0 statewide)
+**Senate 2026: what Jackson needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+3.4 statewide)
 
 | Bloc | Share of the expected vote | Jackson at a statewide tie | 2020 Senate (Gideon vs Collins) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -1947,7 +2146,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+29.2 | R+24.8 | R+41.1 | R+33.1 | R+34.4 | 5.2 toward R | 0.1 more toward R |
 | Everything else | R+4.2 | R+3.7 | R+17.4 | R+10.3 | R+10.3 | 6.1 toward R | 1.0 more toward R |
 
-**Senate 2026: what Turek needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+3.0 statewide)
+**Senate 2026: what Turek needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+0.5 statewide)
 
 | Bloc | Share of the expected vote | Turek at a statewide tie | 2022 Senate (Franken vs Grassley) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -2148,7 +2347,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+57.0 | R+67.8 | R+60.7 | R+57.9 | R+37.3 | 0.9 toward R | 0.4 more toward D |
 | Everything else | R+41.6 | R+58.0 | R+48.1 | R+44.2 | R+24.8 | 2.6 toward R | 1.3 more toward R |
 
-**Senate 2026: what Osborn needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+2.7 statewide)
+**Senate 2026: what Osborn needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has R+0.8 statewide)
 
 | Bloc | Share of the expected vote | Osborn at a statewide tie | 2024 Senate (Osborn vs Fischer) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -2377,7 +2576,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+49.0 | R+52.1 | R+49.4 | R+50.6 | R+46.3 | 1.6 toward R | 4.0 more toward D |
 | Everything else | R+34.9 | R+37.3 | R+34.5 | R+36.6 | R+32.6 | 1.6 toward R | 4.0 more toward D |
 
-**Governor 2026: what Ford needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has even statewide)
+**Governor 2026: what Ford needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+0.6 statewide)
 
 | Bloc | Share of the expected vote | Ford at a statewide tie | 2022 Governor (Sisolak vs Lombardo) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -2549,31 +2748,32 @@ What the curves show:
 
 **Rules that set the order.** All-mail. The first drop, about 11 p.m. ET, holds about two-thirds of the vote; Election Day drop-offs (about 25% of ballots, 31-32% in Multnomah and Washington) are counted Wednesday to Friday.
 
-**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 29, 2024 2. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
+**How far each county ran ahead of (+) or behind (-) the statewide count**, in points of its own vote counted, averaged over the captures taken while the state was 10-95% counted. Captures per year: 2018 14, 2020 140, 2022 29, 2024 5. 2020 has a capture every ~10 minutes; the other years only a handful, so a single number there can rest on two or three captures. 2018 has no final file, so its shares are of the Nov 9 count, which slightly overstates how complete late counties were. Lean = the county's D-minus-R lean at a tied statewide result (the benchmarks above).
 
 | County | Share of vote | Lean | 2018 | 2020 | 2022 | 2024 | 2020: half in | 2020: 90% in |
 |---|---|---|---|---|---|---|---|---|
-| Jackson | 5.4% | R+22 |  | +9 | +13 | +15 | 11:18 pm | 11:18 pm |
-| Benton | 2.3% | D+26 |  | +6 | +11 | +15 | 11:30 pm | 11:30 pm |
-| Linn | 3.1% | R+41 |  | +4 | +8 | +15 | 11:56 pm | 11:56 pm |
-| Lane | 9.5% | D+9 |  | +6 | +10 | +5 | 11:30 pm | 11:30 pm |
-| Coos | 1.6% | R+36 |  | +3 | +7 | +5 | 11:56 pm | 4:21 am Wed |
-| Deschutes | 5.4% | R+7 |  | +1 | +8 | +6 | 11:56 pm |  |
-| Klamath | 1.6% | R+58 |  | +3 | +4 | +6 | 11:56 pm |  |
-| Josephine | 2.2% | R+44 |  | +2 | -3 | +12 | 11:56 pm | 11:56 pm |
-| Polk | 2.1% | R+21 |  | +3 | +0 | +5 | 11:30 pm |  |
-| Multnomah | 19.4% | D+54 |  | +7 | +3 | -6 | 11:18 pm |  |
-| Douglas | 2.7% | R+53 |  | +3 | -5 | +3 | 11:30 pm | 4:21 am Wed |
-| Washington | 13.1% | D+18 |  | -5 | -15 | -0 | 11:56 pm | 9:31 pm Wed |
-| Columbia | 1.4% | R+30 |  | +1 | +5 | -29 | 11:56 pm |  |
-| Marion | 6.6% | R+19 |  | -5 | -4 | -20 | 11:18 pm | 9:31 pm Wed |
-| Yamhill | 2.5% | R+23 |  | -2 | -8 | -29 | 11:56 pm |  |
-| Clackamas | 10.9% | R+8 |  | -22 | -16 | -4 | 11:30 pm |  |
-| The other 20 | 10.2% |  |  | +5 | +10 | +11 |  |  |
+| Jackson | 5.4% | R+22 |  | +9 | +13 | +12 | 11:18 pm | 11:18 pm |
+| Benton | 2.3% | D+26 |  | +6 | +11 | +11 | 11:30 pm | 11:30 pm |
+| Linn | 3.1% | R+41 |  | +4 | +8 | +12 | 11:56 pm | 11:56 pm |
+| Lane | 9.5% | D+9 |  | +6 | +10 | +3 | 11:30 pm | 11:30 pm |
+| Coos | 1.6% | R+36 |  | +3 | +7 | +6 | 11:56 pm | 4:21 am Wed |
+| Deschutes | 5.4% | R+7 |  | +1 | +8 | +7 | 11:56 pm |  |
+| Klamath | 1.6% | R+58 |  | +3 | +4 | +7 | 11:56 pm |  |
+| Josephine | 2.2% | R+44 |  | +2 | -3 | +9 | 11:56 pm | 11:56 pm |
+| Multnomah | 19.4% | D+54 |  | +7 | +3 | -4 | 11:18 pm |  |
+| Polk | 2.1% | R+21 |  | +3 | +0 | +1 | 11:30 pm |  |
+| Columbia | 1.4% | R+30 |  | +1 | +5 | -6 | 11:56 pm |  |
+| Douglas | 2.7% | R+53 |  | +3 | -5 | +2 | 11:30 pm | 4:21 am Wed |
+| Yamhill | 2.5% | R+23 |  | -2 | -8 | -12 | 11:56 pm |  |
+| Washington | 13.1% | D+18 |  | -5 | -15 | -2 | 11:56 pm | 9:31 pm Wed |
+| Marion | 6.6% | R+19 |  | -5 | -4 | -19 | 11:18 pm | 9:31 pm Wed |
+| Clackamas | 10.9% | R+8 |  | -22 | -16 | -6 | 11:30 pm |  |
+| The other 20 | 10.2% |  |  | +5 | +10 | +10 |  |  |
 
-**Same order each year?** Rank correlation of the counties' lateness between years: 2020-2022 +0.59 (moderate), 2020-2024 +0.66 (strong), 2022-2024 +0.65 (strong).
+**Same order each year?** Rank correlation of the counties' lateness between years: 2020-2022 +0.59 (moderate), 2020-2024 +0.67 (strong), 2022-2024 +0.73 (strong).
+**Behind the state in every year with captures:** Clackamas.
 **Ahead of the state every year:** Benton, Jackson.
-**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.10, 2022 -0.06, 2024 +0.03.
+**Do Democratic-leaning counties report later?** Rank correlation of lateness with lean (negative = the more Democratic the county, the later it reports): 2020 +0.10, 2022 -0.06, 2024 -0.07.
 **Which way the uncounted vote leaned** (county leans weighted by the votes still out vs those already counted):
 
 | Year | State counted | Time (ET) | Counted vote | Vote still out | Gap |
@@ -2582,13 +2782,14 @@ What the curves show:
 | 2020 | 52% | 11:30 pm | D+11 | R+10 | R 21 pts |
 | 2020 | 82% | 11:56 pm | D+1 | even | R 0 pts |
 | 2022 | 81% | 11:37 pm Wed | R+1 | D+3 | D 3 pts |
-| 2024 | 91% | 8:25 pm Fri | R+1 | D+6 | D 7 pts |
+| 2024 | 77% | 11:16 am Wed | R+2 | D+7 | D 10 pts |
 
 **Still counting the next morning** (counties with 0.5%+ of the vote below 90% of their final count at the first capture after 6 a.m. ET):
 
 - **2020** (7:01 am Wed, state 91% counted): Washington 87%, Clackamas 64%, Marion 82%.
 - **2022** (6:03 am Wed, state 74% counted): Multnomah 65%, Washington 65%, Clackamas 53%, Lane 87%, Marion 70%, Deschutes 80%, Douglas 74%, Yamhill 62% and 10 more.
-- **In two or more years:** Washington, Clackamas, Marion.
+- **2024** (11:16 am Wed, state 77% counted): Multnomah 67%, Washington 77%, Clackamas 62%, Lane 78%, Marion 52%, Douglas 71%, Yamhill 69%, Josephine 88% and 5 more.
+- **In two or more years:** Washington, Clackamas, Marion, Multnomah, Lane, Douglas, Yamhill, Josephine, Polk, Coos, Klamath, Crook.
 
 ### Voting blocs: Oregon
 
@@ -2609,7 +2810,7 @@ Counties grouped by their demographics in the Census Bureau's latest estimates (
 | White, non-college | R+21.4 | R+16.6 | R+34.9 | R+19.0 | R+22.5 | 1.0 toward R | 0.7 more toward D |
 | Everything else | D+4.7 | D+6.9 | R+9.5 | D+3.1 | D+2.0 | 2.6 toward R | 0.9 more toward R |
 
-**Governor 2026: what Kotek needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+6.5 statewide)
+**Governor 2026: what Kotek needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+4.1 statewide)
 
 | Bloc | Share of the expected vote | Kotek at a statewide tie | 2022 Governor (Kotek vs Drazan) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -2811,7 +3012,7 @@ House districts grouped by their demographics in the Census Bureau's latest esti
 | White, non-college | R+41.8 | R+50.7 | R+41.0 |
 | Everything else | D+7.4 | R+5.3 | D+6.5 |
 
-**Senate 2026: what Peltola needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+0.4 statewide)
+**Senate 2026: what Peltola needs in each bloc for a statewide tie** (the county benchmarks summed by bloc; the model has D+2.2 statewide)
 
 | Bloc | Share of the expected vote | Peltola at a statewide tie | 2024 House (Peltola vs Begich) | Change from it | 2024 President |
 |---|---|---|---|---|---|
@@ -2832,6 +3033,9 @@ House districts grouped by their demographics in the Census Bureau's latest esti
 | Georgia | 2020 | 2 | 10% / 32% / 79% / 94% | +5.1 | +15.7 | +2.3 | 2 of 2 |
 | Georgia | 2022 | 22 | 27% / 54% / 93% / 100% | -14.3 | -3.1 | +0.0 | 11 of 22 |
 | Georgia | 2024 | 15 | 30% / 69% / 99% / 100% | -0.5 | +0.2 | +0.0 | 5 of 15 |
+| South Carolina | 2020 | 2 | 4% / 18% / 64% / 85% | -20.7 | -5.1 | +2.4 | 1 of 2 |
+| South Carolina | 2022 | 2 | 5% / 32% / 85% / 99% | -7.6 | -5.8 | +0.1 | 1 of 2 |
+| South Carolina | 2024 | 1 | - / 53% / 96% / 98% | - | +1.8 | -0.3 | 0 of 1 |
 | Ohio | 2020 | 1 | 47% / 64% / 95% / 96% | -18.2 | -10.7 | +0.1 | 1 of 1 |
 | Ohio | 2022 | 21 | 29% / 56% / 97% / 98% | -18.7 | -6.0 | +0.2 | 12 of 21 |
 | Ohio | 2024 | 17 | 41% / 61% / 97% / 98% | -10.2 | -3.1 | +0.1 | 3 of 17 |
@@ -2871,6 +3075,8 @@ Shown only where NYT tagged a full share of early votes.
 |---|---|---|---|---|---|
 | Georgia | 2022 | 22 | 64% | +24.0 (+12 to +27) | Governor: early/mail +2.2, Election Day -25.0; Senate: early/mail +10.1, Election Day -15.4 |
 | Georgia | 2024 | 15 | 76% | +4.4 (-4 to +14) | President: early/mail -0.7, Election Day -7.2 |
+| South Carolina | 2022 | 2 | 36% | +22.8 (+21 to +24) | Governor: early/mail -3.7, Election Day -25.0; Senate: early/mail -10.4, Election Day -34.6 |
+| South Carolina | 2024 | 1 | 62% | +8.2 (+8 to +8) | President: early/mail -14.7, Election Day -22.9 |
 | Michigan | 2022 | 2 | 40% | +19.5 (+15 to +24) |  |
 | Texas | 2024 | 33 | 80% | +0.4 (-10 to +19) | President: early/mail -13.2, Election Day -15.8; Senate: early/mail -9.3, Election Day -5.2 |
 | Iowa | 2024 | 5 | 40% | +28.5 (+21 to +30) | President: early/mail +4.4, Election Day -25.4 |
@@ -2914,6 +3120,9 @@ The county benchmarks' method, run on every 2022 and 2024 race here, predicting 
 | Oregon | 2022 Governor (Kotek-Drazan) | +3.8 | 3.2 | 8% | Multnomah (19%) | +4.7 | 2.0 / 4.7 |
 | Oregon | 2022 Senate (Wyden-Perkins) | +15.4 | 2.3 | 1% | Multnomah (19%) | +2.5 | 2.1 / 3.8 |
 | Oregon | 2024 President (Harris-Trump) | +14.9 | 1.7 | 1% | Multnomah (18%) | +1.5 | 0.9 / 1.8 |
+| South Carolina | 2022 Governor (Cunningham-McMaster) | -17.6 | 3.7 | 16% | Greenville (10%) | +0.7 | 1.8 / 5.9 |
+| South Carolina | 2022 Senate (Matthews-Scott) | -25.9 | 1.5 | 0% | Greenville (10%) | -0.5 | 0.6 / 2.0 |
+| South Carolina | 2024 President (Harris-Trump) | -18.1 | 1.9 | 3% | Greenville (10%) | +1.8 | 1.2 / 1.8 |
 
 **What it says:**
 - **The typical county miss is 1-5 points.** Nebraska's 2024 Senate race is the exception: Osborn's independent coalition missed by 8, and 82% of the vote was in counties off by 5+.
@@ -2933,13 +3142,14 @@ Built from election-night captures of NYT's results files in the Internet Archiv
 | Ohio | 2018 (14), 2020 (140), 2022 (38), 2024 (5) | one year only | 2018 D21, 2020 D12 | none | none |
 | Michigan | 2018 (14), 2020 (140), 2022 (8), 2024 (7) | weak to strong (+0.15 to +0.63) | 2018 R2, 2020 D13, 2022 D10 | Monroe, Wayne | Wayne, Kent, Genesee, Monroe |
 | Texas | 2018 (15), 2020 (140), 2022 (8), 2024 (5) | moderate (+0.55) | 2018 R10, 2020 R11 | El Paso, Hidalgo, Lubbock | none |
-| Kansas | 2018 (14), 2020 (140), 2022 (26), 2024 (2) | one year only | 2020 R10 | none | none |
+| Kansas | 2018 (14), 2020 (140), 2022 (26), 2024 (2) | one year only | 2020 R9 | none | none |
 | Maine | 2018 (14), 2020 (140), 2022 (2), 2024 (5) | weak to moderate (+0.21 to +0.46) | 2020 R10, 2022 R1 | none | Kennebec, Aroostook, Oxford, Somerset, Knox |
 | Iowa | 2018 (14), 2020 (140), 2022 (19), 2024 (2) | one year only | 2020 R11 | none | none |
 | Nebraska | 2018 (14), 2020 (140), 2022 (2), 2024 (3) | weak to moderate (+0.26 to +0.35) | 2020 R11 | Madison, Platte, Saunders, Scotts Bluff, Washington | none |
 | Nevada | 2018 (14), 2020 (140), 2022 (46), 2024 (9) | weak to strong (+0.13 to +0.75) | 2020 D3, 2022 R1, 2024 R2 | none | Clark, Douglas, Nye, Elko |
-| Oregon | 2018 (14), 2020 (140), 2022 (29), 2024 (2) | moderate to strong (+0.59 to +0.66) | 2018 D5, 2020 R0, 2022 D3, 2024 D7 | none | Washington, Clackamas, Marion |
+| Oregon | 2018 (14), 2020 (140), 2022 (29), 2024 (5) | moderate to strong (+0.59 to +0.73) | 2018 D5, 2020 R0, 2022 D3, 2024 D10 | Clackamas | Washington, Clackamas, Marion, Multnomah, Lane |
 | Alaska | 2018 (14), 2020 (140), 2022 (3), 2024 (3) | one year only |  | none | none |
+| South-Carolina | 2018 (14), 2020 (104), 2022 (16), 2024 (4) | weak to moderate (+0.27 to +0.48) | 2020 D18 | Beaufort, Greenville, Richland | none |
 
 **What repeats across years:**
 - **The county order repeats, but only moderately.** Between years the rank correlation is mostly +0.2 to +0.7. It is highest in Oregon (+0.59 to +0.66), Nevada 2022-2024 (+0.75), Michigan 2018-2020 (+0.63), Georgia 2018-2020 (+0.58) and Texas 2020-2024 (+0.55). Read a county's past timing as a tendency, not a schedule.
@@ -2954,17 +3164,17 @@ Built from election-night captures of NYT's results files in the Internet Archiv
 
 The 2020-to-2024 presidential shift in each bloc **minus the state's own shift** (points of two-party margin). Positive means the bloc moved toward the Democrat relative to the whole state, negative toward the Republican. Alaska is left out: its House districts were redrawn for 2022.
 
-| Bloc | Georgia | Ohio | Michigan | Texas | Kansas | Maine | Iowa | Nebraska | Nevada | Oregon |
-|---|---|---|---|---|---|---|---|---|---|---|
-| **Whole state** (actual shift) | 2.4 R | 3.2 R | 4.3 R | 8.2 R | 1.4 R | 1.8 R | 5.1 R | 1.3 R | 5.6 R | 1.7 R |
-| Hispanic-majority |  |  |  | -4.7 | -7.1 |  |  |  |  |  |
-| Black 35%+, large counties | +1.3 |  | -4.3 |  |  |  |  |  |  |  |
-| Black 35%+, smaller counties | +1.4 |  |  |  |  |  |  |  |  |  |
-| Native 25%+ |  |  |  |  |  |  |  | -3.2 |  |  |
-| College-educated | +1.9 | +0.7 | +2.1 | +0.8 | +1.2 | +2.3 | +0.1 | -0.7 |  | +1.1 |
-| Big diverse metros | +0.7 | +0.4 |  | 0.0 |  |  |  |  | -0.6 |  |
-| White, non-college | +1.8 | -0.2 | +0.3 | +5.5 | +0.3 | -2.2 | -0.1 | +0.4 | +4.0 | +0.7 |
-| Everything else | +1.6 | +0.8 | +2.9 | +4.1 | -1.4 | -0.7 | -1.0 | -1.3 | +4.0 | -0.9 |
+| Bloc | Georgia | Ohio | Michigan | Texas | Kansas | Maine | Iowa | Nebraska | Nevada | Oregon | South Carolina |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Whole state** (actual shift) | 2.4 R | 3.2 R | 4.3 R | 8.2 R | 1.4 R | 1.8 R | 5.1 R | 1.3 R | 5.6 R | 1.7 R | 6.3 R |
+| Hispanic-majority |  |  |  | -4.7 | -7.1 |  |  |  |  |  |  |
+| Black 35%+, large counties | +1.3 |  | -4.3 |  |  |  |  |  |  |  | +2.6 |
+| Black 35%+, smaller counties | +1.4 |  |  |  |  |  |  |  |  |  | -2.5 |
+| Native 25%+ |  |  |  |  |  |  |  | -3.2 |  |  |  |
+| College-educated | +1.9 | +0.7 | +2.1 | +0.8 | +1.2 | +2.3 | +0.1 | -0.7 |  | +1.1 | +0.6 |
+| Big diverse metros | +0.7 | +0.4 |  | 0.0 |  |  |  |  | -0.6 |  |  |
+| White, non-college | +1.8 | -0.2 | +0.3 | +5.5 | +0.3 | -2.2 | -0.1 | +0.4 | +4.0 | +0.7 | +1.9 |
+| Everything else | +1.6 | +0.8 | +2.9 | +4.1 | -1.4 | -0.7 | -1.0 | -1.3 | +4.0 | -0.9 | +1.4 |
 
 **What it says:**
 - **The 2024 move toward Trump was concentrated in Hispanic and minority urban places.** Hispanic-majority counties moved 4.7 points more than Texas as a whole and 7.1 more than Kansas. Wayne County (Detroit) moved 4.3 more than Michigan.

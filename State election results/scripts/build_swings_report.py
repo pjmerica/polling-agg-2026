@@ -15,9 +15,9 @@ import statistics as st
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-ORDER = ["GA", "OH", "MI", "TX", "KS", "ME", "IA", "NE", "NV", "OR", "AK"]
+ORDER = ["GA", "SC", "OH", "MI", "TX", "KS", "ME", "IA", "NE", "NV", "OR", "AK"]
 NAMES = {"GA": "Georgia", "OH": "Ohio", "MI": "Michigan", "TX": "Texas", "KS": "Kansas", "ME": "Maine",
-         "IA": "Iowa", "NE": "Nebraska", "AK": "Alaska", "NV": "Nevada", "OR": "Oregon"}
+         "IA": "Iowa", "NE": "Nebraska", "AK": "Alaska", "NV": "Nevada", "OR": "Oregon", "SC": "South Carolina"}
 REP = ("gop", "rep", "republican")
 
 

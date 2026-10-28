@@ -20,7 +20,7 @@ BASE = "https://static01.nyt.com/elections-assets/"
 UA = {"User-Agent": "Mozilla/5.0"}
 
 STATES = ["alaska", "georgia", "ohio", "kansas", "texas", "nebraska", "maine", "iowa", "michigan",
-          "nevada", "oregon"]
+          "nevada", "oregon", "south-carolina"]   # SC added 2026-10-27 (SC-Sen under 75%)
 ALL_STATES = ["alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware",
               "district-of-columbia", "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas",
               "kentucky", "louisiana", "maine", "maryland", "massachusetts", "michigan", "minnesota", "mississippi",
