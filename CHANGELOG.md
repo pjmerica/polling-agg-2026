@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` State election results: South Carolina Senate guide (2026-10-27) - user: "continue".
+- `[b5d83052]` State election results: South Carolina Senate guide (2026-10-27) - user: "continue".
   - New section 3b (Darline Graham R vs Annie Andrews D): rules from the S.C. Code (7 pm ET close statewide, mail by 7 pm with no grace period, absentee tabulation from 7 am Election Day with nothing released before the close, automatic recount at 1% or less), NYT 2020-24 history and curves, swing data, county benchmarks (2024 President and 2020 Harrison-Graham), county reporting order from the 2020 archive captures, voting blocs, early vote. The guide and page now cover all 12 races now at 75% or less plus three more from the Oct 22 list (15 in twelve states).
   - Scripts take hyphenated state slugs (`split_name`, `{{STATE:south-carolina}}`).
 
