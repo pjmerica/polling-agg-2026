@@ -88,6 +88,18 @@ def poll(date, races, slugs_found, last_hash):
             print(f"{now} {race}: no file yet ({', '.join(slugs)})")
 
 
+def keep_awake():
+    """Hold off sleep while the capture runs (2026-10-28). This PC sleeps in Modern Standby (S0 low
+    power idle), which throttles or suspends background programs: once the idle timer fired, the
+    2-minute captures would stall for hours. ES_CONTINUOUS | ES_SYSTEM_REQUIRED keeps the system
+    awake (the display may still turn off) until the process exits. Closing the lid can still
+    sleep the machine, so leave it open and plugged in."""
+    if os.name == "nt":
+        import ctypes
+        if not ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001):
+            print("WARNING: could not hold off sleep; keep the PC awake by hand")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="2026-11-03")
@@ -99,6 +111,8 @@ def main():
     races = {a.race: [a.race]} if a.race else RACES
     until = dt.datetime.fromisoformat(a.until).replace(tzinfo=dt.timezone.utc) if a.until else None
     slugs_found, last_hash = {}, {}
+    if not a.once:
+        keep_awake()
     while True:
         poll(a.date, races, slugs_found, last_hash)
         sys.stdout.flush()

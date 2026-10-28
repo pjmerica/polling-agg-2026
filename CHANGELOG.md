@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` capture_live.py holds off sleep while it runs (2026-10-28).
+  - This PC sleeps in Modern Standby (S0 low power idle), which throttles or suspends background programs, so the election-night captures (every 2 min from Nov 3, 6:30 pm ET) would have stalled once the idle timer fired. The script now calls SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) for its whole run. Closing the lid can still sleep it, and wake timers are enabled on AC only, so on Nov 3 the PC should be plugged in, signed in, lid open.
+  - Checked: the NYT URL pattern answers for the 2024 and 2025 generals (special Senate races end in `-special`, as `ohio-us-senate-special` assumes); the 2026 files are not up yet.
+
 - `[d34525d4]` tools/forecast_history.py: every published forecast as one table, from git history (2026-10-28).
   - Walks the commits of `docs/forecast_data.js` and writes one row per race per publish (model leader and odds, the DEM-slot chance, the market column, models-split and fragile flags; UTC commit time). Since Oct 8: 201 publishes, 53,206 rows, about 30 s. The post-election edge backtest becomes a join on race and time (model repo CONCERNS #20). Output is not committed; run it when needed.
 
