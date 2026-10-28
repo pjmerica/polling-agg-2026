@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` Election night simulator: market price capture and a statewide live projector (2026-10-28).
+- `[62ce2bf8]` Election night simulator: market price capture and a statewide live projector (2026-10-28).
   - New folder `Election night simulator/` (own README and METHODS.md). The aim is to catch market prices that misread the count on Nov 3. It reads `State election results/`'s NYT captures and count history; nothing there depends on it.
   - `capture_markets.py` records Kalshi and Polymarket books (best bid/ask, sizes, last trade, top 5 levels) every 20 s for the 15 competitive races plus Senate and House control. Markets come from a reviewed event list, since Kalshi's Kansas Governor is `GOVPARTYKS-27`. Polymarket's book-level `last_trade_price` is the event's, not the token's, so it reads `/last-trades-prices`. It holds off sleep like `capture_live.py`. The `ElectionSim-*` scheduled tasks are registered by hand (`register_market_tasks.ps1`).
   - `live_project.py` projects the final margin from how the uncounted vote leaned at the same share counted in 2020-2024, per state. It starts from the markets' price at poll close (so the edge is the count alone) or from our model, and prints the best buy after fees.
