@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` Arb scanner: candidate pairs only for races on the 2026 ballot (2026-10-27).
+- `[8e828fee]` Arb scanner: candidate pairs only for races on the 2026 ballot (2026-10-27).
   - The 2027 Kentucky governor primary (Kalshi KXGOVKYNOMR-27 vs Polymarket's 2027 market) parsed to 2026-GOV-KY and sat on the board-health issue as two held-back baskets. Primary and general candidate pairs now need a race in `utils/races.py`; `tests/test_primary_pairs_cycle.py`.
 
 - `[b5d83052]` State election results: South Carolina Senate guide (2026-10-27) - user: "continue".
