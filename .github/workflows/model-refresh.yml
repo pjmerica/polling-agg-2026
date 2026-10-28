@@ -142,3 +142,10 @@ jobs:
               git diff --cached --quiet || git commit -m "regen post-rebase"
             done
           fi
+
+      # a green push is not a deploy (model repo CONCERNS #40): fail if Pages is still serving an
+      # older copy of the published odds 20 min after the push
+      - name: Verify the live site serves this commit
+        working-directory: 'Polling Agg/Polling agg and Prediction markets'
+        timeout-minutes: 25
+        run: python tools/verify_pages.py docs/forecast_data.js docs/model_data.js docs/data.js --minutes 20

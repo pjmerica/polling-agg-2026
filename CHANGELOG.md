@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` Deploy check after every refresh push; stale-poll note on the forecast page and map (2026-10-28).
+  - `tools/verify_pages.py`, last step of Model refresh and Market refresh: polls the live GitHub Pages copy of the files just pushed until it matches the commit (or a newer master) and fails the run after 20 min. A green push is not a deploy: on 2026-08-06 Pages served a withdrawn candidate at 99% for 3+ hours with git clean (model repo CONCERNS #40).
+  - `build_forecast.py`: a polled race whose newest poll ended more than 60 days before the election (the furthest horizon the odds were calibrated at) gets a note with the date, and the payload carries `newest_poll_days`. Takes effect when the model refresh publishes that column (model repo CONCERNS #36; 37 of 177 races rest on polls 45+ days old, NY-1 on one poll 327 days out).
+
 - `[8e828fee]` Arb scanner: candidate pairs only for races on the 2026 ballot (2026-10-27).
   - The 2027 Kentucky governor primary (Kalshi KXGOVKYNOMR-27 vs Polymarket's 2027 market) parsed to 2026-GOV-KY and sat on the board-health issue as two held-back baskets. Primary and general candidate pairs now need a race in `utils/races.py`; `tests/test_primary_pairs_cycle.py`.
 

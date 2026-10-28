@@ -19,7 +19,7 @@ rebuilds this too); runnable standalone:  python scripts/build_forecast.py
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 
@@ -47,6 +47,9 @@ STATE_NAMES = {
 OFFICE_CODE = {"Senate": "SEN", "Governor": "GOV", "House": "H"}
 
 # races where the November number is not a normal two-candidate general
+ELECTION_DAY = date(2026, 11, 3)
+STALE_DAYS = 60  # the oldest horizon the published odds were calibrated at
+
 NOTES = {
     "LA_House": ("Louisiana's House races are an all-party first round on Nov 3, with a "
                  "Dec 12 runoff between the top two if nobody tops 50%. Where there are polls, "
@@ -59,6 +62,11 @@ NOTES = {
     "FUND": ("No public polls in this race, so this is the no-polls model: which party holds the "
              "seat, its past results (the new map's lean where districts were redrawn), the national "
              "environment, fundraising and the candidates' experience."),
+    # newest poll older than the 60 days out the odds were calibrated at (model repo
+    # docs/HORIZON_CALIBRATION.md; CONCERNS #36, 2026-10-27)
+    "STALE": ("The newest poll here ended {days} days before the election ({date}). The model's odds "
+              "were checked for calibration only back to 60 days out, and polls this old miss late "
+              "movement, so treat them as less certain than the number suggests."),
     "SPLIT": ("Models split: the win model favours {win}, but the separate margin model has {margin} "
               "ahead. Treat this race as a toss-up between the two models, not an edge over the "
               "markets."),
@@ -230,6 +238,12 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
             if mfav["name"] != cands[0]["name"]:
                 split = mfav["name"]
                 notes.append(NOTES["SPLIT"].format(win=cands[0]["name"], margin=mfav["name"]))
+        newest = None
+        if "newest_poll_days" in g and g["newest_poll_days"].notna().any():
+            newest = int(g["newest_poll_days"].min())
+            if newest > STALE_DAYS:
+                when = ELECTION_DAY - timedelta(days=newest)
+                notes.append(NOTES["STALE"].format(days=newest, date=f"{when:%b} {when.day}, {when.year}"))
         if st == "LA" and off == "House":
             notes.append(NOTES["LA_House"])
         if (st == "ME" and off in ("Senate", "House")) or st == "AK":
@@ -244,6 +258,7 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
             fragile=bool(first.get("bias_fragile", 0)),
             split=split,
             n_surveys=int(g["n_surveys"].max()) if "n_surveys" in g and g["n_surveys"].notna().any() else None,
+            newest_poll_days=newest,
             basis="polls",
             cands=cands,
             market=(dict(prob=round(sum(mkt) / len(mkt), 4),

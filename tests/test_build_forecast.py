@@ -64,6 +64,17 @@ def test_every_ballot_race_has_a_model_number(tmp_path, monkeypatch):
             assert not v or abs(sum(v) - 1) < 0.02, (r["id"], k)
 
 
+def test_stale_polls_are_noted(tmp_path, monkeypatch):
+    """CONCERNS #36 (model repo, 2026-10-27): a polled race whose newest poll ended more than 60 days
+    before the election (the oldest horizon the odds were calibrated at) says so in a note; the
+    field is absent until the model refresh publishes newest_poll_days."""
+    monkeypatch.setattr(B, "OUT", str(tmp_path / "forecast_data.js"))
+    for r in B.build()["races"]:
+        stale = any(n.startswith("The newest poll here") for n in r["notes"])
+        d = r.get("newest_poll_days")
+        assert stale == (d is not None and d > B.STALE_DAYS), (r["id"], d)
+
+
 def test_models_split_is_flagged(tmp_path, monkeypatch):
     """Audit item 3 (2026-10-27): where the margin model's favourite is not the win model's, the
     race carries `split` (the margin favourite) and a note, so the forecast page and map can mute

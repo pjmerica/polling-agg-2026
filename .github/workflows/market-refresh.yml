@@ -125,6 +125,12 @@ jobs:
             done
           fi
 
+      # a green push is not a deploy (model repo CONCERNS #40): fail if Pages is still serving an
+      # older copy 20 min after the push
+      - name: Verify the live site serves this commit
+        timeout-minutes: 25
+        run: python tools/verify_pages.py docs/arb_data.js docs/forecast_data.js docs/data.js --minutes 20
+
       - name: Fail loudly if model compare crashed
         if: steps.modelcompare.outcome == 'failure'
         run: |
