@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` tools/forecast_history.py: every published forecast as one table, from git history (2026-10-28).
+- `[d34525d4]` tools/forecast_history.py: every published forecast as one table, from git history (2026-10-28).
   - Walks the commits of `docs/forecast_data.js` and writes one row per race per publish (model leader and odds, the DEM-slot chance, the market column, models-split and fragile flags; UTC commit time). Since Oct 8: 201 publishes, 53,206 rows, about 30 s. The post-election edge backtest becomes a join on race and time (model repo CONCERNS #20). Output is not committed; run it when needed.
 
 - `[13fca86b]` Deploy check after every refresh push; stale-poll note on the forecast page and map (2026-10-28).
