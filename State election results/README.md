@@ -84,6 +84,10 @@ which CI rewrites); rebuild for new early-vote numbers, text changes or a race c
 
 ## Simulator design (to build)
 
+**The simulator now lives in its own folder, `../Election night simulator/`** (its own README and
+METHODS.md, Oct 28): market price capture, the live projector (statewide v0 built) and this plan's
+remaining steps. It reads this folder's NYT captures and count history; nothing here depends on it.
+
 Built so far (Oct 23): step 2 without the errors. `county_benchmarks.py` gives each county's expected
 two-party share for any statewide result (uniform swing on the log-odds scale) and, where NYT split
 every county by vote type (GA, TX, IA), its early/mail vs Election Day shares. A backtest on every

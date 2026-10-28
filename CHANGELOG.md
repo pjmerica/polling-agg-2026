@@ -15,6 +15,12 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[pending]` Election night simulator: market price capture and a statewide live projector (2026-10-28).
+  - New folder `Election night simulator/` (own README and METHODS.md). The aim is to catch market prices that misread the count on Nov 3. It reads `State election results/`'s NYT captures and count history; nothing there depends on it.
+  - `capture_markets.py` records Kalshi and Polymarket books (best bid/ask, sizes, last trade, top 5 levels) every 20 s for the 15 competitive races plus Senate and House control. Markets come from a reviewed event list, since Kalshi's Kansas Governor is `GOVPARTYKS-27`. Polymarket's book-level `last_trade_price` is the event's, not the token's, so it reads `/last-trades-prices`. It holds off sleep like `capture_live.py`. The `ElectionSim-*` scheduled tasks are registered by hand (`register_market_tasks.ps1`).
+  - `live_project.py` projects the final margin from how the uncounted vote leaned at the same share counted in 2020-2024, per state. It starts from the markets' price at poll close (so the edge is the count alone) or from our model, and prints the best buy after fees.
+  - Leave-one-year-out, 20-80% counted, it beats the visible margin clearly in KS (3.3 vs 13.3 pts miss), IA, TX, MI, NE and OH, and loses in GA, OR, AK, SC and NV, whose late direction flips between years (flagged `?`). Bands are doubled to hold 80% of results.
+
 - `[7239a950]` capture_live.py holds off sleep while it runs (2026-10-28).
   - This PC sleeps in Modern Standby (S0 low power idle), which throttles or suspends background programs, so the election-night captures (every 2 min from Nov 3, 6:30 pm ET) would have stalled once the idle timer fired. The script now calls SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) for its whole run. Closing the lid can still sleep it, and wake timers are enabled on AC only, so on Nov 3 the PC should be plugged in, signed in, lid open.
   - Checked: the NYT URL pattern answers for the 2024 and 2025 generals (special Senate races end in `-special`, as `ohio-us-senate-special` assumes); the 2026 files are not up yet.
