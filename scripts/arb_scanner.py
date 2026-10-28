@@ -1193,6 +1193,11 @@ def general_candidate_pairs(meta_df):
     for key, grp in cands.groupby(key_cols):
         if len(grp) < 2:
             continue
+        # Only races on the 2026 ballot (utils/races.py). Candidate markets for
+        # other cycles parse to the same state+office (Kalshi KXGOVKYNOMR-27,
+        # the 2027 Kentucky governor primary, read as 2026-GOV-KY).
+        if meta_map and grp["race_id"].iloc[0] not in meta_map:
+            continue
         platforms = grp.set_index("platform")
         available = list(platforms.index)
         for i, pa in enumerate(available):
@@ -1307,6 +1312,11 @@ def primary_pairs(meta_df):
     key_cols = ["state", "office", "district", "party", "candidate_last", "candidate_first"]
     for key, grp in cands.groupby(key_cols):
         if len(grp) < 2:
+            continue
+        # Only races on the 2026 ballot (utils/races.py). Candidate markets for
+        # other cycles parse to the same state+office (Kalshi KXGOVKYNOMR-27,
+        # the 2027 Kentucky governor primary, read as 2026-GOV-KY).
+        if meta_map and grp["race_id"].iloc[0] not in meta_map:
             continue
         platforms = grp.set_index("platform")
         available = list(platforms.index)

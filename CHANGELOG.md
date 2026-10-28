@@ -15,6 +15,9 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` Arb scanner: candidate pairs only for races on the 2026 ballot (2026-10-27).
+  - The 2027 Kentucky governor primary (Kalshi KXGOVKYNOMR-27 vs Polymarket's 2027 market) parsed to 2026-GOV-KY and sat on the board-health issue as two held-back baskets. Primary and general candidate pairs now need a race in `utils/races.py`; `tests/test_primary_pairs_cycle.py`.
+
 - `[b5d83052]` State election results: South Carolina Senate guide (2026-10-27) - user: "continue".
   - New section 3b (Darline Graham R vs Annie Andrews D): rules from the S.C. Code (7 pm ET close statewide, mail by 7 pm with no grace period, absentee tabulation from 7 am Election Day with nothing released before the close, automatic recount at 1% or less), NYT 2020-24 history and curves, swing data, county benchmarks (2024 President and 2020 Harrison-Graham), county reporting order from the 2020 archive captures, voting blocs, early vote. The guide and page now cover all 12 races now at 75% or less plus three more from the Oct 22 list (15 in twelve states).
   - Scripts take hyphenated state slugs (`split_name`, `{{STATE:south-carolina}}`).
