@@ -15,6 +15,12 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[pending]` Election night simulator: did the 2024 markets misread the count? (2026-10-28).
+  - `market_history.py` downloads Kalshi's (from `/historical/*`) and Polymarket's minute prices for election week 2024, for every race with an NYT timeline. `market_check.py` replays the live projector against them, 2 min after each NYT update. 65 races, 9,107 updates; write-up in `Election night simulator/MARKET_CHECK.md`.
+  - Markets beat the statewide projector on Brier at every stage, and didn't drift toward it (corr +0.01). Trading it mechanically was breakeven (Kalshi -0.3c per contract at a 5c threshold), and lost wherever the book was tight.
+  - The real misses: Baldwin at 2c, Slotkin at 5c and Rosen at 16.5c after half the vote was counted. Pennsylvania looked the same and went the other way. The county-level projector (v1) is the next step.
+  - Traps fixed: Polymarket's 2024 Maine/Vermont "another party" contracts resolved No although King and Sanders won ($56 of fake profit when settled on the count). Polymarket's minute price needs a realistic spread: Kalshi's blew out to 0.30/0.88.
+
 - `[62ce2bf8]` Election night simulator: market price capture and a statewide live projector (2026-10-28).
   - New folder `Election night simulator/` (own README and METHODS.md). The aim is to catch market prices that misread the count on Nov 3. It reads `State election results/`'s NYT captures and count history; nothing there depends on it.
   - `capture_markets.py` records Kalshi and Polymarket books (best bid/ask, sizes, last trade, top 5 levels) every 20 s for the 15 competitive races plus Senate and House control. Markets come from a reviewed event list, since Kalshi's Kansas Governor is `GOVPARTYKS-27`. Polymarket's book-level `last_trade_price` is the event's, not the token's, so it reads `/last-trades-prices`. It holds off sleep like `capture_live.py`. The `ElectionSim-*` scheduled tasks are registered by hand (`register_market_tasks.ps1`).

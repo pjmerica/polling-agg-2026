@@ -9,7 +9,12 @@ plus Senate and House control (prices only).
 
 That folder has the research (how each state counts, past swings, county benchmarks) and records NYT's
 results. This folder records the markets, projects the count and compares the two. **Method and backtest:
-[METHODS.md](METHODS.md).**
+[METHODS.md](METHODS.md). Whether 2024's markets misread the count: [MARKET_CHECK.md](MARKET_CHECK.md).**
+
+**2024 in one line:** markets read the count better than v0 at every stage; the big misses were three
+Democratic Senate winners priced at 2-17c overnight (WI, MI, NV), while Pennsylvania looked the same and went
+the other way. Don't trade v0's edge alone. The opportunity is overnight wide books in close races with a known
+late batch, and catching it needs v1.
 
 Started 2026-10-28.
 
@@ -18,9 +23,9 @@ Started 2026-10-28.
 | Piece | State |
 |---|---|
 | Market price capture (`capture_markets.py`) | **Built**, tested on live APIs. The scheduled tasks need registering once by hand (below) |
-| Projector v0, statewide (`live_project.py`) | **Built**, backtested. Trust it in KS, IA, TX, OH, NE, MI, ME; not in GA, OR, NV, AK, SC (`?` flag) |
-| Historical check: did markets misread past counts? (2024 price histories vs NYT timelines) | Next |
-| Projector v1: county x vote type, from NYT's live county files | To build; needed for Nevada, Georgia and the other `?` states |
+| Projector v0, statewide (`live_project.py`) | **Built**, backtested. Beats the visible margin in KS, IA, TX, OH, NE, MI, ME; not in GA, OR, NV, AK, SC (`?` flag). **Not better than the markets** (MARKET_CHECK.md): use it as an alert, not a trade signal |
+| Historical check, 2024 (`market_history.py`, `market_check.py`) | **Done** 2026-10-28: 65 races, minute prices from both venues against NYT's count |
+| Projector v1: county x vote type, from NYT's live county files | **Next.** The 2024 check shows it's what separates Michigan/Wisconsin from Pennsylvania; re-run the check with it before trusting it |
 | Pre-election Monte Carlo: thousands of simulated nights, a threshold sheet per state | To build, on v1 |
 | Election-night console page with alerts | To build |
 
@@ -31,6 +36,9 @@ Started 2026-10-28.
 | `METHODS.md` | How the projector works, the backtest, what it can't do, the v1 plan |
 | `scripts/capture_markets.py` | Records Kalshi and Polymarket books every 20 s -> `data/raw/markets/{ET date}/{kalshi,polymarket}.csv` |
 | `scripts/live_project.py` | The projector: live table, what-ifs, backtest |
+| `MARKET_CHECK.md` | Did the 2024 markets misread the count? Results, traps (settlement, spreads), what it means for Nov 3 |
+| `scripts/market_history.py` | Downloads 2024 minute prices from both venues for every race with an NYT timeline -> `data/raw/market_history/2024/` (about 11 min) |
+| `scripts/market_check.py` | The 2024 check -> `data/processed/market_check_2024_{points,trades}.csv` |
 | `scripts/run_markets.cmd` | Wrapper the scheduled tasks call (log: `data/raw/markets/capture.log`) |
 | `scripts/register_market_tasks.ps1` | Registers the three `ElectionSim-*` scheduled tasks (run once) |
 | `data/processed/live_project_backtest.csv` | Every backtest prediction (state, year, race, share counted, error, P) |
@@ -131,8 +139,14 @@ both settle days or weeks later.
 1. Before Nov 3: `ElectionSim-MarketsCheck` runs daily; check `data/raw/markets/capture.log` for 35 Kalshi and
    34 Polymarket markets. `StateResults-SlugCheck` confirms NYT's file names.
 2. Nov 3 from noon ET: markets record. From 6:30 pm ET: NYT records (`StateResults-ElectionNight`).
-3. From 7 pm ET: `live_project.py --watch 60`. Act only on rows without `?` and with a best buy clearly above
-   zero. Check depth before sizing: the `bids`/`asks` columns in the market CSVs.
+3. From 7 pm ET: `live_project.py --watch 60`. On 2024 evidence the market beat v0 wherever its book was tight,
+   so treat a best buy as a prompt to look, not a trade. That goes double for rows with `?`. The 2024 misses
+   were overnight, in wide books, in close races with a known Democratic batch still out (MARKET_CHECK.md):
+   check which counties are left before acting. Check depth before sizing: the `bids`/`asks` columns in the
+   market CSVs.
+   Polymarket counted Maine's King and Vermont's Sanders as Democrats in 2024. Its 2026 Nebraska rules
+   exclude independents from the party options, so an Osborn win pays the independent contract (checked
+   2026-10-28). Re-read the rules for any other independent.
 4. Afterwards: everything is in `data/raw/` (markets, projections) and `../State election results/data/raw/live/`
    (NYT), for the post-mortem.
 
