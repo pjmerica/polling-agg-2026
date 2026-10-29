@@ -15,6 +15,11 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[pending]` Election night simulator: primaries vs generals (2026-10-28).
+  - `primary_check.py` runs every 2026 Senate/Governor primary with an NYT timeline and a market, decided on the night (45 of 86; TX R Senate and OK R governor went to runoffs), against the 2024 generals, measured the same way.
+  - Close races (under 3 pts) were misread at the same rate in both: the eventual winner was under 50c after half counted in 2 of 5 primaries (CO R governor 2.8c, WI D governor 25.5c) and 4 of 10 generals. In both, the market's favorite was right on about 75-78% of updates.
+  - The within-night batch trend from the Colorado check did no better than the visible margin overall (96.1% vs 97.3% in primaries). 2022 can't be checked: Polymarket's 2022 market-maker markets have no API history, and Kalshi had no election markets.
+
 - `[89430978]` Election night simulator: the Colorado Republican governor primary check (2026-10-28).
   - `co_primary_check.py` lines up NYT's June 30 count with Kalshi's and Polymarket's minute prices. Marx went from 93% at poll close to 2.8c at 77% counted, in a tight book (2.7c median spread, 177 minutes under 15c), while the late votes were breaking his way. He won by 0.47.
   - A within-night trend (how the last 15% of the count broke) had it near a coin flip from 9:17 pm MT and Marx ahead from 11:20 pm, while the market sat at 6-39c. The rule was chosen after the fact, so it is to be tested on 2024 and every 2026 primary before use (MARKET_CHECK.md). NYT published no live estimate for primaries.

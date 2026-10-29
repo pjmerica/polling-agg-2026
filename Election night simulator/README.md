@@ -16,9 +16,13 @@ Democratic Senate winners priced at 2-17c overnight (WI, MI, NV), while Pennsylv
 the other way. Don't trade v0's edge alone. The opportunity is overnight wide books in close races with a known
 late batch, and catching it needs v1.
 
-**2026 primaries were worse:** Colorado's Republican governor primary had Marx (93% before the count) at
-2.8c in a tight book while the late votes broke his way. He won by 0.47. Two lessons: keep the starting
-point, and add how the latest batches are breaking to the projector (MARKET_CHECK.md).
+**Close races, not primaries:**
+- Colorado's Republican governor primary was the deepest misread found: Marx went from 93% before the count
+  to 2.8c in a tight book, and won by 0.47.
+- But across 45 primaries and 57 generals, close races of either kind put the eventual winner under 50c
+  about 2 times in 5. The market follows the visible leader.
+- A within-night trend of the latest batches did no better than the visible margin. The edge is knowing
+  which counties are still out (v1).
 
 Started 2026-10-28.
 
@@ -43,6 +47,7 @@ Started 2026-10-28.
 | `MARKET_CHECK.md` | Did the 2024 markets misread the count? Results, traps (settlement, spreads), what it means for Nov 3 |
 | `scripts/market_history.py` | Downloads 2024 minute prices from both venues for every race with an NYT timeline -> `data/raw/market_history/2024/` (about 11 min) |
 | `scripts/market_check.py` | The 2024 check -> `data/processed/market_check_2024_{points,trades}.csv` |
+| `scripts/primary_check.py` | Every 2026 Senate/Governor primary with a market against the 2024 generals: how cheap the winner got, and how often the market, the visible leader and the batch trend named the winner -> `data/processed/primary_check_{2026,compare}.csv` |
 | `scripts/co_primary_check.py` | The Colorado Republican governor primary (June 30, 2026): count, trend and Marx's price -> `data/processed/co_gov_rep_2026_trend.csv` |
 | `scripts/run_markets.cmd` | Wrapper the scheduled tasks call (log: `data/raw/markets/capture.log`) |
 | `scripts/register_market_tasks.ps1` | Registers the three `ElectionSim-*` scheduled tasks (run once) |

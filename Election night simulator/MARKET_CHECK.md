@@ -4,8 +4,12 @@ Checked 2026-10-28 against Kalshi's and Polymarket's minute-by-minute 2024 price
 NYT's count timelines for every state (`market_check.py`). It covers the 65 President, Senate and Governor races
 whose market was between 3% and 97% at poll close, and 9,107 NYT updates from 5% to 99% counted.
 
-**The 2026 primaries were worse.** In the Colorado Republican governor primary (section below), the market
-had the eventual winner, Marx, at 2.8c in a tight book while the late votes were already breaking his way.
+**Primaries are not worse; close races are.**
+- The Colorado Republican governor primary (section below) was the deepest misread found: Marx, the eventual
+  winner, traded at 2.8c in a tight book.
+- But across 45 primaries and 57 generals (section "Primaries vs general elections"), close races of either
+  kind put the eventual winner under 50c about 2 times in 5.
+- Primaries just have fewer close races.
 
 **Short answer for 2024:**
 - **Mostly no.** Markets read the count better than the statewide projector (v0) at every stage, and didn't
@@ -162,9 +166,67 @@ point.
 **Lessons for Nov 3:**
 - **Keep the starting point.** `live_project.py`'s default, starting from the market's own price at poll
   close, is exactly what the market abandoned here.
-- **Add the within-night trend** (how the latest batches break against the running total) to the projector,
-  then test it on 2024 and on every 2026 primary with a market before trusting it. Primaries are also where
-  the markets are thinnest and the least modelled.
+- **The within-night trend is not the fix.** Tested on every primary and on 2024 (next section), it was no
+  better than the visible margin.
+
+## Primaries vs general elections: is it only primaries?
+
+**No, it's close races.** `scripts/primary_check.py` covers:
+- **The 2026 primaries:** 86 Senate and Governor primaries, of which 45 had an NYT timeline and a market and
+  were decided on the night.
+- **Left out:** the Texas Republican Senate and Oklahoma Republican governor primaries. They went to runoffs,
+  and their markets settled on the runoff winner.
+- **The comparison:** the 2024 generals above, measured the same way.
+
+**All races:**
+
+| | Races | Winner under 50c after half counted | Under 20c | Under 10c | Market favorite right | Visible leader right | Trend right |
+|---|---|---|---|---|---|---|---|
+| 2026 primaries | 45 | 2 (5%) | 1 (2%) | 1 (2%) | 96.8% | 97.3% | 96.1% |
+| 2024 generals | 57 | 5 (9%) | 3 (5%) | 2 (4%) | 96.1% | 94.6% | 94.5% |
+
+The "right" columns are the share of NYT updates, between 50% and 95% counted, on which each signal named
+the eventual winner. Each race is weighted equally. "Trend" is the visible margin plus the rest of the vote
+breaking like the last 15% of the count.
+
+**Close races only** (final margin under 3 points):
+
+| | Races | Winner under 20c | Under 50c | Market favorite right | Visible leader right | Trend right |
+|---|---|---|---|---|---|---|
+| 2026 primaries | 5 | 1 | 2 | 75% | 79% | 76% |
+| 2024 generals | 10 | 3 | 4 | 78% | 75% | 77% |
+
+**The close races, one by one:**
+- **2026 primaries:**
+  - Colorado R governor: Marx, lowest price 2.8c.
+  - Wisconsin D governor: Crowley, 4.8c at poll close and a low of 25.5c after half counted. He won by 0.46.
+  - Iowa R governor: Lahn, 67c.
+  - Michigan D Senate: El-Sayed, 77c.
+  - Vermont D governor: Janoo, 97c.
+- **2024 generals:**
+  - Senate: WI 2c, MI 5c, NV 16.5c, PA 44c, AZ 68.5c.
+  - President: PA, GA, WI, MI and NH, all 78c or more.
+
+**Reading it:**
+- **Primaries are not misread more.** Most are blowouts with nothing to misread. In close races, primaries
+  and generals both put the eventual winner under 50c in about 2 of 5 races, and the market's favorite was
+  wrong on about a quarter of the updates past the halfway mark.
+- **The market mostly follows the visible leader.** Its worst nights (Colorado, Michigan Senate, Wisconsin
+  Senate) are exactly the races where the visible leader was wrong for most of the count: right on 0%, 0.4%
+  and 11% of the updates. It beat the visible margin mainly in Nevada Senate (81% vs 38%).
+- **The within-night trend is no general fix.** Across all races it matched the visible margin (96.1% vs
+  97.3% in primaries, 94.5% vs 94.6% in generals). It helped in Colorado and Nevada and hurt in Wisconsin's
+  D governor primary (56% vs 96%) and Kentucky's D Senate primary (49% vs 82%). Batches are lumpy by county,
+  so the last 15% of the count says little about the next 15%.
+- **The edge is knowing when the visible leader will flip,** which takes knowing which counties are still
+  out and how they vote. That is v1.
+
+**2022 midterms could not be checked.**
+- Kalshi had no election markets in 2022.
+- Polymarket's 2022 markets ran on an automated market maker before its order book existed:
+  `/prices-history` and the trade API return nothing for them, and the public Polygon RPC endpoints refused
+  connections from this machine.
+- They were small anyway: Pennsylvania Senate 2022 traded $181K in its whole life.
 
 ## What this means for Nov 3
 
@@ -187,6 +249,10 @@ point.
 - **`scripts/market_history.py`** downloads the prices into
   `data/raw/market_history/2024/{ST}-{office}/{kalshi,polymarket}.csv` (not committed, 4 MB, about 11
   minutes). `index.csv` lists each contract and how it settled.
+- **`scripts/primary_check.py`** runs every 2026 Senate/Governor primary with a market, against the 2024
+  generals.
+  - Downloads go to `data/raw/primaries/2026/` (NYT files and minute prices, cached).
+  - It writes `data/processed/primary_check_2026.csv` (per race) and `primary_check_compare.csv`.
 - **`scripts/co_primary_check.py`** runs the Colorado primary check: it downloads NYT's file and both
   venues' minute prices into `data/raw/primaries/` and writes `data/processed/co_gov_rep_2026_trend.csv`.
 - **`scripts/market_check.py`** runs the 2024 check and prints every 2024 table here.
