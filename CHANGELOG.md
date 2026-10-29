@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` Election night simulator: did the 2024 markets misread the count? (2026-10-28).
+- `[d2b43385]` Election night simulator: did the 2024 markets misread the count? (2026-10-28).
   - `market_history.py` downloads Kalshi's (from `/historical/*`) and Polymarket's minute prices for election week 2024, for every race with an NYT timeline. `market_check.py` replays the live projector against them, 2 min after each NYT update. 65 races, 9,107 updates; write-up in `Election night simulator/MARKET_CHECK.md`.
   - Markets beat the statewide projector on Brier at every stage, and didn't drift toward it (corr +0.01). Trading it mechanically was breakeven (Kalshi -0.3c per contract at a 5c threshold), and lost wherever the book was tight.
   - The real misses: Baldwin at 2c, Slotkin at 5c and Rosen at 16.5c after half the vote was counted. Pennsylvania looked the same and went the other way. The county-level projector (v1) is the next step.
