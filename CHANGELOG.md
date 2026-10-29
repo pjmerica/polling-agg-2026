@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` Election night simulator: primaries vs generals (2026-10-28).
+- `[f7154b10]` Election night simulator: primaries vs generals (2026-10-28).
   - `primary_check.py` runs every 2026 Senate/Governor primary with an NYT timeline and a market, decided on the night (45 of 86; TX R Senate and OK R governor went to runoffs), against the 2024 generals, measured the same way.
   - Close races (under 3 pts) were misread at the same rate in both: the eventual winner was under 50c after half counted in 2 of 5 primaries (CO R governor 2.8c, WI D governor 25.5c) and 4 of 10 generals. In both, the market's favorite was right on about 75-78% of updates.
   - The within-night batch trend from the Colorado check did no better than the visible margin overall (96.1% vs 97.3% in primaries). 2022 can't be checked: Polymarket's 2022 market-maker markets have no API history, and Kalshi had no election markets.
