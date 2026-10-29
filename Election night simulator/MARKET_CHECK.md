@@ -4,7 +4,10 @@ Checked 2026-10-28 against Kalshi's and Polymarket's minute-by-minute 2024 price
 NYT's count timelines for every state (`market_check.py`). It covers the 65 President, Senate and Governor races
 whose market was between 3% and 97% at poll close, and 9,107 NYT updates from 5% to 99% counted.
 
-**Short answer:**
+**The 2026 primaries were worse.** In the Colorado Republican governor primary (section below), the market
+had the eventual winner, Marx, at 2.8c in a tight book while the late votes were already breaking his way.
+
+**Short answer for 2024:**
 - **Mostly no.** Markets read the count better than the statewide projector (v0) at every stage, and didn't
   lag it.
 - **The exceptions were few and large.** Three eventual winners traded under 20c after half the vote was
@@ -114,6 +117,55 @@ mispricing.
 - **Telling them apart needs county counts:** how many Milwaukee or Wayne County votes are left, and how
   Democratic they are. That is v1.
 
+## 2026 primaries: the Colorado Republican governor race (June 30)
+
+This was the worst misread found so far: Marx against Kirkmeyer, about $650K traded on each on Kalshi
+(`scripts/co_primary_check.py`).
+
+- **Before the count:** Marx was a 93-94% favorite.
+- **Early returns:** Kirkmeyer led, by 5 points at 44% counted.
+- **The market dumped Marx:** 15c at 72% counted, and a low of **2.8c at 8:44 pm MT** (77% counted,
+  Kirkmeyer +2.2).
+- **The book was tight, not thin:** the median Kalshi spread while Marx was under 15c was 2.7c. He spent
+  **177 minutes under 15c** and 229 under 30c.
+- **Result:** Marx won by **0.47 points**.
+
+| Time (MT) | Counted | Visible margin (Marx - Kirkmeyer) | Last 15% of the count broke | If the rest breaks like that | Marx, Kalshi |
+|---|---|---|---|---|---|
+| 7:23 pm | 44% | -5.1 | -5.2 | -5.1 | 69c |
+| 7:34 pm | 65% | -2.7 | +1.0 | -1.4 | 25c |
+| 7:53 pm | 75% | -2.6 | +0.2 | -1.9 | 15c |
+| 8:51 pm | 77% | -2.1 | +1.1 | -1.4 | **5c** |
+| 9:17 pm | 81% | -1.5 | +3.0 | -0.7 | 12c |
+| 10:04 pm | 82% | -1.5 | +2.8 | -0.8 | **6c** |
+| 11:06 pm | 85% | -1.0 | +4.8 | -0.1 | 17c |
+| 11:23 pm | 86% | -0.8 | +10.2 | +0.7 | 39c |
+| 12:11 am | 87% | -0.8 | +10.0 | +0.6 | 37c |
+| Wed 7:13 am | 89% | -0.3 | +10.9 | +0.9 | 55c |
+
+**What went wrong in the market.** From 7:34 pm, the votes coming in were breaking toward Marx while the
+visible margin still showed Kirkmeyer. The market priced the visible margin and threw away a 93% starting
+point.
+
+**What a projector would have said, honestly:**
+- Until about 9 pm, the trend still pointed to Kirkmeyer by 1.2-1.9 with about 22% left. That says Marx
+  is underpriced (roughly one in three, not 5-15c), not that Marx wins.
+- From 9:17 pm it was near a coin flip, while the market stayed at 6-12c.
+- From 11:20 pm the trend had Marx ahead, while the market was still at 37-39c.
+
+**Caveats:**
+- The 15% trend rule was chosen after the fact. Its readings flicker (-0.7 at 9:00 pm), because batches are
+  lumpy by county.
+- NYT published no live estimate for this primary (`nyt_model_estimates` is empty at all 317 points).
+- v0 has no primary history.
+
+**Lessons for Nov 3:**
+- **Keep the starting point.** `live_project.py`'s default, starting from the market's own price at poll
+  close, is exactly what the market abandoned here.
+- **Add the within-night trend** (how the latest batches break against the running total) to the projector,
+  then test it on 2024 and on every 2026 primary with a market before trusting it. Primaries are also where
+  the markets are thinnest and the least modelled.
+
 ## What this means for Nov 3
 
 1. **Don't trade v0's edge on its own, and never into a tight book.** On 2024 evidence the market is right
@@ -135,7 +187,9 @@ mispricing.
 - **`scripts/market_history.py`** downloads the prices into
   `data/raw/market_history/2024/{ST}-{office}/{kalshi,polymarket}.csv` (not committed, 4 MB, about 11
   minutes). `index.csv` lists each contract and how it settled.
-- **`scripts/market_check.py`** runs this check and prints every table here.
+- **`scripts/co_primary_check.py`** runs the Colorado primary check: it downloads NYT's file and both
+  venues' minute prices into `data/raw/primaries/` and writes `data/processed/co_gov_rep_2026_trend.csv`.
+- **`scripts/market_check.py`** runs the 2024 check and prints every 2024 table here.
   - `data/processed/market_check_2024_points.csv`: every NYT update, with the market and projector
     probabilities.
   - `data/processed/market_check_2024_trades.csv`: every simulated trade.

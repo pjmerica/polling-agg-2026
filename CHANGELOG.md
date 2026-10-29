@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[pending]` Election night simulator: the Colorado Republican governor primary check (2026-10-28).
+  - `co_primary_check.py` lines up NYT's June 30 count with Kalshi's and Polymarket's minute prices. Marx went from 93% at poll close to 2.8c at 77% counted, in a tight book (2.7c median spread, 177 minutes under 15c), while the late votes were breaking his way. He won by 0.47.
+  - A within-night trend (how the last 15% of the count broke) had it near a coin flip from 9:17 pm MT and Marx ahead from 11:20 pm, while the market sat at 6-39c. The rule was chosen after the fact, so it is to be tested on 2024 and every 2026 primary before use (MARKET_CHECK.md). NYT published no live estimate for primaries.
+
 - `[d2b43385]` Election night simulator: did the 2024 markets misread the count? (2026-10-28).
   - `market_history.py` downloads Kalshi's (from `/historical/*`) and Polymarket's minute prices for election week 2024, for every race with an NYT timeline. `market_check.py` replays the live projector against them, 2 min after each NYT update. 65 races, 9,107 updates; write-up in `Election night simulator/MARKET_CHECK.md`.
   - Markets beat the statewide projector on Brier at every stage, and didn't drift toward it (corr +0.01). Trading it mechanically was breakeven (Kalshi -0.3c per contract at a 5c threshold), and lost wherever the book was tight.
