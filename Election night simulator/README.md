@@ -45,7 +45,9 @@ Started 2026-10-28.
 | `METHODS.md` | How the projector works, the backtest, what it can't do, the v1 plan |
 | `scripts/capture_markets.py` | Records Kalshi and Polymarket books every 20 s -> `data/raw/markets/{ET date}/{kalshi,polymarket}.csv` |
 | `dashboard.html` | The election-night dashboard. Open it from this folder; it reads `data/raw/dashboard/live_data.js` every 15 s |
-| `scripts/run_dashboard.cmd` | Opens the dashboard and runs the projector every 30 s (leave its window open all night) |
+| `scripts/run_dashboard.cmd` | Election night in one click: the projector every 30 s, the home server and the public copy |
+| `scripts/serve_home.py` | Serves the live dashboard to phones on the home Wi-Fi (port 8765) |
+| `scripts/publish_live.py` | Pushes a delayed public copy to `docs/election-night-live.html` every 10 min |
 | `scripts/dry_run.py` | Replays 2024's archived count through the projector and dashboard (`data/raw/dryrun/`), to check everything before Tuesday |
 | `scripts/live_project.py` | The live table (v1 where the counties line up, v0 beside it), the dashboard's data file, what-ifs, v0 backtest |
 | `scripts/county_project.py` | Projector v1: county by county, simulated (METHODS.md) |
@@ -123,9 +125,18 @@ Remove the tasks after the election:
 
 ## The dashboard
 
-Double-click `scripts\run_dashboard.cmd` (or run `py "Election night simulator/scripts/live_project.py" --watch 30`
-and open `Election night simulator/dashboard.html`). It runs on this PC: the data changes every 20 s to 2 min,
-faster than GitHub Pages rebuilds.
+Double-click `scripts\run_dashboard.cmd`. It opens three windows; leave them all open overnight:
+- **The projector** (`live_project.py --watch 30`), which writes the data, and opens `dashboard.html` on this PC.
+- **The home server** (`serve_home.py`): the same live page for a phone on the home Wi-Fi. The window prints the
+  address (`http://<this PC>:8765/dashboard.html`). It serves only the page and its data file. The first time,
+  allow Python through Windows Firewall on private networks.
+- **The public copy** (`publish_live.py`): every 10 minutes, a delayed copy goes to
+  **https://pjmerica.github.io/polling-agg-2026/election-night-live.html**, to share. It has no best buys or
+  FLIPs, since a 10-minute-old trade prompt would mislead. It commits through GitHub's API (`gh`), so this
+  checkout is never touched. Pages allows about 10 rebuilds an hour, so keep it at 10 minutes. Before the first
+  poll close it shows the model's starting point and says when it goes live.
+
+The local and home pages are the fast ones: the data changes every 20 s to 2 min, faster than Pages rebuilds.
 
 - **Header:** how long ago the projector, the markets and NYT last wrote (amber, then red when stale), and the
   Senate and House control prices.

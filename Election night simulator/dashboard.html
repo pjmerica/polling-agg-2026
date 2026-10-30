@@ -115,6 +115,7 @@ td .inbar i { display: block; height: 100%; background: var(--muted); }
 details.how { margin-top: 18px; color: var(--muted); font-size: 13px; }
 details.how summary { cursor: pointer; color: var(--text); }
 details.how p, details.how li { max-width: 900px; }
+body[data-public="1"] .priv { display: none; }
 #tip { position: fixed; pointer-events: none; background: #0d111a; border: 1px solid var(--line2); border-radius: 6px;
        padding: 6px 9px; font-size: 12px; display: none; z-index: 10; min-width: 150px; }
 #tip .t { color: var(--muted); margin-bottom: 3px; }
@@ -150,7 +151,7 @@ details.how p, details.how li { max-width: 900px; }
         expectation the candidate is in the votes counted there. <b>Tie needs</b> is the share a tied statewide result
         needs from that county.</li>
       <li><b>Model start</b>: the same projection started from our margin model instead of the market.</li>
-      <li><b>FLIP</b>: v1 gives a side 45% or more while the market prices it far lower, with 20%+ counted. That is the
+      <li class="priv"><b>FLIP</b>: v1 gives a side 45% or more while the market prices it far lower, with 20%+ counted. That is the
         only kind of edge that paid in the 2024 test (Slotkin at 15c, Rosen at 33c). Check which counties are left
         and the book depth before acting. Every other best buy lost money in 2024: treat it as a prompt, not a trade.</li>
       <li>Maine and Alaska are first-round counts; ranked-choice tabulation can still change the winner. Alaska
@@ -161,8 +162,11 @@ details.how p, details.how li { max-width: 900px; }
 <div id="tip"></div>
 <script>
 "use strict";
-const SRC = "data/raw/dashboard/live_data.js";
-const REFRESH_MS = 15000;
+// The public copy (docs/election-night-live.html, written by publish_live.py) has <body data-public="1">:
+// delayed data from Pages, no best buys or FLIPs.
+const PUBLIC = document.body.dataset.public === "1";
+const SRC = PUBLIC ? "election_night_live_data.js" : "data/raw/dashboard/live_data.js";
+const REFRESH_MS = PUBLIC ? 60000 : 15000;
 const C = { dem: "#3987e5", rep: "#e66767", proj: "#9085e9", mkt: "#199e70", model: "#c98500",
             text: "#e6ebf4", muted: "#8a96ad", faint: "#5b667d", line: "#222a3b", line2: "#2c3549" };
 const SERIES = [
@@ -188,6 +192,7 @@ function load() {
 function showErr() {
   const e = document.getElementById("err");
   e.style.display = "block";
+  if (PUBLIC) { e.textContent = D ? "Couldn't reload the data. Showing the last update." : "No live data published yet: it starts on election night, Nov 3."; return; }
   e.textContent = D ? "Couldn't reload the data file (" + loadFails + " tries). Showing the last one. Is live_project.py --watch still running?"
     : "No data yet. Start the projector: py \"Election night simulator/scripts/live_project.py\" --watch 30 (or run scripts/run_dashboard.cmd). " +
       "This page reads " + SRC + " next to it.";
@@ -197,6 +202,8 @@ function showErr() {
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const last = n => { const p = String(n || "").trim().split(/\s+/); return p[p.length - 1] || "?"; };
 const nowRef = () => D && D.dry_run ? Date.parse(D.generated) : Date.now();
+// feed ages: as of the snapshot in the delayed public copy (its own age is the "Updated" pill)
+const feedRef = () => D && (D.dry_run || PUBLIC) ? Date.parse(D.generated) : Date.now();
 function mtext(m, r) {
   if (m == null || isNaN(m)) return "&ndash;";
   if (Math.abs(m) < 0.05) return "Even";
@@ -211,12 +218,13 @@ function ptext(p) {
 const venue = v => v === "kalshi" ? "Kalshi" : "Polymarket";
 const cents = x => x == null ? "&ndash;" : (x * 100).toFixed(x * 100 % 1 ? 1 : 0) + "c";
 const num = x => Math.round(Math.abs(x)).toLocaleString("en-US");
-function ago(iso) {
+function ago(iso, ref) {
   if (!iso) return null;
-  const s = Math.max(0, (nowRef() - Date.parse(iso)) / 1000);
+  const s = Math.max(0, ((ref || feedRef)() - Date.parse(iso)) / 1000);
   return s < 90 ? Math.round(s) + "s" : s < 5400 ? Math.round(s / 60) + "m" : (s / 3600).toFixed(1) + "h";
 }
-const ageS = iso => iso ? (nowRef() - Date.parse(iso)) / 1000 : Infinity;
+const ageS = (iso, ref) => iso ? ((ref || feedRef)() - Date.parse(iso)) / 1000 : Infinity;
+const REFS = { feed: feedRef, now: () => Date.now() };
 const etFmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" });
 const et = iso => etFmt.format(new Date(iso)).toLowerCase().replace(" ", "");
 
@@ -231,21 +239,28 @@ const sval = (ser, p) => p[ser.k] != null ? +p[ser.k] : ser.alt && p[ser.alt] !=
 
 // ---------- header, alerts ----------
 function renderHeader() {
-  document.getElementById("sub").textContent = D.dry_run ? "dry run" : "Nov 3, 2026";
-  const pill = (label, iso, warnS, critS) => {
-    const a = ageS(iso), cls = a > critS ? "crit" : a > warnS ? "warn" : "";
-    return `<span class="pill ${cls}" data-iso="${esc(iso || "")}" data-w="${warnS}" data-c="${critS}">${label} <b>${iso ? ago(iso) + " ago" : "none"}</b></span>`;
+  document.getElementById("sub").innerHTML = D.dry_run ? "dry run" : "Nov 3, 2026" +
+    (PUBLIC ? ' · <a href="index.html" style="color:inherit">polling-agg dashboard</a>' : "");
+  const pill = (label, iso, warnS, critS, ref = "feed") => {
+    const a = ageS(iso, REFS[ref]), cls = a > critS ? "crit" : a > warnS ? "warn" : "";
+    return `<span class="pill ${cls}" data-iso="${esc(iso || "")}" data-w="${warnS}" data-c="${critS}" data-ref="${ref}">${label} <b>${iso ? ago(iso, REFS[ref]) + " ago" : "none"}</b></span>`;
   };
   const anyClosed = D.races.some(r => nowRef() >= Date.parse(r.close_utc));
-  document.getElementById("feeds").innerHTML =
-    pill("Projector", D.generated, 120, 300) + pill("Markets", D.markets_utc, 120, 600) +
-    (anyClosed || D.nyt_utc ? pill("NYT", D.nyt_utc, 360, 900) : "");
+  document.getElementById("feeds").innerHTML = PUBLIC
+    ? (anyClosed ? pill("Updated", D.generated, 1200, 2400, "now") : "") +
+      (D.markets_utc ? pill("Markets then", D.markets_utc, 120, 600) : "") + (D.nyt_utc ? pill("NYT then", D.nyt_utc, 360, 900) : "")
+    : pill("Projector", D.generated, 120, 300) + pill("Markets", D.markets_utc, 120, 600) +
+      (anyClosed || D.nyt_utc ? pill("NYT", D.nyt_utc, 360, 900) : "");
   const ctl = D.control || {};
   const cp = (k, n) => ctl[k] && ctl[k].p != null ? `<span class="pill">${n} <b>Dem ${ptext(ctl[k].p)}</b></span>` : "";
   document.getElementById("control").innerHTML = cp("US-Senate", "Senate control") + cp("US-House", "House control");
   const b = document.getElementById("banner");
-  b.style.display = D.dry_run ? "block" : "none";
+  b.style.display = D.dry_run || PUBLIC ? "block" : "none";
   if (D.dry_run) b.textContent = "Dry run: " + D.dry_run + ". Market prices are a single real capture and don't move, so best buys and FLIPs mean nothing here.";
+  else if (PUBLIC && !anyClosed) b.textContent = "Goes live when the first polls close, 7 pm ET on Nov 3, and then updates about every 10 " +
+    "minutes. Until then it shows our model's starting point for each race.";
+  else if (PUBLIC) b.textContent = "Delayed view: updates about every 10 minutes (last " + et(D.generated) + " ET), so prices and counts have " +
+    "likely moved since. Projections from our county-by-county projector; not financial advice.";
   document.getElementById("err").style.display = "none";
   document.getElementById("key").innerHTML =
     `<span>Margin scale:</span>` +
@@ -259,14 +274,17 @@ function updateAges() {
   if (!D) return;
   document.querySelectorAll(".pill[data-iso]").forEach(p => {
     const iso = p.dataset.iso; if (!iso) return;
-    const a = ageS(iso);
+    const ref = REFS[p.dataset.ref] || feedRef, a = ageS(iso, ref);
     p.classList.toggle("crit", a > +p.dataset.c); p.classList.toggle("warn", a > +p.dataset.w && a <= +p.dataset.c);
-    p.querySelector("b").textContent = ago(iso) + " ago";
+    p.querySelector("b").textContent = ago(iso, ref) + " ago";
   });
 }
 function renderAlerts() {
   const out = [];
-  if (!D.dry_run && ageS(D.generated) > 300)
+  const live = D.races.some(r => r.pct > 0 && r.pct < 99);
+  if (PUBLIC && live && ageS(D.generated, REFS.now) > 1800)
+    out.push(`<div class="alert stale"><span class="tag">Stale</span><span>This view hasn't updated for ${ago(D.generated, REFS.now)}.</span></div>`);
+  else if (!PUBLIC && !D.dry_run && ageS(D.generated) > 300)
     out.push(`<div class="alert stale"><span class="tag">Stale</span><span>The projector hasn't written for ${ago(D.generated)}. Is live_project.py --watch still running?</span></div>`);
   const off = [];
   for (const r of D.races) {
