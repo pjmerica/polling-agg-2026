@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to the polling-agg-2026 codebase. Each entry pairs
 a short summary with the commit hash so the full diff is reachable via
