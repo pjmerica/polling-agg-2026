@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[d240defd]` Election night dashboard: redesign as a results desk (2026-10-30). User: make it look less generic. Races are ruled rows on one board (race, status, on screen, projected final with its scale, counted votes vs model, win chances with a sparkline, best buy) instead of rounded cards; clicking a row opens its county breakdown and charts inline beneath it. Condensed display face for race names and figures, light and dark themes with a toggle (chart colours validated for both), keyboard-operable rows. Same data and logic.
+
 - `[fb81978c]` Election night dashboard: drop Oregon Governor; clicking a race opens its county breakdown (2026-10-30).
   - Oregon Governor is off live tracking (user call); `capture_markets.py` still records its prices.
   - The race view leads with the county table. It lists every benchmark county from before the count (share of the state vote, share expected at our model's margin, share a tie needs; biggest first) and fills in counted votes, over/under and net votes as NYT reports (then biggest misses first). Cards say "County breakdown →".
