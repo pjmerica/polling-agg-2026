@@ -7,7 +7,9 @@ and unparsed:
     data/raw/wayback_full/{year}/{state}/{timestamp}-results-{state}{suffix}.json.gz
 Existing files are skipped, so a re-run only fetches what is missing.
 
-    py "Election night simulator/scripts/fetch_wayback_full.py" [2022 2024]
+    py "Election night simulator/scripts/fetch_wayback_full.py" [2022 2024] [--states michigan,nevada]
+                                                                  [--reverse]
+Several copies can run at once on different states (existing files are skipped).
 """
 import gzip
 import os
@@ -43,9 +45,15 @@ def get(url, timeout=240, tries=4):
 
 
 def main():
-    years = [int(a) for a in sys.argv[1:]] or [2022, 2024]
+    args = sys.argv[1:]
+    only = None
+    if "--states" in args:
+        only = args[args.index("--states") + 1].split(",")
+    years = [int(a) for a in args if a.isdigit()] or [2022, 2024]
     for year in years:
-        states = STATES + (EXTRA_2024 if year == 2024 else [])
+        states = only or STATES + (EXTRA_2024 if year == 2024 else [])
+        if "--reverse" in args:
+            states = states[::-1]
         frm, to = WINDOW[year]
         for st in states:
             for suf in SUFFIX[year]:

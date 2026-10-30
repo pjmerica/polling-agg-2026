@@ -176,9 +176,46 @@ Examples:
 
 **Caveats:**
 - **The settings were tuned on this same 2020 data,** so these numbers are in-sample.
-- **The out-of-sample test is 2022,** the midterm, from full Internet Archive files
-  (`fetch_wayback_full.py`), and then 2024 against the markets.
 - **County leans from 2024 are a different year,** much as 2026 will use 2022/2024 benchmarks.
+
+**Leave-one-state-out on 2020.** Settings chosen on 9 states, scored on the 10th:
+- held-out average miss **3.4** vs 7.2 for the visible margin;
+- Brier **0.137** vs 0.335.
+
+The tuning didn't manufacture the result.
+
+**2022, out of sample** (`county_replay.py --year 2022`; whole Internet Archive captures from
+`fetch_wayback_full.py`; county leans from the 2020 and 2024 presidential results only):
+- **Coverage:** 16 Senate and Governor races in 10 states, 85 snapshots. The archive kept 2022 mostly at
+  poll close and after midnight, so the test is mostly the late count.
+- **20-90% counted:** average miss **v1 1.4**, v0 2.3, visible 2.0. Brier **v1 0.142**, v0 0.161,
+  visible 0.259.
+- **Nevada 2022 (both races decided in the late count):**
+  - Senate: v1 had Cortez Masto at 29-34% through Thursday and 81% by Sunday (she won by 0.8).
+  - Governor: v1 had Lombardo at 81-94% from Wednesday morning (he won by 1.5).
+
+**2024 against the markets** (`county_replay.py --markets`; v1 started from the market at poll close,
+as the live tool runs):
+- **Coverage:** 44 snapshots in 16 races. The archive kept 2-10 per state, so this is a small sample.
+- **Brier:** v1 0.047, market 0.045. On average the market is about as good, or slightly better.
+- **Trading v1's 5c+ edges on Kalshi:** 17 trades, -$0.05 in total. They split cleanly:
+  - **"Flips"** (v1 gives the side it buys 45%+ while the market prices it far lower): Michigan Senate,
+    Wed 1:15 am ET, 62% counted (Slotkin at 15c, v1 55%: **+84c**); Nevada Senate, Wed 3:50 pm, 85%
+    (Rosen at 33c, v1 48%: **+66c**); and Georgia President at 6% counted (**-26c**).
+  - **Every other edge:** v1 merely rated a longshot higher than the market (5c to 20c). These lost
+    -$1.28 in total, mostly Arizona Senate (v1 said buy Lake), Pennsylvania Senate at 98% (v1 gave Casey
+    19%) and early-count snapshots.
+
+**The shared late-ballot error is set to 0.3**, not 0.45:
+- 2020 alone preferred 0.45, because its pandemic mail swung the late counts hard.
+- At 0.45, every 2022 result fell inside the 80% band.
+- In 2024, v1 at 0.45 overpriced longshots (Brier 0.058).
+
+**The live table marks FLIP** only with 20%+ counted. Every backtest is weakest under 20%.
+
+**What v1 is for:** spotting the moment the market prices the visible leader while the uncounted votes
+point the other way. It is not for shaving longshots. The flip rule was found on the 2024 test set
+(3 cases), so treat it as a prompt to look at the remaining counties, not a trading rule.
 
 ## v1 next steps (from the original plan)
 

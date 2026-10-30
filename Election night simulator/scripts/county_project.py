@@ -24,9 +24,12 @@ import math
 
 import numpy as np
 
-# Set on the 2020 replay (county_replay.py --tune, 2026-10-29): 80% bands held 81% of results, Brier .166
-# vs .409 for the visible margin. A county's weight grows as (share counted)^6 from zero: half-counted
-# counties are mostly one kind of ballot (2020 Wayne: Election Day first, absentees last).
+# Set on the 2020 replay (county_replay.py, 2026-10-29): 80% bands hold 81%; leave-one-state-out the held-out
+# miss is 3.4 pts vs 7.2 for the visible margin. A county's weight grows as (share counted)^6 from zero:
+# half-counted counties are mostly one kind of ballot (2020 Wayne: Election Day first, absentees last).
+# remaining_sd: 2020 alone (its pandemic mail swung late counts hard) preferred 0.45, but at 0.45 every 2022
+# result fell inside the 80% band and in 2024 v1 overpriced longshots (Brier .058 vs the market's .045;
+# .047 at 0.3), so 0.3.
 PARAMS = dict(
     early_discount=0.0,     # weight of a county's counted votes when it has counted ~0% (1.0 at 100%)
     frac_power=6.0,         # ...rising as (share counted)^frac_power

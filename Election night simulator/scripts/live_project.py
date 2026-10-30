@@ -391,8 +391,13 @@ def run_live(a, hist, fc):
 
         def f2(x):
             return f"{x:5.2f}" if x is not None else "    -"
+        # FLIP: v1 gives the side it would buy 45%+ although the market prices it far lower, with 20%+ counted
+        # - the only kind of v1 edge that paid in 2024 (Slotkin at 15c, Rosen at 33c). Edges on longshots v1
+        # merely rates higher than the market (5c -> 20c) lost, and so did a flip at 6% counted (Georgia
+        # President); every backtest is weakest under 20% counted (MARKET_CHECK.md).
+        flip = bool(v1res and bt and (bt[3] + bt[2]) >= 0.45 and nyt["pct"] >= 20)
         trade = (f"{bt[1]} on {bt[0]} @{bt[2]:.2f}: {bt[3] * 100:+.1f}c ({'v1' if v1res else 'v0'})"
-                 if bt else "-")
+                 f"{'  FLIP' if flip else ''}" if bt else "-")
         # '?' (v0 only): past years' late votes leaned opposite ways at this point in the count, so
         # the direction is a guess (backtest: GA, OR, NV, AK, SC did worse than the visible margin)
         flag = "?" if not v1res and v0res and v0res["steady"] is False else " "
@@ -412,7 +417,7 @@ def run_live(a, hist, fc):
                          p_close=round(p_close, 4) if p_close is not None else "",
                          model=pr[1] if pr else "",
                          steady="" if v0res["steady"] is None else int(v0res["steady"]),
-                         best_from="v1" if v1res else "v0",
+                         best_from="v1" if v1res else "v0", flip=int(flip),
                          best_venue=bt[0] if bt else "", best_side=bt[1] if bt else "",
                          best_ask=bt[2] if bt else "", edge=round(bt[3], 4) if bt else ""))
     if a.pct is None:

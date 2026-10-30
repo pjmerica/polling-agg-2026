@@ -34,7 +34,7 @@ Started 2026-10-28.
 | Projector v0, statewide (`live_project.py`) | **Built**, backtested. Beats the visible margin in KS, IA, TX, OH, NE, MI, ME; not in GA, OR, NV, AK, SC (`?` flag). **Not better than the markets** (MARKET_CHECK.md): use it as an alert, not a trade signal |
 | Historical check, 2024 (`market_history.py`, `market_check.py`) | **Done** 2026-10-28: 65 races, minute prices from both venues against NYT's count |
 | Primaries vs the markets (`primary_check.py`) | **Done and published** 2026-10-29: 54 primaries against the 2024 generals, on the dashboard page [primaries-vs-markets.html](https://pjmerica.github.io/polling-agg-2026/primaries-vs-markets.html) |
-| Projector v1, county by county (`county_project.py`, wired into `live_project.py`) | **Built 2026-10-29, being validated.** 2020 replay (in-sample): average miss 3.6 pts vs v0 5.8 and the visible margin 7.9, 80% bands calibrated. Next: the 2022 replay out of sample (`fetch_wayback_full.py` downloading), then 2024 against the markets. Weakest where absentees come last inside big counties (MI) and where NYT's expected vote is off (OH) |
+| Projector v1, county by county (`county_project.py`, wired into `live_project.py`) | **Built and tested 2026-10-29.** Beats v0 and the visible margin in 2020 (also leave-one-state-out) and in 2022 out of sample (miss 1.4 vs v0 2.3, visible 2.0). Against the 2024 markets it's about level (Brier .047 vs .045). It paid only on "flips", where v1 gives a side ~50% that the market prices far lower (Slotkin 15c, Rosen 33c), which the live table marks `FLIP`. Weakest where absentees come last inside big counties (MI 2020) and where NYT's expected vote is off (OH 2020) |
 | Pre-election Monte Carlo: thousands of simulated nights, a threshold sheet per state | To build, on v1 |
 | Election-night console page with alerts | To build |
 
@@ -141,7 +141,7 @@ non-Republican wins):
 | `P mod` | v0 starting from our model's win probability instead |
 | `close` | The market price at poll close that `P mkt` starts from: the last capture before the close, averaged over venues |
 | `K`, `PM bid/ask` | The non-Republican contract on Kalshi and Polymarket, latest pass |
-| `best buy` | The best taker buy across both venues and both sides, with its expected value per $1 contract after fees, and which projector it used (v1 where available). Before the count starts it should sit at about minus the spread |
+| `best buy` | The best taker buy across both venues and both sides, with its expected value per $1 contract after fees, and which projector it used (v1 where available). Before the count starts it should sit at about minus the spread. `FLIP`: v1 gives the side 45%+ while the market prices it far lower, with 20%+ counted |
 
 Example: `KS-Sen 40.0% +12.0 | -2.2 7.1 0.35 ...` means that with 40% counted and Hamilton up 12, Kansas's
 history projects Marshall by 2.2. That is the early Democratic lead fading.
@@ -154,8 +154,10 @@ both settle days or weeks later.
 1. Before Nov 3: `ElectionSim-MarketsCheck` runs daily; check `data/raw/markets/capture.log` for 35 Kalshi and
    34 Polymarket markets. `StateResults-SlugCheck` confirms NYT's file names.
 2. Nov 3 from noon ET: markets record. From 6:30 pm ET: NYT records (`StateResults-ElectionNight`).
-3. From 7 pm ET: `live_project.py --watch 60`. On 2024 evidence the market beat v0 wherever its book was tight,
-   so treat a best buy as a prompt to look, not a trade. That goes double for rows with `?`. The 2024 misses
+3. From 7 pm ET: `live_project.py --watch 60`. Look at rows marked `FLIP`: v1 gives a side ~50% that the market
+   prices far lower, with 20%+ counted. That is the only kind of edge that paid in the 2024 test (Michigan and
+   Nevada Senate). Other best buys are v1 rating a longshot higher than the market; those lost in 2024. Treat
+   any best buy as a prompt to look, not a trade. That goes double for rows with `?`. The 2024 misses
    were overnight, in wide books, in close races with a known Democratic batch still out (MARKET_CHECK.md):
    check which counties are left before acting. Check depth before sizing: the `bids`/`asks` columns in the
    market CSVs.

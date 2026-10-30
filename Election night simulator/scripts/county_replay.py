@@ -130,6 +130,199 @@ def replay(params=None, p0=False, with_v0=False):
     return df
 
 
+# ---- 2022 / 2024: whole Internet Archive captures (fetch_wayback_full.py), out of sample ----------
+FULL = os.path.join(ROOT, "data", "raw", "wayback_full")
+OFFICE_FILE = {"U.S. Senate": "us-senate", "Senate": "us-senate", "Governor": "governor",
+               "President": "president"}
+REP = {"gop", "rep", "republican"}
+
+
+def _units_new(r):
+    """{fips: {candidate id: votes}}, {fips: total}, {fips: expected} from a 2022/2024 race."""
+    votes, tot, exp_ = {}, {}, {}
+    for u in r.get("reporting_units") or []:
+        if u.get("level") != "county":
+            continue
+        f = (u.get("fips_state") or "") + (u.get("fips_county") or "")
+        votes[f] = {c["nyt_id"]: (c.get("votes") or {}).get("total", 0) for c in u.get("candidates") or []}
+        tot[f] = u.get("total_votes") or sum(votes[f].values())
+        exp_[f] = u.get("total_expected_vote") or 0
+    return votes, tot, exp_
+
+
+def final_race(year, slug, office):
+    """(opp id, rep id, final margin % of all votes, county two-party logits {fips: L}, county totals)
+    from NYT's final file in nyt_all, or None."""
+    p = os.path.join(RES, "nyt_all", str(year), f"{slug}-{office}.json")
+    if not os.path.exists(p):
+        return None
+    d = json.load(open(p, encoding="utf-8"))
+    if "data" in d:                                            # 2020 layout
+        r = d["data"]["races"][0]
+        party = {c["candidate_key"]: c["party_id"].lower() for c in r["candidates"]}
+        fin = {c["candidate_key"]: c["votes"] for c in r["candidates"]}
+        cvotes = {}
+        for c in r.get("counties") or []:
+            res = c.get("results")
+            cvotes[str(c["fips"])[:5]] = ast.literal_eval(res) if isinstance(res, str) else (res or {})
+        ctot = {k: sum(v.values()) for k, v in cvotes.items()}
+    else:
+        r = d["races"][0]
+        party = {k: str((m.get("party") or {}).get("nyt_id", "")).lower() for k, m in r["candidate_metadata"].items()}
+        fin = {c["nyt_id"]: (c.get("votes") or {}).get("total", 0) for c in r["top_reporting_unit"]["candidates"]}
+        cvotes, ctot, _ = _units_new(r)
+    reps = [k for k in fin if party.get(k) in REP]
+    opps = [k for k in fin if party.get(k) not in REP]
+    if not reps or not opps:
+        return None
+    rep, opp = max(reps, key=fin.get), max(opps, key=fin.get)
+    tot = sum(fin.values())
+    L = {f: cp.logit(v.get(opp, 0) / (v.get(opp, 0) + v.get(rep, 0)))
+         for f, v in cvotes.items() if v.get(opp, 0) + v.get(rep, 0) > 0}
+    return opp, rep, 100 * (fin[opp] - fin[rep]) / tot, L, ctot
+
+
+LEAN_SOURCES = {2022: [(2020, "president"), (2024, "president")],
+                2024: [(2020, "president"), (2022, "us-senate"), (2022, "governor")]}
+
+
+def leans_other_years(year, slug):
+    """County leans for a `year` replay from OTHER years' results only (averaged log-odds), weights from
+    the most recent source."""
+    Ls, w = [], None
+    for y, office in LEAN_SOURCES[year]:
+        f = final_race(y, slug, office)
+        if f:
+            Ls.append(f[3])
+            if w is None or y > w[0]:
+                s = sum(f[4].values())
+                w = (y, {k: v / s for k, v in f[4].items()}) if s else w
+    if not Ls or not w:
+        return None
+    keys = set.intersection(*(set(L) for L in Ls))
+    return {k: sum(L[k] for L in Ls) / len(Ls) for k in keys}, {k: w[1].get(k, 0) for k in keys}
+
+
+def snapshots_full(year):
+    """[(capture time, state slug, office slug, {fips: dict(d, r, total, expected)})]"""
+    import gzip
+    out = []
+    for p in sorted(glob.glob(os.path.join(FULL, str(year), "*", "*.json.gz"))):
+        slug = os.path.basename(os.path.dirname(p))
+        t = pd.Timestamp(os.path.basename(p)[:14], tz="UTC")
+        try:
+            d = json.load(gzip.open(p))
+        except (OSError, ValueError):
+            continue
+        for r in d.get("races") or []:
+            office = OFFICE_FILE.get(str(r.get("office")))
+            if not office or r.get("race_type_id") not in (None, "G") or not r.get("reporting_units"):
+                continue
+            votes, tot, exp_ = _units_new(r)
+            out.append((t, slug, office, votes, tot, exp_))
+    return out
+
+
+def replay_full(year, params=None):
+    import live_project as lp
+    hist = lp.load_history()
+    rows, finals, leans = [], {}, {}
+    for t, slug, office, votes, tot, exp_ in snapshots_full(year):
+        key = (slug, office)
+        if key not in finals:
+            finals[key] = final_race(year, slug, office)
+            leans[key] = leans_other_years(year, slug)
+        fr, ln = finals[key], leans[key]
+        if not fr or not ln:
+            continue
+        opp, rep, fin, _, _ = fr
+        L, w = ln
+        units = {f: dict(d=v.get(opp, 0), r=v.get(rep, 0), total=tot[f], expected=exp_[f])
+                 for f, v in votes.items()}
+        if not units or sum(1 for k in units if k in L) < 0.9 * len(units):
+            continue
+        T = sum(u["total"] for u in units.values())
+        E = sum(max(u["expected"], u["total"]) for u in units.values())
+        if not T or not E or not 5 <= 100 * T / E < 99:
+            continue
+        D = sum(u["d"] for u in units.values())
+        R = sum(u["r"] for u in units.values())
+        res = cp.project(units, L, w, params=params)
+        if not res:
+            continue
+        vis = 100 * (D - R) / T
+        row = dict(year=year, t=t, state=slug, office=office, counted=res["counted_pct"], visible=vis,
+                   proj=res["mu"], sd=res["sd"], p_win=res["p_win"], final=fin)
+        if slug in hist:
+            v0 = lp.project(hist, slug, res["counted_pct"], vis, skip_year=year)
+            row.update(v0_proj=v0["mu"], v0_p=v0["p_win"])
+        rows.append(row)
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    df = df.drop_duplicates(["state", "office", "counted"])
+    df["err"] = df.final - df.proj
+    df["err_naive"] = df.final - df.visible
+    df["in80"] = (df.err.abs() / df.sd.clip(lower=0.05)) < 1.2816
+    df["brier"] = (df.p_win - (df.final > 0)) ** 2
+    df["brier_naive"] = ((df.visible > 0).astype(float) - (df.final > 0)) ** 2
+    return df
+
+
+def market_compare_2024():
+    """v1 at every archived 2024 snapshot, started from the market's price at poll close (as the live
+    tool does), against what the market was charging then (market_check.py's minute prices)."""
+    import datetime as dt
+    import market_check as mc
+    import swing_analysis as sa
+    import volatility as vol
+    settled = mc.contract_results()
+    rows, finals, leans, frames = [], {}, {}, {}
+    for t, slug, office, votes, tot, exp_ in snapshots_full(2024):
+        st = vol.ABBR.get(slug)
+        race = f"{st}-{ {'us-senate': 'Senate', 'president': 'President', 'governor': 'Governor'}[office]}"
+        if not os.path.isdir(os.path.join(mc.HIST, race)):
+            continue
+        key = (slug, office)
+        if key not in finals:
+            finals[key] = final_race(2024, slug, office)
+            leans[key] = leans_other_years(2024, slug)
+            frames[key] = mc.minute_frame(race)
+        fr, ln, df = finals[key], leans[key], frames[key]
+        if not fr or not ln:
+            continue
+        opp, rep, fin, _, _ = fr
+        won = fin > 0
+        if any(settled.get((race, v), won) != won for v in ("kalshi", "polymarket")):
+            continue
+        L, w = ln
+        units = {f: dict(d=v.get(opp, 0), r=v.get(rep, 0), total=tot[f], expected=exp_[f]) for f, v in votes.items()}
+        if not units or sum(1 for k in units if k in L) < 0.9 * len(units):
+            continue
+        T = sum(u["total"] for u in units.values())
+        E = sum(max(u["expected"], u["total"]) for u in units.values())
+        if not T or not E or not 5 <= 100 * T / E < 99:
+            continue
+        close = (dt.datetime(2024, 11, 5, tzinfo=dt.timezone(dt.timedelta(hours=-5)))
+                 + dt.timedelta(hours=sa.close_hours(st, dt.date(2024, 11, 5))))
+        p0 = mc.mid(mc.quote(df, close - dt.timedelta(minutes=1)))
+        q = mc.quote(df, t + pd.Timedelta(minutes=2))
+        mk = mc.mid(q)
+        if p0 is None or mk is None or not 0.03 <= p0 <= 0.97:
+            continue
+        res = cp.project(units, L, w, p0=p0)
+        D = sum(u["d"] for u in units.values())
+        R = sum(u["r"] for u in units.values())
+        k = q.get("kalshi")
+        rows.append(dict(race=race, t_et=t.tz_convert("America/New_York").strftime("%a %H:%M"),
+                         counted=round(res["counted_pct"], 1), visible=round(100 * (D - R) / T, 2),
+                         v1_proj=round(res["mu"], 2), p_v1=round(res["p_win"], 3), market=round(mk, 3),
+                         k_bid=k[0] if k else None, k_ask=k[1] if k else None,
+                         final=round(fin, 2), won=int(won)))
+    out = pd.DataFrame(rows).drop_duplicates(["race", "counted"]).sort_values(["race", "t_et"])
+    return out
+
+
 def score(df, label=""):
     df = df.copy()
     df["bucket"] = pd.cut(df.counted, [5, 20, 40, 60, 80, 99])
@@ -149,7 +342,42 @@ def score(df, label=""):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tune", action="store_true")
+    ap.add_argument("--year", type=int, default=2020, help="2020 (national file) or 2022/2024 (whole captures)")
+    ap.add_argument("--markets", action="store_true", help="2024: v1 against the market at each snapshot")
     a = ap.parse_args()
+    if a.markets:
+        m = market_compare_2024()
+        os.makedirs(PROC, exist_ok=True)
+        m.to_csv(os.path.join(PROC, "county_market_2024.csv"), index=False)
+        pd.set_option("display.width", 220)
+        print(m.to_string(index=False))
+        if len(m):
+            per = m.assign(b_v1=(m.p_v1 - m.won) ** 2, b_mk=(m.market - m.won) ** 2).groupby("race")[["b_v1", "b_mk"]].mean()
+            print(f"\n{len(m)} snapshots in {m.race.nunique()} races. Brier (races weighted equally): "
+                  f"v1 {per.b_v1.mean():.3f}, market {per.b_mk.mean():.3f}")
+        return
+    if a.year != 2020:
+        df = replay_full(a.year)
+        os.makedirs(PROC, exist_ok=True)
+        df.to_csv(os.path.join(PROC, f"county_replay_{a.year}.csv"), index=False)
+        print(f"{a.year}: {df.groupby(['state', 'office']).ngroups if len(df) else 0} races, {len(df)} snapshots, "
+              f"states: {sorted(df.state.unique()) if len(df) else []}\n")
+        if df.empty:
+            return
+        df["state"] = df.state + "-" + df.office          # score each race once per bucket
+        score(df, f"v1, {a.year}, out of sample (count only):")
+        v = df.dropna(subset=["v0_proj"])
+        v = v[v.counted.between(20, 90)]
+        if len(v):
+            print(f"\nSame snapshots, 20-90% counted ({len(v)}): average miss v1 {v.err.abs().mean():.2f}, "
+                  f"v0 {(v.final - v.v0_proj).abs().mean():.2f}, visible {v.err_naive.abs().mean():.2f}; Brier v1 "
+                  f"{v.brier.mean():.3f}, v0 {((v.v0_p - (v.final > 0)) ** 2).mean():.3f}, visible "
+                  f"{v.brier_naive.mean():.3f}")
+        m = df[df.counted.between(20, 90)].groupby("state").agg(
+            miss=("err", lambda e: e.abs().mean()), naive=("err_naive", lambda e: e.abs().mean()),
+            in80=("in80", "mean"), n=("err", "size"))
+        print("\nBy race, 20-90% counted:\n", m.round(2).to_string())
+        return
     if a.tune:
         for rem in (0.15, 0.3, 0.45, 0.6):
             for inflate in (2.0, 3.0):
