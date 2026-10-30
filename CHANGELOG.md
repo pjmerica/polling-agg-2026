@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to the polling-agg-2026 codebase. Each entry pairs
 a short summary with the commit hash so the full diff is reachable via
@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[24d56561]` Election night simulator: start from our margin model (P mod, --baseline model) (2026-10-30).
+- `[5492fa83]` Election night simulator: start from our margin model (P mod, --baseline model) (2026-10-30).
   - The projector forecasts margins, so `P mod` and `--baseline model` now start from the margin model's projected margin (`forecast_data.js` `cands[].margin`, sd 6.1 = held-out MAE 4.85 x 1.25) instead of the win chance, which comes from a separate model (GA-Gov: +1.2 pts but 78%). v1 now runs from it too (`county_project.margin_shift`); before, `P mod` was v0 only.
   - Not backtestable (no archived 2022/2024 forecasts). A stand-in with the model's error size on the 2022/2024 snapshots cuts the miss under 50% counted (3.95 -> 3.28 at 5-25%) and changes little after. The default stays the market.
 
