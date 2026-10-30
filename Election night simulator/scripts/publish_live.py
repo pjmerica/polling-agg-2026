@@ -84,6 +84,14 @@ def commit(files, message):
     raise RuntimeError("could not update master after 5 tries")
 
 
+def to_et(t):
+    try:
+        from zoneinfo import ZoneInfo
+        return t.astimezone(ZoneInfo("America/New_York"))
+    except Exception:                          # noqa: BLE001 - no tz database on this Python: Nov 3 is EST
+        return t - dt.timedelta(hours=5)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--interval", type=float, default=10, help="minutes between updates (keep >= 10)")
@@ -107,8 +115,7 @@ def main():
                 elif age > 1800 and not a.once:
                     print(f"{stamp} the projector last wrote {age / 60:.0f} min ago: skipped (is it running?)")
                 else:
-                    et = (dt.datetime.fromisoformat(generated.replace("Z", "+00:00"))
-                          - dt.timedelta(hours=5)).strftime("%H:%M")
+                    et = to_et(dt.datetime.fromisoformat(generated.replace("Z", "+00:00"))).strftime("%H:%M")
                     c = commit({OUT_PAGE: page, OUT_DATA: js}, f"election night live: {et} ET")
                     last = h
                     print(f"{stamp} published {c[:8]} (data from {et} ET); live in about a minute")

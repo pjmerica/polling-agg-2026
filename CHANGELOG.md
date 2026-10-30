@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[ab9cabbc]` Election night simulator: public delayed copy and home-network view (2026-10-30).
+  - `publish_live.py` commits `docs/election-night-live.html` + `docs/election_night_live_data.js` every 10 min through the GitHub API (one commit, retried if a workflow pushed meanwhile; the local checkout is untouched). Pages allows ~10 rebuilds an hour from a branch, and the site caches files for 10 min. The public data drops best buys and FLIPs (a stale trade prompt would mislead). Its commits (`election night live: HH:MM ET`, first ff2a12ab) are autonomous and, like `data refresh:`, get no entry here.
+  - `serve_home.py` serves the live page (only it and its data file) to phones on the home Wi-Fi; `run_dashboard.cmd` starts the projector, the home server and the publisher. "Live results" links on the dashboard and election-night pages.
+
 - `[3730e7e0]` Election night simulator: live dashboard with over/under tracking (2026-10-30).
   - `dashboard.html` runs on the user's PC (the data changes every 20 s to 2 min, faster than Pages rebuilds) and reloads `data/raw/dashboard/live_data.js` every 15 s; `live_project.py` writes it each pass. Per race: projection with band, what the counted votes alone imply vs our model's margin ("running 2.6 pts under, -2,156 net votes"), win chances, books, best buy, FLIP alerts and the night's history; click for charts and a county table (counted share vs expected at our model's margin, tie share, net votes, votes left). `run_dashboard.cmd` starts it; `dry_run.py` replays 2024's archived count through it.
   - Fixes found by the dry run: Maine reports by town and each town overwrote the last in its county (v1 said -1.8 at 97% counted for a +6.9 result); market captures after midnight ET are now read (prices would have frozen overnight); a failed pass no longer ends `--watch`.
