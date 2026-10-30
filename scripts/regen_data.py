@@ -148,6 +148,7 @@ else:
 # (utils/election_shapes allowlist, vig-normalized per venue, averaged across venues).
 from utils.races import ALL_RACES_2026
 from analysis.model_compare import load_party_markets, norm_pair
+from analysis.margin_markets import polymarket_margins
 
 def _venue_dem(book):
     d = book.get('DEM', {}).get('prob'); r = book.get('REP', {}).get('prob')
@@ -173,6 +174,9 @@ for _name, _csv, _col in [('kalshi', 'kalshi_markets.csv', 'market_title'),
                           ('polymarket', 'polymarket_markets.csv', 'question')]:
     _p = ROOT / 'data' / 'raw' / _csv
     _books[_name] = load_party_markets(_p, _col) if _p.exists() else {}
+# Polymarket's margin-of-victory ladders -> market-implied margin, for the map's Margin view (2026-10-30)
+_pm_margin = polymarket_margins(ROOT / 'data' / 'raw' / 'polymarket_markets.csv',
+                                {rid: _venue_book(bk) for rid, bk in _books['polymarket'].items()})
 _n_polls = (polls[polls['stage'].astype(str).str.lower().eq('general')]
             .groupby('race_id')['poll_id'].nunique().to_dict()) if not polls.empty else {}
 _now = pd.Timestamp.now(tz='UTC').isoformat()
@@ -191,13 +195,16 @@ for race in ALL_RACES_2026:
         # listed, e.g. NE-Sen's Osborn) plus traded volume - the map page's Kalshi view (2026-10-23)
         'kalshi': _venue_book(_books['kalshi'].get(rid)),
         'polymarket': _venue_book(_books['polymarket'].get(rid)),
+        # {'m': median margin signed toward the Dem, 'p_d', 'top' bracket, 'lad' ladder, 'vol'} or ''
+        'polymarket_margin': _pm_margin.get(rid, ''),
         'n_sources': len(quotes) + int(_n_polls.get(rid, 0)),
         'sources': '|'.join(srcs),
         'updated_at': _now,
     })
 agg = pd.DataFrame(_rows)
 print(f"  data.js: {len(agg)} races, fresh party-market price for "
-      f"{int((agg['implied_prob_avg'] != '').sum())}")
+      f"{int((agg['implied_prob_avg'] != '').sum())}, Polymarket margin ladder for "
+      f"{int((agg['polymarket_margin'] != '').sum())}")
 def label(row):
     if row['office'] == 'H':
         d = str(row['district'])
