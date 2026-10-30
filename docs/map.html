@@ -1015,6 +1015,9 @@ a:hover { text-decoration: underline; }
       : dm ? ` Districts are drawn on the lines in force for November 3; ${nrd} were redrawn since 2024. Click a state to zoom in, then drag to move around.`
       : ' Each square is a district; squares run from the most Democratic to the most Republican, so their order isn’t geographic.';
     const src = cur(), V = VENUE[src];
+    // a venue with no margin ladder anywhere means the data predates it or the scrape failed: say so, not just gray
+    const noLadders = vn => !BALLOT.some(b => b && typeof b[vn + '_margin'] === 'object' && b[vn + '_margin']);
+    const noLadderMsg = vn => `<b>No ${VENUE[vn]} margin data in this market refresh${upd ? ` (${esc(upd)} UTC)` : ''}.</b> It appears after the next refresh; the other venue's button still works. `;
     const modelAsof = F.predictions_as_of ? `Model run ${esc(String(F.predictions_as_of).slice(0, 16).replace('T', ' '))} UTC · polls through ${esc(F.polls_as_of || '-')}` : '';
     const upd = BALLOT.length && BALLOT[0].updated_at ? String(BALLOT[0].updated_at).slice(0, 16).replace('T', ' ') : '';
     const srcAsof = upd ? `${V} prices from the dashboard's market refresh of ${esc(upd)} UTC` : '';
@@ -1025,7 +1028,7 @@ a:hover { text-decoration: underline; }
       setText('title', `${V}'s projected margin, race by race`);
       setText('lede', `Each race is shaded by the median of ${V}'s margin-of-victory ladder (${src === 'kalshi' ? "thresholds such as 'Democrats win by at least 4 points', read from the middle of each order book" : "bracket markets such as 'Democrat by 3-6%'"}), read as the market's spread of outcomes: deeper blue or red for a bigger expected lead, gold under 1 point. Gray races have no ladder, or a ladder that doesn't price where its middle outcome falls. Hover or tap a race for the ladder and our model's margin.`);
       setText('asof', srcAsof);
-      setText('note', `${V} has a margin median for ${nv} of ${nb} ${what}.` + houseNote);
+      setText('note', (noLadders(src) ? noLadderMsg(src) : `${V} has a margin median for ${nv} of ${nb} ${what}.`) + houseNote);
     } else if (st.metric === 'margin') {
       setText('title', "The model's projected margin, race by race");
       setText('lede', "Each race is shaded by the margin model's projected lead of the front-runner, in points: the deeper the blue or red, the bigger the lead; light for a close race, gold under 1 point. The margin model is separate from the win model, so a few close races lean the other way here (\"Models split\"). Switch to <b>Kalshi</b> or <b>Polymarket</b> for the markets' own margins. Hover or tap a race for every candidate's margin and chance.");
@@ -1035,7 +1038,7 @@ a:hover { text-decoration: underline; }
       setText('title', `Where our margin and ${V}'s disagree`);
       setText('lede', `Each race is shaded by our margin model's projected result minus the median of ${V}'s margin-of-victory ladder, both signed toward the Democrat: blue where the model expects a bluer result than the market, red where it expects a redder one, pale where they agree within 2 points. Switch venues with the buttons. Gray races lack a ladder median or a model margin. Hover or tap a race for the ladder and both margins.`);
       setText('asof', [modelAsof, srcAsof].filter(Boolean).join(' · '));
-      setText('note', mcmpSummary(office) + houseNote);
+      setText('note', (noLadders(src) ? noLadderMsg(src) : mcmpSummary(office)) + houseNote);
     } else if (st.metric === 'cmp') {
       setText('title', `Where the model and ${V} disagree`);
       setText('lede', `Each race is shaded by the model's chance minus ${V}'s, both for the seat not going Republican: blue where the model is more Democratic than ${V}, red where it's more Republican, pale where they agree within 2 points. Gray races lack a ${V} price or a model projection. Hover or tap a race for every source side by side.`);
