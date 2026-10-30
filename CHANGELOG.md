@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[04b649dd]` Map: say when a venue has no margin data in the refresh, instead of an all-gray map (2026-10-30). The user saw the Kalshi margin views all gray on mobile: the live `data.js` was from the 21:47 refresh, before 4ff47d59 added `kalshi_margin` (the 22:37 refresh has 496 races). If no race carries a venue's margin, the note now says so and names the refresh time.
+
 - `[4ff47d59]` Kalshi margin ladders on the map's Margin and Margin-vs-markets views (KXMIDTERMMOV) (2026-10-30). The Margin view's Kalshi button did nothing, on the claim that Kalshi lists no race-by-race margin markets; the user pointed out it does. Series `KXMIDTERMMOV` has, per race, an event for each side ("margin of victory for Democrats ... at least N percentage points"), and the scraper had been saving them (4,833 markets on 10-10) unread because they carry no race_id.
   - `analysis/margin_markets.kalshi_margins`: event tickers -> race_ids (at-large -> district 01, FL/OH Senate -> their specials), named sides (CA top-two, AK-Sen, Osborn) placed through the forecast's candidates, same-party races skipped; order-book midpoints (last trades go stale: AZ-06 "R by 2+" last 59c, book 8-16c), smoothed so a bigger margin is never priced above a smaller one; Kalshi's winner book gives the chance at 0. A one-sided ladder (most House races) is read when its median falls inside it. On the 10-10 scrape: 478 races (Polymarket ~300), medians correlate .994 with Polymarket's, same leader in 295 of 298.
   - Both venues: a median past the last threshold is flagged `beyond` and shown as "D 8+" instead of an invented number, and left out of Margin vs markets (21 Kalshi races).
