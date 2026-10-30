@@ -15,6 +15,11 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[pending]` Dashboard page "Primaries vs the markets" (2026-10-29).
+  - `docs/primaries-vs-markets.html`, built by `Election night simulator/scripts/build_primaries_page.py` from `primary_check.py`. It covers 54 Senate/Governor primaries decided on the night: the favorite at poll close against the result, upsets, our primary model's pre-primary odds against the market (22 races since July 15, from the page's git history), how cheap each eventual winner got during the count, a chart for every close race, the 2024 generals comparison and every race. Linked from the dashboard header and the election-night nav.
+  - `primary_check.py` fixes. Some states are listed under their runoff date (TX, GA, AL, SC, SD), so the NYT file is now tried on every 2026 primary night (+12 races). Contracts are matched to candidates by full name: Kalshi lists both Hannah and Chellie Pingree, and the dead contract had priced Maine's winner at 0c. Ranked-choice races are read on the first round and dropped without a first-round majority.
+  - Result: the favorite at poll close won 49 of 53. In close races the winner traded under 50c in 3 of 6 primaries and 4 of 10 2024 generals. The market beat our primary model at poll close (Brier .060 vs .138).
+
 - `[f7154b10]` Election night simulator: primaries vs generals (2026-10-28).
   - `primary_check.py` runs every 2026 Senate/Governor primary with an NYT timeline and a market, decided on the night (45 of 86; TX R Senate and OK R governor went to runoffs), against the 2024 generals, measured the same way.
   - Close races (under 3 pts) were misread at the same rate in both: the eventual winner was under 50c after half counted in 2 of 5 primaries (CO R governor 2.8c, WI D governor 25.5c) and 4 of 10 generals. In both, the market's favorite was right on about 75-78% of updates.

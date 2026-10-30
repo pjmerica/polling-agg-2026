@@ -7,8 +7,10 @@ whose market was between 3% and 97% at poll close, and 9,107 NYT updates from 5%
 **Primaries are not worse; close races are.**
 - The Colorado Republican governor primary (section below) was the deepest misread found: Marx, the eventual
   winner, traded at 2.8c in a tight book.
-- But across 45 primaries and 57 generals (section "Primaries vs general elections"), close races of either
-  kind put the eventual winner under 50c about 2 times in 5.
+- But across 54 primaries and 57 generals (section "Primaries vs general elections"), close races of either
+  kind put the eventual winner under 50c in 3 of 6 primaries and 4 of 10 generals.
+- Every primary is on the dashboard page
+  [Primaries vs the markets](https://pjmerica.github.io/polling-agg-2026/primaries-vs-markets.html).
 - Primaries just have fewer close races.
 
 **Short answer for 2024:**
@@ -172,17 +174,29 @@ point.
 ## Primaries vs general elections: is it only primaries?
 
 **No, it's close races.** `scripts/primary_check.py` covers:
-- **The 2026 primaries:** 86 Senate and Governor primaries, of which 45 had an NYT timeline and a market and
-  were decided on the night.
-- **Left out:** the Texas Republican Senate and Oklahoma Republican governor primaries. They went to runoffs,
-  and their markets settled on the runoff winner.
+- **The 2026 primaries:** 80 Senate and Governor primaries considered, of which 54 had an NYT timeline and a
+  market and were decided on the night. The dashboard page
+  [Primaries vs the markets](https://pjmerica.github.io/polling-agg-2026/primaries-vs-markets.html) has
+  every race.
+- **Left out:**
+  - 17 had no usable timeline or went to a runoff. Texas Republican Senate and Oklahoma Republican governor
+    also had markets that settled on the runoff winner.
+  - 5 had no market with $1,000+ traded.
+  - 3 Maine ranked-choice races had no first-round majority, so tabulation decided them days later.
+  - 1 (Florida Democratic Senate) had no NYT file.
 - **The comparison:** the 2024 generals above, measured the same way.
+
+Fixed along the way (2026-10-29):
+- **Runoff dates.** The primary model lists some states' runoff date (TX, GA, AL, SC, SD), so files are now
+  looked up on every primary night.
+- **A name collision.** Kalshi listed both Hannah and Chellie Pingree for Maine, and last-name matching had
+  priced the winner with the dead contract. Matching is now by full name.
 
 **All races:**
 
 | | Races | Winner under 50c after half counted | Under 20c | Under 10c | Market favorite right | Visible leader right | Trend right |
 |---|---|---|---|---|---|---|---|
-| 2026 primaries | 45 | 2 (5%) | 1 (2%) | 1 (2%) | 96.8% | 97.3% | 96.1% |
+| 2026 primaries | 54 | 3 (6%) | 1 (2%) | 1 (2%) | 97.2% | 97.8% | 96.8% |
 | 2024 generals | 57 | 5 (9%) | 3 (5%) | 2 (4%) | 96.1% | 94.6% | 94.5% |
 
 The "right" columns are the share of NYT updates, between 50% and 95% counted, on which each signal named
@@ -193,12 +207,13 @@ breaking like the last 15% of the count.
 
 | | Races | Winner under 20c | Under 50c | Market favorite right | Visible leader right | Trend right |
 |---|---|---|---|---|---|---|
-| 2026 primaries | 5 | 1 | 2 | 75% | 79% | 76% |
+| 2026 primaries | 6 | 1 | 3 | 78% | 83% | 80% |
 | 2024 generals | 10 | 3 | 4 | 78% | 75% | 77% |
 
 **The close races, one by one:**
 - **2026 primaries:**
   - Colorado R governor: Marx, lowest price 2.8c.
+  - Rhode Island R governor: Guckian, 10c at poll close and a low of 20.5c after half counted. He won by 1.1.
   - Wisconsin D governor: Crowley, 4.8c at poll close and a low of 25.5c after half counted. He won by 0.46.
   - Iowa R governor: Lahn, 67c.
   - Michigan D Senate: El-Sayed, 77c.
@@ -208,14 +223,14 @@ breaking like the last 15% of the count.
   - President: PA, GA, WI, MI and NH, all 78c or more.
 
 **Reading it:**
-- **Primaries are not misread more.** Most are blowouts with nothing to misread. In close races, primaries
-  and generals both put the eventual winner under 50c in about 2 of 5 races, and the market's favorite was
-  wrong on about a quarter of the updates past the halfway mark.
+- **Primaries are not misread more.** Most are blowouts with nothing to misread. In close races the eventual
+  winner traded under 50c in 3 of 6 primaries and 4 of 10 generals, and in both the market's favorite was
+  wrong on about a fifth of the updates past the halfway mark (78% right in each).
 - **The market mostly follows the visible leader.** Its worst nights (Colorado, Michigan Senate, Wisconsin
   Senate) are exactly the races where the visible leader was wrong for most of the count: right on 0%, 0.4%
   and 11% of the updates. It beat the visible margin mainly in Nevada Senate (81% vs 38%).
-- **The within-night trend is no general fix.** Across all races it matched the visible margin (96.1% vs
-  97.3% in primaries, 94.5% vs 94.6% in generals). It helped in Colorado and Nevada and hurt in Wisconsin's
+- **The within-night trend is no general fix.** Across all races it matched the visible margin (96.8% vs
+  97.8% in primaries, 94.5% vs 94.6% in generals). It helped in Colorado and Nevada and hurt in Wisconsin's
   D governor primary (56% vs 96%) and Kentucky's D Senate primary (49% vs 82%). Batches are lumpy by county,
   so the last 15% of the count says little about the next 15%.
 - **The edge is knowing when the visible leader will flip,** which takes knowing which counties are still

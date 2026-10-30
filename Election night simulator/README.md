@@ -33,6 +33,7 @@ Started 2026-10-28.
 | Market price capture (`capture_markets.py`) | **Built**, tested on live APIs. The scheduled tasks need registering once by hand (below) |
 | Projector v0, statewide (`live_project.py`) | **Built**, backtested. Beats the visible margin in KS, IA, TX, OH, NE, MI, ME; not in GA, OR, NV, AK, SC (`?` flag). **Not better than the markets** (MARKET_CHECK.md): use it as an alert, not a trade signal |
 | Historical check, 2024 (`market_history.py`, `market_check.py`) | **Done** 2026-10-28: 65 races, minute prices from both venues against NYT's count |
+| Primaries vs the markets (`primary_check.py`) | **Done and published** 2026-10-29: 54 primaries against the 2024 generals, on the dashboard page [primaries-vs-markets.html](https://pjmerica.github.io/polling-agg-2026/primaries-vs-markets.html) |
 | Projector v1: county x vote type, from NYT's live county files | **Next.** The 2024 check shows it's what separates Michigan/Wisconsin from Pennsylvania; re-run the check with it before trusting it |
 | Pre-election Monte Carlo: thousands of simulated nights, a threshold sheet per state | To build, on v1 |
 | Election-night console page with alerts | To build |
@@ -47,6 +48,7 @@ Started 2026-10-28.
 | `MARKET_CHECK.md` | Did the 2024 markets misread the count? Results, traps (settlement, spreads), what it means for Nov 3 |
 | `scripts/market_history.py` | Downloads 2024 minute prices from both venues for every race with an NYT timeline -> `data/raw/market_history/2024/` (about 11 min) |
 | `scripts/market_check.py` | The 2024 check -> `data/processed/market_check_2024_{points,trades}.csv` |
+| `scripts/build_primaries_page.py` | Builds the dashboard page `docs/primaries-vs-markets.html` (+ `docs/primaries_vs_markets_data.js`) from primary_check.py's output. Rebuild after primary_check.py, then `node tests/dash_smoke.js docs/primaries-vs-markets.html` |
 | `scripts/primary_check.py` | Every 2026 Senate/Governor primary with a market against the 2024 generals: how cheap the winner got, and how often the market, the visible leader and the batch trend named the winner -> `data/processed/primary_check_{2026,compare}.csv` |
 | `scripts/co_primary_check.py` | The Colorado Republican governor primary (June 30, 2026): count, trend and Marx's price -> `data/processed/co_gov_rep_2026_trend.csv` |
 | `scripts/run_markets.cmd` | Wrapper the scheduled tasks call (log: `data/raw/markets/capture.log`) |
