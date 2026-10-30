@@ -125,6 +125,7 @@ def project(units, L, w, p0=None, params=None, rng=None, m0=None):
         se = max(P["shift_floor"], P["shift_inflate"] * sd_c / math.sqrt(n_eff))
     else:
         shift, se = 0.0, 10.0
+    count_shift, count_se = shift, se          # what the counted votes alone say (the dashboard's tracking)
     # 3. starting point
     s0 = None
     if m0 is not None:
@@ -154,5 +155,13 @@ def project(units, L, w, p0=None, params=None, rng=None, m0=None):
     fr = r.sum() + np.sum(rem_two * (1 - share), axis=1)
     margin = 100 * (fd - fr) / (fd + fr) * two_share
     return dict(mu=float(margin.mean()), sd=float(margin.std()), p_win=float((margin > 0).mean()),
-                shift=shift, shift_se=se, counted_pct=float(100 * tot.sum() / max(exp_.sum(), 1)),
+                shift=shift, shift_se=se, count_shift=count_shift, count_shift_se=count_se,
+                two_share=float(two_share), counted_pct=float(100 * tot.sum() / max(exp_.sum(), 1)),
                 remaining=float(rem.sum()), n_counties=int(has.sum()))
+
+
+def shift_margin(L, w, s, two_share=0.97):
+    """A uniform log-odds shift -> the statewide margin it produces, points of all votes."""
+    keys = [k for k in w if k in L]
+    share = float(np.sum(np.array([w[k] for k in keys]) * expit(np.array([L[k] for k in keys]) + s)))
+    return 100 * (2 * share - 1) * two_share

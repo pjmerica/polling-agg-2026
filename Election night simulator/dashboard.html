@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Election Night Live</title>
+<style>
+:root {
+  --bg: #0b0e14; --panel: #121722; --panel2: #171d2b; --line: #222a3b; --line2: #2c3549;
+  --text: #e6ebf4; --muted: #8a96ad; --faint: #5b667d;
+  --dem: #3987e5; --rep: #e66767; --dem-bg: rgba(57,135,229,.16); --rep-bg: rgba(230,103,103,.16);
+  --proj: #9085e9; --mkt: #199e70; --model: #c98500;
+  --warn: #fab219; --serious: #ec835a; --crit: #d03b3b; --good: #0ca30c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; font-size: 14px;
+       line-height: 1.4; font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1500px; margin: 0 auto; padding: 14px 16px 40px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 10px; }
+h1 { font-size: 20px; margin: 0; letter-spacing: -.01em; }
+h1 small { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 6px; }
+.feeds, .control { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { border: 1px solid var(--line2); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--muted);
+        background: var(--panel); white-space: nowrap; }
+.pill b { color: var(--text); font-weight: 600; }
+.pill.warn { border-color: var(--warn); color: var(--warn); }
+.pill.crit { border-color: var(--crit); color: #ff9b9b; }
+.pill.warn b, .pill.crit b { color: inherit; }
+.spacer { flex: 1; }
+#banner { display: none; background: #2a2440; border: 1px solid #4b3f86; color: #d9d3ff; border-radius: 8px;
+          padding: 8px 12px; margin-bottom: 10px; font-size: 13px; }
+#err { display: none; background: #3a1d1d; border: 1px solid var(--crit); color: #ffc9c9; border-radius: 8px;
+       padding: 8px 12px; margin-bottom: 10px; }
+.key { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 12px; margin: 0 0 10px; align-items: center; }
+.key span { display: inline-flex; align-items: center; gap: 5px; }
+.key svg { overflow: visible; }
+#alerts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.alert { display: flex; gap: 10px; align-items: baseline; background: var(--panel); border: 1px solid var(--line);
+         border-left: 3px solid var(--faint); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.alert.flip { border-left-color: var(--warn); }
+.alert:not(.flip):not(.stale) { cursor: default; }
+.race-link { color: var(--text); font-weight: 600; text-decoration: underline; text-decoration-color: var(--faint); cursor: pointer; }
+.alert.stale { border-left-color: var(--crit); cursor: default; }
+.alert .tag { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+              min-width: 64px; }
+.alert.flip .tag { color: var(--warn); }
+.alert.stale .tag { color: #ff9b9b; }
+#grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 10px;
+        cursor: pointer; transition: border-color .15s; min-width: 0; }
+.card:hover { border-color: var(--line2); }
+.card.sel { border-color: var(--proj); }
+.card.flip { box-shadow: inset 0 0 0 1px var(--warn); }
+.ch { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ch h3 { margin: 0; font-size: 15px; }
+.chip { font-size: 11px; color: var(--muted); border: 1px solid var(--line2); border-radius: 999px; padding: 1px 8px;
+        white-space: nowrap; }
+.chip.live { color: var(--text); border-color: var(--proj); }
+.names { font-size: 12.5px; color: var(--muted); margin: 2px 0 7px; }
+.d { color: var(--text); } .r { color: var(--text); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: 0; }
+.dot.dem { background: var(--dem); } .dot.rep { background: var(--rep); }
+.prog { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+.prog i { display: block; height: 100%; background: var(--muted); border-radius: 2px; }
+svg.scale { width: 100%; height: 40px; display: block; }
+dl.rows { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; margin: 4px 0 6px; font-size: 13px; }
+dl.rows dt { color: var(--muted); }
+dl.rows dd { margin: 0; text-align: right; font-weight: 600; }
+dl.rows dd small { color: var(--muted); font-weight: 400; }
+.track { font-size: 12.5px; border-radius: 6px; padding: 5px 8px; margin: 2px 0 8px; background: var(--panel2);
+         color: var(--muted); }
+.track b { color: var(--text); }
+.track.dem { background: var(--dem-bg); } .track.rep { background: var(--rep-bg); }
+.probs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px; }
+.prob { background: var(--panel2); border-radius: 6px; padding: 5px 7px; }
+.prob .l { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.prob .v { font-size: 17px; font-weight: 650; }
+.prob .v small { font-size: 11px; color: var(--muted); font-weight: 400; }
+.sw { display: inline-block; width: 10px; height: 2px; border-radius: 1px; }
+.books { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.best { font-size: 12.5px; margin-bottom: 4px; }
+.flag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; color: #1a1300;
+        background: var(--warn); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+svg.spark { width: 100%; height: 46px; display: block; margin-top: 4px; }
+#detail { display: none; background: var(--panel); border: 1px solid var(--line2); border-radius: 10px;
+          padding: 14px 16px; margin-bottom: 14px; }
+#detail h2 { font-size: 17px; margin: 0; }
+.dh { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.close { background: none; border: 1px solid var(--line2); color: var(--muted); border-radius: 6px; padding: 2px 10px;
+         cursor: pointer; font: inherit; }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 8px 0 14px; }
+@media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+.chart h4 { margin: 0 0 2px; font-size: 13px; }
+.chart .sub { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.chart svg { width: 100%; height: 220px; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 8px; font-size: 12.5px; color: var(--muted); }
+.tools button, .tools input { background: var(--panel2); border: 1px solid var(--line2); color: var(--text);
+                              border-radius: 6px; padding: 3px 9px; font: inherit; }
+.tools button.on { border-color: var(--proj); }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel); }
+th:first-child, td:first-child { text-align: left; }
+th.sorted::after { content: " \25BE"; } th.sorted.asc::after { content: " \25B4"; }
+td .inbar { display: inline-block; width: 44px; height: 4px; background: var(--line); border-radius: 2px;
+            vertical-align: middle; margin-left: 6px; overflow: hidden; }
+td .inbar i { display: block; height: 100%; background: var(--muted); }
+.dev { display: inline-block; min-width: 54px; border-radius: 4px; padding: 0 5px; text-align: right; }
+.muted { color: var(--muted); }
+.note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+details.how { margin-top: 18px; color: var(--muted); font-size: 13px; }
+details.how summary { cursor: pointer; color: var(--text); }
+details.how p, details.how li { max-width: 900px; }
+#tip { position: fixed; pointer-events: none; background: #0d111a; border: 1px solid var(--line2); border-radius: 6px;
+       padding: 6px 9px; font-size: 12px; display: none; z-index: 10; min-width: 150px; }
+#tip .t { color: var(--muted); margin-bottom: 3px; }
+#tip .row { display: flex; justify-content: space-between; gap: 12px; }
+#tip .row span:first-child { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Election night live <small id="sub"></small></h1>
+    <div class="feeds" id="feeds"></div>
+    <div class="spacer"></div>
+    <div class="control" id="control"></div>
+  </header>
+  <div id="banner"></div>
+  <div id="err"></div>
+  <div class="key" id="key"></div>
+  <section id="alerts"></section>
+  <section id="detail"></section>
+  <main id="grid"></main>
+  <details class="how">
+    <summary>How to read this</summary>
+    <ul>
+      <li><b>Projected final</b>: projector v1 (county by county) where NYT's counties line up with the benchmarks;
+        otherwise v0 (statewide history). It starts from the markets' price at poll close, so any gap with the market
+        comes from the count. The band is 80%.</li>
+      <li><b>Counted votes alone</b>: what the counted votes point to with no starting point: each county's counted
+        share against its usual lean, weighted toward counties that have counted most. Compare it with <b>our model
+        expected</b> to see whether the votes are coming in over or under what we expected.</li>
+      <li><b>Over/under</b> in the county table: each county's counted share against the share it gives if the state
+        lands on our model's margin. <b>Net votes</b> turns that into votes: how far ahead (or behind) of that
+        expectation the candidate is in the votes counted there. <b>Tie needs</b> is the share a tied statewide result
+        needs from that county.</li>
+      <li><b>Model start</b>: the same projection started from our margin model instead of the market.</li>
+      <li><b>FLIP</b>: v1 gives a side 45% or more while the market prices it far lower, with 20%+ counted. That is the
+        only kind of edge that paid in the 2024 test (Slotkin at 15c, Rosen at 33c). Check which counties are left
+        and the book depth before acting. Every other best buy lost money in 2024: treat it as a prompt, not a trade.</li>
+      <li>Maine and Alaska are first-round counts; ranked-choice tabulation can still change the winner. Alaska
+        reports by House district, so it has no county tracking. Not financial advice: METHODS.md has the weak spots.</li>
+    </ul>
+  </details>
+</div>
+<div id="tip"></div>
+<script>
+"use strict";
+const SRC = "data/raw/dashboard/live_data.js";
+const REFRESH_MS = 15000;
+const C = { dem: "#3987e5", rep: "#e66767", proj: "#9085e9", mkt: "#199e70", model: "#c98500",
+            text: "#e6ebf4", muted: "#8a96ad", faint: "#5b667d", line: "#222a3b", line2: "#2c3549" };
+const SERIES = [
+  { k: "p_v1", alt: "p_mkt", label: "Projector", color: C.proj },     // p_mkt: v0 from the market (no v1)
+  { k: "p_model", label: "Model start", color: C.model },
+  { k: "p_now", label: "Market", color: C.mkt },
+];
+
+function store(k, v) { try { if (v === undefined) return localStorage.getItem("enl." + k);
+                             if (v === null) localStorage.removeItem("enl." + k); else localStorage.setItem("enl." + k, v); }
+                       catch (e) { return null; } }
+// dashboard.html#MI-Sen opens that race
+const ui = { sel: location.hash.slice(1) || store("sel"), sortKey: "absnet", sortDir: -1, all: false, q: "", showAll: false };
+let D = null, loadFails = 0;
+
+function load() {
+  const s = document.createElement("script");
+  s.src = SRC + "?t=" + Date.now();
+  s.onload = () => { s.remove(); loadFails = 0; D = window.LIVE; render(); };
+  s.onerror = () => { s.remove(); loadFails++; showErr(); };
+  document.head.appendChild(s);
+}
+function showErr() {
+  const e = document.getElementById("err");
+  e.style.display = "block";
+  e.textContent = D ? "Couldn't reload the data file (" + loadFails + " tries). Showing the last one. Is live_project.py --watch still running?"
+    : "No data yet. Start the projector: py \"Election night simulator/scripts/live_project.py\" --watch 30 (or run scripts/run_dashboard.cmd). " +
+      "This page reads " + SRC + " next to it.";
+}
+
+// ---------- formatting ----------
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const last = n => { const p = String(n || "").trim().split(/\s+/); return p[p.length - 1] || "?"; };
+const nowRef = () => D && D.dry_run ? Date.parse(D.generated) : Date.now();
+function mtext(m, r) {
+  if (m == null || isNaN(m)) return "&ndash;";
+  if (Math.abs(m) < 0.05) return "Even";
+  return m > 0 ? `<span class="dot dem"></span>${esc(last(r.d_name))} +${m.toFixed(1)}`
+               : `<span class="dot rep"></span>${esc(last(r.r_name))} +${(-m).toFixed(1)}`;
+}
+function ptext(p) {
+  if (p == null || isNaN(p)) return "&ndash;";
+  if (p < 0.01) return "<1%"; if (p > 0.99) return ">99%";
+  return Math.round(p * 100) + "%";
+}
+const venue = v => v === "kalshi" ? "Kalshi" : "Polymarket";
+const cents = x => x == null ? "&ndash;" : (x * 100).toFixed(x * 100 % 1 ? 1 : 0) + "c";
+const num = x => Math.round(Math.abs(x)).toLocaleString("en-US");
+function ago(iso) {
+  if (!iso) return null;
+  const s = Math.max(0, (nowRef() - Date.parse(iso)) / 1000);
+  return s < 90 ? Math.round(s) + "s" : s < 5400 ? Math.round(s / 60) + "m" : (s / 3600).toFixed(1) + "h";
+}
+const ageS = iso => iso ? (nowRef() - Date.parse(iso)) / 1000 : Infinity;
+const etFmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" });
+const et = iso => etFmt.format(new Date(iso)).toLowerCase().replace(" ", "");
+
+function status(r) {
+  const closed = nowRef() >= Date.parse(r.close_utc);
+  if (r.pct >= 99) return { t: Math.floor(r.pct) + "% in", live: true };
+  if (r.pct > 0) return { t: "Counting · " + r.pct.toFixed(0) + "% in", live: true };
+  return { t: closed ? "Polls closed · no votes yet" : "Polls close " + et(r.close_utc) + " ET", live: false };
+}
+const proj = r => r.v1 || r.v0;
+const sval = (ser, p) => p[ser.k] != null ? +p[ser.k] : ser.alt && p[ser.alt] != null ? +p[ser.alt] : null;
+
+// ---------- header, alerts ----------
+function renderHeader() {
+  document.getElementById("sub").textContent = D.dry_run ? "dry run" : "Nov 3, 2026";
+  const pill = (label, iso, warnS, critS) => {
+    const a = ageS(iso), cls = a > critS ? "crit" : a > warnS ? "warn" : "";
+    return `<span class="pill ${cls}" data-iso="${esc(iso || "")}" data-w="${warnS}" data-c="${critS}">${label} <b>${iso ? ago(iso) + " ago" : "none"}</b></span>`;
+  };
+  const anyClosed = D.races.some(r => nowRef() >= Date.parse(r.close_utc));
+  document.getElementById("feeds").innerHTML =
+    pill("Projector", D.generated, 120, 300) + pill("Markets", D.markets_utc, 120, 600) +
+    (anyClosed || D.nyt_utc ? pill("NYT", D.nyt_utc, 360, 900) : "");
+  const ctl = D.control || {};
+  const cp = (k, n) => ctl[k] && ctl[k].p != null ? `<span class="pill">${n} <b>Dem ${ptext(ctl[k].p)}</b></span>` : "";
+  document.getElementById("control").innerHTML = cp("US-Senate", "Senate control") + cp("US-House", "House control");
+  const b = document.getElementById("banner");
+  b.style.display = D.dry_run ? "block" : "none";
+  if (D.dry_run) b.textContent = "Dry run: " + D.dry_run + ". Market prices are a single real capture and don't move, so best buys and FLIPs mean nothing here.";
+  document.getElementById("err").style.display = "none";
+  document.getElementById("key").innerHTML =
+    `<span>Margin scale:</span>` +
+    `<span><svg width="12" height="12"><circle cx="6" cy="6" r="4" fill="none" stroke="${C.text}" stroke-width="1.5"/></svg>On screen</span>` +
+    `<span><svg width="22" height="12"><line x1="1" y1="6" x2="21" y2="6" stroke="${C.proj}" stroke-width="3" opacity=".45"/><circle cx="11" cy="6" r="4" fill="${C.proj}"/></svg>Projected final (80%)</span>` +
+    `<span><svg width="12" height="12"><rect x="2" y="2" width="8" height="8" transform="rotate(45 6 6)" fill="none" stroke="${C.proj}" stroke-width="1.5"/></svg>Counted votes alone</span>` +
+    `<span><svg width="10" height="14"><line x1="5" y1="1" x2="5" y2="13" stroke="${C.model}" stroke-width="2"/></svg>Our model</span>` +
+    `<span><svg width="10" height="14"><line x1="5" y1="1" x2="5" y2="13" stroke="${C.mkt}" stroke-width="2" stroke-dasharray="3 2"/></svg>Market at close</span>`;
+}
+function updateAges() {
+  if (!D) return;
+  document.querySelectorAll(".pill[data-iso]").forEach(p => {
+    const iso = p.dataset.iso; if (!iso) return;
+    const a = ageS(iso);
+    p.classList.toggle("crit", a > +p.dataset.c); p.classList.toggle("warn", a > +p.dataset.w && a <= +p.dataset.c);
+    p.querySelector("b").textContent = ago(iso) + " ago";
+  });
+}
+function renderAlerts() {
+  const out = [];
+  if (!D.dry_run && ageS(D.generated) > 300)
+    out.push(`<div class="alert stale"><span class="tag">Stale</span><span>The projector hasn't written for ${ago(D.generated)}. Is live_project.py --watch still running?</span></div>`);
+  const off = [];
+  for (const r of D.races) {
+    const name = `${esc(r.state)} ${esc(r.office)}`;
+    if (r.best && r.best.flip) {
+      const who = r.best.side === "D" ? r.d_name : r.r_name;
+      out.push(`<div class="alert flip" data-race="${r.race}"><span class="tag">Flip</span><span><b>${name}</b>: projector gives ${esc(last(who))} ` +
+        `${ptext(r.best.side === "D" ? proj(r).p : 1 - proj(r).p)}; ${venue(r.best.venue)} sells at ${cents(r.best.ask)} (${r.pct.toFixed(0)}% in). ` +
+        `Check which counties are left before acting.</span></div>`);
+    }
+    const t = r.track;
+    if (t && t.implied != null && t.expected != null && r.pct >= 10 && r.pct < 99) {
+      const dev = t.implied - t.expected;
+      if (Math.abs(dev) >= 3) off.push({ r, dev });
+    }
+  }
+  if (off.length) {
+    off.sort((a, b) => Math.abs(b.dev) - Math.abs(a.dev));
+    out.push(`<div class="alert"><span class="tag">Off model</span><span>Counted votes 3+ pts off our model: ` +
+      off.map(({ r, dev }) => `<a class="race-link" data-race="${r.race}">${esc(r.race)}</a> ` +
+        `<span class="dot ${dev > 0 ? "dem" : "rep"}"></span>${esc(last(dev > 0 ? r.d_name : r.r_name))} +${Math.abs(dev).toFixed(1)}`).join(" · ") +
+      `</span></div>`);
+  }
+  const el = document.getElementById("alerts");
+  el.innerHTML = out.join("");
+  el.querySelectorAll("[data-race]").forEach(a => a.onclick = ev => { ev.stopPropagation(); select(a.dataset.race); });
+}
+
+// ---------- cards ----------
+function scaleSvg(r) {
+  const p = proj(r), t = r.track || {};
+  const vals = [r.pct > 0 ? r.margin : null, p && p.proj, t.implied, r.model_margin, t.market];
+  let lim = 10;
+  vals.forEach(v => { if (v != null) lim = Math.max(lim, Math.abs(v) + 2); });
+  if (p && p.sd != null) lim = Math.max(lim, Math.min(Math.abs(p.proj) + 1.28 * p.sd + 1, 40));
+  lim = Math.min(Math.ceil(lim / 5) * 5, 40);
+  const W = 300, x = v => 10 + (Math.max(-lim, Math.min(lim, v)) + lim) / (2 * lim) * (W - 20), y = 20;
+  let s = `<svg class="scale" viewBox="0 0 ${W} 40" preserveAspectRatio="none" aria-hidden="true">`;
+  s += `<rect x="10" y="${y - 7}" width="${(W - 20) / 2}" height="14" fill="${C.rep}" opacity=".10" rx="3"/>`;
+  s += `<rect x="${W / 2}" y="${y - 7}" width="${(W - 20) / 2}" height="14" fill="${C.dem}" opacity=".10" rx="3"/>`;
+  s += `<line x1="${W / 2}" y1="${y - 10}" x2="${W / 2}" y2="${y + 10}" stroke="${C.line2}"/>`;
+  s += `<text x="10" y="38" fill="${C.faint}" font-size="9">${esc(last(r.r_name))} +${lim}</text>`;
+  s += `<text x="${W / 2}" y="38" fill="${C.faint}" font-size="9" text-anchor="middle">even</text>`;
+  s += `<text x="${W - 10}" y="38" fill="${C.faint}" font-size="9" text-anchor="end">${esc(last(r.d_name))} +${lim}</text>`;
+  if (t.market != null) s += `<line x1="${x(t.market)}" y1="${y - 9}" x2="${x(t.market)}" y2="${y + 9}" stroke="${C.mkt}" stroke-width="2" stroke-dasharray="3 2"/>`;
+  if (r.model_margin != null) s += `<line x1="${x(r.model_margin)}" y1="${y - 9}" x2="${x(r.model_margin)}" y2="${y + 9}" stroke="${C.model}" stroke-width="2"/>`;
+  if (p && p.proj != null && r.pct > 0) {
+    const b = 1.2816 * (p.sd || 0);
+    s += `<line x1="${x(p.proj - b)}" y1="${y}" x2="${x(p.proj + b)}" y2="${y}" stroke="${C.proj}" stroke-width="5" stroke-linecap="round" opacity=".45"/>`;
+    s += `<circle cx="${x(p.proj)}" cy="${y}" r="5" fill="${C.proj}" stroke="${C.text}" stroke-width="1"/>`;
+  }
+  if (t.implied != null && r.pct > 0) s += `<rect x="${x(t.implied) - 4}" y="${y - 4}" width="8" height="8" transform="rotate(45 ${x(t.implied)} ${y})" fill="none" stroke="${C.proj}" stroke-width="1.6"/>`;
+  if (r.pct > 0) s += `<circle cx="${x(r.margin)}" cy="${y}" r="4.5" fill="none" stroke="${C.text}" stroke-width="1.6"/>`;
+  return s + "</svg>";
+}
+function sparkSvg(r) {
+  const h = r.history || [];
+  if (h.length < 2) return `<svg class="spark" viewBox="0 0 300 46"><text x="150" y="27" fill="${C.faint}" font-size="10" text-anchor="middle">win-chance history appears as the night goes on</text></svg>`;
+  const t0 = Date.parse(h[0].ts_utc), t1 = Date.parse(h[h.length - 1].ts_utc), W = 300, H = 46;
+  const x = t => 2 + (t1 > t0 ? (Date.parse(t) - t0) / (t1 - t0) : 1) * (W - 4), y = p => 3 + (1 - p) * (H - 6);
+  let s = `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Win chance tonight">`;
+  s += `<line x1="0" y1="${y(.5)}" x2="${W}" y2="${y(.5)}" stroke="${C.line2}" stroke-dasharray="2 3"/>`;
+  for (const ser of SERIES) {
+    const pts = h.map(p => [sval(ser, p), p.ts_utc]).filter(v => v[0] != null);
+    if (pts.length > 1) s += `<polyline fill="none" stroke="${ser.color}" stroke-width="1.6" stroke-linejoin="round" points="${pts.map(v => x(v[1]).toFixed(1) + "," + y(v[0]).toFixed(1)).join(" ")}"/>`;
+  }
+  return s + "</svg>";
+}
+function card(r) {
+  const st = status(r), p = proj(r), t = r.track;
+  const books = Object.entries(r.books || {}).map(([v, b]) => `${v === "kalshi" ? "Kalshi" : "Polymarket"} ${b.bid != null ? b.bid.toFixed(2) : "-"}/${b.ask != null ? b.ask.toFixed(2) : "-"}`).join(" · ");
+  let trackHtml = "";
+  if (t && t.implied != null && t.expected != null && r.pct > 0) {
+    const dev = t.implied - t.expected, cls = Math.abs(dev) < 1 ? "" : dev > 0 ? "dem" : "rep";
+    trackHtml = `<div class="track ${cls}">${esc(last(r.d_name))} running <b>${Math.abs(dev) < 0.05 ? "on" : Math.abs(dev).toFixed(1) + " pts " + (dev > 0 ? "over" : "under")}</b> our model` +
+      ` · ${t.net >= 0 ? "+" : "−"}${num(t.net)} net votes vs expected so far</div>`;
+  } else if (!t && r.pct > 0) {
+    trackHtml = `<div class="track">No county tracking for this race${r.race === "AK-Sen" ? " (Alaska reports by House district)" : ""}: statewide projector only.</div>`;
+  }
+  const best = r.best ? (() => {
+    const who = r.best.side === "D" ? r.d_name : r.r_name;
+    return `<div class="best">Best buy: ${esc(last(who))} on ${venue(r.best.venue)} @ ${cents(r.best.ask)} ` +
+      `<span class="${r.best.edge > 0 ? "" : "muted"}">${r.best.edge >= 0 ? "+" : "−"}${Math.abs(r.best.edge * 100).toFixed(1)}c</span>` +
+      `${r.best.flip ? '<span class="flag">FLIP</span>' : ""}</div>`;
+  })() : "";
+  const band = p && p.sd != null && r.pct > 0 ? ` <small>±${(1.2816 * p.sd).toFixed(1)}</small>` : "";
+  const projLabel = r.pct > 0 ? (r.v1 ? "Projected final" : "Projected final (statewide)") : "Before the count";
+  return `<article class="card${ui.sel === r.race ? " sel" : ""}${r.best && r.best.flip ? " flip" : ""}" data-race="${r.race}">
+    <div class="ch"><h3>${esc(r.state)} ${esc(r.office)}</h3><span class="chip${st.live ? " live" : ""}">${st.t}</span></div>
+    <div class="names"><span class="dot dem"></span><span class="d">${esc(r.d_name)}</span> vs <span class="dot rep"></span><span class="r">${esc(r.r_name)}</span></div>
+    <div class="prog"><i style="width:${Math.min(r.pct, 100)}%"></i></div>
+    ${scaleSvg(r)}
+    <dl class="rows">
+      ${r.pct > 0 ? `<dt>On screen</dt><dd>${mtext(r.margin, r)}</dd>` : ""}
+      <dt>${projLabel}</dt><dd>${p ? mtext(p.proj, r) + band : "&ndash;"}</dd>
+      ${t && t.implied != null && r.pct > 0 ? `<dt>Counted votes alone</dt><dd>${mtext(t.implied, r)}</dd>` : ""}
+      <dt>Our model expected</dt><dd>${mtext(r.model_margin, r)}</dd>
+      ${t && t.market != null ? `<dt>Market at close ≈</dt><dd>${mtext(t.market, r)}</dd>` : ""}
+    </dl>
+    ${trackHtml}
+    <div class="probs">
+      <div class="prob"><div class="l"><span class="sw" style="background:${C.proj}"></span>Projector</div><div class="v">${ptext(p && p.p)}</div></div>
+      <div class="prob"><div class="l"><span class="sw" style="background:${C.model}"></span>Model start</div><div class="v">${ptext(r.p_model)}</div></div>
+      <div class="prob"><div class="l"><span class="sw" style="background:${C.mkt}"></span>Market</div><div class="v">${ptext(r.p_now)}</div></div>
+    </div>
+    <div class="books">${esc(last(r.d_name))} YES: ${books || "no quotes"}</div>
+    ${best}
+    ${sparkSvg(r)}
+  </article>`;
+}
+function renderGrid() {
+  const g = document.getElementById("grid");
+  g.innerHTML = D.races.map(card).join("");
+  g.querySelectorAll(".card").forEach(c => c.onclick = () => select(c.dataset.race === ui.sel ? null : c.dataset.race));
+}
+function select(race) {
+  ui.sel = race; store("sel", race); ui.showAll = false;
+  history.replaceState(null, "", race ? "#" + race : location.pathname);
+  renderGrid(); renderDetail();
+  if (race) document.getElementById("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ---------- detail: charts ----------
+const tip = document.getElementById("tip");
+function lineChart(el, h, cfg) {
+  // cfg: { series: [{k, label, color, dash, bandLo, bandHi}], refs: [{v, label, color, dash}], yfmt, ydom, mid }
+  const W = 560, H = 220, L = 44, R = 70, T = 10, B = 24;
+  if (h.length < 2) { el.innerHTML = `<svg viewBox="0 0 ${W} ${H}"><text x="${W / 2}" y="${H / 2}" fill="${C.faint}" font-size="12" text-anchor="middle">Builds up as the projector runs</text></svg>`; return; }
+  const ts = h.map(p => Date.parse(p.ts_utc)), t0 = ts[0], t1 = ts[ts.length - 1];
+  let [lo, hi] = cfg.ydom ? cfg.ydom(h) : [0, 1];
+  const x = t => L + (t1 > t0 ? (t - t0) / (t1 - t0) : 1) * (W - L - R), y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  const ticks = cfg.yticks(lo, hi);
+  for (const v of ticks) s += `<line x1="${L}" y1="${y(v)}" x2="${W - R}" y2="${y(v)}" stroke="${v === cfg.mid ? C.line2 : C.line}"${v === cfg.mid ? "" : ' stroke-dasharray="2 3"'}/><text x="${L - 6}" y="${y(v) + 4}" fill="${C.muted}" font-size="10.5" text-anchor="end">${cfg.yfmt(v)}</text>`;
+  const nx = Math.min(5, h.length);
+  for (let i = 0; i < nx; i++) { const t = t0 + (t1 - t0) * i / Math.max(nx - 1, 1); s += `<text x="${x(t)}" y="${H - 6}" fill="${C.muted}" font-size="10.5" text-anchor="middle">${et(new Date(t).toISOString())}</text>`; }
+  const refs = (cfg.refs || []).filter(rf => rf.v != null && rf.v >= lo && rf.v <= hi).sort((a, b) => y(a.v) - y(b.v));
+  let lastY = -Infinity;
+  for (const rf of refs) {
+    const ly = Math.max(y(rf.v) + 4, lastY + 12);       // keep close labels apart
+    lastY = ly;
+    s += `<line x1="${L}" y1="${y(rf.v)}" x2="${W - R}" y2="${y(rf.v)}" stroke="${rf.color}" stroke-width="1.5" stroke-dasharray="5 3"/>`;
+    s += `<text x="${W - R + 4}" y="${ly}" fill="${C.muted}" font-size="10.5">${esc(rf.label)}</text>`;
+  }
+  for (const ser of cfg.series) {
+    if (ser.bandLo) {
+      const pts = h.map((p, i) => [ts[i], ser.bandLo(p), ser.bandHi(p)]).filter(v => v[1] != null && v[2] != null);
+      if (pts.length > 1) s += `<polygon fill="${ser.color}" opacity=".16" points="${pts.map(v => x(v[0]).toFixed(1) + "," + y(Math.max(lo, Math.min(hi, v[2]))).toFixed(1)).join(" ")} ${pts.slice().reverse().map(v => x(v[0]).toFixed(1) + "," + y(Math.max(lo, Math.min(hi, v[1]))).toFixed(1)).join(" ")}"/>`;
+    }
+    const pts = h.map((p, i) => [ts[i], ser.get(p)]).filter(v => v[1] != null);
+    if (pts.length > 1) s += `<polyline fill="none" stroke="${ser.color}" stroke-width="2" stroke-linejoin="round"${ser.dash ? ` stroke-dasharray="${ser.dash}"` : ""} points="${pts.map(v => x(v[0]).toFixed(1) + "," + y(Math.max(lo, Math.min(hi, v[1]))).toFixed(1)).join(" ")}"/>`;
+    if (pts.length) { const v = pts[pts.length - 1]; s += `<circle cx="${x(v[0])}" cy="${y(Math.max(lo, Math.min(hi, v[1])))}" r="3.5" fill="${ser.color}" stroke="#121722" stroke-width="2"/>`; }
+  }
+  s += `<line class="xh" x1="0" y1="${T}" x2="0" y2="${H - B}" stroke="${C.muted}" stroke-width="1" visibility="hidden"/>`;
+  s += `<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" class="hit"/></svg>`;
+  el.innerHTML = s;
+  const svg = el.querySelector("svg"), xh = svg.querySelector(".xh"), hit = svg.querySelector(".hit");
+  hit.onmousemove = ev => {
+    const bb = svg.getBoundingClientRect(), mx = (ev.clientX - bb.left) / bb.width * W;
+    let best = 0; ts.forEach((t, i) => { if (Math.abs(x(t) - mx) < Math.abs(x(ts[best]) - mx)) best = i; });
+    const p = h[best];
+    xh.setAttribute("x1", x(ts[best])); xh.setAttribute("x2", x(ts[best])); xh.setAttribute("visibility", "visible");
+    tip.innerHTML = `<div class="t">${et(p.ts_utc)} ET · ${p.pct != null ? (+p.pct).toFixed(0) + "% in" : ""}</div>` +
+      cfg.series.map(sr => `<div class="row"><span><span class="sw" style="background:${sr.color}"></span>${esc(sr.label)}</span><b>${cfg.tfmt(sr.get(p))}</b></div>`).join("");
+    tip.style.display = "block";
+    const tw = tip.offsetWidth; tip.style.left = Math.min(ev.clientX + 14, window.innerWidth - tw - 8) + "px"; tip.style.top = (ev.clientY + 14) + "px";
+  };
+  hit.onmouseleave = () => { tip.style.display = "none"; xh.setAttribute("visibility", "hidden"); };
+}
+
+// ---------- detail: county table ----------
+const COLS = [
+  { k: "n", label: "County", get: c => c.n },
+  { k: "pct", label: "In", get: c => c.pct },
+  { k: "share", label: "D share", get: c => c.share },
+  { k: "exp", label: "Expected", get: c => c.exp },
+  { k: "tie", label: "Tie needs", get: c => c.tie },
+  { k: "dev", label: "Over/under", get: c => c.share != null && c.exp != null ? c.share - c.exp : null },
+  { k: "absnet", label: "Net votes vs expected", get: c => c.net == null ? null : Math.abs(c.net) },
+  { k: "left", label: "Votes left", get: c => c.left },
+];
+function devCell(c, r) {
+  if (c.share == null || c.exp == null) return '<span class="muted">&ndash;</span>';
+  const d = (c.share - c.exp) * 100, a = Math.min(Math.abs(d) / 8, 1) * 0.55 + 0.08;
+  const bg = d >= 0 ? `rgba(57,135,229,${a.toFixed(2)})` : `rgba(230,103,103,${a.toFixed(2)})`;
+  return `<span class="dev" style="background:${bg}" title="${d >= 0 ? esc(last(r.d_name)) : esc(last(r.r_name))} over expectation">${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}</span>`;
+}
+function countyTable(r) {
+  const t = r.track;
+  if (!t) return `<p class="note">No county tracking for this race${r.race === "AK-Sen" ? ": Alaska reports by House district, which don't line up with the county benchmarks" : ""}. The statewide projector (v0) is used.</p>`;
+  let rows = t.counties.slice();
+  if (!ui.all) rows = rows.filter(c => c.votes > 0);
+  if (ui.q) rows = rows.filter(c => String(c.n).toLowerCase().includes(ui.q.toLowerCase()));
+  const col = COLS.find(c => c.k === ui.sortKey) || COLS[6];
+  rows.sort((a, b) => { const va = col.get(a), vb = col.get(b);
+    if (va == null && vb == null) return 0; if (va == null) return 1; if (vb == null) return -1;
+    return (typeof va === "string" ? va.localeCompare(vb) : va - vb) * ui.sortDir; });
+  const total = rows.length, shown = ui.showAll ? rows : rows.slice(0, 40);
+  const reporting = t.counties.filter(c => c.votes > 0).length;
+  const pct = v => v == null ? '<span class="muted">&ndash;</span>' : (v * 100).toFixed(1) + "%";
+  const head = COLS.map(c => `<th data-k="${c.k}" class="${c.k === ui.sortKey ? "sorted" + (ui.sortDir > 0 ? " asc" : "") : ""}">${c.k === "share" ? esc(last(r.d_name)) + " share" : c.label}</th>`).join("");
+  const body = shown.map(c => `<tr><td>${esc(c.n)}</td>
+      <td>${c.pct.toFixed(0)}%<span class="inbar"><i style="width:${Math.min(c.pct, 100)}%"></i></span></td>
+      <td>${pct(c.share)}</td><td class="muted">${pct(c.exp)}</td><td class="muted">${pct(c.tie)}</td>
+      <td>${devCell(c, r)}</td>
+      <td>${c.net == null ? '<span class="muted">&ndash;</span>' : (c.net >= 0 ? '<span class="dot dem"></span>' + esc(last(r.d_name)) : '<span class="dot rep"></span>' + esc(last(r.r_name))) + " +" + num(c.net)}</td>
+      <td>${c.left.toLocaleString("en-US")}</td></tr>`).join("");
+  return `<div class="tools">
+      <span>${reporting} of ${t.counties.length} counties reporting · net vs our model so far: <b style="color:var(--text)">${t.net >= 0 ? esc(last(r.d_name)) : esc(last(r.r_name))} +${num(t.net)}</b></span>
+      <span class="spacer"></span>
+      <button data-a="rep" class="${ui.all ? "" : "on"}">Reporting only</button><button data-a="all" class="${ui.all ? "on" : ""}">All counties</button>
+      <input type="search" placeholder="Find a county" value="${esc(ui.q)}" aria-label="Find a county">
+    </div>
+    <div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${body || `<tr><td colspan="8" class="muted">No counties reporting yet</td></tr>`}</tbody></table></div>
+    ${total > 40 ? `<div class="tools"><button data-a="more">${ui.showAll ? "Show the top 40" : "Show all " + total}</button></div>` : ""}
+    <p class="note">Expected = the county's ${esc(last(r.d_name))} share if the state lands on our model's margin (${mtext(t.expected, r)}).
+      Over/under = counted share minus expected, points. Net votes = how far ahead of that expectation the candidate is in the votes counted there.
+      Big early numbers in a county that has counted little are often one kind of ballot (mail first, Election Day later).</p>`;
+}
+function renderDetail() {
+  const el = document.getElementById("detail");
+  const r = D && D.races.find(x => x.race === ui.sel);
+  if (!r) { el.style.display = "none"; el.innerHTML = ""; return; }
+  const focused = document.activeElement && document.activeElement.type === "search";
+  el.style.display = "block";
+  const st = status(r), h = r.history || [];
+  el.innerHTML = `<div class="dh"><h2>${esc(r.state)} ${esc(r.office)} <span class="chip${st.live ? " live" : ""}">${st.t}</span></h2><button class="close" aria-label="Close">Close</button></div>
+    <div class="names"><span class="dot dem"></span>${esc(r.d_name)} vs <span class="dot rep"></span>${esc(r.r_name)} · polls close ${et(r.close_utc)} ET · NYT file ${esc(r.nyt_file)}</div>
+    <div class="charts">
+      <div class="chart"><h4>${esc(last(r.d_name))}'s win chance tonight</h4><div class="sub">Projector vs the market vs the projection started from our model</div><div id="c-prob"></div>
+        <div class="legend">${SERIES.map(s => `<span><span class="sw" style="background:${s.color}"></span>${s.label}</span>`).join("")}</div></div>
+      <div class="chart"><h4>Margin tonight</h4><div class="sub">Positive = ${esc(last(r.d_name))} ahead, points of all votes</div><div id="c-mar"></div>
+        <div class="legend"><span><span class="sw" style="background:${C.muted}"></span>On screen</span><span><span class="sw" style="background:${C.proj}"></span>Projected final (80% band)</span>
+          <span><span class="sw" style="background:${C.proj};opacity:.6"></span>Counted votes alone (dashed)</span><span><span class="sw" style="background:${C.model}"></span>Our model</span><span><span class="sw" style="background:${C.mkt}"></span>Market at close</span></div></div>
+    </div>
+    <div id="counties">${countyTable(r)}</div>`;
+  el.querySelector(".close").onclick = () => select(null);
+  lineChart(el.querySelector("#c-prob"), h, {
+    series: SERIES.map(s => ({ label: s.label, color: s.color, get: p => sval(s, p) })),
+    ydom: () => [0, 1], yticks: () => [0, .25, .5, .75, 1], mid: .5,
+    yfmt: v => Math.round(v * 100) + "%", tfmt: v => v == null ? "–" : ptext(v),
+  });
+  const mvals = h.flatMap(p => [p.margin, p.v1_proj ?? p.v0_proj, p.implied]).filter(v => v != null).concat([r.model_margin, r.track && r.track.market].filter(v => v != null));
+  const ml = Math.min(40, Math.max(5, ...mvals.map(v => Math.abs(v) + 2)));
+  const mlim = Math.ceil(ml / 5) * 5;
+  lineChart(el.querySelector("#c-mar"), h, {
+    series: [
+      { label: "On screen", color: C.muted, get: p => p.pct > 0 ? +p.margin : null },
+      { label: "Projected final", color: C.proj, get: p => p.v1_proj ?? p.v0_proj ?? null,
+        bandLo: p => p.v1_proj != null && p.v1_sd != null ? p.v1_proj - 1.2816 * p.v1_sd : null,
+        bandHi: p => p.v1_proj != null && p.v1_sd != null ? p.v1_proj + 1.2816 * p.v1_sd : null },
+      { label: "Counted votes alone", color: C.proj, dash: "4 3", get: p => p.implied ?? null },
+    ],
+    refs: [{ v: r.model_margin, label: "Our model", color: C.model }, { v: r.track && r.track.market, label: "Market", color: C.mkt }],
+    ydom: () => [-mlim, mlim], yticks: (lo, hi) => { const st = hi > 20 ? 10 : 5, o = []; for (let v = lo; v <= hi; v += st) o.push(v); return o; }, mid: 0,
+    yfmt: v => v === 0 ? "even" : (v > 0 ? "D+" : "R+") + Math.abs(v), tfmt: v => v == null ? "–" : (Math.abs(v) < 0.05 ? "even" : (v > 0 ? "D+" : "R+") + Math.abs(v).toFixed(1)),
+  });
+  wireTable(el, r);
+  if (focused) { const i = el.querySelector("input[type=search]"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }
+}
+function wireTable(el, r) {
+  const box = el.querySelector("#counties");
+  box.querySelectorAll("th").forEach(th => th.onclick = () => {
+    const k = th.dataset.k;
+    if (ui.sortKey === k) ui.sortDir = -ui.sortDir; else { ui.sortKey = k; ui.sortDir = k === "n" ? 1 : -1; }
+    box.innerHTML = countyTable(r); wireTable(el, r);
+  });
+  box.querySelectorAll("button[data-a]").forEach(b => b.onclick = () => {
+    if (b.dataset.a === "more") ui.showAll = !ui.showAll; else ui.all = b.dataset.a === "all";
+    box.innerHTML = countyTable(r); wireTable(el, r);
+  });
+  const q = box.querySelector("input[type=search]");
+  if (q) q.oninput = () => { ui.q = q.value; box.innerHTML = countyTable(r); wireTable(el, r);
+                             const n = box.querySelector("input[type=search]"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+}
+
+function render() {
+  if (!D || !D.races) return showErr();
+  renderHeader(); renderAlerts(); renderGrid(); renderDetail();
+}
+load();
+setInterval(load, REFRESH_MS);
+setInterval(updateAges, 1000);
+</script>
+</body>
+</html>

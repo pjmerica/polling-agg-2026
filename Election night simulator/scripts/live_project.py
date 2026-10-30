@@ -214,29 +214,41 @@ def latest_nyt(date, race_key):
         return dict(pct=0.0, margin=0.0, total=total, stamp=stamp, units={})
     rep, opp = max(reps, key=votes.get), max(opps, key=votes.get)
     units = {}
-    for u in r.get("reporting_units") or []:
-        if u.get("level") == "state":
-            continue
+    rus = [u for u in r.get("reporting_units") or [] if u.get("level") != "state"]
+    # Maine (and other town-reporting states) lists only towns, each carrying its county's code: add them up
+    # into counties, which is what the benchmarks use. Where counties are listed, use just those.
+    if any(u.get("level") == "county" for u in rus):
+        rus = [u for u in rus if u.get("level") == "county"]
+    for u in rus:
         key = (u.get("fips_state") or "") + (u.get("fips_county") or "") or str(u.get("name"))
         v = {c["nyt_id"]: (c.get("votes") or {}).get("total", 0) for c in u.get("candidates") or []}
-        units[key] = dict(d=v.get(opp, 0), r=v.get(rep, 0), total=u.get("total_votes") or 0,
-                          expected=u.get("total_expected_vote") or 0)
-    return dict(pct=float(top.get("eevp") or 0), total=total,
+        agg = units.setdefault(key, dict(d=0, r=0, total=0, expected=0, name=u.get("name")))
+        if u.get("level") != "county":
+            agg["name"] = None                 # a county of towns: the benchmark has its name
+        agg["d"] += v.get(opp, 0)
+        agg["r"] += v.get(rep, 0)
+        agg["total"] += u.get("total_votes") or 0
+        agg["expected"] += u.get("total_expected_vote") or 0
+    return dict(pct=float(top.get("eevp") or 0), total=total, mtime=os.path.getmtime(files[-1]),
                 margin=100 * (votes[opp] - votes[rep]) / total, stamp=stamp, units=units)
 
 
 _bench = None
 
 
-def benchmarks(race_key):
-    """(L {county: lean at a tied statewide result}, w {county: turnout share}) from
-    State election results/data/processed/county_benchmarks.json, or None."""
+def bench_record(race_key):
+    """The race's entry in State election results/data/processed/county_benchmarks.json, or None."""
     global _bench
     if _bench is None:
         p = os.path.join(RESULTS, "data", "processed", "county_benchmarks.json")
         _bench = {r["id"]: r for r in json.load(open(p, encoding="utf-8"))["races"]} if os.path.exists(p) else {}
     st, off = race_key.split("-")
-    r = _bench.get(FC_ID.get(race_key, f"2026_{st}_{OFFICE[off]}"))
+    return _bench.get(FC_ID.get(race_key, f"2026_{st}_{OFFICE[off]}"))
+
+
+def benchmarks(race_key):
+    """(L {county: lean at a tied statewide result}, w {county: turnout share}), or None."""
+    r = bench_record(race_key)
     if not r:
         return None
     L = {c["f"]: c["L"] for c in r["counties"] if c.get("L") is not None}
@@ -257,6 +269,48 @@ def v1(nyt, race_key, p0=None, m0=None):
     return county_project.project(nyt["units"], L, w, p0=p0, m0=m0)
 
 
+def tracking(nyt, race_key, v1res, m0, p_close):
+    """Are the votes coming in over or under what we expected? -> dict, or None where v1 doesn't run.
+    implied: the final margin the counted votes alone point to (v1's count-only shift on the county leans,
+    no starting point), with its sd. expected: our margin model. market: the margin the poll-close price
+    implies (6-point spread). Per county: the counted two-party share against the share expected there if
+    the state lands on our model's margin, and the share a tied statewide result needs. net: votes the
+    non-Republican is ahead (+) or behind (-) of that expectation, as net margin."""
+    b = benchmarks(race_key)
+    if not b or not v1res:
+        return None
+    L, w = b
+    names = {c["f"]: c.get("n") for c in (bench_record(race_key) or {}).get("counties", [])}
+    ts = v1res["two_share"] or 0.97
+    cp = county_project
+    implied = sd = None
+    if v1res["n_counties"]:
+        s, se = v1res["count_shift"], v1res["count_shift_se"]
+        implied = cp.shift_margin(L, w, s, ts)
+        sd = (cp.shift_margin(L, w, s + se, ts) - cp.shift_margin(L, w, s - se, ts)) / 2
+    s_mod = cp.margin_shift(L, w, m0[0] / ts, 1.0)[0] if m0 else None
+    counties, net_all = [], 0.0
+    for f, u in nyt["units"].items():
+        if f not in L:
+            continue
+        two = u["d"] + u["r"]
+        tie = float(cp.expit(L[f]))
+        exp_ = float(cp.expit(L[f] + s_mod)) if s_mod is not None else None
+        share = u["d"] / two if two >= 50 else None
+        net = (u["d"] - u["r"]) - (2 * exp_ - 1) * two if share is not None and exp_ is not None else None
+        net_all += net or 0
+        expected = max(u["expected"] or 0, u["total"])
+        counties.append(dict(n=names.get(f) or u.get("name") or f, f=f,
+                             pct=round(100 * u["total"] / expected, 1) if expected else 0.0,
+                             share=round(share, 4) if share is not None else None,
+                             exp=round(exp_, 4) if exp_ is not None else None, tie=round(tie, 4),
+                             net=round(net) if net is not None else None,
+                             left=round(max(expected - u["total"], 0)), votes=u["total"]))
+    return dict(implied=implied, implied_sd=sd, expected=m0[0] if m0 else None,
+                market=PRIOR_SD * phi_inv(p_close) if p_close is not None else None,
+                net=round(net_all), counties=counties)
+
+
 def _is_rep(venue, outcome, market):
     if venue == "kalshi":                 # Kalshi labels outcomes by name; the ticker says the party
         return str(market).upper().endswith("-R")
@@ -269,11 +323,16 @@ def load_markets(date):
     non-Republican side is the most traded non-Republican contract (Nebraska: Osborn, not
     Kalshi's Democratic placeholder)."""
     out = {}
+    # capture_markets.py starts a new folder each Eastern day: read election day and every day after it,
+    # or prices would freeze at midnight ET (the overnight count is where 2024's misreads were)
+    days = sorted(d for d in os.listdir(MARKETS) if d[:2] == "20" and d >= date) if os.path.isdir(MARKETS) else []
     for venue in ("kalshi", "polymarket"):
-        path = os.path.join(MARKETS, date, f"{venue}.csv")
-        if not os.path.exists(path):
+        paths = [os.path.join(MARKETS, d, f"{venue}.csv") for d in days]
+        paths = [p for p in paths if os.path.exists(p)]
+        if not paths:
             continue
-        df = pd.read_csv(path)
+        df = pd.concat([pd.read_csv(p, usecols=["ts_utc", "race", "market", "outcome", "bid", "ask"])
+                        for p in paths], ignore_index=True)
         df["side"] = ["R" if _is_rep(venue, o, m) else "D" for o, m in zip(df.outcome, df.market)]
         for race, g in df.groupby("race"):
             d = g[g.side == "D"]
@@ -367,10 +426,27 @@ def _with_baseline(hist, state, nyt, p0, prior_sd, m0=None):
     return project(hist, state, nyt["pct"], nyt["margin"], mu0, prior_sd)
 
 
+def market_now(books):
+    """The markets' P(non-Republican) now: mid D / (D + R), averaged over venues; None without quotes."""
+    ps = []
+    for side in (books or {}).values():
+        mid = {k: (s["bid"] + s["ask"]) / 2 for k, s in side.items()
+               if s["bid"] == s["bid"] and s["ask"] == s["ask"]}
+        if "D" in mid and "R" in mid and mid["D"] + mid["R"] > 0:
+            ps.append(mid["D"] / (mid["D"] + mid["R"]))
+        elif "D" in mid:
+            ps.append(mid["D"])
+    return float(np.mean(ps)) if ps else None
+
+
+def _r(x, n=4):
+    return round(float(x), n) if x is not None and x == x else None
+
+
 def run_live(a, hist, fc):
     mk = load_markets(a.date)
-    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    rows = []
+    now = getattr(a, "now", None) or dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rows, cards = [], []
     print(f"\n{now}  margins: non-Republican minus Republican; P = P(non-Republican wins)")
     print(f"Starting point: the markets' price at poll close ({'used' if a.baseline == 'market' else 'shown'}) "
           f"or our model. v1 = county by county (used where the counties line up); v0 = statewide.")
@@ -383,7 +459,8 @@ def run_live(a, hist, fc):
             nyt = dict(pct=a.pct, margin=a.margin, stamp="what-if", units={})
         else:
             nyt = latest_nyt(a.date, race) or dict(pct=0.0, margin=0.0, stamp="-", units={})
-        p_close = market_baseline(mk, race, close_utc(a.date, state))
+        c_utc = close_utc(a.date, state)
+        p_close = market_baseline(mk, race, c_utc)
         m0 = (pr[2], MODEL_MARGIN_SD) if pr and pr[2] is not None else None
         by_mkt = _with_baseline(hist, state, nyt, p_close, a.prior_sd)
         by_mod = _with_baseline(hist, state, nyt, None, a.prior_sd, m0=m0)
@@ -397,6 +474,8 @@ def run_live(a, hist, fc):
         res = v1res or v0res
         books = latest_books(mk, race)
         bt = best_trade(res["p_win"], books) if res else None
+        p_now = market_now(books)
+        track = tracking(nyt, race, v1res, m0, p_close) if a.pct is None else None
 
         def ba(v):
             s = books.get(v, {}).get("D")
@@ -419,24 +498,56 @@ def run_live(a, hist, fc):
         print(f"{race:7} {nyt['pct']:6.1f}% {nyt['margin']:+6.1f} |{flag}{p1} | "
               f"{f2(v0res and v0res['p_win'])} {f2(mod and mod['p_win'])} "
               f"{f2(p_close)} | {ba('kalshi'):>9} {ba('polymarket'):>10} | {trade}")
-        rows.append(dict(ts_utc=now, race=race, nyt_file=nyt["stamp"], pct=round(nyt["pct"], 2),
+
+        def side(v, k):
+            s = books.get(v, {}).get("D")
+            return _r(s[k]) if s else None
+        rows.append(dict(ts_utc=now, date=a.date, race=race, nyt_file=nyt["stamp"], pct=round(nyt["pct"], 2),
                          margin=round(nyt["margin"], 2), baseline=a.baseline,
                          v1_proj=round(v1res["mu"], 2) if v1res else "",
                          v1_sd=round(v1res["sd"], 2) if v1res else "",
                          p_v1=round(v1res["p_win"], 4) if v1res else "",
-                         v0_proj=round(v0res["mu"], 2), v0_sd=round(v0res["sd"], 2),
+                         v0_proj=round(v0res["mu"], 2) if v0res else "",
+                         v0_sd=round(v0res["sd"], 2) if v0res else "",
                          p_mkt=round(by_mkt["p_win"], 4) if by_mkt else "",
                          p_model=round(mod["p_win"], 4) if mod else "",
                          model_proj=round(mod["mu"], 2) if mod else "",
                          p_close=round(p_close, 4) if p_close is not None else "",
+                         p_now=round(p_now, 4) if p_now is not None else "",
+                         implied=round(track["implied"], 2) if track and track["implied"] is not None else "",
+                         implied_sd=round(track["implied_sd"], 2) if track and track["implied_sd"] is not None
+                         else "",
+                         net_vs_model=track["net"] if track else "",
                          model_win=pr[1] if pr else "", model_margin=pr[2] if pr else "",
-                         steady="" if v0res["steady"] is None else int(v0res["steady"]),
+                         steady="" if not v0res or v0res["steady"] is None else int(v0res["steady"]),
                          best_from="v1" if v1res else "v0", flip=int(flip),
                          best_venue=bt[0] if bt else "", best_side=bt[1] if bt else "",
-                         best_ask=bt[2] if bt else "", edge=round(bt[3], 4) if bt else ""))
+                         best_ask=bt[2] if bt else "", edge=round(bt[3], 4) if bt else "",
+                         k_bid=side("kalshi", "bid") or "", k_ask=side("kalshi", "ask") or "",
+                         pm_bid=side("polymarket", "bid") or "", pm_ask=side("polymarket", "ask") or ""))
+        b = bench_record(race) or {}
+        rep = next((c for c in (fc.get(FC_ID.get(race, f"2026_{race.split('-')[0]}_{OFFICE[race.split('-')[1]]}"))
+                                or {}).get("cands", []) if c["party"] == "REP"), None)
+        cards.append(dict(
+            race=race, state=b.get("state") or state.replace("-", " ").title(), office=OFFICE[race.split("-")[1]],
+            d_name=pr[0] if pr else (b.get("d") or {}).get("name"), r_name=rep["name"] if rep else
+            (b.get("r") or {}).get("name"), close_utc=c_utc, nyt_file=nyt["stamp"],
+            nyt_utc=dt.datetime.fromtimestamp(nyt["mtime"], dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            if nyt.get("mtime") else None,
+            pct=round(nyt["pct"], 1), margin=round(nyt["margin"], 2), votes=nyt.get("total"),
+            v1=dict(proj=_r(v1res["mu"], 2), sd=_r(v1res["sd"], 2), p=_r(v1res["p_win"])) if v1res else None,
+            v0=dict(proj=_r(v0res["mu"], 2), sd=_r(v0res["sd"], 2), p=_r(v0res["p_win"]),
+                    steady=v0res["steady"]) if v0res else None,
+            p_model=_r(mod["p_win"]) if mod else None, model_proj=_r(mod["mu"], 2) if mod else None,
+            model_win=pr[1] if pr else None, model_margin=pr[2] if pr else None,
+            p_close=_r(p_close), p_now=_r(p_now),
+            books={v: dict(bid=side(v, "bid"), ask=side(v, "ask")) for v in ("kalshi", "polymarket") if v in books},
+            best=dict(venue=bt[0], side=bt[1], ask=_r(bt[2]), edge=_r(bt[3]), src="v1" if v1res else "v0",
+                      flip=flip) if bt else None,
+            track=track))
     if a.pct is None:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
-        if os.path.exists(OUT):               # columns changed (v1 added 2026-10-29): keep the old log aside
+        if os.path.exists(OUT):               # columns changed: keep the old log aside
             with open(OUT, encoding="utf-8") as f:
                 if f.readline().strip().split(",") != list(rows[0]):
                     f.close()
@@ -447,6 +558,53 @@ def run_live(a, hist, fc):
             if new:
                 w.writeheader()
             w.writerows(rows)
+        if not a.race:
+            write_dashboard(a, now, cards, mk)
+
+
+HIST_COLS = ["ts_utc", "pct", "margin", "v1_proj", "v1_sd", "p_v1", "v0_proj", "p_mkt", "p_model", "model_proj",
+             "p_now", "implied", "implied_sd"]
+
+
+def write_dashboard(a, now, cards, mk):
+    """data/raw/dashboard/live_data.js for dashboard.html: this pass's races (with county tracking), each
+    race's history tonight from projections.csv, Senate/House control prices and feed times. Written to a
+    temporary file and swapped in, so the page never reads half a file."""
+    hist = pd.read_csv(OUT)
+    hist = hist[hist.date.astype(str) == a.date]
+    for c in cards:
+        h = hist[hist.race == c["race"]][HIST_COLS]
+        if len(h) > 400:                       # keep the page light: thin to ~400 points, always the latest
+            h = pd.concat([h.iloc[:: max(len(h) // 400, 1)], h.iloc[[-1]]]).drop_duplicates("ts_utc")
+        c["history"] = [{k: (None if v != v else v) for k, v in r.items()} for r in h.to_dict("records")]
+    control = {}
+    for key in ("US-Senate", "US-House"):
+        books = latest_books(mk, key)
+        control[key] = dict(p=_r(market_now(books)),
+                            books={v: dict(bid=_r(s["D"]["bid"]), ask=_r(s["D"]["ask"]))
+                                   for v, s in books.items() if "D" in s})
+    m_ts = [g.ts_utc.max() for r in mk.values() for g in r.values()]
+    n_ts = [c["nyt_utc"] for c in cards if c.get("nyt_utc")]
+    data = dict(generated=now, date=a.date, baseline=a.baseline, model_margin_sd=MODEL_MARGIN_SD,
+                dry_run=getattr(a, "dry_run", None),
+                markets_utc=max(m_ts) if m_ts else None, nyt_utc=max(n_ts) if n_ts else None,
+                control=control, races=cards)
+    d = os.path.join(ROOT, "data", "raw", "dashboard")
+    os.makedirs(d, exist_ok=True)
+    tmp = os.path.join(d, "live_data.js.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write("window.LIVE = " + json.dumps(data, separators=(",", ":"), default=_json_default) + ";\n")
+    os.replace(tmp, os.path.join(d, "live_data.js"))
+
+
+def _json_default(x):
+    if isinstance(x, (np.integer,)):
+        return int(x)
+    if isinstance(x, (np.floating,)):
+        return None if x != x else float(x)
+    if isinstance(x, (np.bool_,)):
+        return bool(x)
+    raise TypeError(type(x))
 
 
 def run_backtest(hist):
@@ -506,12 +664,20 @@ def main():
         return
     fc = load_forecast()
     while True:
-        run_live(a, hist, fc)
         if not a.watch:
+            run_live(a, hist, fc)
             break
+        try:                       # a half-written capture (the recorders write while we read) must not end the night
+            run_live(a, hist, fc)
+        except Exception as e:     # noqa: BLE001
+            print(f"\n{dt.datetime.now(dt.timezone.utc):%H:%M:%SZ} pass failed, retrying next pass: "
+                  f"{type(e).__name__}: {e}")
         sys.stdout.flush()
         time.sleep(a.watch)
-        fc = load_forecast()
+        try:
+            fc = load_forecast()
+        except Exception:          # noqa: BLE001  - keep the last forecast if the file is mid-refresh
+            pass
 
 
 if __name__ == "__main__":

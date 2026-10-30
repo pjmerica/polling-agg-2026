@@ -35,8 +35,8 @@ Started 2026-10-28.
 | Historical check, 2024 (`market_history.py`, `market_check.py`) | **Done** 2026-10-28: 65 races, minute prices from both venues against NYT's count |
 | Primaries vs the markets (`primary_check.py`) | **Done and published** 2026-10-29: 54 primaries against the 2024 generals, on the dashboard page [primaries-vs-markets.html](https://pjmerica.github.io/polling-agg-2026/primaries-vs-markets.html) |
 | Projector v1, county by county (`county_project.py`, wired into `live_project.py`) | **Built and tested 2026-10-29.** Beats v0 and the visible margin in 2020 (also leave-one-state-out) and in 2022 out of sample (miss 1.1 vs v0 4.1, visible 1.9). **Against the 2024 markets it is worse on average** (Brier .050 vs .035; trading every edge lost $1.41 over 29 trades). Only "flips" paid, where v1 gives a side ~50% that the market prices far lower: 3 trades, +$1.21 (Slotkin 15c, Rosen 33c won; one Nevada flip lost). The live table marks these `FLIP`. Weakest where absentees come last inside big counties (MI 2020) and where NYT's expected vote is off (OH 2020) |
+| **Election-night dashboard** (`dashboard.html`, `scripts/run_dashboard.cmd`) | **Built 2026-10-30**, dry-run on 2024's count (`dry_run.py`). Every race live: projection, whether the votes are coming in over or under our model (statewide and county by county), the markets, best buy, FLIP alerts, history through the night |
 | Pre-election Monte Carlo: thousands of simulated nights, a threshold sheet per state | To build, on v1 |
-| Election-night console page with alerts | To build |
 
 ## Layout
 
@@ -44,7 +44,10 @@ Started 2026-10-28.
 |---|---|
 | `METHODS.md` | How the projector works, the backtest, what it can't do, the v1 plan |
 | `scripts/capture_markets.py` | Records Kalshi and Polymarket books every 20 s -> `data/raw/markets/{ET date}/{kalshi,polymarket}.csv` |
-| `scripts/live_project.py` | The live table (v1 where the counties line up, v0 beside it), what-ifs, v0 backtest |
+| `dashboard.html` | The election-night dashboard. Open it from this folder; it reads `data/raw/dashboard/live_data.js` every 15 s |
+| `scripts/run_dashboard.cmd` | Opens the dashboard and runs the projector every 30 s (leave its window open all night) |
+| `scripts/dry_run.py` | Replays 2024's archived count through the projector and dashboard (`data/raw/dryrun/`), to check everything before Tuesday |
+| `scripts/live_project.py` | The live table (v1 where the counties line up, v0 beside it), the dashboard's data file, what-ifs, v0 backtest |
 | `scripts/county_project.py` | Projector v1: county by county, simulated (METHODS.md) |
 | `scripts/county_replay.py` | Replays v1 through the 2020 count (`--tune` tries settings) -> `data/processed/county_replay_2020.csv` |
 | `scripts/fetch_wayback_full.py` | Downloads whole Internet Archive captures of NYT's 2022/2024 results files (votes by candidate per county) for the out-of-sample replay -> `data/raw/wayback_full/` |
@@ -118,6 +121,37 @@ Standby suspends background programs. Keep the PC plugged in with the lid open o
 Remove the tasks after the election:
 `Get-ScheduledTask -TaskName "ElectionSim-*" | Unregister-ScheduledTask -Confirm:$false`
 
+## The dashboard
+
+Double-click `scripts\run_dashboard.cmd` (or run `py "Election night simulator/scripts/live_project.py" --watch 30`
+and open `Election night simulator/dashboard.html`). It runs on this PC: the data changes every 20 s to 2 min,
+faster than GitHub Pages rebuilds.
+
+- **Header:** how long ago the projector, the markets and NYT last wrote (amber, then red when stale), and the
+  Senate and House control prices.
+- **Alerts:** FLIPs (one row each), and races where the counted votes run 3+ points off our model.
+- **A card per race**, in poll-closing order:
+  - the margin on a scale: on screen, projected final with its 80% band, counted votes alone, our model, the
+    market at the close;
+  - **over/under:** "Turek running 2.6 pts under our model, -2,156 net votes vs expected so far";
+  - win chances: projector, model start, market; both books; the best buy; a sparkline of the night.
+- **Click a card** (or open `dashboard.html#MI-Sen`) for the race's charts and its county table:
+  - win chance and margin through the night;
+  - every county's counted share against the share expected if the state lands on our model's margin, the
+    share a tie needs, over/under in points and in net votes, and votes left. Sortable, searchable.
+- **"Counted votes alone"** is v1's shift from the counted counties only, with no starting point, turned into
+  a statewide margin. Comparing it with our model's margin is the over/under. The projected final also uses the
+  market's starting point and the uncounted votes.
+
+Alaska reports by House district, so it has no county tracking. Maine reports by town; the projector adds
+the towns up into counties (before 2026-10-30 each town overwrote the last).
+
+**Dry run:** `py "Election night simulator/scripts/dry_run.py"` replays the Internet Archive's 2024
+presidential count in the 12 states, in time order, with today's market books. Add `--until 2024-11-06T05:30` to
+stop mid-count, and `--pause 0` to go fast. The prices don't move and 2024 isn't 2026, so its FLIPs and big
+over/unders are meaningless: it checks the plumbing. Run the real projector once afterwards (or just start
+`run_dashboard.cmd`) to replace the dry-run data.
+
 ## Running the projector
 
 ```
@@ -161,7 +195,8 @@ model point the same way.
 1. Before Nov 3: `ElectionSim-MarketsCheck` runs daily; check `data/raw/markets/capture.log` for 35 Kalshi and
    34 Polymarket markets. `StateResults-SlugCheck` confirms NYT's file names.
 2. Nov 3 from noon ET: markets record. From 6:30 pm ET: NYT records (`StateResults-ElectionNight`).
-3. From 7 pm ET: `live_project.py --watch 60`. Look at rows marked `FLIP`: v1 gives a side ~50% that the market
+3. Before 7 pm ET: start `scripts\run_dashboard.cmd` and leave its window open. Watch the dashboard's header:
+   all three feeds should stay under a few minutes old. Look at rows marked `FLIP`: v1 gives a side ~50% that the market
    prices far lower, with 20%+ counted. That is the only kind of edge that paid in the 2024 test (Michigan and
    Nevada Senate). Other best buys are v1 rating a longshot higher than the market; those lost in 2024. Treat
    any best buy as a prompt to look, not a trade. That goes double for rows with `?`. The 2024 misses
