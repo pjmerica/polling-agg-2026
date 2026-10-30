@@ -79,10 +79,20 @@ def prior_shift(L, w, p_win, prior_margin_sd=6.0):
     return solve_shift(L, w, 0.5 + m / 200)
 
 
-def project(units, L, w, p0=None, params=None, rng=None):
+def margin_shift(L, w, m_two, sd_two):
+    """A starting two-party margin (points) and its standard error -> (log-odds shift, its standard error)."""
+    s0 = solve_shift(L, w, 0.5 + m_two / 200)
+    hi = solve_shift(L, w, min(0.5 + (m_two + sd_two) / 200, 0.995))
+    lo = solve_shift(L, w, max(0.5 + (m_two - sd_two) / 200, 0.005))
+    return s0, (hi - lo) / 2
+
+
+def project(units, L, w, p0=None, params=None, rng=None, m0=None):
     """units: {county: dict(d, r, total, expected)} - counted votes for the two sides, all votes counted,
     NYT's expected total. L: {county: lean}; w: {county: turnout share} (sums to 1). p0: starting
-    P(non-Republican wins) or None. -> dict(mu, sd, p_win, shift, shift_se, counted_pct, n_counties)."""
+    P(non-Republican wins) or None. m0: starting point as (final margin, its sd) in points of all votes
+    (our margin model), used instead of p0.
+    -> dict(mu, sd, p_win, shift, shift_se, counted_pct, n_counties)."""
     P = dict(PARAMS, **(params or {}))
     rng = rng or np.random.default_rng(0)
     keys = [k for k in units if k in L]
@@ -116,9 +126,14 @@ def project(units, L, w, p0=None, params=None, rng=None):
     else:
         shift, se = 0.0, 10.0
     # 3. starting point
-    if p0 is not None:
-        s0 = prior_shift(L, w, p0)
-        a, b = 1 / se ** 2, 1 / P["prior_sd"] ** 2
+    s0 = None
+    if m0 is not None:
+        ts = two.sum() / max(tot.sum(), 1) if two.sum() >= 1000 else 0.97     # all-vote -> two-party margin
+        s0, s0_sd = margin_shift(L, w, m0[0] / ts, m0[1] / ts)
+    elif p0 is not None:
+        s0, s0_sd = prior_shift(L, w, p0), P["prior_sd"]
+    if s0 is not None:
+        a, b = 1 / se ** 2, 1 / s0_sd ** 2
         shift, se = (a * shift + b * s0) / (a + b), math.sqrt(1 / (a + b))
 
     # 4-5. uncounted votes, simulated

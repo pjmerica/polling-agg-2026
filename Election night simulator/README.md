@@ -124,7 +124,7 @@ Remove the tasks after the election:
 py "Election night simulator/scripts/live_project.py"                    # once: every race, latest captures
 py "Election night simulator/scripts/live_project.py" --watch 60         # every 60 s
 py "Election night simulator/scripts/live_project.py" --race KS-Sen --pct 40 --margin 12    # what-if
-py "Election night simulator/scripts/live_project.py" --baseline model   # edges against our model instead
+py "Election night simulator/scripts/live_project.py" --baseline model   # best buy from our margin model instead
 py "Election night simulator/scripts/live_project.py" --backtest         # leave-one-year-out check
 ```
 
@@ -138,7 +138,7 @@ non-Republican wins):
 | `counted`, `margin` | NYT's share of the expected vote counted (`eevp`) and the visible margin |
 | `v1 proj`, `+/-80%`, `P v1` | Projector v1 (county by county): projected final margin, the half-width of its 80% band, and P(win). It starts from the markets' price at poll close by default (`--baseline model` for our model), so its edge comes from the count. Blank where the live counties don't line up with the benchmarks (Alaska's districts); then v0 is used |
 | `P v0` | The statewide projector from the same starting point. A `?` before the row means v0 is in use and past years' late votes leaned opposite ways at this point in the count, so the direction is a guess |
-| `P mod` | v0 starting from our model's win probability instead |
+| `P mod` | The same projection started from **our margin model** instead of the market (v1 where it runs, else v0): the model's projected margin from `docs/forecast_data.js`, give or take 6.1 points (its held-out 2018-24 miss). Before the count it is the margin model's own chance, which can differ from the win chance on the forecast page (a separate model): GA-Gov is +1.2 points but 78% |
 | `close` | The market price at poll close that `P mkt` starts from: the last capture before the close, averaged over venues |
 | `K`, `PM bid/ask` | The non-Republican contract on Kalshi and Polymarket, latest pass |
 | `best buy` | The best taker buy across both venues and both sides, with its expected value per $1 contract after fees, and which projector it used (v1 where available). Before the count starts it should sit at about minus the spread. `FLIP`: v1 gives the side 45%+ while the market prices it far lower, with 20%+ counted |
@@ -147,7 +147,14 @@ Example: `KS-Sen 40.0% +12.0 | -2.2 7.1 0.35 ...` means that with 40% counted an
 history projects Marshall by 2.2. That is the early Democratic lead fading.
 
 Maine and Alaska are first-round margins. Ranked-choice tabulation can still change the winner there, and
-both settle days or weeks later.
+both settle days or weeks later. Our model's margin there is the final-round head-to-head, so `P mod` mixes
+the two.
+
+**Market or model as the starting point.** The default (`market`) makes the best-buy edge come from the count
+alone. `--baseline model` adds the model's disagreement with the market, which is untested: there are no
+archived 2022/2024 forecasts. A stand-in with the model's error size helps most under 50% counted and barely
+matters after (METHODS.md). When `P mod` and `P v1` agree and both differ from the market, the count and the
+model point the same way.
 
 ## Election-night checklist
 

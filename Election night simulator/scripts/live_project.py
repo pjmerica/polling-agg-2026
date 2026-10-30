@@ -8,7 +8,8 @@ timelines (State election results/data/processed/state_timeseries.csv) this lear
 = how much more Democratic (non-Republican) the uncounted votes were than the counted ones.
 Live:
     count estimate   final ~ N(m + (1 - p) * g_mean, ((1 - p) * g_sd)^2)
-    model baseline   final ~ N(prior_sd * Phi^-1(model win prob), prior_sd^2)
+    baseline         final ~ N(prior_sd * Phi^-1(market price at poll close), prior_sd^2), or
+                     final ~ N(our margin model's margin, MODEL_MARGIN_SD^2)
 combined by precision (early in the count the baseline dominates, late the count does),
 -> P(the non-Republican wins), compared with the best Kalshi/Polymarket asks after fees.
 
@@ -177,16 +178,20 @@ def load_forecast():
 
 
 FC_ID = {"OH-Sen": "2026_OH_Senate-S"}     # Ohio's Senate race is the special election
+# Our margin model's error as a standard deviation: held-out 2018-24 margin MAE 4.85 (model repo HANDOFF,
+# 2026-10-29) x 1.25 (sd / MAE for a normal error). Its published win chance comes from a separate model and
+# can disagree (GA-Gov: +1.2 margin, 78% win); the projector forecasts margins, so it starts from the margin.
+MODEL_MARGIN_SD = 6.1
 
 
 def prior_for(fc, race_key):
-    """Model baseline for the non-Republican: (name, win prob)."""
+    """Model baseline for the non-Republican: (name, win prob, margin in points of all votes)."""
     st, off = race_key.split("-")
     r = fc.get(FC_ID.get(race_key, f"2026_{st}_{OFFICE[off]}"))
     if not r:
         return None
     opp = max((c for c in r["cands"] if c["party"] != "REP"), key=lambda c: c["win"])
-    return opp["name"], opp["win"]
+    return opp["name"], opp["win"], opp.get("margin")
 
 
 def latest_nyt(date, race_key):
@@ -240,15 +245,16 @@ def benchmarks(race_key):
     return L, {k: v / s for k, v in w.items()}
 
 
-def v1(nyt, race_key, p0):
-    """Projector v1 (county_project.py) when the live counties line up with the benchmarks."""
+def v1(nyt, race_key, p0=None, m0=None):
+    """Projector v1 (county_project.py) when the live counties line up with the benchmarks. Starts from
+    p0 (a win probability: the markets) or m0 (margin, sd: our margin model)."""
     b = benchmarks(race_key)
     if not b or not nyt.get("units") or nyt["pct"] <= 0:
         return None
     L, w = b
     if sum(1 for k in nyt["units"] if k in L) < 0.9 * len(nyt["units"]):
         return None                        # different units (Alaska's districts, Maine's towns)
-    return county_project.project(nyt["units"], L, w, p0=p0)
+    return county_project.project(nyt["units"], L, w, p0=p0, m0=m0)
 
 
 def _is_rep(venue, outcome, market):
@@ -348,13 +354,16 @@ RACES = ["GA-Gov", "SC-Sen", "OH-Gov", "OH-Sen", "MI-Sen", "TX-Sen", "TX-Gov", "
          "ME-Sen", "IA-Sen", "NE-Sen", "NV-Gov", "OR-Gov", "AK-Sen"]     # poll-closing order
 
 
-def _with_baseline(hist, state, nyt, p0, prior_sd):
-    """Projection from a baseline P(non-Republican) p0 (model or market), or None."""
-    if p0 is None:
+def _with_baseline(hist, state, nyt, p0, prior_sd, m0=None):
+    """v0 from a baseline: P(non-Republican) p0 (the markets) or m0 = (margin, sd) (our margin model), or None."""
+    if m0 is not None:
+        mu0, prior_sd = m0
+    elif p0 is not None:
+        mu0 = prior_sd * phi_inv(p0)
+    else:
         return None
-    mu0 = prior_sd * phi_inv(p0)
     if nyt["pct"] <= 0:
-        return dict(mu=mu0, sd=prior_sd, p_win=p0, steady=None)
+        return dict(mu=mu0, sd=prior_sd, p_win=phi(mu0 / prior_sd), steady=None)
     return project(hist, state, nyt["pct"], nyt["margin"], mu0, prior_sd)
 
 
@@ -375,12 +384,16 @@ def run_live(a, hist, fc):
         else:
             nyt = latest_nyt(a.date, race) or dict(pct=0.0, margin=0.0, stamp="-", units={})
         p_close = market_baseline(mk, race, close_utc(a.date, state))
-        p_model = pr[1] if pr else None
-        p0 = p_close if a.baseline == "market" and p_close is not None else p_model
+        m0 = (pr[2], MODEL_MARGIN_SD) if pr and pr[2] is not None else None
         by_mkt = _with_baseline(hist, state, nyt, p_close, a.prior_sd)
-        by_mod = _with_baseline(hist, state, nyt, p_model, a.prior_sd)
-        v0res = (by_mkt if a.baseline == "market" else by_mod) or by_mod or by_mkt
-        v1res = v1(nyt, race, p0)
+        by_mod = _with_baseline(hist, state, nyt, None, a.prior_sd, m0=m0)
+        v1_mkt = v1(nyt, race, p0=p_close) if p_close is not None else None
+        v1_mod = v1(nyt, race, m0=m0) if m0 else None
+        if a.baseline == "market" and p_close is not None:
+            v0res, v1res = by_mkt, v1_mkt
+        else:                                  # --baseline model, or no market price at the close
+            v0res, v1res = by_mod or by_mkt, v1_mod or v1_mkt
+        mod = v1_mod or by_mod                 # the 'P mod' column: from our margin model, v1 where it runs
         res = v1res or v0res
         books = latest_books(mk, race)
         bt = best_trade(res["p_win"], books) if res else None
@@ -404,7 +417,7 @@ def run_live(a, hist, fc):
         p1 = f"{v1res['mu']:+7.1f} {1.2816 * v1res['sd']:6.1f} {v1res['p_win']:5.2f}" if v1res else \
             f"{'-':>7} {'-':>6} {'-':>5}"
         print(f"{race:7} {nyt['pct']:6.1f}% {nyt['margin']:+6.1f} |{flag}{p1} | "
-              f"{f2(v0res and v0res['p_win'])} {f2(by_mod and by_mod['p_win'])} "
+              f"{f2(v0res and v0res['p_win'])} {f2(mod and mod['p_win'])} "
               f"{f2(p_close)} | {ba('kalshi'):>9} {ba('polymarket'):>10} | {trade}")
         rows.append(dict(ts_utc=now, race=race, nyt_file=nyt["stamp"], pct=round(nyt["pct"], 2),
                          margin=round(nyt["margin"], 2), baseline=a.baseline,
@@ -413,9 +426,10 @@ def run_live(a, hist, fc):
                          p_v1=round(v1res["p_win"], 4) if v1res else "",
                          v0_proj=round(v0res["mu"], 2), v0_sd=round(v0res["sd"], 2),
                          p_mkt=round(by_mkt["p_win"], 4) if by_mkt else "",
-                         p_model=round(by_mod["p_win"], 4) if by_mod else "",
+                         p_model=round(mod["p_win"], 4) if mod else "",
+                         model_proj=round(mod["mu"], 2) if mod else "",
                          p_close=round(p_close, 4) if p_close is not None else "",
-                         model=pr[1] if pr else "",
+                         model_win=pr[1] if pr else "", model_margin=pr[2] if pr else "",
                          steady="" if v0res["steady"] is None else int(v0res["steady"]),
                          best_from="v1" if v1res else "v0", flip=int(flip),
                          best_venue=bt[0] if bt else "", best_side=bt[1] if bt else "",

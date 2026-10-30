@@ -140,7 +140,8 @@ v0 sees one number per state. v1 sees every county: how many votes it still has 
 2. **Statewide shift.** Each county with counted votes implies a statewide shift x_c = logit(counted share) -
    L_c. These are averaged with weight = votes counted x (share counted)^6. A half-counted county is mostly
    one kind of ballot: 2020 Wayne counted Election Day first and absentees last.
-3. **Starting point.** The market's price at poll close (or the model) is a prior on the shift.
+3. **Starting point.** The market's price at poll close, or our margin model, is a prior on the shift
+   (below).
 4. **Projection.** Each county's uncounted votes are projected at expit(L_c + shift + k_c x e_c), where e_c
    is the county's own deviation, trusted more as it counts more.
 5. **Simulation.** 4,000 runs, with:
@@ -220,6 +221,40 @@ as the live tool runs):
 point the other way. It is not for shaving longshots, and on average it is not better than the market.
 The flip rule was found on the 2024 test set (3 cases, 2 won), so treat a FLIP as a prompt to look at
 which counties are left, not a trading rule.
+
+## Starting from our margin model (2026-10-30)
+
+The table's `P mod` column, and the best buy under `--baseline model`, start v1 (or v0) from our margin
+model instead of the market:
+- **Prior:** the model's projected margin for the non-Republican (`docs/forecast_data.js`, `cands[].margin`,
+  points of all votes), with a 6.1-point standard deviation. That is the model's held-out 2018-24 miss (MAE
+  4.85, model repo HANDOFF 2026-10-29) x 1.25.
+- **On the county scale:** the margin is turned into a two-party margin (divided by the counted two-party
+  share, or 0.97 before 1,000 votes), and then into the uniform county shift that produces it
+  (`county_project.margin_shift`). Its standard error is the shift change for +/-1 sd of margin.
+- **Why the margin, not the win chance:** the projector forecasts margins. The forecast page's win chance comes
+  from a separate model and can disagree. In GA-Gov the margin model has +1.2 points (58% at a 6.1 sd), while
+  the win model has 78%.
+- **Maine and Alaska:** the model's margin is the final ranked-choice round, but the count is the first round.
+
+**Not backtested against history.** There are no archived 2022/2024 forecasts, and the model repo keeps no
+held-out margins per race. As a stand-in, v1 was run on the 2022/2024 snapshots (36 races, 181 snapshots)
+with prior = final margin + N(0, 6.1), 5 draws each. This is a model with the real model's error size but no
+shared bias with the count:
+
+| Counted | Miss, no start | Miss, from model | Brier, no start | Brier, from model | Brier, prior alone |
+|---|---|---|---|---|---|
+| 5-25% | 3.95 | 3.28 | 0.165 | 0.146 | 0.138 |
+| 25-50% | 4.41 | 3.91 | 0.087 | 0.072 | 0.075 |
+| 50-75% | 0.77 | 0.76 | 0.057 | 0.058 | 0.115 |
+| 75-99% | 0.55 | 0.53 | 0.042 | 0.041 | 0.159 |
+
+The model matters under 50% counted and fades as the count takes over, as intended. The 80% bands stay
+about as wide (96% inside, as with no start; v1 is wide on these years).
+
+This says nothing about whether the model beats the market's price at the close, which is the real
+question for trading. Against 2024's markets v1 started from the market. A real model would also share
+polling errors with the market. The default stays `market`; read `P mod` as a second opinion.
 
 ## v1 next steps (from the original plan)
 
