@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[3730e7e0]` Election night simulator: live dashboard with over/under tracking (2026-10-30).
+  - `dashboard.html` runs on the user's PC (the data changes every 20 s to 2 min, faster than Pages rebuilds) and reloads `data/raw/dashboard/live_data.js` every 15 s; `live_project.py` writes it each pass. Per race: projection with band, what the counted votes alone imply vs our model's margin ("running 2.6 pts under, -2,156 net votes"), win chances, books, best buy, FLIP alerts and the night's history; click for charts and a county table (counted share vs expected at our model's margin, tie share, net votes, votes left). `run_dashboard.cmd` starts it; `dry_run.py` replays 2024's archived count through it.
+  - Fixes found by the dry run: Maine reports by town and each town overwrote the last in its county (v1 said -1.8 at 97% counted for a +6.9 result); market captures after midnight ET are now read (prices would have frozen overnight); a failed pass no longer ends `--watch`.
+
 - `[5492fa83]` Election night simulator: start from our margin model (P mod, --baseline model) (2026-10-30).
   - The projector forecasts margins, so `P mod` and `--baseline model` now start from the margin model's projected margin (`forecast_data.js` `cands[].margin`, sd 6.1 = held-out MAE 4.85 x 1.25) instead of the win chance, which comes from a separate model (GA-Gov: +1.2 pts but 78%). v1 now runs from it too (`county_project.margin_shift`); before, `P mod` was v0 only.
   - Not backtestable (no archived 2022/2024 forecasts). A stand-in with the model's error size on the 2022/2024 snapshots cuts the miss under 50% counted (3.95 -> 3.28 at 5-25%) and changes little after. The default stays the market.
