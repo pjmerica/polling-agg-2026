@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[df50ff36]` Pages: chances past 99% show as >99% (under 1% as <1%) (2026-10-30). The forecast page, map and dashboard printed 100.0% for 35 races (LA-5 from one April poll naming 23% of the vote) while the model's held-out record can't separate 99% from 99.99%. The shared percent formatter in `predictions.html`, `map.html` and `index.html` caps the display; bars, shading and the data are unchanged. Unopposed candidates also read >99%, since the data rounds near-certain contested races to 1.0 too.
+
 - `[91cdbfc8]` Election night map: light middle, deep red and blue for lopsided counties (2026-10-30). County fills were party colours faded in by alpha over the dark page, so even counties looked dark (user: "I would prefer dark red be really red areas"). Now an opaque diverging scale: light grey at even, deepening to dark red / dark blue; full colour at 80% for one side (10 points for over/under).
 
 - `[9cd52fbd]` Election night dashboard: back to the card layout, plus a county map tab (2026-10-30).
