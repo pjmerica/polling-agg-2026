@@ -15,6 +15,12 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[37154c3c]` Map: Polymarket margin on the Margin view, from its margin-of-victory ladders (2026-10-30).
+  - `analysis/margin_markets.py` reads Polymarket's bracket markets ("Democrat by 3%-6%", ..., "Republican by 6% or more"; about 400 races). It outputs the median of the normalized ladder, the most likely bracket, the ladder's Democratic share and volume. `regen_data.py` writes these to `data.js` as `polymarket_margin` on every market refresh.
+  - **One-sided ladders:** 281 of 394 ladders list brackets for the favored party only. Normalized alone they read as 100% Republican, e.g. KS-Sen R +8, while Polymarket's winner market had the Democrat at 54%. The unlisted side now takes its chance from the winner market. A race whose median falls on that side is left out (KS-Sen). With no winner book, a one-sided ladder is dropped. First-round ladders (Maine) are skipped.
+  - The Margin view gets an **Our model | Polymarket** source switch. Kalshi's button is disabled there, since Kalshi has only "which race is closer" pairs, no race-by-race margin markets. The table, card and explainer show the ladder beside our margin model, and the glossary covers the new columns. Hash: `#margin-polymarket-senate`. Test: `tests/test_margin_markets.py`.
+  - These brackets still never enter a party leg or the arb scanner (`utils/election_shapes`).
+
 - `[6a0bb7cc]` Map: explainer drawer and a definition for every number; Silver Bulletin dropped (2026-10-30).
   - **Why** (detail card, or beside any race in the table) opens the forecast page's explainer on the map: candidates (win, poll average, margin), the polls-off stress test, model vs Kalshi and Polymarket, race notes, and the win / margin factors. Each factor's definition is always shown, not hidden behind a click.
   - One glossary (`GLOSS` in `map.html`) defines every column and flag. Table headers show it on hover, the page prints it all under "Every number on this page", and the drawer ends with the terms that apply to that race.
