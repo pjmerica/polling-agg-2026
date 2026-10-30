@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[fb81978c]` Election night dashboard: drop Oregon Governor; clicking a race opens its county breakdown (2026-10-30).
+  - Oregon Governor is off live tracking (user call); `capture_markets.py` still records its prices.
+  - The race view leads with the county table. It lists every benchmark county from before the count (share of the state vote, share expected at our model's margin, share a tie needs; biggest first) and fills in counted votes, over/under and net votes as NYT reports (then biggest misses first). Cards say "County breakdown →".
+
 - `[37154c3c]` Map: Polymarket margin on the Margin view, from its margin-of-victory ladders (2026-10-30).
   - `analysis/margin_markets.py` reads Polymarket's bracket markets ("Democrat by 3%-6%", ..., "Republican by 6% or more"; about 400 races). It outputs the median of the normalized ladder, the most likely bracket, the ladder's Democratic share and volume. `regen_data.py` writes these to `data.js` as `polymarket_margin` on every market refresh.
   - **One-sided ladders:** 281 of 394 ladders list brackets for the favored party only. Normalized alone they read as 100% Republican, e.g. KS-Sen R +8, while Polymarket's winner market had the Democrat at 54%. The unlisted side now takes its chance from the winner market. A race whose median falls on that side is left out (KS-Sen). With no winner book, a one-sided ladder is dropped. First-round ladders (Maine) are skipped.
