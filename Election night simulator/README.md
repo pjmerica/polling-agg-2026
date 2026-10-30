@@ -4,8 +4,9 @@ Goal: on Nov 3, 2026, catch Kalshi and Polymarket prices that misread the vote c
 reports, the projector estimates where the count will finish from what is still uncounted, turns that into
 a win probability, and sets it against the live order books after fees.
 
-It covers the 15 competitive Governor and Senate races from `../State election results/competitive_races.md`,
-plus Senate and House control (prices only).
+It covers 14 competitive Governor and Senate races from `../State election results/competitive_races.md`,
+plus Senate and House control (prices only). Oregon Governor was dropped from live tracking on 2026-10-30;
+the market recorder still saves its prices.
 
 That folder has the research (how each state counts, past swings, county benchmarks) and records NYT's
 results. This folder records the markets, projects the count and compares the two. **Method and backtest:

@@ -275,32 +275,41 @@ def tracking(nyt, race_key, v1res, m0, p_close):
     no starting point), with its sd. expected: our margin model. market: the margin the poll-close price
     implies (6-point spread). Per county: the counted two-party share against the share expected there if
     the state lands on our model's margin, and the share a tied statewide result needs. net: votes the
-    non-Republican is ahead (+) or behind (-) of that expectation, as net margin."""
+    non-Republican is ahead (+) or behind (-) of that expectation, as net margin.
+    Every benchmark county is listed from before the count (its share of the state's vote, the share
+    expected there, the share a tie needs); counted votes fill in as NYT reports them. None when the live
+    units don't line up with the benchmarks (Alaska's districts once results come in)."""
     b = benchmarks(race_key)
-    if not b or not v1res:
+    if not b:
         return None
+    units = nyt.get("units") or {}
     L, w = b
-    names = {c["f"]: c.get("n") for c in (bench_record(race_key) or {}).get("counties", [])}
-    ts = v1res["two_share"] or 0.97
+    if units and sum(1 for k in units if k in L) < 0.9 * len(units):
+        return None
+    rec = bench_record(race_key) or {}
+    bc = {c["f"]: c for c in rec.get("counties", [])}
+    ts = (v1res or {}).get("two_share") or 0.97
     cp = county_project
     implied = sd = None
-    if v1res["n_counties"]:
+    if v1res and v1res["n_counties"]:
         s, se = v1res["count_shift"], v1res["count_shift_se"]
         implied = cp.shift_margin(L, w, s, ts)
         sd = (cp.shift_margin(L, w, s + se, ts) - cp.shift_margin(L, w, s - se, ts)) / 2
     s_mod = cp.margin_shift(L, w, m0[0] / ts, 1.0)[0] if m0 else None
     counties, net_all = [], 0.0
-    for f, u in nyt["units"].items():
-        if f not in L:
-            continue
+    zero = dict(d=0, r=0, total=0, expected=0)
+    for f in L:
+        u = units.get(f, zero)
         two = u["d"] + u["r"]
         tie = float(cp.expit(L[f]))
         exp_ = float(cp.expit(L[f] + s_mod)) if s_mod is not None else None
         share = u["d"] / two if two >= 50 else None
         net = (u["d"] - u["r"]) - (2 * exp_ - 1) * two if share is not None and exp_ is not None else None
         net_all += net or 0
-        expected = max(u["expected"] or 0, u["total"])
-        counties.append(dict(n=names.get(f) or u.get("name") or f, f=f,
+        # NYT's expected vote once it reports; before that the county's benchmark turnout
+        expected = max(u["expected"] or bc.get(f, {}).get("v") or 0, u["total"])
+        counties.append(dict(n=bc.get(f, {}).get("n") or u.get("name") or f, f=f,
+                             w=round(w.get(f, 0), 4),
                              pct=round(100 * u["total"] / expected, 1) if expected else 0.0,
                              share=round(share, 4) if share is not None else None,
                              exp=round(exp_, 4) if exp_ is not None else None, tie=round(tie, 4),
@@ -308,7 +317,7 @@ def tracking(nyt, race_key, v1res, m0, p_close):
                              left=round(max(expected - u["total"], 0)), votes=u["total"]))
     return dict(implied=implied, implied_sd=sd, expected=m0[0] if m0 else None,
                 market=PRIOR_SD * phi_inv(p_close) if p_close is not None else None,
-                net=round(net_all), counties=counties)
+                net=round(net_all), unit=rec.get("unit") or "county", counties=counties)
 
 
 def _is_rep(venue, outcome, market):
@@ -410,7 +419,8 @@ def best_trade(p_win, books):
 # ---------- modes ----------
 
 RACES = ["GA-Gov", "SC-Sen", "OH-Gov", "OH-Sen", "MI-Sen", "TX-Sen", "TX-Gov", "KS-Sen", "KS-Gov",
-         "ME-Sen", "IA-Sen", "NE-Sen", "NV-Gov", "OR-Gov", "AK-Sen"]     # poll-closing order
+         "ME-Sen", "IA-Sen", "NE-Sen", "NV-Gov", "AK-Sen"]     # poll-closing order
+# OR-Gov dropped from live tracking 2026-10-30 (user call); capture_markets.py still records its prices
 
 
 def _with_baseline(hist, state, nyt, p0, prior_sd, m0=None):
