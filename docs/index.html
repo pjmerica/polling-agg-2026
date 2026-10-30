@@ -422,7 +422,8 @@ html, body { overflow-x: hidden; }
   const AB = { DEM: 'D', REP: 'R', IND: 'I', LIB: 'L', GRE: 'G' };
   const ab = p => AB[p] || (p ? p[0] : 'O');
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const pct = v => (v * 100).toFixed(0) + '%';
+  // chances past 99% (or under 1%) show as >99% / <1%: the model can't support more precision there
+  const pct = v => v > 0.99 ? '&gt;99%' : v > 0 && v < 0.01 ? '&lt;1%' : (v * 100).toFixed(0) + '%';
   const ord = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
   // surname for bar labels, skipping Jr./III ('Rob Bresnahan Jr.' read 'Jr.')
   const lastName = n => { const w = String(n).replace(/\(.*?\)/g, '').trim().split(/\s+/)

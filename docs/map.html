@@ -265,7 +265,8 @@ a:hover { text-decoration: underline; }
   const SUFFIX = new Set(['jr.', 'jr', 'sr.', 'ii', 'iii', 'iv']);
   const surname = n => { const w = String(n).split(' ').filter(x => x && !SUFFIX.has(x.toLowerCase())); return w.length ? w[w.length - 1] : n; };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const pct = (p, d) => (p * 100).toFixed(d == null ? 1 : d) + '%';
+  // chances past 99% (or under 1%) show as >99% / <1%: the model can't support more precision there
+  const pct = (p, d) => p > 0.99 ? '&gt;99%' : p > 0 && p < 0.01 ? '&lt;1%' : (p * 100).toFixed(d == null ? 1 : d) + '%';
   const NAMES = {};
   if (M) for (const ab in M.states) NAMES[ab] = M.states[ab].name;
 
