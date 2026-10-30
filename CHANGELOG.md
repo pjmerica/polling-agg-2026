@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[24d56561]` Election night simulator: start from our margin model (P mod, --baseline model) (2026-10-30).
+  - The projector forecasts margins, so `P mod` and `--baseline model` now start from the margin model's projected margin (`forecast_data.js` `cands[].margin`, sd 6.1 = held-out MAE 4.85 x 1.25) instead of the win chance, which comes from a separate model (GA-Gov: +1.2 pts but 78%). v1 now runs from it too (`county_project.margin_shift`); before, `P mod` was v0 only.
+  - Not backtestable (no archived 2022/2024 forecasts). A stand-in with the model's error size on the 2022/2024 snapshots cuts the miss under 50% counted (3.95 -> 3.28 at 5-25%) and changes little after. The default stays the market.
+
 - `[525ef3f1]` Election night simulator: v1 numbers on the complete 2022/2024 downloads (2026-10-29).
   - 2022 (17 races, 104 snapshots): miss 1.1 pts vs v0 4.1 and visible 1.9; Brier .096 / .166 / .159.
   - 2024 against the markets (67 snapshots, 21 races): Brier v1 .050 vs market .035. Trading every 5c edge: 29 trades, -$1.41. Flips with 20%+ counted: 3 trades, +$1.21 (one new Nevada flip lost). Docs now say plainly that v1 is not better than the market on average.
