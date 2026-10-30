@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` Election night simulator: v1 tested out of sample and against the 2024 markets (2026-10-29).
+- `[755ac07f]` Election night simulator: v1 tested out of sample and against the 2024 markets (2026-10-29).
   - Leave-one-state-out on 2020: held-out miss 3.4 pts vs 7.2 for the visible margin. 2022 (whole Internet Archive captures, leans from other years; mostly the late count): miss 1.4 vs v0 2.3 and visible 2.0, Brier .142 / .161 / .259.
   - 2024 against the markets (44 snapshots, 16 races): Brier v1 .047 vs market .045. v1's edges paid only on flips (Slotkin at 15c with v1 55%, +84c; Rosen at 33c, v1 48%, +66c). Edges where v1 merely priced a longshot higher than the market lost -$1.28, as did a flip at 6% counted. The live table now marks `FLIP` (v1 45%+, 20%+ counted).
   - Shared late-ballot error set to 0.3: 2020 alone preferred 0.45, which was too wide for 2022 and 2024.
