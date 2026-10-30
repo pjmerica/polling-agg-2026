@@ -148,7 +148,7 @@ else:
 # (utils/election_shapes allowlist, vig-normalized per venue, averaged across venues).
 from utils.races import ALL_RACES_2026
 from analysis.model_compare import load_party_markets, norm_pair
-from analysis.margin_markets import polymarket_margins
+from analysis.margin_markets import polymarket_margins, kalshi_margins
 
 def _venue_dem(book):
     d = book.get('DEM', {}).get('prob'); r = book.get('REP', {}).get('prob')
@@ -177,6 +177,17 @@ for _name, _csv, _col in [('kalshi', 'kalshi_markets.csv', 'market_title'),
 # Polymarket's margin-of-victory ladders -> market-implied margin, for the map's Margin view (2026-10-30)
 _pm_margin = polymarket_margins(ROOT / 'data' / 'raw' / 'polymarket_markets.csv',
                                 {rid: _venue_book(bk) for rid, bk in _books['polymarket'].items()})
+# Kalshi's margin thresholds (series KXMIDTERMMOV, 2026-10-30): candidate-named sides (CA top-two, AK-Sen,
+# Osborn) are placed by party through the forecast's candidate list
+def _forecast_cands():
+    p = ROOT / 'docs' / 'forecast_data.js'
+    if not p.exists():
+        return {}
+    s = p.read_text(encoding='utf-8')
+    f = json.loads(s[s.index('{'):s.rindex('}') + 1])
+    return {r['agg_id']: [(c['name'], c['party']) for c in r['cands']] for r in f.get('races', []) if r.get('agg_id')}
+_k_margin = kalshi_margins(ROOT / 'data' / 'raw' / 'kalshi_markets.csv',
+                           {rid: _venue_book(bk) for rid, bk in _books['kalshi'].items()}, _forecast_cands())
 _n_polls = (polls[polls['stage'].astype(str).str.lower().eq('general')]
             .groupby('race_id')['poll_id'].nunique().to_dict()) if not polls.empty else {}
 _now = pd.Timestamp.now(tz='UTC').isoformat()
@@ -197,6 +208,8 @@ for race in ALL_RACES_2026:
         'polymarket': _venue_book(_books['polymarket'].get(rid)),
         # {'m': median margin signed toward the Dem, 'p_d', 'top' bracket, 'lad' ladder, 'vol'} or ''
         'polymarket_margin': _pm_margin.get(rid, ''),
+        # the same shape from Kalshi's "margin of victory ... at least N points" thresholds; p_d may be None
+        'kalshi_margin': _k_margin.get(rid, ''),
         'n_sources': len(quotes) + int(_n_polls.get(rid, 0)),
         'sources': '|'.join(srcs),
         'updated_at': _now,
@@ -204,7 +217,8 @@ for race in ALL_RACES_2026:
 agg = pd.DataFrame(_rows)
 print(f"  data.js: {len(agg)} races, fresh party-market price for "
       f"{int((agg['implied_prob_avg'] != '').sum())}, Polymarket margin ladder for "
-      f"{int((agg['polymarket_margin'] != '').sum())}")
+      f"{int((agg['polymarket_margin'] != '').sum())}, Kalshi margin ladder for "
+      f"{int((agg['kalshi_margin'] != '').sum())}")
 def label(row):
     if row['office'] == 'H':
         d = str(row['district'])
