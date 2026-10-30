@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[91cdbfc8]` Election night map: light middle, deep red and blue for lopsided counties (2026-10-30). County fills were party colours faded in by alpha over the dark page, so even counties looked dark (user: "I would prefer dark red be really red areas"). Now an opaque diverging scale: light grey at even, deepening to dark red / dark blue; full colour at 80% for one side (10 points for over/under).
+
 - `[9cd52fbd]` Election night dashboard: back to the card layout, plus a county map tab (2026-10-30).
   - The user preferred the original cards to the row redesign (d240defd), so `dashboard.html` is fb81978c's layout again.
   - New **Map** tab: the US with every tracked state's counties shaded by over/under vs our model, counted D share, model expectation or share counted; Senate / Governor switch; state labels carry the projector's win chance; click a state to zoom in, hover a county for its numbers, side panel with the race and its biggest misses. Shapes in `county_geo.js` (us-atlas counties, the site map's projection; `build_county_geo.py`, 960 counties, all matching the benchmarks; Alaska stays a plain state). `publish_live.py` and `serve_home.py` carry it.
