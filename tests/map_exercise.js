@@ -7,11 +7,24 @@ const T = window.MAP_TEST;
 if (!T) throw new Error('map.html did not expose MAP_TEST');
 const html = id => document.getElementById(id).innerHTML;
 const count = (s, re) => (s.match(re) || []).length;
-for (const src of ['model', 'kalshi', 'polymarket']) {
+// 2026-10-30: the Margin and Model-vs-markets views, every office, every race card
+for (const [metric, cmp] of [['margin', 'kalshi'], ['cmp', 'kalshi'], ['cmp', 'polymarket'], ['cmp', 'silver']]) {
+  for (const office of ['Senate', 'House', 'Governor']) {
+    Object.assign(T.st, { metric, cmp, src: 'model', office, hv: 'map', vb: null, sel: null, all: true, polledOnly: false });
+    T.render();
+    const n = count(html('rows'), /<tr/g);
+    if (!n && (metric === 'margin' || cmp === 'kalshi')) throw new Error(`${metric}/${cmp} ${office}: empty race table`);
+    if (metric === 'margin' && !/ \+\d+\.\d<\/span>/.test(html('rows'))) throw new Error(`margin ${office}: no margin pills`);
+    for (const k of T.keys(office)) T.card(office, k);
+  }
+}
+Object.assign(T.st, { metric: 'win', sel: null });
+for (const src of ['model', 'kalshi', 'polymarket', 'silver']) {
   for (const office of ['Senate', 'House', 'Governor']) {
     Object.assign(T.st, { src, office, hv: 'map', vb: null, sel: null, all: true });
     T.render();
     if (!count(html('rows'), /<tr/g) && src === 'model') throw new Error(`${src} ${office}: empty race table`);
+    for (const k of T.keys(office)) T.card(office, k);
   }
   T.st.office = 'House';
   T.render();
