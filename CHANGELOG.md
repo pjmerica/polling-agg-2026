@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` Election night simulator: projector v1, county by county (2026-10-29, being validated).
+- `[7561721d]` Election night simulator: projector v1, county by county (2026-10-29, being validated).
   - `county_project.py` projects each county's uncounted votes (NYT's expected vote minus counted) from its benchmark lean plus a statewide shift. The shift is estimated from counties weighted by votes counted x (share counted)^6. The starting point is the market at poll close. It simulates 4,000 runs with shift, county, shared late-ballot and turnout errors. It is wired into `live_project.py`, which uses v1 where the live counties match `county_benchmarks.json`, with v0 beside it.
   - 2020 replay (`county_replay.py`, every Internet Archive snapshot, 10 states, settings tuned on it so in-sample): average miss 3.6 pts vs v0 5.8 and the visible margin 7.9 (20-90% counted); Brier .162 vs .217 / .409; 80% bands hold 78-86%. Michigan and Ohio are its worst cases.
   - `fetch_wayback_full.py` downloads whole 2022/2024 captures (the earlier fetcher kept only county totals) for the out-of-sample 2022 replay and the 2024 market comparison.
