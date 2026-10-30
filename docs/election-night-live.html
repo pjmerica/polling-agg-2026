@@ -84,6 +84,8 @@ dl.rows dd small { color: var(--muted); font-weight: 400; }
 .flag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; color: #1a1300;
         background: var(--warn); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
 svg.spark { width: 100%; height: 46px; display: block; margin-top: 4px; }
+.more { font-size: 12px; color: var(--muted); text-align: right; margin-top: 4px; }
+.card:hover .more { color: var(--text); }
 #detail { display: none; background: var(--panel); border: 1px solid var(--line2); border-radius: 10px;
           padding: 14px 16px; margin-bottom: 14px; }
 #detail h2 { font-size: 17px; margin: 0; }
@@ -180,7 +182,8 @@ function store(k, v) { try { if (v === undefined) return localStorage.getItem("e
                              if (v === null) localStorage.removeItem("enl." + k); else localStorage.setItem("enl." + k, v); }
                        catch (e) { return null; } }
 // dashboard.html#MI-Sen opens that race
-const ui = { sel: location.hash.slice(1) || store("sel"), sortKey: "absnet", sortDir: -1, all: false, q: "", showAll: false };
+// sortKey null = automatic: biggest misses once counties report, biggest counties before
+const ui = { sel: location.hash.slice(1) || store("sel"), sortKey: null, sortDir: -1, all: false, q: "", showAll: false };
 let D = null, loadFails = 0;
 
 function load() {
@@ -363,7 +366,7 @@ function card(r) {
     trackHtml = `<div class="track ${cls}">${esc(last(r.d_name))} running <b>${Math.abs(dev) < 0.05 ? "on" : Math.abs(dev).toFixed(1) + " pts " + (dev > 0 ? "over" : "under")}</b> our model` +
       ` · ${t.net >= 0 ? "+" : "−"}${num(t.net)} net votes vs expected so far</div>`;
   } else if (!t && r.pct > 0) {
-    trackHtml = `<div class="track">No county tracking for this race${r.race === "AK-Sen" ? " (Alaska reports by House district)" : ""}: statewide projector only.</div>`;
+    trackHtml = `<div class="track">No county breakdown for this race${r.race === "AK-Sen" ? " (Alaska reports by House district)" : ""}: statewide projector only.</div>`;
   }
   const best = r.best ? (() => {
     const who = r.best.side === "D" ? r.d_name : r.r_name;
@@ -394,6 +397,7 @@ function card(r) {
     <div class="books">${esc(last(r.d_name))} YES: ${books || "no quotes"}</div>
     ${best}
     ${sparkSvg(r)}
+    <div class="more">${r.track ? (r.track.unit === "county" ? "County" : "District") + " breakdown" : "Details"} &rarr;</div>
   </article>`;
 }
 function renderGrid() {
@@ -459,6 +463,7 @@ function lineChart(el, h, cfg) {
 // ---------- detail: county table ----------
 const COLS = [
   { k: "n", label: "County", get: c => c.n },
+  { k: "w", label: "Share of state vote", get: c => c.w },
   { k: "pct", label: "In", get: c => c.pct },
   { k: "share", label: "D share", get: c => c.share },
   { k: "exp", label: "Expected", get: c => c.exp },
@@ -475,34 +480,42 @@ function devCell(c, r) {
 }
 function countyTable(r) {
   const t = r.track;
-  if (!t) return `<p class="note">No county tracking for this race${r.race === "AK-Sen" ? ": Alaska reports by House district, which don't line up with the county benchmarks" : ""}. The statewide projector (v0) is used.</p>`;
+  if (!t) return `<p class="note">No county breakdown for this race${r.race === "AK-Sen" ? ": Alaska reports results by House district, which don't line up with the benchmarks" : ""}. The statewide projector (v0) is used.</p>`;
+  const unit = t.unit === "county" ? "County" : t.unit.charAt(0).toUpperCase() + t.unit.slice(1);
+  const reporting = t.counties.filter(c => c.votes > 0).length;
   let rows = t.counties.slice();
-  if (!ui.all) rows = rows.filter(c => c.votes > 0);
+  if (!ui.all && reporting) rows = rows.filter(c => c.votes > 0);
   if (ui.q) rows = rows.filter(c => String(c.n).toLowerCase().includes(ui.q.toLowerCase()));
-  const col = COLS.find(c => c.k === ui.sortKey) || COLS[6];
+  const key = ui.sortKey || (reporting ? "absnet" : "w");
+  const col = COLS.find(c => c.k === key);
   rows.sort((a, b) => { const va = col.get(a), vb = col.get(b);
     if (va == null && vb == null) return 0; if (va == null) return 1; if (vb == null) return -1;
     return (typeof va === "string" ? va.localeCompare(vb) : va - vb) * ui.sortDir; });
   const total = rows.length, shown = ui.showAll ? rows : rows.slice(0, 40);
-  const reporting = t.counties.filter(c => c.votes > 0).length;
   const pct = v => v == null ? '<span class="muted">&ndash;</span>' : (v * 100).toFixed(1) + "%";
-  const head = COLS.map(c => `<th data-k="${c.k}" class="${c.k === ui.sortKey ? "sorted" + (ui.sortDir > 0 ? " asc" : "") : ""}">${c.k === "share" ? esc(last(r.d_name)) + " share" : c.label}</th>`).join("");
+  const head = COLS.map(c => `<th data-k="${c.k}" class="${c.k === key ? "sorted" + (ui.sortDir > 0 ? " asc" : "") : ""}">${c.k === "share" ? esc(last(r.d_name)) + " share" : c.k === "n" ? unit : c.label}</th>`).join("");
   const body = shown.map(c => `<tr><td>${esc(c.n)}</td>
+      <td class="muted">${(c.w * 100).toFixed(1)}%</td>
       <td>${c.pct.toFixed(0)}%<span class="inbar"><i style="width:${Math.min(c.pct, 100)}%"></i></span></td>
       <td>${pct(c.share)}</td><td class="muted">${pct(c.exp)}</td><td class="muted">${pct(c.tie)}</td>
       <td>${devCell(c, r)}</td>
       <td>${c.net == null ? '<span class="muted">&ndash;</span>' : (c.net >= 0 ? '<span class="dot dem"></span>' + esc(last(r.d_name)) : '<span class="dot rep"></span>' + esc(last(r.r_name))) + " +" + num(c.net)}</td>
       <td>${c.left.toLocaleString("en-US")}</td></tr>`).join("");
+  const plural = unit === "County" ? "counties" : unit.toLowerCase() + "s";
+  ui.effKey = key;
   return `<div class="tools">
-      <span>${reporting} of ${t.counties.length} counties reporting · net vs our model so far: <b style="color:var(--text)">${t.net >= 0 ? esc(last(r.d_name)) : esc(last(r.r_name))} +${num(t.net)}</b></span>
+      <span>${reporting ? `${reporting} of ${t.counties.length} ${plural} reporting · net vs our model so far: <b style="color:var(--text)">${t.net >= 0 ? esc(last(r.d_name)) : esc(last(r.r_name))} +${num(t.net)}</b>`
+        : `${t.counties.length} ${plural}, biggest first · no votes counted yet: this is what each one needs`}</span>
       <span class="spacer"></span>
-      <button data-a="rep" class="${ui.all ? "" : "on"}">Reporting only</button><button data-a="all" class="${ui.all ? "on" : ""}">All counties</button>
-      <input type="search" placeholder="Find a county" value="${esc(ui.q)}" aria-label="Find a county">
+      ${reporting ? `<button data-a="rep" class="${ui.all ? "" : "on"}">Reporting only</button><button data-a="all" class="${ui.all ? "on" : ""}">All ${plural}</button>` : ""}
+      <input type="search" placeholder="Find a ${unit.toLowerCase()}" value="${esc(ui.q)}" aria-label="Find a ${unit.toLowerCase()}">
     </div>
-    <div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${body || `<tr><td colspan="8" class="muted">No counties reporting yet</td></tr>`}</tbody></table></div>
+    <div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${body || `<tr><td colspan="9" class="muted">No ${plural} match</td></tr>`}</tbody></table></div>
     ${total > 40 ? `<div class="tools"><button data-a="more">${ui.showAll ? "Show the top 40" : "Show all " + total}</button></div>` : ""}
-    <p class="note">Expected = the county's ${esc(last(r.d_name))} share if the state lands on our model's margin (${mtext(t.expected, r)}).
-      Over/under = counted share minus expected, points. Net votes = how far ahead of that expectation the candidate is in the votes counted there.
+    <p class="note">Share of state vote = the ${unit.toLowerCase()}'s share of the statewide vote in recent races.
+      Expected = its ${esc(last(r.d_name))} share if the state lands on our model's margin (${mtext(t.expected, r)}).
+      Tie needs = the share a tied statewide result needs there. Votes left = NYT's expected vote minus votes counted
+      (before NYT reports, the ${unit.toLowerCase()}'s recent turnout). Over/under = counted share minus expected, points. Net votes = how far ahead of that expectation the candidate is in the votes counted there.
       Big early numbers in a county that has counted little are often one kind of ballot (mail first, Election Day later).</p>`;
 }
 function renderDetail() {
@@ -513,15 +526,15 @@ function renderDetail() {
   el.style.display = "block";
   const st = status(r), h = r.history || [];
   el.innerHTML = `<div class="dh"><h2>${esc(r.state)} ${esc(r.office)} <span class="chip${st.live ? " live" : ""}">${st.t}</span></h2><button class="close" aria-label="Close">Close</button></div>
-    <div class="names"><span class="dot dem"></span>${esc(r.d_name)} vs <span class="dot rep"></span>${esc(r.r_name)} · polls close ${et(r.close_utc)} ET · NYT file ${esc(r.nyt_file)}</div>
+    <div class="names"><span class="dot dem"></span>${esc(r.d_name)} vs <span class="dot rep"></span>${esc(r.r_name)} · polls close ${et(r.close_utc)} ET${r.nyt_file && r.nyt_file !== "-" ? " · NYT file " + esc(r.nyt_file) : ""}</div>
+    <div id="counties">${countyTable(r)}</div>
     <div class="charts">
       <div class="chart"><h4>${esc(last(r.d_name))}'s win chance tonight</h4><div class="sub">Projector vs the market vs the projection started from our model</div><div id="c-prob"></div>
         <div class="legend">${SERIES.map(s => `<span><span class="sw" style="background:${s.color}"></span>${s.label}</span>`).join("")}</div></div>
       <div class="chart"><h4>Margin tonight</h4><div class="sub">Positive = ${esc(last(r.d_name))} ahead, points of all votes</div><div id="c-mar"></div>
         <div class="legend"><span><span class="sw" style="background:${C.muted}"></span>On screen</span><span><span class="sw" style="background:${C.proj}"></span>Projected final (80% band)</span>
           <span><span class="sw" style="background:${C.proj};opacity:.6"></span>Counted votes alone (dashed)</span><span><span class="sw" style="background:${C.model}"></span>Our model</span><span><span class="sw" style="background:${C.mkt}"></span>Market at close</span></div></div>
-    </div>
-    <div id="counties">${countyTable(r)}</div>`;
+    </div>`;
   el.querySelector(".close").onclick = () => select(null);
   lineChart(el.querySelector("#c-prob"), h, {
     series: SERIES.map(s => ({ label: s.label, color: s.color, get: p => sval(s, p) })),
@@ -550,7 +563,7 @@ function wireTable(el, r) {
   const box = el.querySelector("#counties");
   box.querySelectorAll("th").forEach(th => th.onclick = () => {
     const k = th.dataset.k;
-    if (ui.sortKey === k) ui.sortDir = -ui.sortDir; else { ui.sortKey = k; ui.sortDir = k === "n" ? 1 : -1; }
+    if (ui.effKey === k) { ui.sortKey = k; ui.sortDir = -ui.sortDir; } else { ui.sortKey = k; ui.sortDir = k === "n" ? 1 : -1; }
     box.innerHTML = countyTable(r); wireTable(el, r);
   });
   box.querySelectorAll("button[data-a]").forEach(b => b.onclick = () => {
