@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[pending]` Election night simulator: v1 numbers on the complete 2022/2024 downloads (2026-10-29).
+- `[525ef3f1]` Election night simulator: v1 numbers on the complete 2022/2024 downloads (2026-10-29).
   - 2022 (17 races, 104 snapshots): miss 1.1 pts vs v0 4.1 and visible 1.9; Brier .096 / .166 / .159.
   - 2024 against the markets (67 snapshots, 21 races): Brier v1 .050 vs market .035. Trading every 5c edge: 29 trades, -$1.41. Flips with 20%+ counted: 3 trades, +$1.21 (one new Nevada flip lost). Docs now say plainly that v1 is not better than the market on average.
 
