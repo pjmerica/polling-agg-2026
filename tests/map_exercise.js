@@ -8,7 +8,7 @@ if (!T) throw new Error('map.html did not expose MAP_TEST');
 const html = id => document.getElementById(id).innerHTML;
 const count = (s, re) => (s.match(re) || []).length;
 // 2026-10-30: the Margin and Model-vs-markets views, every office, every race card
-for (const [metric, cmp] of [['margin', 'kalshi'], ['cmp', 'kalshi'], ['cmp', 'polymarket'], ['cmp', 'silver']]) {
+for (const [metric, cmp] of [['margin', 'kalshi'], ['cmp', 'kalshi'], ['cmp', 'polymarket']]) {
   for (const office of ['Senate', 'House', 'Governor']) {
     Object.assign(T.st, { metric, cmp, src: 'model', office, hv: 'map', vb: null, sel: null, all: true, polledOnly: false });
     T.render();
@@ -19,7 +19,7 @@ for (const [metric, cmp] of [['margin', 'kalshi'], ['cmp', 'kalshi'], ['cmp', 'p
   }
 }
 Object.assign(T.st, { metric: 'win', sel: null });
-for (const src of ['model', 'kalshi', 'polymarket', 'silver']) {
+for (const src of ['model', 'kalshi', 'polymarket']) {
   for (const office of ['Senate', 'House', 'Governor']) {
     Object.assign(T.st, { src, office, hv: 'map', vb: null, sel: null, all: true });
     T.render();
@@ -41,3 +41,16 @@ for (const src of ['model', 'kalshi', 'polymarket', 'silver']) {
   T.render();
   if (count(html('map'), /class="sq/g) !== 435) throw new Error(`${src}: squares view lost districts`);
 }
+// 2026-10-30: the explainer drawer opens for every race the model scores, factors carry their definitions,
+// and the page prints the full glossary
+let nWhy = 0;
+for (const office of ['Senate', 'House', 'Governor']) for (const k of T.keys(office)) {
+  T.explain(office, k);
+  const h = html('d-body');
+  if (!h) continue;
+  nWhy++;
+  if (/class="factor"/.test(h) && !/class="f-desc">[^<]{12,}/.test(h)) throw new Error(`${office} ${k}: a factor has no definition`);
+  if (/>[a-z]+(_[a-z0-9]+)+</.test(h)) throw new Error(`${office} ${k}: a raw column name reached the explainer`);
+}
+if (nWhy < 400) throw new Error(`explainer opened for only ${nWhy} races`);
+if (count(html('glossary'), /<dt>/g) < 20) throw new Error('glossary missing from the page');

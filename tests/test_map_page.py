@@ -44,3 +44,17 @@ def test_house_district_map_matches_the_ballot():
         assert all(0 <= s <= 1 for s in shares) and sum(shares[:4]) <= 1.001, k
         assert ("old" in d["demo"]) == bool(d["rd"]), k
     assert len(geo["states"]) == 50 and len(geo["boxes"]) == 50
+
+
+def test_every_explainer_factor_is_defined():
+    """The map and forecast explainers show each factor's plain-English name and definition
+    (2026-10-30: three primary-margin factors went out as raw column names with no definition).
+    Fix missing ones in the model repo's src/explain_2026.py FRIENDLY / DESC."""
+    fc = load("forecast_data.js", "const FORECAST = ")
+    missing = set()
+    for r in fc["races"]:
+        for k in ("win", "margin"):
+            for f in ((r.get("explain") or {}).get(k) or {}).get("feats", []):
+                if not f.get("label") or f["label"] == f["f"] or not f.get("desc"):
+                    missing.add(f["f"])
+    assert not missing, sorted(missing)
