@@ -15,6 +15,12 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[6a0bb7cc]` Map: explainer drawer and a definition for every number; Silver Bulletin dropped (2026-10-30).
+  - **Why** (detail card, or beside any race in the table) opens the forecast page's explainer on the map: candidates (win, poll average, margin), the polls-off stress test, model vs Kalshi and Polymarket, race notes, and the win / margin factors. Each factor's definition is always shown, not hidden behind a click.
+  - One glossary (`GLOSS` in `map.html`) defines every column and flag. Table headers show it on hover, the page prints it all under "Every number on this page", and the drawer ends with the terms that apply to that race.
+  - `primary_margin`, `opp_primary_margin` and `primary_margin_diff` had been published as raw column names with no definition. Fixed at the source in the model repo (2f996b1, with a test over every served general feature) and relabelled in the published files. `tests/test_map_page.py` now fails if any explainer factor lacks a name or definition.
+  - Silver Bulletin removed (user call): its race-level numbers are paid only. `build_silver.py`, the CSV, `silver_data.js` and `test_silver.py` are gone.
+
 - `[1f77ff9d]` Map: Margin and Model-vs-markets views, Silver Bulletin as a source (2026-10-30).
   - `docs/map.html` has a view switch: **Margin** (the margin model's lead of the front-runner, shaded 1 to 30+ pts, gold under 1; table closest first, same-party races marked), **Win %** (the old map, still the default) and **Model vs markets** (model minus Kalshi / Polymarket / Silver Bulletin for the seat not going Republican, so independents like Osborn count with Democrats; pale within 2 pts; table biggest gaps first with every source side by side; a summary line counts the direction of the gaps and lists races with a different favorite). Hashes: `#margin-house`, `#vs-polymarket-senate`, `#silver-governor`.
   - **Silver Bulletin** race-level numbers are for paid subscribers (only the national toplines are public), so nothing scrapes them: copy them into `data/silver_bulletin_2026.csv` (race_id, dem, rep, ind, as_of; fractions or percents) and run `py scripts/build_silver.py` -> `docs/silver_data.js`. The Silver button is disabled while the file is empty. `tests/test_silver.py` fails if the CSV and the JS differ or a row has an unknown race_id.
