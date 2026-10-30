@@ -129,7 +129,58 @@ but raised Brier and log loss at every width, so it is not used.
 - **Settlement rules.** Kalshi resolves on who is inaugurated (Kansas Governor: `GOVPARTYKS-27`); Polymarket on
   who wins.
 
-## v1 plan: county x vote type
+## v1: county by county (built 2026-10-29, `county_project.py`)
+
+v0 sees one number per state. v1 sees every county: how many votes it still has to count (NYT's
+`total_expected_vote` minus votes counted) and how its counted votes compare with its benchmark.
+
+1. **Leans.** Each county's lean L_c is its log-odds share at a tied statewide result. Live, these come from
+   `county_benchmarks.json` (recent races averaged, uniform swing); in the replay, from the 2024
+   presidential result by county.
+2. **Statewide shift.** Each county with counted votes implies a statewide shift x_c = logit(counted share) -
+   L_c. These are averaged with weight = votes counted x (share counted)^6. A half-counted county is mostly
+   one kind of ballot: 2020 Wayne counted Election Day first and absentees last.
+3. **Starting point.** The market's price at poll close (or the model) is a prior on the shift.
+4. **Projection.** Each county's uncounted votes are projected at expit(L_c + shift + k_c x e_c), where e_c
+   is the county's own deviation, trusted more as it counts more.
+5. **Simulation.** 4,000 runs, with:
+   - the shift's uncertainty (x3, since counties report in a non-random order);
+   - county errors;
+   - one error shared by all uncounted votes (late ballots as a class differ from their counties'
+     benchmarks together);
+   - turnout errors on NYT's expected vote.
+
+   The output is the projected final margin and P(the non-Republican wins).
+
+**2020 replay** (`county_replay.py`): every Internet Archive snapshot of NYT's national file, 10 states
+(Alaska's districts and Maine's towns don't line up with county leans), 345 state-snapshots. Count only,
+no starting point:
+
+| Counted | Miss v1 | Miss, visible | Inside 80% band | Brier v1 | Brier, visible |
+|---|---|---|---|---|---|
+| 5-20% | 13.8 | 19.7 | 0.63 | 0.460 | 1.000 |
+| 20-40% | 6.6 | 16.9 | 0.83 | 0.222 | 0.625 |
+| 40-60% | 4.8 | 11.9 | 0.85 | 0.205 | 0.500 |
+| 60-80% | 2.7 | 6.3 | 0.78 | 0.135 | 0.393 |
+| 80-99% | 0.9 | 1.2 | 0.86 | 0.044 | 0.119 |
+
+**Against v0 on the same snapshots** (20-90% counted, the 12 states with v0 history, 2020 left out of
+v0's): average miss **v1 3.6**, v0 5.8, visible 7.9; Brier **v1 0.162**, v0 0.217, visible 0.409.
+
+Examples:
+- **Texas 2020 at 22% counted:** the screen showed Biden +15.5; v1 said Trump +5.7 (final Trump +5.6).
+- **Georgia at 49%:** the screen showed Trump +14.7; v1 said Biden +0.9 (final Biden +0.2).
+- **Michigan and Ohio are still v1's worst** (average misses of 9 and 8 points):
+  - Michigan's absentees came last inside each big county.
+  - Ohio's expected vote was set too high, so v1 projected Democratic votes that never came.
+
+**Caveats:**
+- **The settings were tuned on this same 2020 data,** so these numbers are in-sample.
+- **The out-of-sample test is 2022,** the midterm, from full Internet Archive files
+  (`fetch_wayback_full.py`), and then 2024 against the markets.
+- **County leans from 2024 are a different year,** much as 2026 will use 2022/2024 benchmarks.
+
+## v1 next steps (from the original plan)
 
 From `../State election results/README.md` "Simulator design". For each county (Maine: town), and each
 vote type where NYT splits them:

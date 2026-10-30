@@ -34,7 +34,7 @@ Started 2026-10-28.
 | Projector v0, statewide (`live_project.py`) | **Built**, backtested. Beats the visible margin in KS, IA, TX, OH, NE, MI, ME; not in GA, OR, NV, AK, SC (`?` flag). **Not better than the markets** (MARKET_CHECK.md): use it as an alert, not a trade signal |
 | Historical check, 2024 (`market_history.py`, `market_check.py`) | **Done** 2026-10-28: 65 races, minute prices from both venues against NYT's count |
 | Primaries vs the markets (`primary_check.py`) | **Done and published** 2026-10-29: 54 primaries against the 2024 generals, on the dashboard page [primaries-vs-markets.html](https://pjmerica.github.io/polling-agg-2026/primaries-vs-markets.html) |
-| Projector v1: county x vote type, from NYT's live county files | **Next.** The 2024 check shows it's what separates Michigan/Wisconsin from Pennsylvania; re-run the check with it before trusting it |
+| Projector v1, county by county (`county_project.py`, wired into `live_project.py`) | **Built 2026-10-29, being validated.** 2020 replay (in-sample): average miss 3.6 pts vs v0 5.8 and the visible margin 7.9, 80% bands calibrated. Next: the 2022 replay out of sample (`fetch_wayback_full.py` downloading), then 2024 against the markets. Weakest where absentees come last inside big counties (MI) and where NYT's expected vote is off (OH) |
 | Pre-election Monte Carlo: thousands of simulated nights, a threshold sheet per state | To build, on v1 |
 | Election-night console page with alerts | To build |
 
@@ -44,7 +44,10 @@ Started 2026-10-28.
 |---|---|
 | `METHODS.md` | How the projector works, the backtest, what it can't do, the v1 plan |
 | `scripts/capture_markets.py` | Records Kalshi and Polymarket books every 20 s -> `data/raw/markets/{ET date}/{kalshi,polymarket}.csv` |
-| `scripts/live_project.py` | The projector: live table, what-ifs, backtest |
+| `scripts/live_project.py` | The live table (v1 where the counties line up, v0 beside it), what-ifs, v0 backtest |
+| `scripts/county_project.py` | Projector v1: county by county, simulated (METHODS.md) |
+| `scripts/county_replay.py` | Replays v1 through the 2020 count (`--tune` tries settings) -> `data/processed/county_replay_2020.csv` |
+| `scripts/fetch_wayback_full.py` | Downloads whole Internet Archive captures of NYT's 2022/2024 results files (votes by candidate per county) for the out-of-sample replay -> `data/raw/wayback_full/` |
 | `MARKET_CHECK.md` | Did the 2024 markets misread the count? Results, traps (settlement, spreads), what it means for Nov 3 |
 | `scripts/market_history.py` | Downloads 2024 minute prices from both venues for every race with an NYT timeline -> `data/raw/market_history/2024/` (about 11 min) |
 | `scripts/market_check.py` | The 2024 check -> `data/processed/market_check_2024_{points,trades}.csv` |
@@ -133,12 +136,12 @@ non-Republican wins):
 | Column | Meaning |
 |---|---|
 | `counted`, `margin` | NYT's share of the expected vote counted (`eevp`) and the visible margin |
-| `proj`, `+/-80%` | Projected final margin and the half-width of its 80% band. A `?` before it means past years' late votes leaned opposite ways at this point in the count, so the direction is a guess |
-| `P mkt` | Starts from the markets' own price at the state's poll close and adds only what the count says. **This isolates count-reading edges** and is what `best buy` uses by default |
-| `P mod` | Starts from our model's win probability instead |
+| `v1 proj`, `+/-80%`, `P v1` | Projector v1 (county by county): projected final margin, the half-width of its 80% band, and P(win). It starts from the markets' price at poll close by default (`--baseline model` for our model), so its edge comes from the count. Blank where the live counties don't line up with the benchmarks (Alaska's districts); then v0 is used |
+| `P v0` | The statewide projector from the same starting point. A `?` before the row means v0 is in use and past years' late votes leaned opposite ways at this point in the count, so the direction is a guess |
+| `P mod` | v0 starting from our model's win probability instead |
 | `close` | The market price at poll close that `P mkt` starts from: the last capture before the close, averaged over venues |
 | `K`, `PM bid/ask` | The non-Republican contract on Kalshi and Polymarket, latest pass |
-| `best buy` | The best taker buy across both venues and both sides, with its expected value per $1 contract after fees. Before the count starts it should sit at about minus the spread |
+| `best buy` | The best taker buy across both venues and both sides, with its expected value per $1 contract after fees, and which projector it used (v1 where available). Before the count starts it should sit at about minus the spread |
 
 Example: `KS-Sen 40.0% +12.0 | -2.2 7.1 0.35 ...` means that with 40% counted and Hamilton up 12, Kansas's
 history projects Marshall by 2.2. That is the early Democratic lead fading.

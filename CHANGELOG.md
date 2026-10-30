@@ -15,6 +15,11 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[pending]` Election night simulator: projector v1, county by county (2026-10-29, being validated).
+  - `county_project.py` projects each county's uncounted votes (NYT's expected vote minus counted) from its benchmark lean plus a statewide shift. The shift is estimated from counties weighted by votes counted x (share counted)^6. The starting point is the market at poll close. It simulates 4,000 runs with shift, county, shared late-ballot and turnout errors. It is wired into `live_project.py`, which uses v1 where the live counties match `county_benchmarks.json`, with v0 beside it.
+  - 2020 replay (`county_replay.py`, every Internet Archive snapshot, 10 states, settings tuned on it so in-sample): average miss 3.6 pts vs v0 5.8 and the visible margin 7.9 (20-90% counted); Brier .162 vs .217 / .409; 80% bands hold 78-86%. Michigan and Ohio are its worst cases.
+  - `fetch_wayback_full.py` downloads whole 2022/2024 captures (the earlier fetcher kept only county totals) for the out-of-sample 2022 replay and the 2024 market comparison.
+
 - `[1aa66150]` Dashboard page "Primaries vs the markets" (2026-10-29).
   - `docs/primaries-vs-markets.html`, built by `Election night simulator/scripts/build_primaries_page.py` from `primary_check.py`. It covers 54 Senate/Governor primaries decided on the night: the favorite at poll close against the result, upsets, our primary model's pre-primary odds against the market (22 races since July 15, from the page's git history), how cheap each eventual winner got during the count, a chart for every close race, the 2024 generals comparison and every race. Linked from the dashboard header and the election-night nav.
   - `primary_check.py` fixes. Some states are listed under their runoff date (TX, GA, AL, SC, SD), so the NYT file is now tried on every 2026 primary night (+12 races). Contracts are matched to candidates by full name: Kalshi lists both Hannah and Chellie Pingree, and the dead contract had priced Maine's winner at 0c. Ranked-choice races are read on the first round and dropped without a first-round majority.
