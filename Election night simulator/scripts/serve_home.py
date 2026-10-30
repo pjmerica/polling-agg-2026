@@ -1,7 +1,7 @@
 """Serve the live dashboard on the home network, so a phone or another computer on the same Wi-Fi can open it.
 
-Same page and data as on this PC (refreshes every 15 s), nothing public. Serves only dashboard.html and
-data/raw/dashboard/ (not the rest of the folder). The first run may bring up a Windows Firewall prompt: allow it
+Same page and data as on this PC (refreshes every 15 s), nothing public. Serves only dashboard.html, its map
+shapes (county_geo.js) and data/raw/dashboard/live_data.js (not the rest of the folder). The first run may bring up a Windows Firewall prompt: allow it
 on private networks.
 
     py "Election night simulator/scripts/serve_home.py"            # port 8765
@@ -13,7 +13,7 @@ import os
 import socket
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-ALLOWED = ("/dashboard.html", "/data/raw/dashboard/live_data.js")
+ALLOWED = ("/dashboard.html", "/county_geo.js", "/data/raw/dashboard/live_data.js")
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):

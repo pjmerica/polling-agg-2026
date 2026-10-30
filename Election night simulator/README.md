@@ -45,7 +45,8 @@ Started 2026-10-28.
 |---|---|
 | `METHODS.md` | How the projector works, the backtest, what it can't do, the v1 plan |
 | `scripts/capture_markets.py` | Records Kalshi and Polymarket books every 20 s -> `data/raw/markets/{ET date}/{kalshi,polymarket}.csv` |
-| `dashboard.html` | The election-night dashboard. Open it from this folder; it reads `data/raw/dashboard/live_data.js` every 15 s |
+| `dashboard.html` | The election-night dashboard (Races and Map tabs). Open it from this folder; it reads `data/raw/dashboard/live_data.js` every 15 s |
+| `county_geo.js`, `scripts/build_county_geo.py` | The map tab's county shapes (us-atlas, same projection as the site's map page). Built once, committed |
 | `scripts/run_dashboard.cmd` | Election night in one click: the projector every 30 s, the home server and the public copy |
 | `scripts/serve_home.py` | Serves the live dashboard to phones on the home Wi-Fi (port 8765) |
 | `scripts/publish_live.py` | Pushes a delayed public copy to `docs/election-night-live.html` every 10 min |
@@ -147,6 +148,11 @@ The local and home pages are the fast ones: the data changes every 20 s to 2 min
     market at the close;
   - **over/under:** "Turek running 2.6 pts under our model, -2,156 net votes vs expected so far";
   - win chances: projector, model start, market; both books; the best buy; a sparkline of the night.
+- **Map tab** (or `dashboard.html#map`): the US with every tracked state's counties shaded by over/under vs our
+  model, the Democrat's counted share, what the model expects, or share counted. It has a Senate / Governor
+  switch and labels each state with the projector's win chance. Click a state to zoom into its counties: hover
+  for a county's numbers, and the side panel shows the race and its biggest misses. Escape zooms back out.
+  Alaska stays a plain state (results by House district).
 - **Click a card** (or open `dashboard.html#MI-Sen`) for the race's charts and its county table:
   - win chance and margin through the night;
   - every county's counted share against the share expected if the state lands on our model's margin, the

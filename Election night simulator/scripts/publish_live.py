@@ -4,6 +4,7 @@ Every --interval minutes (default 10) this commits two files to master through G
   docs/election-night-live.html        dashboard.html with <body data-public="1">
   docs/election_night_live_data.js     the projector's latest data/raw/dashboard/live_data.js, minus best buys
                                        and FLIPs (a 10-minute-old "buy at 15c" would mislead)
+  docs/county_geo.js                   the map tab's county shapes (unchanged after the first publish)
 -> https://pjmerica.github.io/polling-agg-2026/election-night-live.html
 
 Through the API, not git: the local checkout (and the scheduled tasks writing into it) is never touched.
@@ -31,6 +32,8 @@ DATA = os.path.join(ROOT, "data", "raw", "dashboard", "live_data.js")
 PAGE = os.path.join(ROOT, "dashboard.html")
 OUT_PAGE = "docs/election-night-live.html"
 OUT_DATA = "docs/election_night_live_data.js"
+GEO = os.path.join(ROOT, "county_geo.js")       # the map tab's county shapes (build_county_geo.py)
+OUT_GEO = "docs/county_geo.js"
 URL = "https://pjmerica.github.io/polling-agg-2026/election-night-live.html"
 
 
@@ -116,7 +119,10 @@ def main():
                     print(f"{stamp} the projector last wrote {age / 60:.0f} min ago: skipped (is it running?)")
                 else:
                     et = to_et(dt.datetime.fromisoformat(generated.replace("Z", "+00:00"))).strftime("%H:%M")
-                    c = commit({OUT_PAGE: page, OUT_DATA: js}, f"election night live: {et} ET")
+                    files = {OUT_PAGE: page, OUT_DATA: js}
+                    if os.path.exists(GEO):            # unchanged shapes make an identical blob: no repo growth
+                        files[OUT_GEO] = open(GEO, encoding="utf-8").read()
+                    c = commit(files, f"election night live: {et} ET")
                     last = h
                     print(f"{stamp} published {c[:8]} (data from {et} ET); live in about a minute")
         except SystemExit:
