@@ -634,20 +634,35 @@ const METRICS = {
   exp:   { label: "Model expects", get: c => c.exp },
   pct:   { label: "Share counted", get: c => c.votes > 0 ? c.pct : null },
 };
+// Diverging scale: a light grey for an even county, deepening to dark red / dark blue for lopsided ones
+// (opaque steps, so the middle stays light on the dark page instead of fading into it)
+const RAMP_AT = [0, .25, .55, .8, 1];
+const RAMP = { d: ["#e6e7ea", "#b9cff2", "#5b9ae8", "#2a6fc9", "#174a91"],
+               r: ["#e6e7ea", "#f3bdb6", "#e8706b", "#c93a37", "#8f1d1f"] };
+function rampColor(side, m) {
+  m = Math.max(0, Math.min(1, m));
+  const st = RAMP[side];
+  let i = 0; while (i < RAMP_AT.length - 2 && m > RAMP_AT[i + 1]) i++;
+  const k = (m - RAMP_AT[i]) / (RAMP_AT[i + 1] - RAMP_AT[i]);
+  const a = parseInt(st[i].slice(1), 16), b = parseInt(st[i + 1].slice(1), 16);
+  const ch = s => Math.round((a >> s & 255) + ((b >> s & 255) - (a >> s & 255)) * k);
+  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+}
+const divFill = x => rampColor(x >= 0 ? "d" : "r", Math.abs(x));      // x in [-1, 1], + = the Democrat
+const RAMP_CSS = "linear-gradient(90deg, " + [...RAMP.r.slice().reverse(), ...RAMP.d.slice(1)].join(", ") + ")";
 function fillFor(metric, v) {
   if (v == null) return C.rule;
-  if (metric === "dev") return Math.abs(v) < 0.5 ? C.rule2 : hexA(v > 0 ? C.dem : C.rep, (0.18 + 0.72 * Math.min(Math.abs(v) / 10, 1)).toFixed(2));
+  if (metric === "dev") return divFill(v / 10);                    // full colour at 10 points over/under
   if (metric === "pct") return hexA(C.ink, (0.08 + 0.72 * Math.min(v, 100) / 100).toFixed(2));
-  const d = v - 0.5;
-  return Math.abs(d) < 0.005 ? C.rule2 : hexA(d > 0 ? C.dem : C.rep, (0.15 + 0.75 * Math.min(Math.abs(d) / 0.25, 1)).toFixed(2));
+  return divFill((v - 0.5) / 0.3);                                 // full colour at 80% for one side
 }
 function mapLegend(metric, r) {
-  const ramp = (a, b) => `<i style="background:linear-gradient(90deg, ${a}, ${C.rule2} 50%, ${b})"></i>`;
+  const ramp = () => `<i style="background:${RAMP_CSS}"></i>`;
   const none = `<span><span class="swatch" style="background:${C.rule}"></span>nothing counted yet</span>`;
   const dn = r ? esc(last(r.d_name)) : "Democrat", rn = r ? esc(last(r.r_name)) : "Republican";
-  if (metric === "dev") return `<span class="ramp">${rn} better by 10+ ${ramp(hexA(C.rep, .9), hexA(C.dem, .9))} ${dn} better by 10+</span><span>points vs what our model expects there</span>${none}`;
+  if (metric === "dev") return `<span class="ramp">${rn} better by 10+ ${ramp()} ${dn} better by 10+</span><span>points vs what our model expects there; light = on model</span>${none}`;
   if (metric === "pct") return `<span class="ramp">0% <i style="background:linear-gradient(90deg, ${hexA(C.ink, .08)}, ${hexA(C.ink, .8)})"></i> 100% counted</span>${none}`;
-  return `<span class="ramp">${rn} 75%+ ${ramp(hexA(C.rep, .9), hexA(C.dem, .9))} ${dn} 75%+</span><span>two-party share${metric === "exp" ? " if the state lands on our model's margin" : ", votes counted so far"}</span>${metric === "exp" ? "" : none}`;
+  return `<span class="ramp">${rn} 80%+ ${ramp()} ${dn} 80%+</span><span>two-party share${metric === "exp" ? " if the state lands on our model's margin" : ", votes counted so far"}; light = close to even</span>${metric === "exp" ? "" : none}`;
 }
 let vbNow = null, vbAnim = 0;
 function targetVB() {
