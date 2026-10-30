@@ -43,9 +43,11 @@ def test_same_party_race_has_no_market(tmp_path, monkeypatch):
 
 def test_every_ballot_race_has_a_model_number(tmp_path, monkeypatch):
     """Since 2026-10-23 every race on the ballot is scored: races no pollster covers come from the
-    no-polls model (model_fundamentals_predictions_2026.csv, basis "fundamentals") with no margin
-    and a note saying so, and no race appears twice. Since 2026-10-27 they carry the no-polls
-    model's stress test (the national mood moved 3 and 6 points), summing to 1 like the base odds."""
+    no-polls model (model_fundamentals_predictions_2026.csv, basis "fundamentals") and a note saying
+    so, and no race appears twice. Since 2026-10-27 they carry the no-polls model's stress test (the
+    national mood moved 3 and 6 points), summing to 1 like the base odds. Since 2026-10-29 they carry
+    the no-polls margin model's margin when the file has it: every candidate in a contested race,
+    none in an uncontested one."""
     if not (ROOT / "data" / "processed" / "model_fundamentals_predictions_2026.csv").exists():
         return  # the model refresh has not written the no-polls file yet
     monkeypatch.setattr(B, "OUT", str(tmp_path / "forecast_data.js"))
@@ -58,7 +60,10 @@ def test_every_ballot_race_has_a_model_number(tmp_path, monkeypatch):
     for r in fund:
         assert r["notes"][0] == B.NOTES["FUND"], r["id"]
         assert r["n_surveys"] == 0, r["id"]
-        assert all(c["margin"] is None for c in r["cands"]), r["id"]
+        has = [c["margin"] is not None for c in r["cands"]]
+        assert all(has) or not any(has), r["id"]
+        if len(r["cands"]) == 1:
+            assert not any(has), r["id"]
         for k in ("win_r3", "win_d3"):
             v = [c[k] for c in r["cands"] if c[k] is not None]
             assert not v or abs(sum(v) - 1) < 0.02, (r["id"], k)
@@ -82,7 +87,7 @@ def test_models_split_is_flagged(tmp_path, monkeypatch):
     monkeypatch.setattr(B, "OUT", str(tmp_path / "forecast_data.js"))
     for r in B.build()["races"]:
         c = r["cands"]
-        if r.get("basis") == "fundamentals" or any(x["margin"] is None for x in c) or len(c) < 2:
+        if any(x["margin"] is None for x in c) or len(c) < 2:
             assert not r.get("split"), r["id"]
             continue
         mfav = max(c, key=lambda x: x["margin"])["name"]

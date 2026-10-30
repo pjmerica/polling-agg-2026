@@ -117,12 +117,20 @@ def _fund_races(seen, books, norm_pair):
         aid = _agg_id(st, off, di)
         meta = RACE_BY_ID.get(aid)
         g = _stress(g)
+        # margin: the no-polls margin model (2026-10-29), blank in an uncontested race
         cands = [dict(name=r.candidate,
                       party=str(r.display_party if pd.notna(r.display_party) else r.party)[:3].upper(),
-                      win=_num(r.win_prob_norm), **_stress_fields(r), margin=None,
+                      win=_num(r.win_prob_norm), **_stress_fields(r),
+                      margin=_num(getattr(r, "pred_margin", None), 2),
                       poll_avg=None, n_polls=0)
                  for r in g.sort_values("win_prob_norm", ascending=False).itertuples()]
         notes = [NOTES["FUND"]]
+        split = None
+        if len(cands) >= 2 and all(c["margin"] is not None for c in cands):
+            mfav = max(cands, key=lambda x: x["margin"])
+            if mfav["name"] != cands[0]["name"]:
+                split = mfav["name"]
+                notes.append(NOTES["SPLIT"].format(win=cands[0]["name"], margin=mfav["name"]))
         parties = [c["party"] for c in cands if c["party"] in ("DEM", "REP")]
         if len(parties) != len(set(parties)):
             notes.append(NOTES["SAME_PARTY"])
@@ -149,7 +157,7 @@ def _fund_races(seen, books, norm_pair):
             incumbent_party=(meta.incumbent_party if meta else None),
             open_seat=(bool(meta.open_seat) if meta else None),
             # the no-polls model's own stress test moves the national mood (2026-10-27: shown too)
-            fragile=bool(first.get("bias_fragile", 0) or 0), n_surveys=0, basis="fundamentals",
+            fragile=bool(first.get("bias_fragile", 0) or 0), split=split, n_surveys=0, basis="fundamentals",
             cands=cands, market=market,
             notes=notes, explain=explain.get(rid)))
     return out

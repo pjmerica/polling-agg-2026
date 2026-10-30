@@ -483,15 +483,20 @@ a:hover { text-decoration: underline; }
       </div>
       <div class="hint"><a href="map.html#${r.office === 'House' ? `house-${r.state.toLowerCase()}-${+r.district || 1}`
         : `${r.office.toLowerCase()}-${r.state.toLowerCase()}`}">See it on the map &rarr;</a></div></div>`;
-    // no-polls races have no poll average and no margin model: show only the win chances
+    // no-polls races have no poll average; their margin comes from the no-polls margin model
+    // (2026-10-29), blank in an uncontested race
     const noPolls = r.basis === 'fundamentals';
+    const hasMargin = r.cands.some(c => c.margin != null);
+    const fmtM = c => c.margin == null ? '-' : (c.margin >= 0 ? '+' : '') + c.margin.toFixed(1);
     html += `<div class="sec"><h4>Candidates</h4><table class="tbl"><thead><tr><th>Candidate</th><th class="n">Win</th>
-        ${noPolls ? '' : '<th class="n">Poll avg</th><th class="n">Margin</th>'}</tr></thead><tbody>
+        ${noPolls ? '' : '<th class="n">Poll avg</th>'}${!noPolls || hasMargin ? '<th class="n">Margin</th>' : ''}</tr></thead><tbody>
         ${r.cands.map(c => `<tr><td><span class="pb" style="background:${psoft(c.party)}">${esc(pab(c.party))}</span> ${esc(c.name)}</td>
-          <td class="n">${pct(c.win, 1)}</td>${noPolls ? '' : `<td class="n">${c.poll_avg == null ? '-' : c.poll_avg.toFixed(1) + '%'}</td>
-          <td class="n">${c.margin == null ? '-' : (c.margin >= 0 ? '+' : '') + c.margin.toFixed(1)}</td>`}</tr>`).join('')}
+          <td class="n">${pct(c.win, 1)}</td>${noPolls ? '' : `<td class="n">${c.poll_avg == null ? '-' : c.poll_avg.toFixed(1) + '%'}</td>`}
+          ${!noPolls || hasMargin ? `<td class="n">${fmtM(c)}</td>` : ''}</tr>`).join('')}
         </tbody></table>
-        <div class="hint">${noPolls ? "No public polls in this race, so these are the no-polls model's chances; it projects no margin."
+        <div class="hint">${noPolls ? (hasMargin
+            ? "No public polls in this race, so these are the no-polls models' chances and margins: each candidate's projected result against their strongest opponent from the seat's history, money and the national mood. Expect a wider miss than in polled races."
+            : "No public polls in this race, so these are the no-polls model's chances; it projects no margin in an uncontested race.")
           : "Margin is each candidate's projected result against their strongest opponent."}</div></div>`;
     if (stress.length) {
       // +/-6 added 2026-10-27: recent national misses ran 5-8 points (2016, 2020 toward Republicans)
