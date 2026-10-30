@@ -39,11 +39,9 @@ counted is relative to the final total; live, NYT's `eevp` stands in for it.
 with a 6-point spread (`PRIOR_SD`, roughly a typical statewide forecast miss). P is either:
 - the markets' P(non-Republican) at the state's poll close, from mid prices D / (D + R), averaged over venues
   (`P mkt`, the default for edges, so the edge comes only from the count); or
-- our model's win probability (`P mod`).
-
-The win probability is used rather than the margin model's margin, because the two models can disagree on
-the favorite: on Oct 28, Georgia's margin was +0.01 with Bottoms at 71% to win, and Nevada's was Ford +0.6
-with Lombardo at 59%. The guides quote the win model.
+- our margin model's projected margin (`P mod`), give or take 6.1 points: see "Starting from our margin
+  model" below. (Until 2026-10-30 this was the win model's probability. The projector forecasts margins, and
+  the win chance comes from a separate model that can disagree: GA-Gov +1.2 points but 78% to win.)
 
 **Combined.** The count estimate and the starting point are averaged with weights 1/variance, giving
 P(win) = Phi(mean / sd). Early in the count the count estimate is very wide, so the starting point dominates;
@@ -215,7 +213,12 @@ as the live tool runs):
 - At 0.45, every 2022 result fell inside the 80% band.
 - In 2024, v1 at 0.45 overpriced longshots (Brier 0.058).
 
-**The live table marks FLIP** only with 20%+ counted. Every backtest is weakest under 20%.
+**The live table marks FLIP** (`live_project.is_flip`) only when all four hold, the 2024 test's own terms:
+v1 gives the side 45%+ (after the fee), the edge after fees is 5c or more, the side sells for 40c or less
+(all three flips were bought at 33c or less), and 20%+ is counted (every backtest is weakest under 20%).
+Before 2026-10-30 only the 45% and 20% checks ran; since the best buy is the highest of four edges even when
+negative, that flagged 28 of the 59 2024 snapshots with 20%+ counted, mostly 99c favourites. With all four,
+the replay flags exactly the three flips above (`tests/test_live_flip.py`).
 
 **What v1 is for:** spotting the moment the market prices the visible leader while the uncounted votes
 point the other way. It is not for shaving longshots, and on average it is not better than the market.

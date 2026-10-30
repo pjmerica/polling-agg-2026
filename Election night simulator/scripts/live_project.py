@@ -401,6 +401,28 @@ def _fee_specs():
     return k, p
 
 
+# FLIP: v1 gives the side it would buy 45%+ although the market prices it far lower, with 20%+ counted - the
+# only kind of v1 edge that paid in 2024 (Slotkin at 15c, Rosen at 33c; Brown at 27c lost). Edges on longshots
+# v1 merely rates higher than the market (5c -> 20c) lost, and so did a flip at 6% counted (Georgia President);
+# every backtest is weakest under 20% counted (MARKET_CHECK.md). The edge and price floors are the 2024 test's
+# own (it traded 5c+ edges; all three flips were bought at 33c or less). Without them (before 2026-10-30) the
+# best buy - the highest of four edges even when negative - flagged 28 of 59 2024 snapshots with 20%+ counted,
+# mostly 99c favourites; with them, 3.
+FLIP_MIN_P = 0.45
+FLIP_MIN_EDGE = 0.05
+FLIP_MAX_ASK = 0.40
+FLIP_MIN_PCT = 20.0
+
+
+def is_flip(v1res, bt, pct):
+    """bt = best_trade(...): (venue, side, ask, edge after fee)."""
+    if not v1res or not bt:
+        return False
+    _, _, ask, edge = bt
+    return bool(edge + ask >= FLIP_MIN_P and edge >= FLIP_MIN_EDGE and ask <= FLIP_MAX_ASK
+                and pct >= FLIP_MIN_PCT)
+
+
 def best_trade(p_win, books):
     """Best taker buy across venues: (venue, side, ask, edge per $1 contract after fee)."""
     best = None
@@ -493,11 +515,7 @@ def run_live(a, hist, fc):
 
         def f2(x):
             return f"{x:5.2f}" if x is not None else "    -"
-        # FLIP: v1 gives the side it would buy 45%+ although the market prices it far lower, with 20%+ counted
-        # - the only kind of v1 edge that paid in 2024 (Slotkin at 15c, Rosen at 33c). Edges on longshots v1
-        # merely rates higher than the market (5c -> 20c) lost, and so did a flip at 6% counted (Georgia
-        # President); every backtest is weakest under 20% counted (MARKET_CHECK.md).
-        flip = bool(v1res and bt and (bt[3] + bt[2]) >= 0.45 and nyt["pct"] >= 20)
+        flip = is_flip(v1res, bt, nyt["pct"])
         trade = (f"{bt[1]} on {bt[0]} @{bt[2]:.2f}: {bt[3] * 100:+.1f}c ({'v1' if v1res else 'v0'})"
                  f"{'  FLIP' if flip else ''}" if bt else "-")
         # '?' (v0 only): past years' late votes leaned opposite ways at this point in the count, so

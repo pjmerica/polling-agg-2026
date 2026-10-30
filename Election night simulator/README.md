@@ -193,7 +193,7 @@ non-Republican wins):
 | `P mod` | The same projection started from **our margin model** instead of the market (v1 where it runs, else v0): the model's projected margin from `docs/forecast_data.js`, give or take 6.1 points (its held-out 2018-24 miss). Before the count it is the margin model's own chance, which can differ from the win chance on the forecast page (a separate model): GA-Gov is +1.2 points but 78% |
 | `close` | The market price at poll close that `P mkt` starts from: the last capture before the close, averaged over venues |
 | `K`, `PM bid/ask` | The non-Republican contract on Kalshi and Polymarket, latest pass |
-| `best buy` | The best taker buy across both venues and both sides, with its expected value per $1 contract after fees, and which projector it used (v1 where available). Before the count starts it should sit at about minus the spread. `FLIP`: v1 gives the side 45%+ while the market prices it far lower, with 20%+ counted |
+| `best buy` | The best taker buy across both venues and both sides, with its expected value per $1 contract after fees, and which projector it used (v1 where available). Before the count starts it should sit at about minus the spread. `FLIP`: v1 gives the side 45%+, it sells for 40c or less, the edge after fees is 5c+, and 20%+ is counted |
 
 Example: `KS-Sen 40.0% +12.0 | -2.2 7.1 0.35 ...` means that with 40% counted and Hamilton up 12, Kansas's
 history projects Marshall by 2.2. That is the early Democratic lead fading.
