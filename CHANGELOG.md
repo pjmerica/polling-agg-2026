@@ -15,6 +15,10 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[9cd52fbd]` Election night dashboard: back to the card layout, plus a county map tab (2026-10-30).
+  - The user preferred the original cards to the row redesign (d240defd), so `dashboard.html` is fb81978c's layout again.
+  - New **Map** tab: the US with every tracked state's counties shaded by over/under vs our model, counted D share, model expectation or share counted; Senate / Governor switch; state labels carry the projector's win chance; click a state to zoom in, hover a county for its numbers, side panel with the race and its biggest misses. Shapes in `county_geo.js` (us-atlas counties, the site map's projection; `build_county_geo.py`, 960 counties, all matching the benchmarks; Alaska stays a plain state). `publish_live.py` and `serve_home.py` carry it.
+
 - `[d240defd]` Election night dashboard: redesign as a results desk (2026-10-30). User: make it look less generic. Races are ruled rows on one board (race, status, on screen, projected final with its scale, counted votes vs model, win chances with a sparkline, best buy) instead of rounded cards; clicking a row opens its county breakdown and charts inline beneath it. Condensed display face for race names and figures, light and dark themes with a toggle (chart colours validated for both), keyboard-operable rows. Same data and logic.
 
 - `[fb81978c]` Election night dashboard: drop Oregon Governor; clicking a race opens its county breakdown (2026-10-30).
