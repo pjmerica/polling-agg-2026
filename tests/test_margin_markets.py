@@ -64,7 +64,9 @@ from analysis.margin_markets import kalshi_margins, kalshi_race_id, summarize_ka
 def test_kalshi_two_sided_thresholds():
     # S(x) = P(margin >= x): R 5+ .10 -> S(-5) .90, R 2+ .25 -> S(-2) .75, then D 1+ .60, 4+ .35, 7+ .15
     s = summarize_kalshi({"D": [(1, .60), (4, .35), (7, .15)], "R": [(2, .25), (5, .10)]})
-    assert s["m"] == pytest.approx(1 + 3 * (.60 - .5) / (.60 - .35), abs=0.01)    # 2.2, between D 1+ and 4+
+    assert s["med"] == pytest.approx(1 + 3 * (.60 - .5) / (.60 - .35), abs=0.01)  # 2.2, between D 1+ and 4+
+    # the published number: each 3-pt stretch at its midpoint, tails closed one step out
+    assert s["m"] == pytest.approx(.10 * -6.5 + .15 * -3.5 + .15 * -0.5 + .25 * 2.5 + .20 * 5.5 + .15 * 8.5, abs=0.01)
     assert s["p_d"] == pytest.approx(.75 + (.60 - .75) * 2 / 3, abs=0.001)         # S(0) between -2 and +1
     assert "beyond" not in s
     assert s["lad"][0][3] == -1 and s["lad"][-1][3] == 1
@@ -80,7 +82,8 @@ def test_kalshi_noisy_book_is_smoothed():
 def test_kalshi_one_sided_ladder():
     # the favourite's side only, no winner market: read when the median is inside the ladder ...
     s = summarize_kalshi({"R": [(10, .90), (20, .60), (30, .20)]})
-    assert s["m"] == pytest.approx(-30 + 10 * (.80 - .5) / (.80 - .40), abs=0.01)  # -22.5
+    assert s["med"] == pytest.approx(-30 + 10 * (.80 - .5) / (.80 - .40), abs=0.01)  # -22.5
+    assert s["m"] == pytest.approx(.2 * -35 + .4 * -25 + .3 * -15 + .1 * 0, abs=0.01)  # unpriced .1 at its midpoint
     assert s["p_d"] is None and s["lad"][-1][3] == 4
     # ... left out when it would fall in the stretch the ladder doesn't price
     assert summarize_kalshi({"R": [(10, .30), (20, .10), (30, .05)]}) is None
@@ -91,7 +94,12 @@ def test_kalshi_one_sided_ladder():
 
 def test_kalshi_median_past_the_last_threshold_is_flagged():
     s = summarize_kalshi({"D": [(2, .95), (5, .90), (8, .70)]}, {"D": .97, "R": .03})
-    assert s["beyond"] == 8.0 and s["m"] > 8
+    assert s["beyond"] == 8.0 and s["med"] > 8
+
+
+def test_kalshi_no_average_when_too_much_is_unpriced():
+    # Republican side only, no winner market, 30% of the probability in the unpriced stretch
+    assert summarize_kalshi({"R": [(10, .70), (20, .50), (30, .20)]}) is None
 
 
 def _kdf(rows):

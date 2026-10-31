@@ -130,6 +130,7 @@ KALSHI_TITLE = re.compile(r"^Will the margin of victory for (.+?) in (?:the )?(.
                           r"(\d+(?:\.\d+)?) percentage points?\?$")
 KALSHI_MAX_SPREAD = 0.30   # a wider book says nothing about the price
 KALSHI_MIN_POINTS = 3      # thresholds needed across both sides
+KALSHI_MAX_UNPRICED = 0.2  # most probability the average may place in a stretch no threshold prices
 
 
 def kalshi_race_id(state, code, races):
@@ -197,9 +198,11 @@ def _segments(xs, ys):
 
 def summarize_kalshi(sides, book=None, vol=0):
     """sides: {'D': [(N, P(D wins by N+)), ...], 'R': [...]}; book: Kalshi's normalized winner book.
-    Returns the same shape as summarize() (median margin toward the Democrat, p_d, top bracket,
-    ladder, volume; 'beyond' = N when the median is past the last threshold, so all the ladder says
-    is 'at least N') or None.
+    Returns {'m': the probability-weighted AVERAGE margin toward the Democrat (what the map shows),
+    'med': the median, 'p_d', 'top', 'lad', 'vol'; 'beyond' = N when the median is past the last
+    threshold, so all Kalshi says is 'at least N'} or None. Each stretch between neighbouring
+    thresholds counts at its midpoint; a stretch no threshold prices (one-sided ladder) does too, and
+    if that is more than KALSHI_MAX_UNPRICED of the probability there is no average to publish.
 
     Thresholds become points on S(x) = P(margin >= x); a Republican 'N+' is S(-N) = 1 - P, and the
     winner book gives S(0) when there is one. The far ends are closed one step past the last
@@ -254,7 +257,12 @@ def summarize_kalshi(sides, book=None, vol=0):
                    for x0, y0, x1, y1, _ in segs if x0 <= 0 <= x1)
     rows = [[round(x0, 1) + 0.0, round(x1, 1) + 0.0, round(max(0.0, y0 - y1), 4), op]
             for x0, y0, x1, y1, op in segs if x1 > x0]
-    out = {"m": round(med, 2), "p_d": None if p_d is None else round(p_d, 4),
+    unpriced = sum(max(0.0, y0 - y1) for x0, y0, x1, y1, op in segs if op in (2, 3, 4))
+    if unpriced > KALSHI_MAX_UNPRICED:
+        return None
+    tot = sum(max(0.0, y0 - y1) for x0, y0, x1, y1, _ in segs)
+    avg = sum(max(0.0, y0 - y1) * (x0 + x1) / 2 for x0, y0, x1, y1, _ in segs) / tot
+    out = {"m": round(avg, 2), "med": round(med, 2), "p_d": None if p_d is None else round(p_d, 4),
            "top": max((r for r in rows if r[3] in (-1, 0, 1)), key=lambda r: r[2]),
            "lad": rows, "vol": int(round(vol or 0))}
     if beyond is not None:

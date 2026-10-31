@@ -228,9 +228,9 @@ a:hover { text-decoration: underline; }
     <h3>How to read it</h3>
     <ul>
       <li><b>Four views:</b> <b>Margin</b> shades each race by the model's projected margin of victory in points, <b>Win %</b> by the favored party's chance to win (the model's or a market's), <b>Model vs markets</b> by how far the model's win chance is from Kalshi or Polymarket, and <b>Margin vs markets</b> by how far the model's margin is from Polymarket's.</li>
-      <li><b>Market margins:</b> on the Margin view, <b>Kalshi</b> and <b>Polymarket</b> shade each race by the median of that venue's margin-of-victory ladder. Polymarket lists brackets ("Democrat by 3-6%", normalized to 100%); Kalshi lists thresholds ("Democrats win by at least 4 points"), read off its order books. Most ladders cover only the favorite's side: the median is still read when it falls inside that ladder, and the race stays gray when it would fall where the ladder prices nothing.</li>
+      <li><b>Market margins:</b> on the Margin view, <b>Kalshi</b> shades each race by its average margin, the probability-weighted result implied by its "Democrats win by at least N points" markets; <b>Polymarket</b> by the median of its bracket ladder ("Democrat by 3-6%", normalized to 100%). Most races list only the favorite's side; a race stays gray when the markets don't price enough of the outcome to read.</li>
       <li><b>Margin:</b> the margin model's projected lead of the front-runner over the runner-up, in points; deep blue or red is a margin of 30+ points, light is a close race, gold is under 1 point. The margin comes from a separate model from the win chance, so in a few close races the two pick different leaders ("Models split"). Where the top two are from the same party (California's top-two, Louisiana's all-party first round) the shade is that party's color and the margin is between the two of them.</li>
-      <li><b>Margin vs markets:</b> each race is shaded by the margin model's projected result minus the median of Kalshi's or Polymarket's margin-of-victory ladder (switch with the venue buttons), both signed toward the Democrat, in points. Blue means the model expects a bluer result than the market, red a redder one, pale within 2 points. Races with no ladder median or no model margin stay gray.</li>
+      <li><b>Margin vs markets:</b> each race is shaded by the margin model's projected result minus Kalshi's average margin or Polymarket's ladder median (switch with the venue buttons), both signed toward the Democrat, in points. Blue means the model expects a bluer result than the market, red a redder one, pale within 2 points. Races with no ladder median or no model margin stay gray.</li>
       <li><b>Model vs markets:</b> each race is shaded by the model's chance minus the other source's chance, both for the seat <i>not</i> going Republican (Democrats plus independents like Nebraska's Osborn). Blue means the model is more Democratic than the market, red more Republican, pale means they agree within 2 points. The table lists the biggest disagreements first, with every source side by side.</li>
       <li><b>Our model:</b> each race's shade is the model's chance that its favored party wins the seat (that party's candidates combined), from light at 51% to deep near 100%; gold means the favorite is under 51%. The labels are the forecast page's tiers (Safe 95%+, Likely 80-95%, Lean 60-80%, Tossup under 60%); the <a href="predictions.html">forecast page</a> rates each candidate and explains every race.</li>
       <li><b>No polls:</b> races no pollster has covered, most House seats, use the model's no-polls version: which party holds the seat, its past results (the new map's lean where districts were redrawn for 2026), the national environment, fundraising and the candidates' experience. Tick <b>Polled races only</b> to gray them out.</li>
@@ -372,6 +372,8 @@ a:hover { text-decoration: underline; }
   const sideM = x => `${x >= 0 ? 'D' : 'R'} +${Math.abs(x).toFixed(1)}`;
   // a venue's ladder median; past its last threshold all the ladder says is "at least N" (analysis/margin_markets.py)
   const medM = pm => pm.beyond ? `${pm.m >= 0 ? 'D' : 'R'} ${pm.beyond}+` : sideM(pm.m);
+  // Kalshi's number is its probability-weighted average margin (one figure, no ladder); Polymarket's the ladder median
+  const mWord = vn => vn === 'kalshi' ? 'average margin' : 'median';
   // a margin bracket [lo, hi, p, open] (signed toward the Democrat) as words; open 2 = the side the ladder
   // doesn't split into brackets, its chance from the venue's winner market; 3 / 4 = Kalshi's unpriced stretch
   // when it lists one side and has no winner market (analysis/margin_markets.py)
@@ -484,10 +486,10 @@ a:hover { text-decoration: underline; }
       const why = !b ? `No ${office.toLowerCase()} race in 2026.`
         : noModel ? (r && r.basis === 'fundamentals' && st.polledOnly ? 'No public polls (hidden by "Polled races only").' : 'On the ballot, but the model has no projection.')
         : st.metric === 'mcmp' ? (signedMargin(r) == null ? 'On the ballot, but the model has no Democrat-vs-Republican margin for this race.'
-          : b && b[src + '_margin'] && b[src + '_margin'].beyond ? `${VENUE[src]}'s ladder stops short of its middle outcome (${medM(b[src + '_margin'])}), so there is no median to compare.`
-          : `On the ballot. ${VENUE[src]} has no margin median for this race.`)
+          : b && b[src + '_margin'] && b[src + '_margin'].beyond ? `${VENUE[src]}'s markets stop short of its middle outcome (${medM(b[src + '_margin'])}), so there is no ${mWord(src)} to compare.`
+          : `On the ballot. ${VENUE[src]} has no ${mWord(src)} for this race.`)
         : src === 'model' ? 'On the ballot, but the model has no margin for this race.'
-        : st.metric === 'margin' ? `On the ballot. ${VENUE[src]} has no margin median for this race.`
+        : st.metric === 'margin' ? `On the ballot. ${VENUE[src]} has no ${mWord(src)} for this race.`
         : `On the ballot. ${VENUE[src]} has no party market for this race.`;
       const hl = heldLine(r, b);
       const other = src !== 'model' && r && !noModel ? `<div class="meta"><span>Model: ${esc(surname(r.cands[0].name))} ${pct(r.cands[0].win || 0)}</span></div>` : '';
@@ -507,14 +509,18 @@ a:hover { text-decoration: underline; }
       if (v.vol) meta.push(`${VENUE[src]} volume ${fmtVol(v.vol)}`);
       meta.push(r.basis === 'fundamentals' ? 'No polls: the no-polls model' : `${r.n_surveys || 0} surveys`);
     } else if ((st.metric === 'margin' && src !== 'model') || st.metric === 'mcmp') {
-      // the venue's ladder, Democrat end first; brackets under 3% left out
-      const pm = v.pm, sm = r ? signedMargin(r) : null;
-      rows = pm.lad.slice().reverse().filter(x => x[2] >= 0.03).map(x =>
-        `<div class="cand"><span>${bracket(x)}</span><b>${pct(x[2], 0)}</b></div>`).join('');
-      meta.push(pm.beyond ? `${VENUE[src]} median: past its last threshold, ${medM(pm)}` : `${VENUE[src]} median: ${sideM(pm.m)}`);
-      if (pm.p_d != null) meta.push(`Democrat wins (ladder): ${pct(pm.p_d, 0)}`);
-      meta.push(sm == null ? 'Our model: no margin' : `Our model: ${sideM(sm)}${pm.beyond ? '' : ` (${fmtM(sm - pm.m)} pts toward D vs ${VENUE[src]})`}`);
-      if (pm.vol) meta.push(`Ladder volume ${mvol(src, pm.vol)}`);
+      // Kalshi: its average margin beside ours, nothing else; Polymarket: its ladder, Democrat end first (under 3% left out)
+      const pm = v.pm, sm = r ? signedMargin(r) : null, k = src === 'kalshi';
+      rows = k ? `<div class="cand"><span>Kalshi average margin</span><b>${medM(pm)}</b></div>` +
+          `<div class="cand"><span>Our model</span><b>${sm == null ? '-' : sideM(sm)}</b></div>`
+        : pm.lad.slice().reverse().filter(x => x[2] >= 0.03).map(x =>
+          `<div class="cand"><span>${bracket(x)}</span><b>${pct(x[2], 0)}</b></div>`).join('');
+      if (!k) meta.push(pm.beyond ? `${VENUE[src]} median: past its last threshold, ${medM(pm)}` : `${VENUE[src]} median: ${sideM(pm.m)}`);
+      else if (pm.beyond) meta.push(`Most of Kalshi's probability is past its last threshold: all it says is ${medM(pm)}`);
+      if (pm.p_d != null && !k) meta.push(`Democrat wins (ladder): ${pct(pm.p_d, 0)}`);
+      if (k) { if (sm != null && !pm.beyond) meta.push(`Model minus Kalshi: ${fmtM(sm - pm.m)} pts toward D`); }
+      else meta.push(sm == null ? 'Our model: no margin' : `Our model: ${sideM(sm)}${pm.beyond ? '' : ` (${fmtM(sm - pm.m)} pts toward D vs ${VENUE[src]})`}`);
+      if (pm.vol) meta.push(`${k ? 'Margin markets' : 'Ladder'} volume ${mvol(src, pm.vol)}`);
     } else if (src === 'model') {
       const mv = st.metric === 'margin';
       rows = r.cands.filter((c, i) => i < 2 || (c.win || 0) >= 0.01).slice(0, 4).map(c =>
@@ -686,9 +692,9 @@ a:hover { text-decoration: underline; }
   }
   function noneLabel() {
     const src = cur();
-    if (st.metric === 'margin') return src === 'model' ? 'No margin' : `No ${VENUE[src]} margin median`;
+    if (st.metric === 'margin') return src === 'model' ? 'No margin' : `No ${VENUE[src]} ${mWord(src)}`;
     if (st.metric === 'cmp') return `No ${VENUE[src]} price or no model`;
-    if (st.metric === 'mcmp') return `No ${VENUE[src]} margin median or no model margin`;
+    if (st.metric === 'mcmp') return `No ${VENUE[src]} ${mWord(src)} or no model margin`;
     return src === 'model' ? 'No projection' : `No ${VENUE[src]} market`;
   }
   const districtMap = () => st.office === 'House' && st.hv === 'map' && !!(H && H.districts && M);
@@ -711,7 +717,7 @@ a:hover { text-decoration: underline; }
       items.push([`${bar(MSTOPS.D)}Democrat ahead, 1 to 30+ pts`], [`${bar(MSTOPS.R)}Republican ahead, 1 to 30+ pts`]);
       if (all(office).some(([, v]) => v.side === 'I')) items.push([`${bar(MSTOPS.I)}Independent ahead`]);
       items.push(['Under 1 point', 'var(--toss)']);
-      items.push([`On the ballot, ${src === 'model' ? 'no margin' : `no ${VENUE[src]} margin median`}`, 'var(--none)']);
+      items.push([`On the ballot, ${src === 'model' ? 'no margin' : `no ${VENUE[src]} ${mWord(src)}`}`, 'var(--none)']);
     } else if (st.metric === 'cmp') {
       items.push([`${bar(GSTOPS.D)}Model more Democratic than ${VENUE[src]}, 2 to 30+ pts`], [`${bar(GSTOPS.R)}Model more Republican, 2 to 30+ pts`]);
       items.push(['Within 2 points', gshade(0)]);
@@ -719,7 +725,7 @@ a:hover { text-decoration: underline; }
     } else if (st.metric === 'mcmp') {
       items.push([`${bar(GSTOPS.D)}Model's margin more Democratic than ${VENUE[src]}'s, 2 to 30+ pts`], [`${bar(GSTOPS.R)}Model's margin more Republican, 2 to 30+ pts`]);
       items.push(['Within 2 points', gshade(0)]);
-      items.push([`On the ballot, no ${VENUE[src]} margin median or no model margin`, 'var(--none)']);
+      items.push([`On the ballot, no ${VENUE[src]} ${mWord(src)} or no model margin`, 'var(--none)']);
     } else {
       items.push([`${bar(STOPS.D)}Democrat favored, 51% to 100%`], [`${bar(STOPS.R)}Republican favored, 51% to 100%`]);
       if (all(office).some(([, v]) => v.rt.side === 'I')) items.push([`${bar(STOPS.I)}Independent favored`]);
@@ -746,7 +752,8 @@ a:hover { text-decoration: underline; }
     ['vgap', 'Model minus venue', "The model's chance minus the venue's for the venue's favored party, in percentage points. Positive = the model likes that party more than the market does."],
     ['cmpgap', 'Model minus market (map colour)', "The model's chance minus the market's that the seat does NOT go Republican (Democrats plus independents like Osborn), in points. Blue = the model is more Democratic, red = more Republican, pale = within 2 points."],
     ['samegap', 'Gap, same side', "The model's chance minus the venue's for the model's favorite, in points."],
-    ['pmmargin', 'Market margin (Kalshi / Polymarket)', "The median of the venue's margin-of-victory ladder, read as the market's spread of outcomes: half the probability lies on each side of it. Polymarket lists brackets ('Democrat by 3-6%', ..., 'Republican by 6% or more'), normalized to add up to 100%. Kalshi lists thresholds ('Democrats win by at least 4 points'), read from the middle of each order book (not the last trade, which can be stale) and smoothed so a bigger margin is never priced above a smaller one."],
+    ['pmmargin', 'Polymarket margin', "The median of Polymarket's margin-of-victory ladder: the bracket markets ('Democrat by 3-6%', ..., 'Republican by 6% or more') normalized to add up to 100%, read as the market's spread of outcomes; half the probability lies on each side of the median."],
+    ['kavg', 'Kalshi average margin', "The probability-weighted average margin implied by Kalshi's race markets, each a straight bet that one side wins by at least N points ('Democrats, 4+ pts'). Prices come from the middle of each order book (not the last trade, which can be stale), smoothed so a bigger margin is never priced above a smaller one; the probability between two neighbouring thresholds counts at their midpoint. 'D 8+' means most of the probability is past Kalshi's last threshold, so there is no average to compare."],
     ['pmtop', 'Most likely bracket', "The single margin bracket the venue prices highest, with its chance. For Kalshi, a bracket is the gap between two neighbouring thresholds."],
     ['pmpd', 'Democrat wins (ladder)', "The share of the venue's margin ladder on the Democratic side of zero (independents like Osborn count here). Most ladders list only the favored party's side; the other side's chance then comes from the venue's winner market, and a race whose middle outcome falls on that unlisted side is left gray. Blank when Kalshi lists one side and has no winner market for the race."],
     ['mgap', 'Model minus market (margin)', "Our margin model's projection minus the venue's median margin, both signed toward the Democrat, in points. Positive = the model expects a bluer result than the market."],
@@ -767,12 +774,18 @@ a:hover { text-decoration: underline; }
   const th = (k, text, n) => `<th${n ? ' class="n"' : ''} title="${esc(GL[k])}">${text}</th>`;
   function thead() {
     const src = cur();
+    if (st.metric === 'margin' && src === 'kalshi')
+      return '<tr>' + th('race', 'Race') + th('kavg', 'Kalshi average margin') + th('margin', 'Our model margin', 1) + th('mgap', 'Model minus Kalshi', 1) +
+        th('vol', 'Volume', 1) + th('notes', 'Notes') + '</tr>';
     if (st.metric === 'margin' && src !== 'model')
       return '<tr>' + th('race', 'Race') + th('pmmargin', `${VENUE[src]} margin`) + th('pmtop', 'Most likely bracket') + th('pmpd', 'Democrat wins (ladder)', 1) +
         th('margin', 'Our model margin', 1) + th('mgap', `Model minus ${VENUE[src]}`, 1) + th('vol', 'Volume', 1) + th('notes', 'Notes') + '</tr>';
     if (st.metric === 'margin')
       return '<tr>' + th('race', 'Race') + th('margin', 'Margin') + th('fav', 'Leader') + th('runner', 'Runner-up') + th('margin', 'Lead (pts)', 1) +
         th('winlead', 'Win model, leader’s party', 1) + th('notes', 'Notes') + '</tr>';
+    if (st.metric === 'mcmp' && src === 'kalshi')
+      return '<tr>' + th('race', 'Race') + th('mgap', 'Model minus Kalshi') + th('margin', 'Our model margin', 1) + th('kavg', 'Kalshi average margin', 1) +
+        th('vol', 'Volume', 1) + th('notes', 'Notes') + '</tr>';
     if (st.metric === 'mcmp')
       return '<tr>' + th('race', 'Race') + th('mgap', `Model minus ${VENUE[src]}`) + th('margin', 'Our model margin', 1) + th('pmmargin', `${VENUE[src]} margin`, 1) +
         th('pmtop', 'Most likely bracket') + th('winlead', 'Win model, leader’s party', 1) + th('vol', 'Volume', 1) + th('notes', 'Notes') + '</tr>';
@@ -799,6 +812,13 @@ a:hover { text-decoration: underline; }
     if (more) { more.style.display = rs.length > TOP ? '' : 'none'; more.textContent = st.all ? `Show the ${TOP} ${MORE[st.metric]}` : `Show all ${rs.length}`; }
     return list.map(([key, v]) => {
       const r = v.r, link = r ? `<a href="predictions.html#${encodeURIComponent(r.id)}">${esc(label(office, key, r))}</a> <button class="why sm" data-why="${office}|${key}">Why</button>` : esc(label(office, key, r));
+      if ((st.metric === 'margin' || st.metric === 'mcmp') && src === 'kalshi') {
+        const pm = v.pm, sm = r ? signedMargin(r) : null, gp = sm == null || pm.beyond ? '-' : fmtM(sm - pm.m);
+        const vol = `<td class="n">${pm.vol ? mvol(src, pm.vol) : '-'}</td><td>${r ? notesOf(r) : ''}</td></tr>`;
+        return st.metric === 'margin'
+          ? `<tr><td>${link}</td><td>${pill(v)}</td><td class="n">${sm == null ? '-' : sideM(sm)}</td><td class="n">${gp}</td>` + vol
+          : `<tr><td>${link}</td><td>${pill(v)}</td><td class="n">${sideM(v.sm)}</td><td class="n">${medM(pm)}</td>` + vol;
+      }
       if (st.metric === 'margin' && src !== 'model') {
         const pm = v.pm, sm = r ? signedMargin(r) : null;
         return `<tr><td>${link}</td><td>${pill(v)}</td><td>${bracket(pm.top)} <span class="mut">${pct(pm.top[2], 0)}</span></td><td class="n">${pm.p_d == null ? '-' : pct(pm.p_d, 0)}</td>` +
@@ -854,7 +874,7 @@ a:hover { text-decoration: underline; }
   // the margin comparison's summary line: direction of the gaps and races with a different leader
   function mcmpSummary(office) {
     const vs = all(office), V = VENUE[st.mcmp];
-    if (!vs.length) return `No ${office.toLowerCase()} race has both a model margin and a ${V} margin median.`;
+    if (!vs.length) return `No ${office.toLowerCase()} race has both a model margin and a ${V} ${mWord(st.mcmp)}.`;
     const nd = vs.filter(([, v]) => v.g >= 2).length, nr = vs.filter(([, v]) => v.g <= -2).length;
     const avg = vs.reduce((s, [, v]) => s + Math.abs(v.g), 0) / vs.length;
     const flip = vs.filter(([, v]) => v.sm * v.pm.m < 0).map(([k, v]) => label(office, k, v.r));
@@ -955,7 +975,7 @@ a:hover { text-decoration: underline; }
       h += `<div class="sec"><h4>Model vs markets</h4><div class="big"><div class="stat"><div class="v">${pct(mp, 0)}</div><div class="l">Our model: ${esc(PNAME[side])}s</div></div>` +
         mk.map(([vn, p]) => `<div class="stat"><div class="v">${pct(p, 0)} <span class="gp">${gap(mp, p)}</span></div><div class="l">${VENUE[vn]}${b[vn].vol ? `, volume ${fmtVol(b[vn].vol)}` : ''}</div></div>`).join('') +
         `</div>` + (pm ? `<div class="big" style="margin-top:10px"><div class="stat"><div class="v">${sm == null ? '-' : sideM(sm)}</div><div class="l">Our model's margin</div></div>` +
-          mvs.map(([vn, x]) => `<div class="stat"><div class="v">${medM(x)}${sm == null || x.beyond ? '' : ` <span class="gp">${fmtM(sm - x.m)}</span>`}</div><div class="l">${VENUE[vn]} margin (median of its ladder; likeliest ${esc(bracket(x.top))})</div></div>`).join('') +
+          mvs.map(([vn, x]) => `<div class="stat"><div class="v">${medM(x)}${sm == null || x.beyond ? '' : ` <span class="gp">${fmtM(sm - x.m)}</span>`}</div><div class="l">${vn === 'kalshi' ? 'Kalshi average margin' : `${VENUE[vn]} margin (median of its ladder; likeliest ${esc(bracket(x.top))})`}</div></div>`).join('') +
           `</div>` : '') +
         `<div class="hint">Each venue's normalized price for the ${esc(PNAME[side])} side, with the model's chance minus it in points.${pm ? " Margins are signed by party; the small number is the model's margin minus the venue's." : ''}${r.split ? ' The models split in this race, so treat any edge with care.' : ''}</div></div>`;
     }
@@ -1026,9 +1046,11 @@ a:hover { text-decoration: underline; }
     setText('tag', { margin: 'Projected margin by race', win: 'Confidence by race', cmp: 'Model vs markets', mcmp: 'Margin vs markets' }[st.metric]);
     if (st.metric === 'margin' && src !== 'model') {
       setText('title', `${V}'s projected margin, race by race`);
-      setText('lede', `Each race is shaded by the median of ${V}'s margin-of-victory ladder (${src === 'kalshi' ? "thresholds such as 'Democrats win by at least 4 points', read from the middle of each order book" : "bracket markets such as 'Democrat by 3-6%'"}), read as the market's spread of outcomes: deeper blue or red for a bigger expected lead, gold under 1 point. Gray races have no ladder, or a ladder that doesn't price where its middle outcome falls. Hover or tap a race for the ladder and our model's margin.`);
+      setText('lede', src === 'kalshi'
+        ? "Each race is shaded by Kalshi's average margin: the probability-weighted average result implied by its 'Democrats win by at least N points' markets, read from the middle of each order book. Deeper blue or red for a bigger expected lead, gold under 1 point. Gray races have no Kalshi margin markets, or too little of the outcome priced to average. Hover or tap a race for Kalshi's number beside our model's."
+        : `Each race is shaded by the median of Polymarket's margin-of-victory ladder (bracket markets such as 'Democrat by 3-6%'), read as the market's spread of outcomes: deeper blue or red for a bigger expected lead, gold under 1 point. Gray races have no ladder, or a ladder that doesn't price where its middle outcome falls. Hover or tap a race for the ladder and our model's margin.`);
       setText('asof', srcAsof);
-      setText('note', (noLadders(src) ? noLadderMsg(src) : `${V} has a margin median for ${nv} of ${nb} ${what}.`) + houseNote);
+      setText('note', (noLadders(src) ? noLadderMsg(src) : `${V} has ${src === 'kalshi' ? 'an average margin' : 'a margin median'} for ${nv} of ${nb} ${what}.`) + houseNote);
     } else if (st.metric === 'margin') {
       setText('title', "The model's projected margin, race by race");
       setText('lede', "Each race is shaded by the margin model's projected lead of the front-runner, in points: the deeper the blue or red, the bigger the lead; light for a close race, gold under 1 point. The margin model is separate from the win model, so a few close races lean the other way here (\"Models split\"). Switch to <b>Kalshi</b> or <b>Polymarket</b> for the markets' own margins. Hover or tap a race for every candidate's margin and chance.");
@@ -1036,7 +1058,7 @@ a:hover { text-decoration: underline; }
       setText('note', modelNote + houseNote);
     } else if (st.metric === 'mcmp') {
       setText('title', `Where our margin and ${V}'s disagree`);
-      setText('lede', `Each race is shaded by our margin model's projected result minus the median of ${V}'s margin-of-victory ladder, both signed toward the Democrat: blue where the model expects a bluer result than the market, red where it expects a redder one, pale where they agree within 2 points. Switch venues with the buttons. Gray races lack a ladder median or a model margin. Hover or tap a race for the ladder and both margins.`);
+      setText('lede', `Each race is shaded by our margin model's projected result minus ${src === 'kalshi' ? "Kalshi's average margin (the probability-weighted result implied by its 'win by at least N points' markets)" : "the median of Polymarket's margin-of-victory ladder"}, both signed toward the Democrat: blue where the model expects a bluer result than the market, red where it expects a redder one, pale where they agree within 2 points. Switch venues with the buttons. Gray races lack a market margin or a model margin. Hover or tap a race for both margins.`);
       setText('asof', [modelAsof, srcAsof].filter(Boolean).join(' · '));
       setText('note', (noLadders(src) ? noLadderMsg(src) : mcmpSummary(office)) + houseNote);
     } else if (st.metric === 'cmp') {
