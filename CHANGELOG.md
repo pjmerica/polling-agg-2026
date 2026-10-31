@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[36b154db]` Map Model vs markets: every number is the Democrat's chance to win (2026-10-31). User: "dont use the republican. Use the dems win % chance". The table, race card and labels showed each source's price for the model's favourite, so R-favoured races read as Republican chances. Now the table is Democrat / Our model: Dem win % / Kalshi / Polymarket (all the Democrat's chance), the pill reads "Dem +5" / "Dem −5" (model minus market), and the legend, tally, summary and glossary (`dcand`, `dchance`, `dmkt`; `samegap` dropped) say so. Independents in the Democratic slot (Osborn) count as the Democrat and are labelled as such. The map colour was already model minus market on the Democratic side.
+
 - `[4d82d6e8]` Map explainer: drop the "If the polls are off" section (2026-10-31, user call). The drawer no longer shows the +/-3 / +/-6 stress table; its glossary entry and mentions are gone. The "Fragile" flag on race cards stays. `tests/map_exercise.js` fails if the section returns. The forecast page's (predictions.html) own stress table is unchanged.
 
 - `[026363a3]` Map: race panel slides in on the right; hover says a click shows what's driving the prediction (2026-10-31). The user disliked the bottom panel (8e872514): it is now fixed at the top right beside the map (full width near the top on a phone) and slides in from the right edge, the side the explainer drawer opens on. The hover tooltip ends with "Click to see what's driving this prediction". `tests/map_exercise.js` checks the hint.
