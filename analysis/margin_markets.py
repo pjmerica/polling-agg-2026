@@ -130,7 +130,9 @@ KALSHI_TITLE = re.compile(r"^Will the margin of victory for (.+?) in (?:the )?(.
                           r"(\d+(?:\.\d+)?) percentage points?\?$")
 KALSHI_MAX_SPREAD = 0.30   # a wider book says nothing about the price
 KALSHI_MIN_POINTS = 3      # thresholds needed across both sides
-KALSHI_MAX_UNPRICED = 0.2  # most probability the average may place in a stretch no threshold prices
+KALSHI_MAX_UNPRICED = 0.3  # most probability the average may place in a stretch no threshold prices (0.3 keeps
+                           # House ladders that start at 'R by 1+' with no winner market: KS-2, IN-5, NC-14, FL-11;
+                           # misplacing 0.3 of the probability by 2 pts moves the average 0.6)
 
 
 def kalshi_race_id(state, code, races):
@@ -275,7 +277,8 @@ def kalshi_margins(path, books=None, cands=None, races=None):
     books: {race_id: Kalshi's normalized winner book}; cands: {race_id: [(name, party), ...]} to
     place candidate-named sides; races: the race_ids on the ballot (default utils/races.py).
     Same-party races (both sides Democrats, as in California's top-two) are skipped: the map's
-    margin is between the parties."""
+    margin is between the parties. Each result carries 'src': 'brackets' (KXGENERALMOV / KXAKMOV, used
+    where they exist) or 'thresholds' (KXMIDTERMMOV)."""
     path = Path(path)
     if not path.exists():
         return {}
@@ -284,7 +287,7 @@ def kalshi_margins(path, books=None, cands=None, races=None):
         races = {r.race_id for r in ALL_RACES_2026}
     df = pd.read_csv(path, low_memory=False, usecols=lambda c: c in
                      {"series_ticker", "event_ticker", "market_title", "yes_bid", "yes_ask", "volume"})
-    df = df[df["series_ticker"] == KALSHI_SERIES]
+    full, df = df, df[df["series_ticker"] == KALSHI_SERIES]
     acc = {}   # race_id -> {"ev": {event: side}, "sides": {side: [(N, p)]}, "vol": contracts}
     for ev, title, bid, ask, vol in zip(df["event_ticker"], df["market_title"].fillna(""), df["yes_bid"],
                                         df["yes_ask"], df["volume"]):
@@ -308,6 +311,84 @@ def kalshi_margins(path, books=None, cands=None, races=None):
             continue
         s = summarize_kalshi(a["sides"], (books or {}).get(rid), a["vol"])
         if s:
+            s["src"] = "thresholds"
+            out[rid] = s
+    # the straight margin brackets, where a race has them, replace the thresholds' reading
+    out.update(kalshi_bracket_margins(full, books, cands, races))
+    return out
+
+
+
+# ---------- Kalshi margin BRACKETS (2026-10-30): straight bets on the margin ----------
+# KXGENERALMOV (16 headline Senate / Governor races) and KXAKMOV (Alaska Senate): mutually exclusive
+# brackets per candidate, "Will the margin of victory for James Talarico in the 2026 U.S. Senate election
+# in Texas be between 0% and 2%?" ... "at least 8%?". Where a race has them they are Kalshi's best margin
+# read (tight books, the most volume) and are used ahead of the KXMIDTERMMOV thresholds.
+KALSHI_BRACKET_EVENT = re.compile(r"^KX(?:GENERALMOV-(SENATE|GOVPARTY)([A-Z]{2})(S?)-\d\d|AKMOV-([A-Z]{2})(SENATE|GOV)\w*)$")
+KALSHI_BRACKET_TITLE = re.compile(r"^Will the margin of victory for (.+?) in (?:the )?(.+?) be (?:between (\d+(?:\.\d+)?)% and "
+                                  r"(\d+(?:\.\d+)?)%|(?:at least|above) (\d+(?:\.\d+)?)%)\?$")
+
+
+def _bracket_race(ev, races):
+    m = KALSHI_BRACKET_EVENT.match(str(ev))
+    if not m:
+        return None
+    if m.group(1):
+        office, state, special = ("SEN" if m.group(1) == "SENATE" else "GOV"), m.group(2), m.group(3)
+        rid = kalshi_race_id(state, office, races)
+        if special and rid and not rid.endswith("-S"):
+            rid = rid + "-S" if rid + "-S" in races else None
+        return rid
+    return kalshi_race_id(m.group(4), "SEN" if m.group(5) == "SENATE" else "GOV", races)
+
+
+def _with_average(s):
+    """summarize()'s result with 'm' = the probability-weighted average margin (each bracket at its
+    midpoint, open ends already closed with the neighbouring width) and 'med' = the median."""
+    if not s:
+        return None
+    rows = s["lad"]
+    unlisted = sum(r[2] for r in rows if r[3] == 2)
+    if unlisted > KALSHI_MAX_UNPRICED:
+        return None
+    tot = sum(r[2] for r in rows)
+    out = dict(s)
+    out["med"] = s["m"]
+    out["m"] = round(sum(r[2] * (r[0] + r[1]) / 2 for r in rows) / tot, 2)
+    return out
+
+
+def kalshi_bracket_margins(df, books=None, cands=None, races=None):
+    """{race_id: summary} from Kalshi's margin brackets; df = the Kalshi scrape's rows."""
+    acc = {}
+    for ser, ev, title, bid, ask, vol in zip(df["series_ticker"], df["event_ticker"], df["market_title"].fillna(""),
+                                             df["yes_bid"], df["yes_ask"], df["volume"]):
+        if ser not in ("KXGENERALMOV", "KXAKMOV"):
+            continue
+        t = KALSHI_BRACKET_TITLE.match(title.strip())
+        rid = _bracket_race(ev, races)
+        if not t or not rid:
+            continue
+        side = kalshi_side(t.group(1), (cands or {}).get(rid))
+        a = acc.setdefault(rid, {"names": {}, "br": [], "bad": 0})
+        a["names"][t.group(1)] = side
+        p = _mid(bid, ask)
+        if not side or p is None:
+            a["bad"] += 1
+            continue
+        lo = float(t.group(3) if t.group(3) else t.group(5))
+        hi = float(t.group(4)) if t.group(4) else None
+        if side == "R":   # mirror toward the Democrat; an open-ended one runs from -inf to -lo
+            lo, hi = (-hi if hi is not None else None), -lo
+        a["br"].append((lo, hi, p, float(vol) if vol is not None and vol == vol else 0.0))
+    out = {}
+    for rid, a in acc.items():
+        sides = list(a["names"].values())
+        if None in sides or len(set(sides)) != len(sides) or a["bad"] > 1:   # unplaced / same-party / unreadable books
+            continue
+        s = _with_average(summarize(a["br"], (books or {}).get(rid)))
+        if s:
+            s["src"] = "brackets"
             out[rid] = s
     return out
 

@@ -59,6 +59,7 @@ def test_one_sided_ladder_takes_the_other_side_from_the_winner_market():
 
 # ---------- Kalshi thresholds (2026-10-30): "margin of victory for Democrats ... at least N points" ----------
 from analysis.margin_markets import kalshi_margins, kalshi_race_id, summarize_kalshi  # noqa: E402
+from analysis.margin_markets import _bracket_race as KALSHI_BRACKET_EVENT_OK  # noqa: E402
 
 
 def test_kalshi_two_sided_thresholds():
@@ -98,8 +99,8 @@ def test_kalshi_median_past_the_last_threshold_is_flagged():
 
 
 def test_kalshi_no_average_when_too_much_is_unpriced():
-    # Republican side only, no winner market, 30% of the probability in the unpriced stretch
-    assert summarize_kalshi({"R": [(10, .70), (20, .50), (30, .20)]}) is None
+    # Republican side only, no winner market, 35% of the probability in the unpriced stretch
+    assert summarize_kalshi({"R": [(10, .65), (20, .50), (30, .20)]}) is None
 
 
 def _kdf(rows):
@@ -127,3 +128,28 @@ def test_kalshi_events_to_races(tmp_path):
     assert 0 < out["2026-SEN-AK"]["m"] < 2 and out["2026-SEN-AK"]["vol"] == 50
     # a name the forecast can't place drops the race rather than guessing its side
     assert kalshi_margins(path, cands={}, races=races) == {}
+
+
+def test_kalshi_brackets_beat_thresholds(tmp_path):
+    # KXGENERALMOV: straight bets on the margin, used ahead of the KXMIDTERMMOV thresholds for the same race
+    races = {'2026-SEN-TX', '2026-SEN-OH-S'}
+    cands = {'2026-SEN-TX': [('James Talarico', 'DEM'), ('Ken Paxton', 'REP')]}
+    q = 'Will the margin of victory for {} in the 2026 U.S. Senate election in Texas be {}?'
+    rows = [dict(series_ticker='KXGENERALMOV', event_ticker='KXGENERALMOV-SENATETX-26', market_title=q.format(w, b),
+                 yes_bid=p - .01, yes_ask=p + .01, volume=100)
+            for w, b, p in [('James Talarico', 'between 0% and 2%', .18), ('James Talarico', 'between 2% and 4%', .20),
+                            ('James Talarico', 'between 4% and 6%', .15), ('James Talarico', 'at least 6%', .17),
+                            ('Ken Paxton', 'between 0% and 2%', .16), ('Ken Paxton', 'between 2% and 4%', .06),
+                            ('Ken Paxton', 'at least 4%', .08)]]
+    rows += [dict(series_ticker='KXMIDTERMMOV', event_ticker='KXMIDTERMMOV-TXSEND', yes_bid=p - .01, yes_ask=p + .01, volume=5,
+                  market_title=f"Will the margin of victory for Democrats in the Texas Senate election be at least {n} percentage points?")
+             for n, p in ((2, .5), (5, .3), (8, .1))]
+    path = tmp_path / 'k.csv'
+    pd.DataFrame(rows).to_csv(path, index=False)
+    out = kalshi_margins(path, cands=cands, races=races)
+    s = out['2026-SEN-TX']
+    assert s['src'] == 'brackets' and s['vol'] == 700
+    # midpoints, the open ends closed with the 2-pt width: Paxton 4+ at -5, Talarico 6+ at +7
+    exp = (.08 * -5 + .06 * -3 + .16 * -1 + .18 * 1 + .20 * 3 + .15 * 5 + .17 * 7) / 1.0
+    assert s['m'] == pytest.approx(exp, abs=0.02)
+    assert KALSHI_BRACKET_EVENT_OK('KXGENERALMOV-SENATEOHS-26', races) == '2026-SEN-OH-S'
