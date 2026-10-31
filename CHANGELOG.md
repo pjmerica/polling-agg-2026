@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[4d82d6e8]` Map explainer: drop the "If the polls are off" section (2026-10-31, user call). The drawer no longer shows the +/-3 / +/-6 stress table; its glossary entry and mentions are gone. The "Fragile" flag on race cards stays. `tests/map_exercise.js` fails if the section returns. The forecast page's (predictions.html) own stress table is unchanged.
+
 - `[026363a3]` Map: race panel slides in on the right; hover says a click shows what's driving the prediction (2026-10-31). The user disliked the bottom panel (8e872514): it is now fixed at the top right beside the map (full width near the top on a phone) and slides in from the right edge, the side the explainer drawer opens on. The hover tooltip ends with "Click to see what's driving this prediction". `tests/map_exercise.js` checks the hint.
 
 - `[8e872514]` Map: a clicked or tapped race opens a panel at the bottom of the screen with an explainer button (2026-10-31). User: clicking a state should offer the explainer from the forecast pages. It existed, but the card with its "Why?" button rendered under the map and legend (off screen on a phone) and a tap also fired the hover tooltip. The race card is now a fixed panel at the bottom of the screen with a close button (Escape closes it too) and a prominent "What's driving this prediction?" button opening the explainer drawer (every candidate, stress test, markets, factors with definitions); taps no longer show the tooltip. `tests/map_exercise.js` checks the panel, its buttons, the explainer's factors and closing.
