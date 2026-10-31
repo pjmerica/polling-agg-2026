@@ -72,3 +72,6 @@ for (const [office, k] of [['Senate', 'TX'], ['Governor', 'GA'], ['House', 'TX-2
   T.unselect();
   if (html('detail') !== '' || T.st.sel !== null) throw new Error('closing the race panel left it open');
 }
+// hovering a race says a click shows what's driving the prediction
+T.tip('Senate', 'TX', { clientX: 100, clientY: 100 });
+if (!/Click to see what/.test(html('tip'))) throw new Error('the hover tooltip lacks the click-to-explain hint');
