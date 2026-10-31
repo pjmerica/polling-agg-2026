@@ -92,7 +92,14 @@ a:hover { text-decoration: underline; }
 
 .tip { position: fixed; z-index: 60; pointer-events: none; background: #0b0e14f5; border: 1px solid var(--line2);
        border-radius: 10px; padding: 9px 11px; font-size: 0.78rem; display: none; max-width: 340px; box-shadow: 0 6px 24px #0008; }
-.detail { margin-top: 12px; }
+/* race panel: pops up at the bottom of the screen when a race is clicked or tapped (2026-10-31) */
+.detail { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); width: min(600px, calc(100vw - 20px)); z-index: 65;
+          max-height: 62vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 10px 40px #000c; }
+.detail:empty { display: none; }
+.detail .card { position: relative; padding-right: 50px; }
+.detail .card > .x { position: absolute; top: 10px; right: 10px; }
+.why.big { background: var(--accent); border-color: var(--accent); color: #fff; font-size: 0.86rem; padding: 8px 14px; }
+.why.big:hover { filter: brightness(1.1); }
 .card { background: var(--panel); border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14px; }
 .rname { font-weight: 750; font-size: 0.95rem; }
 .rsub { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
@@ -227,6 +234,7 @@ a:hover { text-decoration: underline; }
   <section class="how">
     <h3>How to read it</h3>
     <ul>
+      <li><b>Click or tap a race</b> for its numbers in a panel at the bottom of the screen; <b>What's driving this prediction?</b> opens the same explainer as the forecast page: every candidate, the stress test, the markets and the factors behind the numbers, each defined. On the district map the first tap zooms to the state.</li>
       <li><b>Four views:</b> <b>Margin</b> shades each race by the model's projected margin of victory in points, <b>Win %</b> by the favored party's chance to win (the model's or a market's), <b>Model vs markets</b> by how far the model's win chance is from Kalshi or Polymarket, and <b>Margin vs markets</b> by how far the model's margin is from Polymarket's.</li>
       <li><b>Market margins:</b> on the Margin view, <b>Kalshi</b> shades each race by its average margin, the probability-weighted result implied by its margin brackets ("Talarico by 2-4%", straight bets on the final margin in 16 headline races) or else its "Democrats win by at least N points" markets; <b>Polymarket</b> by the median of its bracket ladder ("Democrat by 3-6%", normalized to 100%). Most races list only the favorite's side; a race stays gray when the markets don't price enough of the outcome to read.</li>
       <li><b>Margin:</b> the margin model's projected lead of the front-runner over the runner-up, in points; deep blue or red is a margin of 30+ points, light is a close race, gold is under 1 point. The margin comes from a separate model from the win chance, so in a few close races the two pick different leaders ("Models split"). Where the top two are from the same party (California's top-two, Louisiana's all-party first round) the shade is that party's color and the margin is between the two of them.</li>
@@ -889,8 +897,8 @@ a:hover { text-decoration: underline; }
     if (!el) return;
     if (!st.sel) { el.innerHTML = ''; return; }
     const r = fc[st.office][st.sel];
-    el.innerHTML = `<div class="card">${body(st.office, st.sel)}` +
-      (r ? `<div class="meta" style="margin-top:10px;align-items:center"><button class="why" data-why="${st.office}|${st.sel}">Why? Explain this race</button>` +
+    el.innerHTML = `<div class="card"><button class="x" data-close aria-label="Close">&times;</button>${body(st.office, st.sel)}` +
+      (r ? `<div class="meta" style="margin-top:10px;align-items:center"><button class="why big" data-why="${st.office}|${st.sel}">What's driving this prediction?</button>` +
         `<a href="predictions.html#${encodeURIComponent(r.id)}">Open this race in the forecast &rarr;</a></div>` : '') + '</div>';
   }
 
@@ -1003,7 +1011,14 @@ a:hover { text-decoration: underline; }
     const db = document.getElementById('d-body'); if (db) db.scrollTop = 0;
     hideTip();
   }
+  // close the race panel: no race selected, nothing highlighted
+  function unselect() {
+    st.sel = null;
+    if (svg) for (const x of svg.querySelectorAll('.sel')) x.classList.remove('sel');
+    hash(); detail();
+  }
   const whyClick = e => {
+    if (e.target && e.target.closest && e.target.closest('[data-close]')) { unselect(); return; }
     const t = e.target && e.target.closest ? e.target.closest('[data-why]') : null;
     if (!t) return;
     const [office, key] = t.dataset.why.split('|');
@@ -1155,8 +1170,10 @@ a:hover { text-decoration: underline; }
     else if (b.dataset.z === 'all') zoomTo(null);
   });
   // drag to pan the zoomed district map (pointer events: mouse, pen and touch alike)
-  let drag = null, dragged = false;
+  let drag = null, dragged = false, touchy = false;
   if (svg) {
+    svg.addEventListener('pointerdown', e => { touchy = e.pointerType === 'touch'; });
+    svg.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') touchy = false; });
     svg.addEventListener('pointerdown', e => {
       if (!districtMap() || !st.vb) return;
       drag = { x: e.clientX, y: e.clientY, vb: st.vb.slice(), moved: false };
@@ -1176,6 +1193,7 @@ a:hover { text-decoration: underline; }
     document.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = true; drag = null; });
     svg.addEventListener('mousemove', e => {
       if (drag && drag.moved) return;
+      if (touchy) { hideTip(); return; }   // the tapped race's panel shows the same numbers
       const k = e.target && e.target.dataset ? e.target.dataset.k : null;
       if (k) showTip(e, st.office, k); else hideTip();
     });
@@ -1194,10 +1212,10 @@ a:hover { text-decoration: underline; }
       st.sel = st.sel === k ? null : k;
       for (const x of svg.querySelectorAll('.sel')) x.classList.remove('sel');
       if (st.sel && e.target.classList) e.target.classList.add('sel');
-      hash(); detail();
+      hideTip(); hash(); detail();
     });
   }
-  document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (isOpen()) closeDrawer(); else if (st.vb) zoomTo(null); });
+  document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (isOpen()) closeDrawer(); else if (st.sel) unselect(); else if (st.vb) zoomTo(null); });
   const more = document.getElementById('more');
   if (more) more.addEventListener('click', () => { st.all = !st.all; setText('rows', rowsHtml(st.office)); });
   const polled = document.getElementById('polled');
@@ -1229,7 +1247,7 @@ a:hover { text-decoration: underline; }
   mark(metrics, 'm', st.metric);
   mark(hvs, 'h', st.hv);
   render();
-  window.MAP_TEST = { st, render, boxFor, zoomBy, keys: office => Object.keys(ballot[office]), card: body, explain: openDrawer };   // for tests/map_exercise.js (smoke test)
+  window.MAP_TEST = { st, render, boxFor, zoomBy, keys: office => Object.keys(ballot[office]), card: body, explain: openDrawer, detail, unselect };   // for tests/map_exercise.js (smoke test)
 })();
 </script>
 </body>

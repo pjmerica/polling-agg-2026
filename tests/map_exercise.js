@@ -59,3 +59,16 @@ for (const office of ['Senate', 'House', 'Governor']) for (const k of T.keys(off
 }
 if (nWhy < 400) throw new Error(`explainer opened for only ${nWhy} races`);
 if (count(html('glossary'), /<dt>/g) < 20) throw new Error('glossary missing from the page');
+
+// 2026-10-31: a clicked race opens the bottom panel with its numbers, a close button and the explainer button
+for (const [office, k] of [['Senate', 'TX'], ['Governor', 'GA'], ['House', 'TX-28']]) {
+  Object.assign(T.st, { metric: 'win', src: 'model', office, hv: 'map', vb: null, sel: k });
+  T.render();
+  const d = html('detail');
+  if (!/data-close/.test(d) || !/What's driving this prediction\?/.test(d) || !new RegExp(`data-why="${office}\|${k}"`).test(d))
+    throw new Error(`${office} ${k}: the race panel lacks its close or explainer button`);
+  T.explain(office, k);
+  if (!/class="factor"/.test(html('d-body'))) throw new Error(`${office} ${k}: the explainer opened without factors`);
+  T.unselect();
+  if (html('detail') !== '' || T.st.sel !== null) throw new Error('closing the race panel left it open');
+}
