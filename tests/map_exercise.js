@@ -69,6 +69,7 @@ for (const [office, k] of [['Senate', 'TX'], ['Governor', 'GA'], ['House', 'TX-2
     throw new Error(`${office} ${k}: the race panel lacks its close or explainer button`);
   T.explain(office, k);
   if (!/class="factor"/.test(html('d-body'))) throw new Error(`${office} ${k}: the explainer opened without factors`);
+  if (/If the (polls are|national mood is) off/.test(html('d-body'))) throw new Error(`${office} ${k}: the stress table is back in the explainer (removed 2026-10-31)`);
   T.unselect();
   if (html('detail') !== '' || T.st.sel !== null) throw new Error('closing the race panel left it open');
 }

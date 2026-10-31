@@ -237,7 +237,7 @@ a:hover { text-decoration: underline; }
   <section class="how">
     <h3>How to read it</h3>
     <ul>
-      <li><b>Click or tap a race</b> for its numbers in a panel on the right; <b>What's driving this prediction?</b> opens the same explainer as the forecast page: every candidate, the stress test, the markets and the factors behind the numbers, each defined. On the district map the first tap zooms to the state.</li>
+      <li><b>Click or tap a race</b> for its numbers in a panel on the right; <b>What's driving this prediction?</b> opens the same explainer as the forecast page: every candidate, the markets and the factors behind the numbers, each defined. On the district map the first tap zooms to the state.</li>
       <li><b>Four views:</b> <b>Margin</b> shades each race by the model's projected margin of victory in points, <b>Win %</b> by the favored party's chance to win (the model's or a market's), <b>Model vs markets</b> by how far the model's win chance is from Kalshi or Polymarket, and <b>Margin vs markets</b> by how far the model's margin is from Polymarket's.</li>
       <li><b>Market margins:</b> on the Margin view, <b>Kalshi</b> shades each race by its average margin, the probability-weighted result implied by its margin brackets ("Talarico by 2-4%", straight bets on the final margin in 16 headline races) or else its "Democrats win by at least N points" markets; <b>Polymarket</b> by the median of its bracket ladder ("Democrat by 3-6%", normalized to 100%). Most races list only the favorite's side; a race stays gray when the markets don't price enough of the outcome to read.</li>
       <li><b>Margin:</b> the margin model's projected lead of the front-runner over the runner-up, in points; deep blue or red is a margin of 30+ points, light is a close race, gold is under 1 point. The margin comes from a separate model from the win chance, so in a few close races the two pick different leaders ("Models split"). Where the top two are from the same party (California's top-two, Louisiana's all-party first round) the shade is that party's color and the margin is between the two of them.</li>
@@ -753,7 +753,7 @@ a:hover { text-decoration: underline; }
   // one glossary: table headers show these on hover, the "Every number on this page" list prints them all,
   // and the explainer drawer links to them
   const GLOSS = [
-    ['race', 'Race', 'The seat on the ballot. Click "Why" for the explainer: every candidate, the stress test, the markets and the factors behind the numbers.'],
+    ['race', 'Race', 'The seat on the ballot. Click "Why" for the explainer: every candidate, the markets and the factors behind the numbers.'],
     ['conf', 'Confidence', "A tier from the favored party's chance to win: Safe 95% or more, Likely 80-95%, Lean 60-80%, Tossup under 60%. Same tiers as the forecast page."],
     ['fav', 'Favorite', 'The leading candidate of the party with the best chance to win the seat.'],
     ['chance', 'Party’s chance (win %)', "The model's chance that this party wins the seat, all its candidates added together (several can run in California's top-two or Louisiana's all-party round)."],
@@ -780,7 +780,6 @@ a:hover { text-decoration: underline; }
     ['even', 'Even / gold', "Win %: the favorite's chance is under 51%. Margin: the lead is under 1 point. A coin flip either way."],
     ['surveys', 'Surveys', 'How many separate polls of the race the model used.'],
     ['pollavg', 'Poll avg', "The candidate's average share across the race's polls."],
-    ['stress', 'If the polls are off', "Each column moves every poll in the country (or, for no-polls races, the national mood) the same number of points toward one party and re-runs the model. National misses of 5 to 8 points happened in 2016 and 2020."],
     ['factor', 'Factors (why)', "What moved the model for this race, from SHAP values: each bar is how many points of win chance (or margin) that input adds or removes on its own. Value is the candidate's own number for that input; the opponent's is beside it."],
   ];
   const GL = {};
@@ -974,14 +973,8 @@ a:hover { text-decoration: underline; }
         (noPolls ? '' : `<td class="n">${c.poll_avg == null ? '-' : c.poll_avg.toFixed(1) + '%'}</td>`) + (hasM ? `<td class="n">${c.margin == null ? '-' : fmtM(c.margin)}</td>` : '') + '</tr>').join('') +
       `</tbody></table><div class="hint">Win: the model's chance this candidate wins. ${noPolls ? 'No public polls, so these come from the no-polls models.' : `Poll avg: their average share in the ${r.n_surveys || 0} surveys used.`} ` +
       `${hasM ? "Margin: each candidate's projected result against their strongest opponent, in points." : 'No margin is projected for this race.'}</div></div>`;
-    const stress = r.cands.filter(c => c.win_r3 != null).slice(0, 2);
-    if (stress.length) {
-      h += `<div class="sec"><h4>If the ${noPolls ? 'national mood is' : 'polls are'} off</h4><table class="tbl dt"><thead><tr><th>Candidate</th><th class="n">Dems overstated 6</th><th class="n">by 3</th>` +
-        `<th class="n">As ${noPolls ? 'measured' : 'polled'}</th><th class="n">Reps overstated 3</th><th class="n">by 6</th></tr></thead><tbody>` +
-        stress.map(c => `<tr><td>${esc(c.name)}</td>${[c.win_r6, c.win_r3, c.win || 0, c.win_d3, c.win_d6].map(x => `<td class="n">${x == null ? '-' : pct(x)}</td>`).join('')}</tr>`).join('') +
-        `</tbody></table><div class="hint">${esc(GL.stress)} ${r.fragile ? 'The pick changes with a 3-point shift: treat this race as fragile.' : 'Win chances shown for the top two.'}</div></div>`;
-    }
-    const mk = sources().map(vn => [vn, venuePrice(b, vn, side)]).filter(x => x[1] != null);
+    // (the "If the polls are off" stress table was removed from the explainer, user call 2026-10-31)
+    const mk =sources().map(vn => [vn, venuePrice(b, vn, side)]).filter(x => x[1] != null);
     if (mk.length) {
       const mp = r._sides[side];
       const sm = signedMargin(r), mvs = sources().map(vn => [vn, b && typeof b[vn + '_margin'] === 'object' ? b[vn + '_margin'] : null]).filter(x => x[1]);
