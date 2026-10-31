@@ -447,6 +447,47 @@ docs/                  GitHub Pages site. Tracked.
 
 ---
 
+## Mirrored on ezdubsanalytics.com (2026-10-31)
+
+`docs/map.html` and `docs/predictions.html` also appear on the user's site,
+ezdubsanalytics.com (repo `pjmerica/ez-dubs-website`), as **"The EZ Dub Election
+Forecast"** under a Politics menu: `/dashboards/politics-map/` and
+`/dashboards/politics-forecast/`. Nothing here pushes to it. That repo's
+`scripts/pull_politics.py` runs every two hours (`politics-pull.yml`), fetches
+this repo's **published Pages site** (so a change shows there after the Pages
+deploy, within about two hours) and:
+
+- copies `forecast_data.js`, `data.js`, `us_map_geo.js` and
+  `us_house_2026_geo.js` byte for byte, checking each is `const NAME = <json>;`;
+- rebuilds both pages from the published HTML: the markup and the **last inline
+  `<script>`** verbatim, the `.top` header dropped, the site's nav and footer
+  around it, this page's CSS re-themed to the site's newsprint look.
+
+So changes made here reach the site on their own. What it relies on, which is
+worth keeping in mind when editing these two pages:
+
+- **The page logic stays in one inline `<script>`** at the end of `<body>`, and
+  the data files keep their `const NAME = {...};` form.
+- **The element ids** its `PAGES` table lists (`map`, `metric`, `src`, `tabs`,
+  `tally`, `legend`, `detail`, `rows`, `thead`, `more`, `drawer`, `d-body`,
+  `tip`, `title`, `lede`, `asof`; on predictions.html `chambers`, `grid`,
+  `count`, `q`).
+- **Colours as hex literals** in the script. It maps each known one to a
+  newsprint colour; a new hex still works but shows in this page's colour there
+  until added to its `JS_HEX`. The map's `const PCOL = {...};` statement is
+  swapped whole (a required match), as are `function ink(col)` and the
+  `const pill = v => ...` line (optional).
+- **Links between the two pages** (`map.html#...`, `predictions.html#...`) are
+  rewritten to the site's URLs. A link from either page to any OTHER page here
+  (index.html, polls.html, election-night.html) has no counterpart on the site,
+  so it stops that page rebuilding until the site's script is taught about it.
+
+If something it relies on changes, that site page is not rebuilt (its last good
+version stays live, the data keeps updating) and the site's workflow goes red.
+Nothing here breaks.
+
+---
+
 ## Do not
 
 - **Pick an election market leg by "the title mentions Democrat".** Use
