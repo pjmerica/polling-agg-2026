@@ -91,6 +91,17 @@ th:first-child, td:first-child { text-align: left; }
 th { position: sticky; top: 0; background: var(--panel2); color: var(--muted); font-weight: 600; font-size: 11.5px; cursor: pointer; user-select: none; }
 td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 .filter { background: var(--panel2); border: 1px solid var(--line2); border-radius: 6px; padding: 5px 9px; color: var(--text); width: 200px; }
+.pb { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: auto auto auto 1fr; gap: 8px 12px; align-items: center; background: var(--panel); border: 1px solid var(--line2); border-radius: 8px; padding: 10px 14px; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+.pb[hidden] { display: none; }
+.pbbtn { min-width: 84px; color: var(--text); }
+.pbtrack { display: grid; gap: 2px; min-width: 0; }
+.pbtrack input { width: 100%; accent-color: var(--proj); height: 22px; cursor: pointer; }
+.pbticks { position: relative; height: 14px; font-size: 10.5px; color: var(--faint); }
+.pbticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.pbjump { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.pbjump button { border: 1px solid var(--line2); background: var(--panel2); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.pbjump button:hover { color: var(--text); border-color: var(--proj); }
+@media (max-width: 700px) { .pb { grid-template-columns: auto 1fr; } .pbtrack { grid-column: 1 / -1; } .pb label, #pb-speed { display: none; } .pbticks span:nth-child(even) { display: none; } }
 .empty { color: var(--muted); padding: 30px; text-align: center; border: 1px dashed var(--line2); border-radius: 8px; }
 @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr; } .detail .row { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: no-preference) { .card { transition: border-color .15s; } }
@@ -115,6 +126,20 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
       <button id="t-res" class="tog" aria-pressed="false" hidden>Show results</button>
     </div>
   </header>
+  <div id="pb" class="pb" hidden>
+    <button id="pb-play" class="tog pbbtn" aria-label="Play">▶ Play</button>
+    <label class="note" for="pb-speed">Speed</label>
+    <select id="pb-speed" class="tog">
+      <option value="1000">1 step/s</option>
+      <option value="400" selected>2.5 steps/s</option>
+      <option value="150">7 steps/s</option>
+    </select>
+    <div class="pbtrack">
+      <input id="pb-range" type="range" min="0" max="0" value="0" step="1" aria-label="Time of night">
+      <div class="pbticks" id="pb-ticks"></div>
+    </div>
+    <div class="pbjump" id="pb-jump"></div>
+  </div>
   <div id="banner" class="banner" hidden></div>
   <div id="alerts" class="alerts"></div>
   <div id="grid" class="grid"><div class="empty">Waiting for data…</div></div>
@@ -123,11 +148,17 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 </div>
 <script>
 "use strict";
-const REPLAY = location.hash.includes("replay");
+// Replay: the GitHub Pages copy (docs/election-night-replay.html) carries the whole 2024 night as window.REPLAY_BUNDLE
+// and plays it with a time slider. Locally, #replay loads the same bundle from docs/, or else follows a running
+// replay_2024.py through data/raw/replay/live_data.js.
+const BUNDLE_SRC = "../docs/election_night_replay_2024.js";
+const REPLAY = location.hash.includes("replay") || !!window.REPLAY_BUNDLE;
 const SRC = REPLAY ? "data/raw/replay/live_data.js" : "data/raw/dashboard/live_data.js";
 const REFRESH_MS = REPLAY ? 2000 : 10000;
 const ui = { sel: null, sort: "close", sig: REPLAY, res: false, tsort: "left", tdir: -1, filter: "" };
 let D = null;
+let PB = null;           // playback state when a bundle is loaded: { b, i, timer, hist }
+let triedBundle = false;
 
 function store(k, v) {
   try { const key = "desk." + (REPLAY ? "r." : "l.") + k;
@@ -139,7 +170,88 @@ function store(k, v) {
   const r = store("res"); if (r !== null) ui.res = r === "1";
 })();
 
+/* ---------- bundle playback ---------- */
+function frameHist(f, t) {
+  return { ts_utc: t, pct: f.pct ?? 0, margin: f.margin ?? 0, v1_proj: f.v1 ? f.v1.proj : null, v1_sd: f.v1 ? f.v1.sd : null,
+    p_v1: f.v1 ? f.v1.p : null, v0_proj: f.v0 ? f.v0.proj : null, p_mkt: f.v0 ? f.v0.p : null, p_now: f.p_now ?? null,
+    p_model: null, model_proj: null, implied: f.track ? f.track.implied ?? null : null, implied_sd: f.track ? f.track.implied_sd ?? null : null };
+}
+function startPlayback(b) {
+  PB = { b, i: 0, timer: null, hist: b.races.map(r => r.f.map((f, i) => frameHist(f, b.steps[i]))) };
+  const n = b.steps.length;
+  const rg = document.getElementById("pb-range");
+  rg.max = n - 1;
+  const ix = iso => { let k = b.steps.findIndex(s => s >= iso); return k < 0 ? n - 1 : k; };
+  // ticks at midnight and noon ET, placed by step index (steps are 5 minutes overnight, 30 minutes after)
+  const ticks = [];
+  b.steps.forEach((s, k) => {
+    const d = new Date(s); const h = +d.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", hour12: false });
+    const m = d.getUTCMinutes();
+    if (m === 0 && (h === 0 || h === 24 || h === 12 || (k < ix("2024-11-06T10:00Z") && h % 2 === 0))) ticks.push([k, d]);
+  });
+  document.getElementById("pb-ticks").innerHTML = ticks.map(([k, d]) => {
+    const lab = d.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric" });
+    return `<span style="left:${100 * k / (n - 1)}%">${esc(lab)}</span>`;
+  }).join("");
+  const jumps = [["Polls close (7 pm)", "2024-11-06T00:00Z"], ["Midnight", "2024-11-06T05:00Z"],
+    ["Michigan flip (1:20 am)", "2024-11-06T06:20Z"], ["5 am", "2024-11-06T10:00Z"],
+    ["Nevada flip (Wed 4 pm)", "2024-11-06T21:00Z"], ["Thursday", "2024-11-07T17:00Z"], ["End", b.steps[n - 1]]];
+  document.getElementById("pb-jump").innerHTML = jumps.map(([l, t]) => `<button data-i="${ix(t)}">${esc(l)}</button>`).join("");
+  document.getElementById("pb").hidden = false;
+  const start = location.hash.match(/step(\d+)/);
+  goTo(start ? Math.min(n - 1, +start[1]) : ix("2024-11-06T00:00Z"));
+}
+function goTo(i) {
+  const b = PB.b; PB.i = Math.max(0, Math.min(b.steps.length - 1, i));
+  document.getElementById("pb-range").value = PB.i;
+  const t = b.steps[PB.i];
+  const races = b.races.map((r, k) => {
+    const f = r.f[PB.i] || {};
+    const card = { ...Object.fromEntries(["race", "state", "office", "d_name", "r_name", "close_utc", "result"].map(x => [x, r[x]])),
+      pct: 0, margin: 0, v1: null, v0: null, p_close: null, p_now: null, books: {}, best: null, nyt_utc: null, votes: null, ...f };
+    card.track = f.track ? { ...f.track, counties: r.tracks[f.track.ck] || [] } : null;
+    card.history = PB.hist[k].slice(0, PB.i + 1);
+    return card;
+  });
+  const ny = races.map(r => r.nyt_utc).filter(Boolean).sort();
+  D = { generated: t, date: b.date, baseline: "market", replay: true, dry_run: b.label, markets_utc: t,
+    nyt_utc: ny.length ? ny[ny.length - 1] : null, control: {}, races };
+  render();
+}
+function setPlaying(on) {
+  if (!PB) return;
+  clearInterval(PB.timer); PB.timer = null;
+  const btn = document.getElementById("pb-play");
+  if (on) {
+    if (PB.i >= PB.b.steps.length - 1) goTo(0);
+    PB.timer = setInterval(() => { if (PB.i >= PB.b.steps.length - 1) setPlaying(false); else goTo(PB.i + 1); },
+      +document.getElementById("pb-speed").value);
+  }
+  btn.textContent = on ? "❚❚ Pause" : "▶ Play"; btn.setAttribute("aria-label", on ? "Pause" : "Play");
+}
+document.getElementById("pb-play").addEventListener("click", () => setPlaying(!PB.timer));
+document.getElementById("pb-speed").addEventListener("change", () => { if (PB && PB.timer) setPlaying(true); });
+document.getElementById("pb-range").addEventListener("input", e => { if (PB) { setPlaying(false); goTo(+e.target.value); } });
+document.getElementById("pb-jump").addEventListener("click", e => { const x = e.target.closest("button[data-i]"); if (x) { setPlaying(false); goTo(+x.dataset.i); } });
+document.addEventListener("keydown", e => {
+  if (!PB || (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName) && e.target.id !== "pb-range")) return;
+  if (e.target && e.target.id === "pb-range") return;          // the slider handles its own arrows
+  if (e.key === "ArrowRight") { setPlaying(false); goTo(PB.i + (e.shiftKey ? 12 : 1)); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { setPlaying(false); goTo(PB.i - (e.shiftKey ? 12 : 1)); e.preventDefault(); }
+});
+
 function load() {
+  if (PB) return;
+  if (window.REPLAY_BUNDLE) { startPlayback(window.REPLAY_BUNDLE); return; }
+  if (REPLAY && !triedBundle) {
+    triedBundle = true;
+    const b = document.createElement("script");
+    b.src = BUNDLE_SRC;
+    b.onload = () => { b.remove(); if (window.REPLAY_BUNDLE) startPlayback(window.REPLAY_BUNDLE); else load(); };
+    b.onerror = () => { b.remove(); load(); };
+    document.head.appendChild(b);
+    return;
+  }
   const s = document.createElement("script");
   s.src = SRC + "?t=" + Date.now();
   s.onload = () => { s.remove(); if (window.LIVE) { D = window.LIVE; render(); } };
@@ -282,7 +394,7 @@ function card(r) {
     const who = b.side === "D" ? r.d_name : r.r_name;
     const late = r.pct >= 98;
     h += `<div class="sig${b.flip ? " flip" : ""}">${b.flip ? '<span class="flag">FLIP</span>' : ""}<span>Buy ${last(who)} at ${cents(b.ask)} on ${b.venue === "kalshi" ? "Kalshi" : "Polymarket"} · edge ${b.edge >= 0 ? "+" : ""}${Math.round(b.edge * 100)}¢ (${esc(b.src)})</span>` +
-      `${late ? '<span class="warnf">count nearly done: projector overstates late uncertainty</span>' : (!b.flip ? '<span class="warnf">longshot type: lost in 2024</span>' : "")}</div>`;
+      `${late ? '<span class="warnf">count nearly done: projector overstates late uncertainty</span>' : (b.flip ? "" : b.src === "v0" ? '<span class="warnf">statewide projector only: not a FLIP</span>' : '<span class="warnf">longshot type: lost in 2024</span>')}</div>`;
   }
   if (ui.res && r.result) h += `<div class="result">Result: <b>${esc(r.result.winner)}</b> won · ${marTxt(r.result.margin, r)}</div>`;
   return h + `</article>`;

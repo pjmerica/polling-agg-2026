@@ -28,6 +28,8 @@ data_dashboard.html#replay while it runs.
     py "Election night simulator/scripts/replay_2024.py"                         # ~360 steps, 2 s apart
     py "Election night simulator/scripts/replay_2024.py" --pause 0.5             # faster
     py "Election night simulator/scripts/replay_2024.py" --until 2024-11-06T06:15 --pause 0   # jump to 1:15 am ET
+    py "Election night simulator/scripts/replay_2024.py" --publish     # the whole night -> docs/ (GitHub Pages,
+                                                                       # election-night-replay.html, time slider)
 """
 import argparse
 import datetime as dt
@@ -206,7 +208,7 @@ def track_for(R, cap, cap_t, lag):
                 lag_pts=round(lag, 1) if lag is not None else None)
 
 
-def step(R, t, hist):
+def step(R, t, hist, with_history=True):
     tl = R["tl"][R["tl"].t <= t]
     if len(tl):
         row = tl.iloc[-1]
@@ -260,7 +262,7 @@ def step(R, t, hist):
                 books={v: dict(bid=lp._r(s["D"]["bid"]), ask=lp._r(s["D"]["ask"])) for v, s in books.items()},
                 best=dict(venue=bt[0], side=bt[1], ask=lp._r(bt[2]), edge=lp._r(bt[3]), src="v1" if v1 else "v0",
                           flip=flip) if bt else None,
-                track=track, history=list(R["history"]),
+                track=track, history=list(R["history"]) if with_history else None,
                 result=dict(margin=round(R["final"], 2),
                             winner=R["d_name"] if R["final"] > 0 else R["r_name"]))
 
@@ -288,15 +290,72 @@ def write(now, cards):
     os.replace(tmp, os.path.join(OUT_DIR, "live_data.js"))
 
 
+DOCS = os.path.join(lp.REPO, "docs")
+BUNDLE = "election_night_replay_2024.js"
+PAGE = "election-night-replay.html"
+STATIC = ("race", "state", "office", "d_name", "r_name", "close_utc", "result")
+
+
+def _compact(x):
+    """Drop None values (the page treats a missing key as null) to keep the bundle small."""
+    if isinstance(x, dict):
+        return {k: _compact(v) for k, v in x.items() if v is not None}
+    if isinstance(x, list):
+        return [_compact(v) for v in x]
+    return x
+
+
+def publish(races, hist, steps):
+    """The whole night in one file for the GitHub Pages copy: docs/election_night_replay_2024.js (every step,
+    county tables stored once per capture) and docs/election-night-replay.html (data_dashboard.html, which
+    plays the bundle with a time slider when it is present)."""
+    out = [dict(**{k: None for k in STATIC}, f=[], tracks={}) for _ in races]
+    for i, t in enumerate(steps):
+        for o, R in zip(out, races):
+            c = step(R, t, hist, with_history=False)
+            if i == 0:
+                o.update({k: c[k] for k in STATIC})
+            tr = c.pop("track")
+            for k in STATIC + ("history", "p_model", "model_proj", "model_win", "model_margin", "nyt_file"):
+                c.pop(k, None)
+            if tr:
+                ck = tr.get("as_of") or "none"
+                if ck not in o["tracks"]:
+                    o["tracks"][ck] = tr["counties"]
+                c["track"] = {k: v for k, v in tr.items() if k != "counties"} | {"ck": ck}
+            o["f"].append(c)
+        if i % 50 == 0:
+            print(f"  {i}/{len(steps)}")
+    data = dict(label="2024 replay: real count, real county captures where they line up, real Kalshi and "
+                      "Polymarket minute prices", date=DATE, steps=[_iso(t) for t in steps], races=out)
+    with open(os.path.join(DOCS, BUNDLE), "w", encoding="utf-8") as f:
+        f.write("window.REPLAY_BUNDLE = " + json.dumps(_compact(data), separators=(",", ":"),
+                                                     default=lp._json_default) + ";\n")
+    page = open(os.path.join(lp.ROOT, "data_dashboard.html"), encoding="utf-8").read().replace("\r\n", "\n")
+    marker = '<script>\n"use strict";'
+    assert page.count(marker) == 1
+    page = page.replace(marker, f'<script src="{BUNDLE}"></script>\n' + marker)
+    page = page.replace("<title>Election Night Data Desk</title>", "<title>Election Night 2024 Replay</title>")
+    with open(os.path.join(DOCS, PAGE), "w", encoding="utf-8", newline="\n") as f:
+        f.write(page)
+    kb = os.path.getsize(os.path.join(DOCS, BUNDLE)) / 1024
+    print(f"wrote docs/{PAGE} and docs/{BUNDLE} ({kb:,.0f} KB)")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pause", type=float, default=2.0, help="seconds between steps")
     ap.add_argument("--step", type=float, default=5.0, help="replay minutes per step until 5 am ET (then 30)")
     ap.add_argument("--until", help="stop at this UTC time, e.g. 2024-11-06T06:15 (1:15 am ET)")
+    ap.add_argument("--publish", action="store_true",
+                    help="write the whole night to docs/ for GitHub Pages (election-night-replay.html), no stepping")
     a = ap.parse_args()
     races = prepare()
     hist = lp.load_history()
     steps = clock(a.step)
+    if a.publish:
+        publish(races, hist, steps)
+        return
     if a.until:
         stop = pd.Timestamp(a.until, tz="UTC") if pd.Timestamp(a.until).tzinfo is None else pd.Timestamp(a.until)
         steps = [t for t in steps if t <= stop]

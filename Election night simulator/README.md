@@ -202,6 +202,14 @@ moving clock, 5 minutes a step to 5 am ET, then 30 minutes to the following Mond
 - "Show results" reveals each race's real result. It writes `data/raw/replay/live_data.js` only, never the live
   file. `--pause` (default 2 s), `--step`, `--until 2024-11-06T06:25` (1:25 am ET).
 
+**On GitHub Pages, with a time slider:** https://pjmerica.github.io/polling-agg-2026/election-night-replay.html.
+`replay_2024.py --publish` computes the whole night at once (about 3 minutes) and writes
+`docs/election_night_replay_2024.js` (every step; county tables stored once per capture; ~2.9 MB) and
+`docs/election-night-replay.html` (a copy of `data_dashboard.html` that loads it). Drag the bar, press Play
+(1 / 2.5 / 7 steps a second), jump to key moments (polls close, the Michigan and Nevada flips), or step with
+the arrow keys (Shift: an hour overnight). `#step70` in the address opens a given step. Locally,
+`data_dashboard.html#replay` plays the same file. Re-run `--publish` after changing `data_dashboard.html`.
+
 ## Running the projector
 
 ```
