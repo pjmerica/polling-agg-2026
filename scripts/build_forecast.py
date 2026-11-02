@@ -280,10 +280,14 @@ def build(compare_rows=None, predictions_as_of=None, polls_as_of=None):
     # seat-count ranges and control odds (model repo src/simulate_seats.py, 2026-10-27)
     spath = os.path.join(PROC, "model_seat_sim_2026.json")
     seat_sim = json.load(open(spath, encoding="utf-8")) if os.path.exists(spath) else None
+    # every input the models use, for the explainer and the forecast page's input list
+    # (scripts/model_inputs.py, 2026-11-01): the explainer itself carries only the top ten
+    sys.path.insert(0, HERE)
+    from model_inputs import load as load_inputs  # noqa: E402
     payload = dict(
         generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         predictions_as_of=predictions_as_of, polls_as_of=polls_as_of, races=races,
-        seat_sim=seat_sim)
+        seat_sim=seat_sim, inputs=load_inputs())
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("const FORECAST = ")
         json.dump(payload, f, separators=(",", ":"))

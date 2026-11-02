@@ -54,7 +54,10 @@ for (const office of ['Senate', 'House', 'Governor']) for (const k of T.keys(off
   const h = html('d-body');
   if (!h) continue;
   nWhy++;
-  if (/class="factor"/.test(h) && !/class="f-desc">[^<]{12,}/.test(h)) throw new Error(`${office} ${k}: a factor has no definition`);
+  // 2026-11-01: the explainer was rebuilt (class "xp-row"; shared with predictions.html, see
+  // tests/test_explainer_shared.py): every listed input carries its definition and both values
+  if (/class="xp-row"/.test(h) && !/class="xp-desc">[^<]{12,}/.test(h)) throw new Error(`${office} ${k}: an input has no definition`);
+  if (/class="xp-row"/.test(h) && !/class="xp-vals">/.test(h)) throw new Error(`${office} ${k}: an input has no values`);
   if (/>[a-z]+(_[a-z0-9]+)+</.test(h)) throw new Error(`${office} ${k}: a raw column name reached the explainer`);
 }
 if (nWhy < 400) throw new Error(`explainer opened for only ${nWhy} races`);
@@ -68,7 +71,7 @@ for (const [office, k] of [['Senate', 'TX'], ['Governor', 'GA'], ['House', 'TX-2
   if (!/data-close/.test(d) || !/What's driving this prediction\?/.test(d) || !new RegExp(`data-why="${office}\|${k}"`).test(d))
     throw new Error(`${office} ${k}: the race panel lacks its close or explainer button`);
   T.explain(office, k);
-  if (!/class="factor"/.test(html('d-body'))) throw new Error(`${office} ${k}: the explainer opened without factors`);
+  if (!/class="xp-row"/.test(html('d-body')) || !/What's driving this prediction/.test(html('d-body'))) throw new Error(`${office} ${k}: the explainer opened without its inputs`);
   if (/If the (polls are|national mood is) off/.test(html('d-body'))) throw new Error(`${office} ${k}: the stress table is back in the explainer (removed 2026-10-31)`);
   T.unselect();
   if (html('detail') !== '' || T.st.sel !== null) throw new Error('closing the race panel left it open');
