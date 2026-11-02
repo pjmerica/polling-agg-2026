@@ -102,6 +102,23 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 .pbjump button { border: 1px solid var(--line2); background: var(--panel2); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--muted); cursor: pointer; }
 .pbjump button:hover { color: var(--text); border-color: var(--proj); }
 @media (max-width: 700px) { .pb { grid-template-columns: auto 1fr; } .pbtrack { grid-column: 1 / -1; } .pb label, #pb-speed { display: none; } .pbticks span:nth-child(even) { display: none; } }
+.mapview { display: grid; gap: 10px; }
+.mapview[hidden] { display: none; }
+.mapbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { border: 1px solid var(--line2); background: var(--panel); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; color: var(--muted); cursor: pointer; }
+.chips button[aria-pressed="true"] { color: var(--text); border-color: var(--proj); background: #1d1930; }
+.mapwrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 10px; }
+#deckmap { position: relative; height: 72vh; min-height: 440px; border: 1px solid var(--line); border-radius: 8px; background: radial-gradient(ellipse at 50% 40%, #151c27, #0a0d12); overflow: hidden; }
+.mapside { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 8px; align-content: start; max-height: 72vh; overflow-y: auto; font-size: 12.5px; }
+.mapside h4 { margin: 0; font-size: 14px; }
+.mapside .row { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 5px; }
+.mapside .row span { color: var(--muted); }
+.mapside .row b { font-family: var(--mono); font-size: 12px; text-align: right; }
+.maplegend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); align-items: center; }
+.maplegend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -2px; margin-right: 5px; }
+.deck-tooltip { font: 12.5px/1.45 var(--sans) !important; }
+@media (max-width: 900px) { .mapwrap { grid-template-columns: 1fr; } #deckmap { height: 60vh; } .mapside { max-height: none; } }
 .empty { color: var(--muted); padding: 30px; text-align: center; border: 1px dashed var(--line2); border-radius: 8px; }
 @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr; } .detail .row { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: no-preference) { .card { transition: border-color .15s; } }
@@ -116,6 +133,8 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
     <div class="feeds" id="feeds"></div>
     <div class="spacer"></div>
     <div class="tools">
+      <button id="v-cards" class="tog" aria-pressed="true">Cards</button>
+      <button id="v-map" class="tog" aria-pressed="false">3D map</button>
       <label class="note" for="sort">Sort</label>
       <select id="sort" class="tog">
         <option value="close">Poll close</option>
@@ -142,6 +161,26 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
   </div>
   <div id="banner" class="banner" hidden></div>
   <div id="alerts" class="alerts"></div>
+  <section id="mapview" class="mapview" hidden aria-label="3D county map">
+    <div class="mapbar">
+      <div class="chips" id="map-races"></div>
+      <div class="spacer"></div>
+      <div class="chips" id="map-office"></div>
+      <label class="note" for="map-metric">Columns</label>
+      <select id="map-metric" class="tog">
+        <option value="net">Net votes vs expected</option>
+        <option value="pts">Points over/under</option>
+        <option value="left">Votes still out</option>
+      </select>
+      <label class="note" for="map-base">Counties</label>
+      <select id="map-base" class="tog">
+        <option value="share">Counted D share</option>
+        <option value="pct">Share counted</option>
+      </select>
+    </div>
+    <div class="mapwrap"><div id="deckmap"></div><div id="map-side" class="mapside"></div></div>
+    <div id="map-legend" class="maplegend"></div>
+  </section>
   <div id="grid" class="grid"><div class="empty">Waiting for data…</div></div>
   <div id="detail"></div>
   <p class="note">Margins are the Democrat (or the independent in Nebraska) minus the Republican, in points of all votes. "Projected" is the projector's final margin with its 80% band: county by county where the counties line up, statewide otherwise. Votes left and "needs" come from NYT's expected vote. Buy signals are prompts to look, not trades: in the 2024 test only FLIPs paid.</p>
@@ -169,6 +208,7 @@ function store(k, v) {
   const s = store("sig"); if (s !== null) ui.sig = s === "1";
   const o = store("sort"); if (o) ui.sort = o;
   const r = store("res"); if (r !== null) ui.res = r === "1";
+  ui.view = store("view") || "cards"; ui.mapRace = "all"; ui.metric = store("metric") || "net"; ui.base = "share"; ui.office = null;
 })();
 
 /* ---------- bundle playback ---------- */
@@ -560,12 +600,197 @@ function renderDetail() {
 
 function select(race) { ui.sel = ui.sel === race ? null : race; ui.filter = ""; render(); if (ui.sel) document.getElementById("detail").scrollIntoView({ behavior: "smooth", block: "start" }); }
 
-function render() {
+/* ---------- 3D county map (deck.gl): counties flat, a column on each showing over/under ---------- */
+const DECK_SRC = "https://cdn.jsdelivr.net/npm/deck.gl@8.9.35/dist.min.js";
+let GEO = null, DECK = null, mapLoading = false, mapFit = null;
+const C_D = [74, 144, 232], C_R = [232, 102, 95], C_NONE = [34, 42, 55];
+
+function loadScript(src) {
+  return new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+}
+function parseRings(d) {
+  return d.split("M").filter(Boolean).map(sub => {
+    const n = sub.match(/-?\d+(\.\d+)?/g) || [];
+    const ring = [];
+    for (let i = 0; i + 1 < n.length; i += 2) ring.push([+n[i], -n[i + 1]]);      // SVG y runs down: flip so north is up
+    return ring;
+  }).filter(r => r.length > 2);
+}
+function ringArea(r) { let a = 0; for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j][0] * r[i][1] - r[i][0] * r[j][1]); return a / 2; }
+function ringCentroid(r) {
+  let a = 0, x = 0, y = 0;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const f = r[j][0] * r[i][1] - r[i][0] * r[j][1]; a += f; x += (r[j][0] + r[i][0]) * f; y += (r[j][1] + r[i][1]) * f; }
+  return a ? [x / (3 * a), y / (3 * a)] : r[0];
+}
+function prepGeo() {
+  const g = window.COUNTY_GEO; GEO = { outlines: [], counties: {}, box: {} };
+  for (const [st, v] of Object.entries(g.states)) {
+    for (const r of parseRings(v.d)) GEO.outlines.push({ path: r.concat([r[0]]) });
+    if (!v.counties) continue;
+    const b = v.bbox; GEO.box[st] = [b[0], -b[3], b[2], -b[1]];
+    for (const [f, d] of Object.entries(v.counties)) {
+      const rings = parseRings(d);
+      const big = rings.reduce((m, r) => Math.abs(ringArea(r)) > Math.abs(ringArea(m)) ? r : m, rings[0]);
+      GEO.counties[f] = { st, rings, c: ringCentroid(big) };
+    }
+  }
+}
+async function ensureMap() {
+  if (GEO && window.deck && window.deck.Deck) return true;
+  if (mapLoading) return false;
+  mapLoading = true;
+  try {
+    if (!window.COUNTY_GEO) await loadScript("county_geo.js");
+    if (!(window.deck && window.deck.Deck)) await loadScript(DECK_SRC);
+    prepGeo();
+    return true;
+  } catch (e) {
+    document.getElementById("deckmap").innerHTML = `<div class="empty" style="margin:30px">The 3D map needs the county shapes (county_geo.js) and deck.gl from jsdelivr.net, and one of them didn't load. Check the internet connection.</div>`;
+    return false;
+  } finally { mapLoading = false; }
+}
+const stOf = r => r.race.split("-")[0];
+function mapRaces() {
+  const withGeo = D.races.filter(r => GEO.box[stOf(r)] && r.track && r.track.counties);
+  const per = {}; withGeo.forEach(r => (per[stOf(r)] = per[stOf(r)] || []).push(r));
+  const offices = [...new Set(withGeo.map(r => r.office))];
+  const multi = Object.values(per).some(a => a.length > 1);
+  if (multi && (!ui.office || !offices.includes(ui.office))) ui.office = offices.includes("Senate") ? "Senate" : offices[0];
+  const shown = Object.values(per).map(a => a.length > 1 ? (a.find(r => r.office === ui.office) || a[0]) : a[0]);
+  return { shown, offices: multi ? offices : [] };
+}
+function metricOf(c) {
+  if (ui.metric === "left") return c.left || 0;
+  if (ui.metric === "pts") return c.share != null && c.exp != null ? 100 * (c.share - c.exp) : null;
+  return c.net;
+}
+function shareColor(s, a) {
+  if (s == null) return [...C_NONE, a];
+  const t = Math.max(-1, Math.min(1, (s - 0.5) / 0.3));
+  const base = [58, 64, 78], tgt = t > 0 ? C_D : C_R, k = Math.abs(t);
+  return [0, 1, 2].map(i => Math.round(base[i] + (tgt[i] - base[i]) * k)).concat([a]);
+}
+function fitView(states) {
+  const el = document.getElementById("deckmap");
+  const bs = states.map(s => GEO.box[s]).filter(Boolean);
+  if (!bs.length) return null;
+  const x0 = Math.min(...bs.map(b => b[0])), y0 = Math.min(...bs.map(b => b[1])), x1 = Math.max(...bs.map(b => b[2])), y1 = Math.max(...bs.map(b => b[3]));
+  const w = Math.max(10, x1 - x0), h = Math.max(10, y1 - y0);
+  const zoom = Math.log2(Math.min(el.clientWidth / (w * 1.1), el.clientHeight / (h * 1.35)));
+  return { target: [(x0 + x1) / 2, (y0 + y1) / 2 + h * 0.04, 0], zoom, rotationX: 48, rotationOrbit: -12, size: Math.max(w, h) };
+}
+function mapLayers(shown) {
+  const recs = [], polys = [];
+  for (const r of shown) {
+    const exp = r.track.expected;
+    for (const c of r.track.counties) {
+      const g = GEO.counties[c.f]; if (!g) continue;
+      const rec = { ...c, race: r, st: g.st, pos: g.c, v: metricOf(c) };
+      recs.push(rec);
+      for (const ring of g.rings) polys.push({ ring, rec });
+    }
+  }
+  const size = mapFit ? mapFit.size : 400;
+  const H = size * 0.55;
+  const cols = recs.filter(d => d.v != null && (ui.metric === "left" ? d.v > 0 : d.votes > 0));
+  const max = Math.max(1e-9, ...cols.map(d => Math.abs(d.v)));
+  const radius = size / (ui.mapRace === "all" ? 150 : 70);
+  const L = window.deck;
+  return [
+    new L.PathLayer({ id: "outlines", data: GEO.outlines, getPath: d => d.path, getColor: [70, 80, 96, 140], widthUnits: "pixels", getWidth: 1 }),
+    new L.PolygonLayer({ id: "counties", data: polys, getPolygon: d => d.ring, pickable: true, stroked: true, filled: true,
+      getFillColor: d => ui.base === "pct" ? [60 + 1.3 * d.rec.pct, 64 + 1.3 * d.rec.pct, 80 + 1.4 * d.rec.pct, 230] : shareColor(d.rec.votes > 0 ? d.rec.share : null, 225),
+      getLineColor: [12, 16, 22, 255], lineWidthUnits: "pixels", getLineWidth: 0.6,
+      updateTriggers: { getFillColor: [ui.base, D.generated] } }),
+    new L.ColumnLayer({ id: "columns", data: cols, diskResolution: 14, radius, extruded: true, pickable: true,
+      getPosition: d => d.pos, getElevation: d => Math.abs(d.v) / max * H,
+      getFillColor: d => ui.metric === "left" ? (((d.share != null && d.pct >= 5 ? d.share : d.exp ?? d.tie) >= 0.5) ? [120, 170, 240, 235] : [240, 140, 135, 235]) : (d.v >= 0 ? [...C_D, 240] : [...C_R, 240]),
+      material: { ambient: 0.45, diffuse: 0.6, shininess: 24 },
+      updateTriggers: { getElevation: [ui.metric, D.generated, max], getFillColor: [ui.metric, D.generated] },
+      transitions: { getElevation: 350 } }),
+  ];
+}
+function tooltip({ object }) {
+  if (!object) return null;
+  const c = object.rec || object, r = c.race;
+  const pc = v => v == null ? "–" : (100 * v).toFixed(1) + "%";
+  const dev = c.share != null && c.exp != null ? 100 * (c.share - c.exp) : null;
+  return { html: `<b>${esc(c.n)}</b> · ${esc(r.state)} ${esc(r.office)}<br>Counted ${c.pct.toFixed(0)}% · ${fmtInt(c.votes)} votes · ${fmtInt(c.left)} left<br>` +
+      `${last(r.d_name)} share ${pc(c.share)} vs expected ${pc(c.exp)} (tie needs ${pc(c.tie)})<br>` +
+      `Over/under ${dev == null ? "–" : (dev > 0 ? "+" : "") + dev.toFixed(1) + " pts"} · net vs expected ${c.net == null ? "–" : (c.net > 0 ? "+" : "") + fmtInt(c.net)}`,
+    style: { background: "#131922", color: "#e7ebf1", border: "1px solid #2f3a4a", borderRadius: "6px", padding: "8px 10px", maxWidth: "320px" } };
+}
+function mapSide(shown) {
+  const rows = shown.map(r => {
+    const t = r.track, p = proj(r);
+    const dev = t.implied != null && t.expected != null ? t.implied - t.expected : null;
+    const age = REPLAY && t.as_of ? `counties ${etTime(t.as_of)}` : `${r.pct.toFixed(0)}% in`;
+    return `<div class="row" data-race="${esc(r.race)}" style="cursor:pointer"><span>${esc(r.state)} ${esc(r.office)}<br><small>${age}</small></span>` +
+      `<b>${dev == null ? "–" : `<span style="color:${dev > 0 ? "var(--dem)" : "var(--rep)"}">${last(r.d_name)} ${dev > 0 ? "+" : "−"}${Math.abs(dev).toFixed(1)}</span>`}<br><small>proj ${p ? marTxt(p.proj, r) : "–"}</small></b></div>`;
+  }).join("");
+  return `<h4>Running vs ${esc(expLabel())}</h4><div class="note">The counted counties' implied statewide margin minus the expectation. Click a state to zoom; drag to rotate (right-drag or Ctrl to tilt), scroll to zoom; hover a column for the county.</div>${rows || '<div class="note">No county results yet.</div>'}`;
+}
+function legendHtml() {
+  const m = { net: "Column height: net votes vs what the expected margin needs there (blue: the Democratic side running ahead, red: behind).",
+    pts: "Column height: points the county's counted share is over (blue) or under (red) its expected share.",
+    left: "Column height: votes still to count; blue where the county leans to the Democratic side, red where it leans Republican." }[ui.metric];
+  const b = ui.base === "pct" ? "Counties: lighter = more counted." : `Counties: <i style="background:rgb(232,102,95)"></i>R share <i style="background:rgb(58,64,78)"></i>even <i style="background:rgb(74,144,232)"></i>D share of counted votes; dark = no votes yet.`;
+  return `<span>${m}</span><span>${b}</span>${REPLAY ? "<span>Replay: each state's counties are its latest archived capture (time on the right).</span>" : ""}`;
+}
+async function renderMap(refit) {
+  if (!(await ensureMap()) || !D) return;
+  const { shown, offices } = mapRaces();
+  const states = [...new Set(shown.map(stOf))];
+  document.getElementById("map-races").innerHTML = [`<button data-st="all" aria-pressed="${ui.mapRace === "all"}">All states</button>`]
+    .concat(states.map(s => { const r = shown.find(x => stOf(x) === s); return `<button data-st="${s}" aria-pressed="${ui.mapRace === s}">${esc(r.state)}</button>`; })).join("");
+  document.getElementById("map-office").innerHTML = offices.map(o => `<button data-office="${esc(o)}" aria-pressed="${ui.office === o}">${esc(o)}</button>`).join("");
+  document.getElementById("map-metric").value = ui.metric;
+  document.getElementById("map-base").value = ui.base;
+  document.getElementById("map-legend").innerHTML = legendHtml();
+  const vis = ui.mapRace === "all" ? shown : shown.filter(r => stOf(r) === ui.mapRace);
+  document.getElementById("map-side").innerHTML = mapSide(vis);
+  if (refit || !DECK || !mapFit) mapFit = fitView(ui.mapRace === "all" ? states : [ui.mapRace]);
+  if (!mapFit) { document.getElementById("map-side").innerHTML = '<div class="note">No tracked state with county shapes has results in this data.</div>'; return; }
+  const layers = mapLayers(vis);
+  if (!DECK) {
+    DECK = new window.deck.Deck({ parent: document.getElementById("deckmap"), views: new window.deck.OrbitView({ orbitAxis: "Z", fovy: 35 }),
+      initialViewState: { ...mapFit, minZoom: -3, maxZoom: 9 }, controller: true, layers, getTooltip: tooltip,
+      onClick: info => { const o = info.object; if (o) { const c = o.rec || o; ui.sel = c.race.race; renderDetail(); } } });
+  } else {
+    if (refit) DECK.setProps({ initialViewState: { ...mapFit, minZoom: -3, maxZoom: 9, transitionDuration: 700,
+      transitionInterpolator: new window.deck.LinearInterpolator(["target", "zoom", "rotationX", "rotationOrbit"]) } });
+    DECK.setProps({ layers });
+  }
+}
+document.getElementById("map-races").addEventListener("click", e => { const b = e.target.closest("button[data-st]"); if (b) { ui.mapRace = b.dataset.st; renderMap(true); } });
+document.getElementById("map-office").addEventListener("click", e => { const b = e.target.closest("button[data-office]"); if (b) { ui.office = b.dataset.office; renderMap(true); } });
+document.getElementById("map-metric").addEventListener("change", e => { ui.metric = e.target.value; store("metric", ui.metric); renderMap(false); });
+document.getElementById("map-base").addEventListener("change", e => { ui.base = e.target.value; renderMap(false); });
+document.getElementById("map-side").addEventListener("click", e => { const r = e.target.closest(".row[data-race]"); if (r) { const x = D.races.find(q => q.race === r.dataset.race); if (x) { ui.mapRace = stOf(x); renderMap(true); } } });
+function setView(v) {
+  ui.view = v; store("view", v);
+  document.getElementById("v-cards").setAttribute("aria-pressed", v === "cards");
+  document.getElementById("v-map").setAttribute("aria-pressed", v === "map");
+  document.getElementById("mapview").hidden = v !== "map";
+  document.getElementById("grid").hidden = v === "map";
+  render(true);
+}
+(function initView() {         // the last view chosen, before the first render
+  document.getElementById("v-cards").setAttribute("aria-pressed", ui.view === "cards");
+  document.getElementById("v-map").setAttribute("aria-pressed", ui.view === "map");
+  document.getElementById("mapview").hidden = ui.view !== "map";
+  document.getElementById("grid").hidden = ui.view === "map";
+})();
+document.getElementById("v-cards").addEventListener("click", () => setView("cards"));
+document.getElementById("v-map").addEventListener("click", () => setView("map"));
+
+function render(refit) {
   if (!D) return;
   renderHeader();
   renderAlerts();
   const g = document.getElementById("grid");
-  g.innerHTML = D.races.length ? sorted(D.races).map(card).join("") : `<div class="empty">No races in the data file.</div>`;
+  if (ui.view === "map") renderMap(refit === true);
+  else g.innerHTML = D.races.length ? sorted(D.races).map(card).join("") : `<div class="empty">No races in the data file.</div>`;
   if (!document.activeElement || document.activeElement.id !== "cf") renderDetail();
 }
 

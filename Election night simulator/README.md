@@ -210,6 +210,16 @@ moving clock, 5 minutes a step to 5 am ET, then 30 minutes to the following Mond
 the arrow keys (Shift: an hour overnight). `#step70` in the address opens a given step. Locally,
 `data_dashboard.html#replay` plays the same file. Re-run `--publish` after changing `data_dashboard.html`.
 
+**3D map** (the "3D map" button, live and replay): every tracked state's counties drawn flat (shaded by the
+counted Democratic share, or by share counted) with a column on each county: **net votes vs expected** (default),
+**points over/under**, or **votes still out**. Blue columns: the Democratic side running ahead of the expected
+margin there; red: behind. "All states" or one state at a time (the camera flies there); drag to rotate,
+right-drag or Ctrl to tilt, scroll to zoom, hover a column for the county, click it for the race's detail
+below. The side panel lists each race's implied margin vs the expectation. Live, the expectation is our model
+and the columns follow the projector's county data; in the replay, each state shows its latest archived capture
+(time on the right). It draws with deck.gl 8.9.35 from jsdelivr (needs the internet) and `county_geo.js`
+(Oregon and Alaska have no county shapes).
+
 ## Running the projector
 
 ```
