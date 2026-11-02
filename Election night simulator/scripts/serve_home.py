@@ -13,7 +13,8 @@ import os
 import socket
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-ALLOWED = ("/dashboard.html", "/county_geo.js", "/data/raw/dashboard/live_data.js")
+ALLOWED = ("/dashboard.html", "/county_geo.js", "/data/raw/dashboard/live_data.js",
+           "/data_dashboard.html", "/data/raw/replay/live_data.js")     # the data desk (2026-11-02) and its 2024 replay
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -55,6 +56,7 @@ def main():
     srv = http.server.ThreadingHTTPServer(("0.0.0.0", a.port), functools.partial(Handler, directory=ROOT))
     print(f"On this PC:          http://localhost:{a.port}/dashboard.html")
     print(f"On your phone (same Wi-Fi): http://{lan_ip()}:{a.port}/dashboard.html")
+    print(f"Data desk:           http://{lan_ip()}:{a.port}/data_dashboard.html  (add #replay for the 2024 replay)")
     print("Ctrl+C stops it.")
     try:
         srv.serve_forever()

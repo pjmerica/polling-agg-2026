@@ -51,6 +51,8 @@ Started 2026-10-28.
 | `scripts/serve_home.py` | Serves the live dashboard to phones on the home Wi-Fi (port 8765) |
 | `scripts/publish_live.py` | Pushes a delayed public copy to `docs/election-night-live.html` every 10 min |
 | `scripts/dry_run.py` | Replays 2024's archived count through the projector and dashboard (`data/raw/dryrun/`), to check everything before Tuesday |
+| `data_dashboard.html` | The data desk: the same projector data, count-first (votes left, what the trailing side needs, desk math, outstanding counties); buy signals optional |
+| `scripts/replay_2024.py` | Election night 2024 with real data and real prices for the data desk (`data/raw/replay/`; open `data_dashboard.html#replay`) |
 | `scripts/live_project.py` | The live table (v1 where the counties line up, v0 beside it), the dashboard's data file, what-ifs, v0 backtest |
 | `scripts/county_project.py` | Projector v1: county by county, simulated (METHODS.md) |
 | `scripts/county_replay.py` | Replays v1 through the 2020 count (`--tune` tries settings) -> `data/processed/county_replay_2020.csv` |
@@ -169,6 +171,36 @@ presidential count in the 12 states, in time order, with today's market books. A
 stop mid-count, and `--pause 0` to go fast. The prices don't move and 2024 isn't 2026, so its FLIPs and big
 over/unders are meaningless: it checks the plumbing. Run the real projector once afterwards (or just start
 `run_dashboard.cmd`) to replace the dry-run data.
+
+## The data desk (`data_dashboard.html`, 2026-11-02)
+
+A second page on the same projector data, built around the count rather than the markets. Open it next to (or
+instead of) `dashboard.html` once `run_dashboard.cmd` is running; it reloads every 10 s. Phones on the home
+Wi-Fi: `http://<this PC>:8765/data_dashboard.html` (`serve_home.py` prints it).
+
+- **Each card:** on-screen margin, projected final with its 80% band (county by county or statewide), win
+  chance and what it started from (the market at poll close, or our model when no prices were captured),
+  votes counted, **votes left** (NYT's expected vote), **what the trailing candidate needs** of the two-party vote
+  still out, counties reporting, **desk math** (the final margin if every county's remaining votes split like
+  its counted votes, the expected share where it has counted under 5%) and over/under vs our model.
+- **Alerts:** "Lead change" (projected leader differs from the on-screen leader, 60%+, 10-99% counted),
+  "Off expected" (counted counties point 3+ points away from the expectation), FLIPs when signals are on.
+- **Click a card:** margin and win-chance charts through the night, desk math, and every county sorted by votes
+  left (counted share, expected, tie line, over/under, net vs expected, net from the votes still out).
+- **Buy signals** are off by default live (one button turns them on). Signals at 98%+ counted carry a warning:
+  the county projector keeps 5-20% for the trailing side of a finished close race (its turnout error applies to
+  the whole expected vote; the 2024 test's Casey-at-98% loss), so those are not edges.
+
+**2024 replay** (`scripts/replay_2024.py`, then open `data_dashboard.html#replay`): election night 2024 on a
+moving clock, 5 minutes a step to 5 am ET, then 30 minutes to the following Monday, with real data at every step:
+- 12 races (the Senate race where the state had one, else President): NYT's statewide count timeline,
+  the archive's county captures (v1 runs only while one is within 3 points of the final vote of the count;
+  otherwise v0), county leans and v0 history from other years only;
+- Kalshi's minute bid/ask and Polymarket's minute price, the starting point at poll close, and the live
+  best-buy and FLIP rules. It flags the real cases: Slotkin at 20-21c at 1:20 am (won), Rosen at 31c Wednesday
+  afternoon (won), then Brown for hours (lost). Most other signals are the longshot kind that lost in 2024;
+- "Show results" reveals each race's real result. It writes `data/raw/replay/live_data.js` only, never the live
+  file. `--pause` (default 2 s), `--step`, `--until 2024-11-06T06:25` (1:25 am ET).
 
 ## Running the projector
 
