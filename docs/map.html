@@ -50,7 +50,7 @@ a:hover { text-decoration: underline; }
               padding: 7px 16px; border-radius: 7px; cursor: pointer; }
 .seg button.on { background: var(--panel2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line2); }
 .seg.src button.on { background: #6d8bff26; color: #fff; box-shadow: inset 0 0 0 1px #6d8bff66; }
-.views { margin: 18px 0 0; }
+.views { margin: 18px 0 0; display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap; }
 .views .seg button { font-size: 0.92rem; padding: 8px 18px; }
 .views + .bar { margin-top: 10px; }
 .seglab { font-size: 0.74rem; color: var(--faint); margin-right: -4px; }
@@ -222,19 +222,23 @@ a:hover { text-decoration: underline; }
     <div class="asof" id="asof"></div>
   </section>
 
+  <!-- every control group is labelled (2026-11-01): first-time visitors saw two rows of unlabelled buttons -->
   <div class="views">
+    <span class="seglab">Show</span>
     <div class="seg" id="metric" role="tablist" aria-label="What the map shows">
       <button data-m="margin" role="tab">Margin</button><button data-m="win" class="on" role="tab">Win %</button><button data-m="cmp" role="tab">Model vs markets</button><button data-m="mcmp" role="tab">Margin vs markets</button>
     </div>
   </div>
   <div class="bar">
-    <span class="seglab" id="src-lab" style="display:none">Compare with</span>
+    <span class="seglab" id="src-lab">Numbers from</span>
     <div class="seg src" id="src" role="tablist" aria-label="Whose numbers">
       <button data-s="model" class="on" role="tab">Our model</button><button data-s="kalshi" role="tab">Kalshi</button><button data-s="polymarket" role="tab">Polymarket</button>
     </div>
+    <span class="seglab">Office</span>
     <div class="seg" id="tabs" role="tablist" aria-label="Office">
       <button data-v="Senate" class="on" role="tab">Senate</button><button data-v="House" role="tab">House</button><button data-v="Governor" role="tab">Governor</button>
     </div>
+    <span class="seglab" id="hv-lab" style="display:none">House view</span>
     <div class="seg" id="hv" role="tablist" aria-label="House view" style="display:none">
       <button data-h="map" class="on" role="tab">Map</button><button data-h="tiles" role="tab">Squares</button>
     </div>
@@ -279,7 +283,7 @@ a:hover { text-decoration: underline; }
   </section>
 </div>
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-hidden="true">
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="d-title" aria-hidden="true">
   <div class="d-head"><div><h3 id="d-title"></h3><p id="d-sub"></p></div><button class="x" id="d-close" aria-label="Close">&times;</button></div>
   <div class="d-body" id="d-body"></div>
 </aside>
@@ -938,6 +942,9 @@ a:hover { text-decoration: underline; }
   function closeDrawer() {
     if (!drawer) return;
     drawer.classList.remove('on'); if (scrim) scrim.classList.remove('on'); drawer.setAttribute('aria-hidden', 'true');
+    // keyboard users land back on the button that opened it (2026-11-01)
+    if (drawer._back && drawer._back.isConnected && drawer._back.focus) drawer._back.focus();
+    drawer._back = null;
   }
   // ===== EXPLAINER: what's driving a race's prediction (2026-11-01) =====
   // This block is IDENTICAL in map.html and predictions.html; tests/test_explainer_shared.py fails if
@@ -1111,8 +1118,10 @@ a:hover { text-decoration: underline; }
       for (const x of tabs2.querySelectorAll('button')) x.classList.toggle('on', x === bt);
       setText('ex-pane', explainPane(r, bt.dataset.k));
     });
+    drawer._back = drawer._back || document.activeElement;
     drawer.classList.add('on'); if (scrim) scrim.classList.add('on'); drawer.setAttribute('aria-hidden', 'false');
     const db = document.getElementById('d-body'); if (db) db.scrollTop = 0;
+    if (dclose) setTimeout(() => dclose.focus({ preventScroll: true }), 30);   // focus moves into the dialog
     hideTip();
   }
   // close the race panel: no race selected, nothing highlighted
@@ -1149,6 +1158,7 @@ a:hover { text-decoration: underline; }
     const za = document.getElementById('zoom-all');
     if (za && za.style) za.style.display = st.vb ? '' : 'none';
     if (hvs && hvs.style) hvs.style.display = office === 'House' ? '' : 'none';
+    const hl = document.getElementById('hv-lab'); if (hl) hl.style.display = office === 'House' ? '' : 'none';
     const nv = all(office).length, nb = Object.keys(ballot[office]).length;
     const what = office === 'House' ? 'districts' : `${office.toLowerCase()} races`;
     const nrd = H && H.districts ? Object.values(H.districts).filter(d => d.rd).length : 0;
@@ -1200,9 +1210,9 @@ a:hover { text-decoration: underline; }
     }
     const pw = document.getElementById('polled-wrap');
     if (pw && pw.style) pw.style.display = src === 'model' || st.metric === 'cmp' || st.metric === 'mcmp' ? '' : 'none';
-    // the source switch: "Our model" hidden when comparing with the model
+    // the source switch: "Our model" hidden when comparing with the model; its label says which job it is doing
     const sl = document.getElementById('src-lab');
-    if (sl && sl.style) sl.style.display = st.metric === 'cmp' || st.metric === 'mcmp' ? '' : 'none';
+    if (sl) sl.textContent = st.metric === 'cmp' || st.metric === 'mcmp' ? 'Compare with' : 'Numbers from';
     if (srcs) for (const x of srcs.querySelectorAll('button')) {
       if (x.dataset.s === 'model') x.style.display = st.metric === 'cmp' || st.metric === 'mcmp' ? 'none' : '';
       if (x.dataset.s === 'kalshi') x.style.display = '';
