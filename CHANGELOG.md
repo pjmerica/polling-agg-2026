@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[HASH]` Map: the "Model vs markets" view is now "Win % model vs market" (2026-11-02, user's wording), beside "Margin vs markets", so the two comparison views say which number they compare. Renamed on the button, the page tag and the "How to read it" list; the explainer drawer's "Model vs markets" section keeps its name (it compares both win chance and margin).
+- `[5a6e462c]` Map: the "Model vs markets" view is now "Win % model vs market" (2026-11-02, user's wording), beside "Margin vs markets", so the two comparison views say which number they compare. Renamed on the button, the page tag and the "How to read it" list; the explainer drawer's "Model vs markets" section keeps its name (it compares both win chance and margin).
 
 - `[a00c5e5c]` The chance Democrats win each chamber, shown as the headline number (2026-11-02). User: "post the odds we think the dems win the senate and the house on their respective pages". The map shows the model's control odds for the open tab above the map ("Chance Democrats win the House: 96%", with the Republicans' chance, independents-decide where it applies, the seat range and the simulation count); it is the model's number whatever source the map shows. The forecast page's chamber cards lead with the same figure in large type. Both read `FORECAST.seat_sim` (model repo `src/simulate_seats.py`), so they always match the "Control:" line already on the cards.
 
