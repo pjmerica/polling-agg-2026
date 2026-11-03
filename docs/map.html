@@ -123,6 +123,8 @@ a:hover { text-decoration: underline; }
 .cand b { font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 800; }
 .cands .cand:first-child { font-size: 1.12rem; }
 .cands .cand:first-child b { font-size: 1.45rem; }
+.cands .cand > span b { font-size: inherit; }   /* a bolded label (the compared venue) stays label-sized */
+.cand b span { font-size: 0.68em; font-weight: 500; white-space: nowrap; }   /* the small (model +2) / win-% asides */
 .pb { font-size: 0.62rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; color: #0b0e14; margin-right: 6px; }
 .pill { font-size: 0.7rem; font-weight: 750; padding: 2px 8px; border-radius: 999px; white-space: nowrap; display: inline-block; }
 .meta { margin-top: 8px; font-size: 0.74rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; }
