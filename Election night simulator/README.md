@@ -50,6 +50,8 @@ Started 2026-10-28.
 | `scripts/run_dashboard.cmd` | Election night in one click: the projector every 30 s, the home server and the public copy |
 | `scripts/serve_home.py` | Serves the live dashboard to phones on the home Wi-Fi (port 8765) |
 | `scripts/publish_live.py` | Pushes a delayed public copy to `docs/election-night-live.html` every 10 min |
+| `scripts/cloud_night.py` | Election night in GitHub Actions: both recorders and the projector every 2 min, state on the `election-live` branch (`.github/workflows/election-night.yml`) |
+| `scripts/build_cloud_pages.py` | Writes the Pages copies that read the cloud run: `docs/election-night-cloud.html` (dashboard) and `docs/election-night-desk.html` (data desk) |
 | `scripts/dry_run.py` | Replays 2024's archived count through the projector and dashboard (`data/raw/dryrun/`), to check everything before Tuesday |
 | `data_dashboard.html` | The data desk: the same projector data, count-first (votes left, what the trailing side needs, desk math, outstanding counties); buy signals optional |
 | `scripts/replay_2024.py` | Election night 2024 with real data and real prices for the data desk (`data/raw/replay/`; open `data_dashboard.html#replay`) |
@@ -171,6 +173,34 @@ presidential count in the 12 states, in time order, with today's market books. A
 stop mid-count, and `--pause 0` to go fast. The prices don't move and 2024 isn't 2026, so its FLIPs and big
 over/unders are meaningless: it checks the plumbing. Run the real projector once afterwards (or just start
 `run_dashboard.cmd`) to replace the dry-run data.
+
+## In the cloud (GitHub Actions + Pages, 2026-11-02)
+
+The same night without this PC, readable from anywhere:
+- **https://pjmerica.github.io/polling-agg-2026/election-night-cloud.html** (the dashboard: races, map, best buys, FLIPs)
+- **https://pjmerica.github.io/polling-agg-2026/election-night-desk.html** (the data desk, 3D map)
+
+How it runs:
+- The workflow **Election night (cloud)** (`.github/workflows/election-night.yml`) runs `scripts/cloud_night.py`. Every
+  pass it records NYT's county results (`capture_live.poll`), the Kalshi/Polymarket best bid/ask (`capture_markets`)
+  and runs the projector (`live_project.run_live`, market baseline). Every 2 minutes, every 5 from Wed Nov 4 1 pm ET;
+  it stops after Sat Nov 7 (`END`).
+- **State** lives on the orphan branch `election-live`: `live_data.js`, `status.json` (last pass, which NYT file per
+  race, errors), `projections.csv` (the charts' history), `markets/{ET date}/` (bid/ask only) and the newest NYT file
+  per race. One commit, amended and force-pushed each pass, so the branch has no history. Older NYT files go into
+  each job's artifact `nyt-captures-<run id>` (30 days).
+- **Continuity:** GitHub stops a job at 6 hours. Each job runs ~5h40m, then dispatches the next, which waits in the
+  `election-night` concurrency group. A job that dies within 20 minutes doesn't dispatch itself; the cron (every
+  30 min, Nov 3 11 am ET to Nov 7) restarts it. Started by hand 2026-11-02 evening.
+- **The pages** are `dashboard.html` / `data_dashboard.html` unchanged, plus a loader (`build_cloud_pages.py`) that
+  fetches `live_data.js` from `raw.githubusercontent.com/.../election-live/` with a fresh query string (that skips
+  raw's 5-minute cache: a pass was served 18 s after its push), GitHub's API if raw fails. No Pages rebuilds per
+  update. Re-run `build_cloud_pages.py` after editing either page.
+- **They are public** and show best buys and FLIPs (the 10-minute-delayed `election-night-live.html` doesn't).
+- **Differences from the PC:** fee multipliers default to 1 (the market CSVs aren't in CI); the market record is
+  bid/ask only; the PC's recorders keep running and keep the full record.
+- **Check it:** the Actions tab, or `status.json` on the branch. Stop it: disable the workflow
+  (`gh workflow disable election-night.yml`) and cancel the running job.
 
 ## The data desk (`data_dashboard.html`, 2026-11-02)
 
