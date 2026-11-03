@@ -201,6 +201,12 @@ How it runs:
   bid/ask only; the PC's recorders keep running and keep the full record.
 - **Check it:** the Actions tab, or `status.json` on the branch. Stop it: disable the workflow
   (`gh workflow disable election-night.yml`) and cancel the running job.
+- **A fix mid-night** (a wrong NYT address in `capture_live.RACES`, a parser change): a job reads the code once, when it
+  starts. Push the fix to master, then `gh run cancel <running id>` and `gh workflow run election-night.yml`; about a
+  minute without updates. A race whose file doesn't parse shows 0% and is listed under `errors` in `status.json`; the
+  other races keep updating (live_project `_safe`, 7fa94503).
+- **Hand-offs** come every ~5h45m (from the 2026-11-02 00:37 UTC start: ~1:20 am, ~7 am, ~12:45 pm, ~6:30 pm, ~12:15 am
+  ET); each costs about a minute of updates.
 
 ## The data desk (`data_dashboard.html`, 2026-11-02)
 
