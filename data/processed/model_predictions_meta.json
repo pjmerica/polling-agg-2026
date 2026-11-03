@@ -1,13 +1,13 @@
 {
- "generated_at": "2026-11-03T05:29:45",
+ "generated_at": "2026-11-03T19:26:11",
  "polls_max_end_date": "2026-11-02",
- "n_poll_rows": 3876,
+ "n_poll_rows": 3885,
  "n_races": 184,
- "natl_env": 8.64,
+ "natl_env": 8.56,
  "natl_env_sources": [
   [
    "Decision Desk HQ",
-   8.9
+   8.6
   ],
   [
    "FiftyPlusOne",
@@ -19,14 +19,14 @@
   ],
   [
    "RealClearPolitics",
-   8.9
+   8.8
   ],
   [
    "Silver Bulletin",
    8.8
   ]
  ],
- "run_id": "20261103T052912",
+ "run_id": "20261103T192530",
  "feature_fill": {
   "fund_receipts_ln": 0.6966,
   "fund_share": 0.6987,
@@ -81,10 +81,10 @@
   "poll_std_60": 0.5748,
   "n_polls_60": 1.0,
   "race_total_polls_60": 1.0,
-  "poll_avg_dpoll": 0.6154,
+  "poll_avg_dpoll": 0.6239,
   "poll_avg_rpoll": 0.3654,
   "poll_avg_npoll": 0.7607,
-  "poll_lead_dpoll": 0.6154,
+  "poll_lead_dpoll": 0.6239,
   "poll_lead_rpoll": 0.3654,
   "poll_lead_npoll": 0.7607,
   "n_polls_dpoll": 1.0,
