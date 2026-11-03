@@ -19,8 +19,8 @@ Six tabs:
   and runoff date if applicable.
 
 Plus a separate **Forecast** page ([predictions.html](https://pjmerica.github.io/polling-agg-2026/predictions.html)):
-the model's prediction for every polled race, with every candidate, projected margin, rating,
-polling-miss stress test and a per-race explainer of the factors behind the number.
+the model's prediction for every polled race, with every candidate, projected margin, rating
+and a per-race explainer of the factors behind the number.
 
 ## How it works
 
