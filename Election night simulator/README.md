@@ -205,7 +205,7 @@ How it runs:
   starts. Push the fix to master, then `gh run cancel <running id>` and `gh workflow run election-night.yml`; about a
   minute without updates. A race whose file doesn't parse shows 0% and is listed under `errors` in `status.json`; the
   other races keep updating (live_project `_safe`, 7fa94503).
-- **Hand-offs** come every ~5h45m (from the 2026-11-02 00:37 UTC start: ~1:20 am, ~7 am, ~12:45 pm, ~6:30 pm, ~12:15 am
+- **Hand-offs** come every ~5h45m (from the job started 2026-11-03 00:37 UTC, Mon 7:37 pm ET: ~1:20 am, ~7 am, ~12:45 pm, ~6:30 pm, ~12:15 am
   ET); each costs about a minute of updates.
 
 ## The data desk (`data_dashboard.html`, 2026-11-02)
