@@ -34,7 +34,7 @@ RACES = {
     "AK-Sen": ["alaska-us-senate"],
     "GA-Gov": ["georgia-governor"],
     "OH-Gov": ["ohio-governor"],
-    "OH-Sen": ["ohio-us-senate-special", "ohio-us-senate"],
+    "OH-Sen": ["ohio-us-senate-special", "ohio-us-senate", "ohio-us-senate-special-election", "ohio-senate-special"],
     "KS-Sen": ["kansas-us-senate"],
     # entered the 75% list with the 2026-10-27 evening retrain: recorded too
     "KS-Gov": ["kansas-governor"],
