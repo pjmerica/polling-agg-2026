@@ -256,6 +256,23 @@ and the columns follow the projector's county data; in the replay, each state sh
 (time on the right). It draws with deck.gl 8.9.35 from jsdelivr (needs the internet) and `county_geo.js`
 (Oregon and Alaska have no county shapes).
 
+### Splits & turnout view (2026-11-02)
+
+The data desk's third view (user: "some kind of monitor on split ticket voting, and turnout. Especially for georgia/texas").
+- **Ticket-splitting** where a state has a Senate and a Governor race (Georgia, Ohio, Kansas, Texas): in a county counted
+  in both races the same ballots carry both, so the gap between the two Democrats' two-party shares is the splitting
+  there, whatever kind of votes are in. Shown against the gap our model's two margins imply in the same counties,
+  statewide, by county type (the share the Democrat needs there for a tied state) and for the counties with the biggest
+  effect. GA Senate is tracked for this only (Ossoff is safe): `State election results/scripts/benchmarks_extra.py`
+  writes its benchmark to `county_benchmarks_extra.json`, which the guide builders don't read. Checked on 2022 Georgia
+  (Warnock vs Abrams): the view gives Warnock +8.5 pts ahead, the real gap.
+- **Turnout against 2022:** 2022 total, ballots cast before Election Day (`early_vote_2026.csv`, UF Election Lab; refresh
+  with `early_vote.py`), NYT's expected vote, counted so far; finished counties (95%+) against their 2022 vote by county
+  type; "turnout mix" = how far this year's turnout pattern alone moves the margin from 2022's (each county's lean held
+  at its tie-line value), for finished counties and for NYT's expected vote.
+- The projector adds `v22` (2022 votes) and `nexp` (NYT's expected vote) to each county and a `turnout` block to each race.
+  The 2024 replay page was not re-published: it has one race per state and no 2022 bases in its bundle.
+
 ## Running the projector
 
 ```

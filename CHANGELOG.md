@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[386ad38b]` Data desk: Splits & turnout view (2026-11-02). User: "some kind of monitor on split ticket voting, and turnout. Especially for georgia/texas" and "do we have anything around turnout measures?". Ticket-splitting for every state with a Senate and a Governor race (GA, OH, KS, TX): the counted gap between the two Democrats in counties counted in both races (same ballots) against the gap our model implies there, by county type and biggest-effect counties. GA Senate added to the recorders and projector for this (benchmark in the new `county_benchmarks_extra.json`, kept out of the guides). Turnout vs 2022: early ballots, NYT's expected vote, finished counties by county type, and the turnout-mix effect on the margin. Validated on 2022 Georgia (Warnock +8.5 over Abrams, the real gap). The cloud run was restarted on it; early vote refreshed (TX 7.74M = 95% of 2022).
+
 - `[49bcbb7a]` Map race card: every candidate the same size (2026-11-02). User, on 0479ade4: "make both the candidate names the same size but I like this layout a lot more". The favourite's row is no longer larger; every candidate row is 1.08rem with its chance at 1.32rem.
 
 - `[7fa94503]` Projector: a race whose NYT file or county data doesn't parse no longer stops every other race's update (2026-11-02, before the first general-election files exist). `live_project._safe` wraps each race's NYT read, v1 and county tracking; failures go to `live_project.ERRORS`, which `cloud_night.py` writes into `status.json` on the election-live branch. Tested with a corrupt Georgia file: Georgia showed 0% with the error listed, Michigan kept projecting.
