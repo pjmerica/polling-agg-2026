@@ -1,0 +1,52 @@
+name: Save the 6 p.m. Election Day copy
+
+# The forecast as it stood at 6 p.m. Eastern on Election Day (user, 2026-11-03): ezdubsanalytics.com
+# locks its mirror then, and this keeps the whole repo at that moment (model outputs, data, docs/
+# pages) as the tag forecast-2026-11-03-6pm-et with a GitHub release, whose source zip is the copy.
+# Dispatched once; it sleeps until `at`, then tags the last master commit made before that time,
+# so commits pushed after 6 p.m. (election-night data, market refreshes) are not in it.
+# One-off: safe to delete after election week.
+
+on:
+  workflow_dispatch:
+    inputs:
+      at:
+        description: The moment to save, ISO UTC (6 p.m. EST = 23:00 UTC)
+        required: false
+        default: '2026-11-03T23:00:00Z'
+
+permissions:
+  contents: write
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Wait until the set time
+        env:
+          AT: ${{ inputs.at }}
+        run: |
+          target=$(date -d "$AT" +%s) || { echo "Bad time: $AT" >&2; exit 1; }
+          left=$(( target + 60 - $(date +%s) ))   # a minute's grace for a push landing at 6:00
+          echo "Waiting $left s, until a minute after $(date -u -d "@$target")."
+          if [ "$left" -gt 0 ]; then sleep "$left"; fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag and release the commit current at that time
+        env:
+          AT: ${{ inputs.at }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=forecast-2026-11-03-6pm-et
+          sha=$(git rev-list -1 --before="$AT" HEAD)
+          [ -n "$sha" ] || { echo "No commit before $AT" >&2; exit 1; }
+          git log -1 --format='Saving %h (%cI): %s' "$sha"
+          if gh release view "$tag" >/dev/null 2>&1; then echo "$tag already exists; leaving it."; exit 0; fi
+          when=$(git log -1 --format=%cI "$sha")
+          gh release create "$tag" --target "$sha" --latest=false \
+            --title "The forecast at 6 p.m. Eastern, Election Day 2026" \
+            --notes "The repo as it stood at 6 p.m. Eastern on Nov. 3, 2026 (commit ${sha:0:8}, made ${when}): the last commit to master before ${AT}. This is the forecast ezdubsanalytics.com locked at that moment. The source zip below is the full copy; docs/ holds the pages and their data files (forecast_data.js, data.js) as published then."
