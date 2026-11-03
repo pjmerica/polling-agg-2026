@@ -33,6 +33,8 @@ INTERVAL = 120
 RACES = {
     "AK-Sen": ["alaska-us-senate"],
     "GA-Gov": ["georgia-governor"],
+    # added 2026-11-02 for the split-ticket view (against GA-Gov); not a competitive race
+    "GA-Sen": ["georgia-us-senate"],
     "OH-Gov": ["ohio-governor"],
     "OH-Sen": ["ohio-us-senate-special", "ohio-us-senate", "ohio-us-senate-special-election", "ohio-senate-special"],
     "KS-Sen": ["kansas-us-senate"],

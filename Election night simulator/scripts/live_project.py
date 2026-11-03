@@ -230,18 +230,40 @@ def latest_nyt(date, race_key):
         agg["total"] += u.get("total_votes") or 0
         agg["expected"] += u.get("total_expected_vote") or 0
     return dict(pct=float(top.get("eevp") or 0), total=total, mtime=os.path.getmtime(files[-1]),
-                margin=100 * (votes[opp] - votes[rep]) / total, stamp=stamp, units=units)
+                margin=100 * (votes[opp] - votes[rep]) / total, stamp=stamp, units=units,
+                exp_total=top.get("total_expected_vote"))
 
 
 _bench = None
+_early = None
+
+
+def early_vote():
+    """{state abbr: dict(voted, as_of, pct_of_2022)}: ballots cast before Election Day, from early_vote.py's
+    State election results/data/processed/early_vote_2026.csv (UF Election Lab); {} without the file."""
+    global _early
+    if _early is None:
+        p = os.path.join(RESULTS, "data", "processed", "early_vote_2026.csv")
+        _early = {}
+        if os.path.exists(p):
+            for r in csv.DictReader(open(p, encoding="utf-8")):
+                try:
+                    _early[r["abbv"]] = dict(voted=int(r["voted"]), as_of=r["as_of"], pct_of_2022=float(r["pct_of_2022"]))
+                except (KeyError, ValueError):
+                    pass
+    return _early
 
 
 def bench_record(race_key):
-    """The race's entry in State election results/data/processed/county_benchmarks.json, or None."""
+    """The race's entry in State election results/data/processed/county_benchmarks.json (the competitive races)
+    or county_benchmarks_extra.json (tracked for the splits view only: GA Senate), or None."""
     global _bench
     if _bench is None:
-        p = os.path.join(RESULTS, "data", "processed", "county_benchmarks.json")
-        _bench = {r["id"]: r for r in json.load(open(p, encoding="utf-8"))["races"]} if os.path.exists(p) else {}
+        _bench = {}
+        for name in ("county_benchmarks.json", "county_benchmarks_extra.json"):
+            p = os.path.join(RESULTS, "data", "processed", name)
+            if os.path.exists(p):
+                _bench.update({r["id"]: r for r in json.load(open(p, encoding="utf-8"))["races"]})
     st, off = race_key.split("-")
     return _bench.get(FC_ID.get(race_key, f"2026_{st}_{OFFICE[off]}"))
 
@@ -314,7 +336,8 @@ def tracking(nyt, race_key, v1res, m0, p_close):
                              share=round(share, 4) if share is not None else None,
                              exp=round(exp_, 4) if exp_ is not None else None, tie=round(tie, 4),
                              net=round(net) if net is not None else None,
-                             left=round(max(expected - u["total"], 0)), votes=u["total"]))
+                             left=round(max(expected - u["total"], 0)), votes=u["total"],
+                             v22=bc.get(f, {}).get("v"), nexp=u["expected"] or None))
     return dict(implied=implied, implied_sd=sd, expected=m0[0] if m0 else None,
                 market=PRIOR_SD * phi_inv(p_close) if p_close is not None else None,
                 net=round(net_all), unit=rec.get("unit") or "county", counties=counties)
@@ -440,9 +463,11 @@ def best_trade(p_win, books):
 
 # ---------- modes ----------
 
-RACES = ["GA-Gov", "SC-Sen", "OH-Gov", "OH-Sen", "MI-Sen", "TX-Sen", "TX-Gov", "KS-Sen", "KS-Gov",
+RACES = ["GA-Gov", "GA-Sen", "SC-Sen", "OH-Gov", "OH-Sen", "MI-Sen", "TX-Sen", "TX-Gov", "KS-Sen", "KS-Gov",
          "ME-Sen", "IA-Sen", "NE-Sen", "NV-Gov", "AK-Sen"]     # poll-closing order
-# OR-Gov dropped from live tracking 2026-10-30 (user call); capture_markets.py still records its prices
+# OR-Gov dropped from live tracking 2026-10-30 (user call); capture_markets.py still records its prices.
+# GA-Sen added 2026-11-02 (user: monitor split-ticket voting, "especially for georgia/texas"): Ossoff is safe, but
+# against the Governor race on the same ballots it measures splitting.
 
 
 def _with_baseline(hist, state, nyt, p0, prior_sd, m0=None):
@@ -588,7 +613,9 @@ def run_live(a, hist, fc):
             books={v: dict(bid=side(v, "bid"), ask=side(v, "ask")) for v in ("kalshi", "polymarket") if v in books},
             best=dict(venue=bt[0], side=bt[1], ask=_r(bt[2]), edge=_r(bt[3]), src="v1" if v1res else "v0",
                       flip=flip) if bt else None,
-            track=track))
+            track=track,
+            turnout=dict(v22=b.get("turnout_2022"), nyt_exp=nyt.get("exp_total"),
+                         early=early_vote().get(race.split("-")[0]))))
     if a.pct is None:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
         if os.path.exists(OUT):               # columns changed: keep the old log aside

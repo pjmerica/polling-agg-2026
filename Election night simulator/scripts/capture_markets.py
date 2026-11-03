@@ -45,6 +45,7 @@ KALSHI_GAP = 0.12          # seconds between Kalshi requests (a fast burst got H
 RACES = {
     "AK-Sen": ("SENATEAK-26", "alaska-senate-election-winner"),
     "GA-Gov": ("GOVPARTYGA-26", "georgia-governor-winner-2026"),
+    "GA-Sen": ("SENATEGA-26", "georgia-senate-election-winner"),     # split-ticket view, 2026-11-02
     "OH-Gov": ("GOVPARTYOH-26", "ohio-governor-winner-2026"),
     "OH-Sen": ("SENATEOHS-26", "ohio-senate-election-winner"),
     "KS-Sen": ("SENATEKS-26", "kansas-senate-election-winner"),
