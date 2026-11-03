@@ -213,8 +213,9 @@ How it runs:
 - **Markets:** a race whose Kalshi or Polymarket lookup fails at a re-discovery (every 30 min) keeps the markets it had;
   Kalshi markets that are paused or closed but not settled are kept too (only "active" before 2026-11-03).
 - **Hand-offs** come every ~5h45m and cost about a minute of updates each. None between 6:20 and 11:50 pm ET on Nov 3
-  (`NO_HANDOFF`): a job that would end inside it ends at ~6:15 pm and the next covers the window. Expected: ~2:15 am,
-  ~8 am, ~1:45 pm, ~6:15 pm, ~11:58 pm, ~5:40 am ET.
+  (`NO_HANDOFF`): a job that would end inside it ends at ~6:15 pm and the next covers the window. Expected after the
+  restart at 12:20 am ET Nov 3 (run 41583297519, on b0200f71): ~6 am, ~11:45 am, ~5:25 pm, ~6:15 pm (a short job),
+  ~11:57 pm, ~5:40 am ET.
 - **The record, for a 2026 replay** (user: "save the results as they come in for future races as much as possible ...
   save states of the model"): each job's `archive/` holds every change of the tracked races' NYT files, NYT's 50 state
   pages every 10 minutes when they change (every Senate and Governor race by county, every House and legislative race
