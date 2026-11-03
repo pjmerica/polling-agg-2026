@@ -15,7 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
-- `[7fa94503]` Map race card: the small asides stay small (2026-11-02). Follow-up to 0479ade4: in Win % model vs market the "(model -10 pts)" aside and the bolded venue label grew with the chance and wrapped; they are back to label size (0.68em of the chance), and so is the win % beside each margin on the Margin view.
+- `[b7b4b9cf]` Map race card: the small asides stay small (2026-11-02). Follow-up to 0479ade4: in Win % model vs market the "(model -10 pts)" aside and the bolded venue label grew with the chance and wrapped; they are back to label size (0.68em of the chance), and so is the win % beside each margin on the Margin view.
 
 - `[0479ade4]` Map race card: the candidates and their chances are the biggest text (2026-11-02). User: "I want the candidate and their probability to win biggest. Whether an incumbent is running should be smaller." In the hover card and the click panel the candidate rows go from 0.82rem to 1rem (chance 1.2rem), the favourite's row larger still (1.12rem, chance 1.45rem); the race name drops to 0.86rem and the held-by / incumbent-running line to 0.68rem. CSS only.
 
