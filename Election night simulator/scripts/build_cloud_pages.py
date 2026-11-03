@@ -5,9 +5,10 @@
 
 The pages themselves are unchanged. A small loader goes in front of them: when a page asks for its data
 file (data/raw/dashboard/live_data.js) it gets live_data.js from the orphan branch `election-live`,
-fetched rather than loaded as a script because GitHub serves raw files as plain text. GitHub's API first
-(no cache; 60 requests an hour per address, and unchanged files don't count), raw.githubusercontent.com
-(cached up to 5 minutes) when the API refuses. Re-run after editing either page.
+fetched rather than loaded as a script because GitHub serves raw files as plain text. From
+raw.githubusercontent.com with a fresh query string each time (tested 2026-11-02: that skips its 5-minute
+cache, a new pass was served 18 s after the push); GitHub's API (60 requests an hour per address) only if
+raw fails. Re-run after editing either page.
 
     py "Election night simulator/scripts/build_cloud_pages.py"
 """
@@ -31,18 +32,16 @@ LOADER = """<script>
   async function get() {
     if (text && Date.now() - at < MIN_GAP) return text;
     let t = null;
-    if (Date.now() > apiOffUntil) {
-      try {
-        const r = await fetch(API, { headers: { Accept: "application/vnd.github.raw" }, cache: "no-cache" });
-        if (r.ok) t = await r.text();
-        else if (r.status === 403 || r.status === 429) apiOffUntil = Date.now() + 10 * 60000;
-      } catch (e) { /* fall through to raw */ }
-    }
-    if (t === null) {
+    try {                                   // a new query string each time skips raw's 5-minute cache
       const r = await fetch(RAW + "?t=" + Date.now(), { cache: "no-store" });
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      t = await r.text();
+      if (r.ok) t = await r.text();
+    } catch (e) { /* try the API */ }
+    if (t === null && Date.now() > apiOffUntil) {
+      const r = await fetch(API, { headers: { Accept: "application/vnd.github.raw" }, cache: "no-cache" });
+      if (r.status === 403 || r.status === 429) apiOffUntil = Date.now() + 10 * 60000;
+      if (r.ok) t = await r.text();
     }
+    if (t === null) throw new Error("no data");
     text = t; at = Date.now();
     return t;
   }

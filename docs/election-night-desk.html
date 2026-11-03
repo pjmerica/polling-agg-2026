@@ -198,18 +198,16 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
   async function get() {
     if (text && Date.now() - at < MIN_GAP) return text;
     let t = null;
-    if (Date.now() > apiOffUntil) {
-      try {
-        const r = await fetch(API, { headers: { Accept: "application/vnd.github.raw" }, cache: "no-cache" });
-        if (r.ok) t = await r.text();
-        else if (r.status === 403 || r.status === 429) apiOffUntil = Date.now() + 10 * 60000;
-      } catch (e) { /* fall through to raw */ }
-    }
-    if (t === null) {
+    try {                                   // a new query string each time skips raw's 5-minute cache
       const r = await fetch(RAW + "?t=" + Date.now(), { cache: "no-store" });
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      t = await r.text();
+      if (r.ok) t = await r.text();
+    } catch (e) { /* try the API */ }
+    if (t === null && Date.now() > apiOffUntil) {
+      const r = await fetch(API, { headers: { Accept: "application/vnd.github.raw" }, cache: "no-cache" });
+      if (r.status === 403 || r.status === 429) apiOffUntil = Date.now() + 10 * 60000;
+      if (r.ok) t = await r.text();
     }
+    if (t === null) throw new Error("no data");
     text = t; at = Date.now();
     return t;
   }
