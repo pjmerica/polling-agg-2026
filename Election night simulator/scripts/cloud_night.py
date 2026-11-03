@@ -52,6 +52,10 @@ import live_project  # noqa: E402
 
 END = dt.datetime(2026, 11, 8, 5, 0, tzinfo=dt.timezone.utc)        # Sat night after Nevada's postmark deadline
 SLOW_FROM = dt.datetime(2026, 11, 4, 18, 0, tzinfo=dt.timezone.utc)  # Wed 1 pm ET: the late counts move slowly
+# No job hand-off (about a minute without updates) inside these: a job that would end inside one ends just before
+# it instead, and the next job covers the whole window (6:20-11:50 pm ET = first poll close through Iowa/Nebraska;
+# the 340-minute job that starts at ~6:15 pm runs to ~11:55 pm).
+NO_HANDOFF = [(dt.datetime(2026, 11, 3, 23, 20, tzinfo=dt.timezone.utc), dt.datetime(2026, 11, 4, 4, 50, tzinfo=dt.timezone.utc))]
 MARKET_FIELDS = ["ts_utc", "race", "market", "outcome", "bid", "ask", "bid_size", "ask_size", "last", "volume"]
 PROBE = "https://static01.nyt.com/elections-assets/pages/data/2026-08-04/results-michigan-us-senate-primary.json"
 
@@ -285,6 +289,12 @@ def main():
     last_states = last_snap = 0.0
     last_up = time.time()
     stop = time.time() + a.minutes * 60
+    for w0, w1 in NO_HANDOFF:
+        end = dt.datetime.fromtimestamp(stop, dt.timezone.utc)
+        early = (w0 - dt.timedelta(minutes=5)).timestamp()
+        if w0 < end < w1 and early - time.time() > 25 * 60:
+            stop = early
+            log(f"ending at {w0 - dt.timedelta(minutes=5):%H:%MZ} so the next job covers {w0:%H:%M}-{w1:%H:%MZ} unbroken")
     n = 0
     while True:
         start = time.time()

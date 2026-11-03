@@ -205,8 +205,17 @@ How it runs:
   starts. Push the fix to master, then `gh run cancel <running id>` and `gh workflow run election-night.yml`; about a
   minute without updates. A race whose file doesn't parse shows 0% and is listed under `errors` in `status.json`; the
   other races keep updating (live_project `_safe`, 7fa94503).
-- **Hand-offs** come every ~5h45m (from the job started 2026-11-03 00:37 UTC, Mon 7:37 pm ET: ~1:20 am, ~7 am, ~12:45 pm, ~6:30 pm, ~12:15 am
-  ET); each costs about a minute of updates.
+- **Hand-offs** come every ~5h45m and cost about a minute of updates each. None between 6:20 and 11:50 pm ET on Nov 3
+  (`NO_HANDOFF`): a job that would end inside it ends at ~6:15 pm and the next covers the window. Expected: ~2:15 am,
+  ~8 am, ~1:45 pm, ~6:15 pm, ~11:58 pm, ~5:40 am ET.
+- **The record, for a 2026 replay** (user: "save the results as they come in for future races as much as possible ...
+  save states of the model"): each job's `archive/` holds every change of the tracked races' NYT files, NYT's 50 state
+  pages every 10 minutes when they change (every Senate and Governor race by county, every House and legislative race
+  statewide; checked on 2024 Texas: 222 races, 254 counties), the full books, the projector's inputs (forecast,
+  benchmarks, early vote, state timelines, code version) and its output every 10 minutes. Every hour it is packed with a
+  copy of the state folder into `night-<run>-<n>.tar.gz` and attached to the release **election-night-2026** (permanent;
+  uploaded in the background, so passes don't wait). The job artifact (90 days) is the backup. To rebuild the night:
+  `gh release download election-night-2026` and unpack every file into one folder.
 
 ## The data desk (`data_dashboard.html`, 2026-11-02)
 
@@ -255,6 +264,15 @@ below. The side panel lists each race's implied margin vs the expectation. Live,
 and the columns follow the projector's county data; in the replay, each state shows its latest archived capture
 (time on the right). It draws with deck.gl 8.9.35 from jsdelivr (needs the internet) and `county_geo.js`
 (Oregon and Alaska have no county shapes).
+
+### Over/under map (2026-11-02)
+
+The data desk's flat map tab (user: "colored blue or red if the votes come in not as expected ... more of a static map as
+another tab next to cards and 3d map"): every tracked state's counties, blue where the Democrat (Osborn in Nebraska) is
+running ahead of the share expected there if the state lands on our model's margin, red where the Republican is, full
+colour at 10 points; grey until a county reports; faded while it is under 95% counted (a part-counted county is mostly
+one kind of vote), or "Finished counties only". Click a state to zoom; hover a county for its numbers; the side panel has
+each race's net votes against expectation. In the 2024 replay "expected" is the market's margin at poll close.
 
 ### Splits & turnout view (2026-11-02)
 
