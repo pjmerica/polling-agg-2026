@@ -198,7 +198,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 .cgrm .sub { fill: var(--muted); font-size: 10.5px; }
 .cgrm .end { fill: var(--muted); font-size: 10px; }
 .cgrm .hit { fill: transparent; cursor: default; }
-.cgrm g[data-tip]:hover rect.bar { stroke: var(--text); stroke-width: 1; }
+.cgrm g[data-tip]:hover rect.gbar { stroke: var(--text); stroke-width: 1; }
 .cglegend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); align-items: center; }
 .cglegend i { display: inline-block; width: 18px; height: 8px; border-radius: 3px; vertical-align: middle; margin-right: 6px; }
 .cglegend i.tick { width: 2px; height: 14px; border-radius: 0; background: var(--muted); }
@@ -207,6 +207,21 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 #cgtip { position: fixed; z-index: 50; max-width: 380px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 6px; padding: 7px 10px; font-size: 12.5px; line-height: 1.45; color: var(--text); pointer-events: none; box-shadow: 0 4px 16px rgba(0, 0, 0, .4); }
 #cgtip[hidden] { display: none; }
 .cgtable summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+.cggt { display: block; width: 100%; min-width: 860px; height: auto; --b1: #008300; --b2: #d55181; --b3: #9085e9; }
+.cggt text { font-family: var(--sans); }
+.cggt .cell { stroke: var(--line2); stroke-width: 1; fill: none; }
+.cggt .hd { fill: var(--panel2); }
+.cggt .h1 { fill: var(--text); font-size: 11.5px; font-weight: 600; }
+.cggt .h2 { fill: var(--muted); font-size: 10.5px; }
+.cggt .nm { fill: var(--text); font-size: 13px; font-weight: 600; }
+.cggt .sub { fill: var(--muted); font-size: 10.5px; }
+.cggt .in { fill: #fff; font-size: 11.5px; font-weight: 600; }
+.cggt .out { fill: var(--muted); font-size: 11px; }
+.cggt .hit { fill: transparent; }
+.cggt g[data-tip]:hover rect.gbar { stroke: var(--text); stroke-width: 1.5; }
+.cglegend i.b1 { background: #008300; } .cglegend i.b2 { background: #d55181; } .cglegend i.b3 { background: #9085e9; }
+.cglegend i.rng { height: 2px; border-radius: 0; background: var(--text); }
+.cglegend i.nowt { width: 2px; height: 14px; border-radius: 0; background: var(--text); }
 .stview { display: grid; gap: 12px; }
 .stview[hidden] { display: none; }
 .stview h2 { margin: 6px 0 0; font-size: 15px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
@@ -1470,7 +1485,7 @@ function cgRoadmap(now) {
       const tip = `${st.name}, ${yr} ${e.race}, on tonight's clock: first votes ${clock(a)}` +
         (e.h50 != null ? ` · half counted ${clock(c + e.h50)}` : "") + (e.h90 != null ? ` · 90% ${clock(c + e.h90)}` : "") +
         (e.h95 != null ? ` · 95% ${clock(b)}, ${dur(e.h95)} after the polls closed` : ` · ${e.end_pct}% counted when NYT's file ends (${clock(b)}); the rest came days later`);
-      let bar = `<rect class="bar" x="${x0}" y="${by}" width="${x1 - x0}" height="8" rx="3" fill="var(--y${yr.slice(2)})"/>`;
+      let bar = `<rect class="gbar" x="${x0}" y="${by}" width="${x1 - x0}" height="8" rx="3" fill="var(--y${yr.slice(2)})"/>`;
       for (const p of [e.h50, e.h90]) {
         if (p == null) continue;
         const nx = fx(c + p);
@@ -1492,6 +1507,65 @@ function cgRoadmap(now) {
     `<p class="note">On tonight's clock: every state's polls close at the same time as in 2022 and 2024. Measured against each state's final certified count in NYT's results timelines. 2022 is the last midterm; 2024 is the latest count (Georgia, South Carolina, Kansas, Iowa and Alaska had no 2024 Senate race, so those bars are the presidential count, whose NYT file ends at 5:40 am). The scale changes at the dashed lines: election night by the hour, the rest of the week by the day, then later. Law changes since then: Michigan's cities could count absentees for 8 days before tonight, and Ohio no longer counts mail that arrives after Election Day.</p>` +
     `<details class="cgtable"><summary>Show as a table</summary><div class="tablewrap"><table><thead><tr><th>State</th><th>Count</th><th>First votes</th><th>Half</th><th>90%</th><th>95%</th></tr></thead><tbody>${tbl.join("")}</tbody></table></div></details></div>`;
 }
+// Project-plan view: one bar per state from tonight's poll close to when 95% is usually counted (the average of
+// 2022 and 2024 in CG_PACE; Alaska 2022 only), coloured by when that is. Equal-width columns of unequal length.
+const CG_BUCKETS = [[8, "b1", "Election night (by 3 am)"], [29, "b2", "Overnight to Wednesday night"], [1e9, "b3", "Thursday or later"]];
+function cgGantt(now) {
+  const T0 = cgTime(0, "19:00"), o = { timeZone: "America/New_York" };
+  const at = t => new Date(T0.getTime() + t * 3.6e6);
+  const wd = t => at(t).toLocaleString("en-US", { ...o, weekday: "short" });
+  const hm = t => at(t).toLocaleString("en-US", { ...o, hour: "numeric", minute: "2-digit" }).replace(/ (AM|PM)/, m => m.toLowerCase());
+  const clock = t => t < 5 ? hm(t) : t < 101 ? wd(t) + " " + hm(t) : at(t).toLocaleString("en-US", { ...o, month: "short", day: "numeric" });
+  const COLS = [[0, 2, wd(0), "7-9 pm"], [2, 4, wd(2), "9-11 pm"], [4, 6, wd(4) + "/" + wd(6), "11 pm-1 am"], [6, 8, wd(6), "1-3 am"],
+    [8, 11, wd(8), "3-6 am"], [11, 17, wd(11), "6 am-noon"], [17, 29, wd(17), "noon-midnight"], [29, 53, wd(29), "all day"],
+    [53, 77, wd(53), "all day"], [77, 101, wd(77), "all day"],
+    [101, 245, wd(101) + " on", "to " + at(245).toLocaleString("en-US", { ...o, month: "short", day: "numeric" })]];
+  const L = 150, CW = 86, HH = 40, RH = 44, W = CW * COLS.length, H = HH + CG_STATES.length * RH + 1;
+  const fx = t => {
+    const i = COLS.findIndex(([a, b]) => t <= b), k = i < 0 ? COLS.length - 1 : i, [a, b] = COLS[k];
+    return L + CW * k + CW * Math.min(1, Math.max(0, (t - a) / (b - a)));
+  };
+  let g = `<rect class="hd" x="0" y="0" width="${L + W}" height="${HH}"/>`;
+  g += `<text class="h1" x="12" y="25">State</text>`;
+  COLS.forEach(([a, b, l1, l2], i) => {
+    const cx = L + CW * i + CW / 2;
+    g += `<text class="h1" x="${cx}" y="17" text-anchor="middle">${l1}</text><text class="h2" x="${cx}" y="31" text-anchor="middle">${l2}</text>`;
+  });
+  // the table grid first, so the bars sit on top of it
+  for (let r = 0; r <= CG_STATES.length; r++) g += `<line class="cell" x1="0" x2="${L + W}" y1="${HH + r * RH}" y2="${HH + r * RH}"/>`;
+  for (let i = 0; i <= COLS.length; i++) g += `<line class="cell" x1="${L + CW * i}" x2="${L + CW * i}" y1="0" y2="${H}"/>`;
+  g += `<rect class="cell" x="0.5" y="0.5" width="${L + W - 1}" height="${H - 1}"/>`;
+  CG_STATES.forEach((st, r) => {
+    const y = HH + r * RH, c = CG_CLOSE[st.st], pace = CG_PACE[st.st] || {};
+    const ends = ["2022", "2024"].filter(yr => pace[yr] && pace[yr].h95 != null).map(yr => ({ yr, t: c + pace[yr].h95 }));
+    g += `<text class="nm" x="12" y="${y + 20}">${esc(st.name)}</text><text class="sub" x="12" y="${y + 34}">polls close ${hm(c)}</text>`;
+    if (!ends.length) return;
+    const end = ends.reduce((v, e) => v + e.t, 0) / ends.length, lo = Math.min(...ends.map(e => e.t)), hi = Math.max(...ends.map(e => e.t));
+    const [, cls, lab] = CG_BUCKETS.find(([lim]) => end <= lim);
+    const x0 = fx(c), x1 = Math.max(fx(end), x0 + 6), by = y + 7, bh = 24;
+    const tip = `${st.name}: polls close ${hm(c)}; 95% counted by about ${clock(end)}` +
+      (ends.length > 1 ? ` (the average of 2022, ${clock(ends[0].t)}, and 2024, ${clock(ends[1].t)})` : ` (${ends[0].yr}, ${clock(ends[0].t)}; the ${ends[0].yr === "2022" ? "2024" : "2022"} file ends before 95%)`) + `. ${lab}.`;
+    const txt = `${st.name} · ${clock(end)}`, fits = txt.length * 6.6 + 16 < x1 - x0;
+    g += `<g data-tip="${esc(tip)}"><rect class="hit" x="${x0}" y="${y + 2}" width="${x1 - x0}" height="${RH - 4}"/>` +
+      `<rect class="gbar" x="${x0}" y="${by}" width="${x1 - x0}" height="${bh}" rx="4" fill="var(--${cls})"/>` +
+      (fits ? `<text class="in" x="${x0 + 9}" y="${by + 16}">${esc(txt)}</text>` : "") + `</g>`;
+    if (!fits) g += `<text class="out" x="${x1 + 6}" y="${by + 16}">${esc(txt)}</text>`;
+    if (ends.length > 1 && fx(hi) - fx(lo) >= 2) {
+      const ry = by + bh + 6;
+      g += `<line x1="${fx(lo)}" x2="${fx(hi)}" y1="${ry}" y2="${ry}" stroke="var(--text)" stroke-width="2"/>` +
+        `<line x1="${fx(lo)}" x2="${fx(lo)}" y1="${ry - 3}" y2="${ry + 3}" stroke="var(--text)" stroke-width="1.5"/>` +
+        `<line x1="${fx(hi)}" x2="${fx(hi)}" y1="${ry - 3}" y2="${ry + 3}" stroke="var(--text)" stroke-width="1.5"/>`;
+    }
+  });
+  const tn = (now - T0) / 3.6e6;
+  if (tn >= 0 && tn <= 245)
+    g += `<line x1="${fx(tn)}" x2="${fx(tn)}" y1="${HH}" y2="${H}" stroke="var(--text)" stroke-width="2"/><rect x="${fx(tn) - 16}" y="${HH - 13}" width="32" height="13" rx="3" fill="var(--text)"/><text x="${fx(tn)}" y="${HH - 3}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--bg)">NOW</text>`;
+  const legend = `<div class="cglegend">` + CG_BUCKETS.map(([, cls, lab]) => `<span><i class="${cls}"></i>${lab}</span>`).join("") +
+    `<span><i class="rng"></i>range: 2022 to 2024</span><span><i class="nowt"></i>now${tn < 0 ? " (before the first close)" : ""}</span></div>`;
+  return `<div class="detail"><h3>Counting roadmap <small class="note">(each bar: tonight's poll close to when 95% of the vote is usually counted; hover for details)</small></h3>` +
+    `<div class="cgrm-wrap"><svg class="cggt" viewBox="0 0 ${L + W} ${H}" role="img" aria-label="When each state usually reaches 95% of its count, from tonight's poll close">${g}</svg></div>${legend}` +
+    `<p class="note">"Usually" is the average of 2022 and 2024 (Alaska: 2022 only; NYT's 2024 file ends at 72% counted). The columns are not equal lengths of time: two hours each through 1 am, then wider, then whole days. The next chart shows each year separately, with the half and 90% marks, and has the table.</p></div>`;
+}
 function renderCount() {
   const el = document.getElementById("countview");
   const now = REPLAY && D ? new Date(D.generated) : new Date();
@@ -1504,6 +1578,7 @@ function renderCount() {
     <li><b>The projector is built for this.</b> It compares each county with what that county should show for a given statewide result, and a county only counts fully once it's mostly counted (a half-counted county is usually one kind of vote). So "on screen" gets fooled by the order the votes come in; the projection much less so. Where counties don't line up (Alaska), it uses each state's 2020-2024 count curves.</li>
     <li><b>For Kalshi:</b> the market knows these patterns too. "The Republican will catch up in Texas" is priced in. The edge is a state whose counties run ahead of or behind what they should (Over/under map), or a market that over-reacts to one batch.</li>
   </ul></div>`;
+  h += cgGantt(now);
   h += cgRoadmap(now);
   // the timeline, with where the night is
   const items = CG_TIMELINE.map(([d, hm, lab, st, txt]) => ({ t: cgTime(d, hm), d, lab, st, txt }));
