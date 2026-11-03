@@ -186,6 +186,27 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 .scard .gloss dd { color: var(--text) !important; }
 .scard .gloss dt { color: var(--muted); font-weight: 600; }
 @media (max-width: 700px) { .tlr { grid-template-columns: 1fr; gap: 2px; } .sgrid { grid-template-columns: 1fr; } }
+.cgrm-wrap { overflow-x: auto; }
+.cgrm { display: block; width: 100%; min-width: 820px; height: auto; --y22: #c98500; --y24: #199e70; }
+.cgrm text { font-family: var(--sans); }
+.cgrm .gl { stroke: var(--line); stroke-width: 1; }
+.cgrm .gd { stroke: var(--line2); stroke-width: 1; }
+.cgrm .brk { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.cgrm .ax { fill: var(--muted); font-size: 10.5px; }
+.cgrm .seg { fill: var(--faint); font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; }
+.cgrm .nm { fill: var(--text); font-size: 12.5px; font-weight: 600; }
+.cgrm .sub { fill: var(--muted); font-size: 10.5px; }
+.cgrm .end { fill: var(--muted); font-size: 10px; }
+.cgrm .hit { fill: transparent; cursor: default; }
+.cgrm g[data-tip]:hover rect.bar { stroke: var(--text); stroke-width: 1; }
+.cglegend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); align-items: center; }
+.cglegend i { display: inline-block; width: 18px; height: 8px; border-radius: 3px; vertical-align: middle; margin-right: 6px; }
+.cglegend i.tick { width: 2px; height: 14px; border-radius: 0; background: var(--muted); }
+.cglegend i.now { width: 2px; height: 14px; border-radius: 0; background: var(--proj); }
+.cglegend i.notch { background: linear-gradient(90deg, #199e70 0 7px, var(--panel) 7px 9px, #199e70 9px); }
+#cgtip { position: fixed; z-index: 50; max-width: 380px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 6px; padding: 7px 10px; font-size: 12.5px; line-height: 1.45; color: var(--text); pointer-events: none; box-shadow: 0 4px 16px rgba(0, 0, 0, .4); }
+#cgtip[hidden] { display: none; }
+.cgtable summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
 .stview { display: grid; gap: 12px; }
 .stview[hidden] { display: none; }
 .stview h2 { margin: 6px 0 0; font-size: 15px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
@@ -273,6 +294,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
   </section>
   <section id="stview" class="stview" hidden aria-label="Ticket-splitting and turnout"></section>
   <section id="countview" class="howview countview" hidden aria-label="How the votes come in tonight"></section>
+  <div id="cgtip" hidden></div>
   <section id="howview" class="howview" hidden aria-label="How this page works">
     <div class="detail">
       <h3>What this is</h3>
@@ -1444,6 +1466,78 @@ function cgTime(d, hm) {                // ET on election night is EST (UTC-5) i
   const [h, mi] = hm.split(":").map(Number);
   return new Date(Date.UTC(y, m - 1, dd + d, h + 5, mi));
 }
+// Hours after the poll close at first votes, 50%, 90% and 95% of the final count (NYT timelines via
+// State election results/data/processed/state_timeseries.csv; 2024 Georgia/South Carolina first votes from
+// AP, since NYT's 2024 presidential files start at 8 pm). Regenerate with scripts/count_pace.py.
+const CG_PACE = {"GA":{"2022":{"race":"Senate","first":0.054,"h50":1.736,"h90":4.328,"h95":5.49},"2024":{"race":"President","first":0.067,"h50":1.459,"h90":3.368,"h95":4.419}},"SC":{"2022":{"race":"Senate","first":0.148,"h50":2.806,"h90":6.396,"h95":6.894},"2024":{"race":"President","first":0.317,"h50":1.86,"h90":4.241,"h95":4.675}},"OH":{"2022":{"race":"Senate","first":0.156,"h50":1.996,"h90":3.365,"h95":4.078},"2024":{"race":"Senate","first":0.126,"h50":1.538,"h90":3.76,"h95":4.42}},"MI":{"2022":{"race":"Governor","first":0.085,"h50":4.212,"h90":8.544,"h95":13.037},"2024":{"race":"Senate","first":0.12,"h50":4.213,"h90":8.946,"h95":9.463}},"TX":{"2022":{"race":"Governor","first":0.011,"h50":1.386,"h90":5.131,"h95":6.594},"2024":{"race":"Senate","first":0.014,"h50":0.5,"h90":4.488,"h95":6.01}},"KS":{"2022":{"race":"Senate","first":0.141,"h50":2.099,"h90":3.565,"h95":6.171},"2024":{"race":"President","first":0.172,"h50":1.833,"h90":4.779,"h95":5.332}},"ME":{"2022":{"race":"Governor","first":0.144,"h50":3.341,"h90":18.497,"h95":21.719},"2024":{"race":"Senate","first":0.749,"h50":4.991,"h90":19.318,"h95":38.265}},"IA":{"2022":{"race":"Senate","first":0.172,"h50":1.527,"h90":2.341,"h95":3.571},"2024":{"race":"President","first":0.036,"h50":1.567,"h90":2.968,"h95":4.525}},"NE":{"2022":{"race":"Governor","first":0.129,"h50":1.955,"h90":4.351,"h95":7.28},"2024":{"race":"Senate","first":0.014,"h50":1.932,"h90":6.26,"h95":8.18}},"NV":{"2022":{"race":"Senate","first":2.685,"h50":4.083,"h90":50.357,"h95":95.236},"2024":{"race":"Senate","first":2.916,"h50":3.047,"h90":28.799,"h95":50.802}},"AK":{"2022":{"race":"Senate","first":1.152,"h50":1.776,"h90":166.353,"h95":233.02},"2024":{"race":"President","first":1.125,"h50":2.124,"h90":null,"h95":null,"end":5.642,"end_pct":72.1}}};
+const CG_CLOSE = { GA: 0, SC: 0, OH: .5, MI: 1, TX: 1, KS: 1, ME: 1, IA: 2, NE: 2, NV: 3, AK: 5 };   // hours after 7 pm ET
+function cgRoadmap(now) {
+  const T0 = cgTime(0, "19:00"), o = { timeZone: "America/New_York" };
+  // election night by the hour, the rest of the week by the day, then later: three linear pieces
+  const SEG = [[0, 17, 0, .66], [17, 113, .674, .85], [113, 345, .864, 1]];
+  const L = 150, W = 870, top = 44, RH = 31, H = top + CG_STATES.length * RH + 6;
+  const fx = t => { for (const [a, b, fa, fb] of SEG) if (t <= b) return L + W * (fa + (fb - fa) * (Math.max(t, a) - a) / (b - a)); return L + W; };
+  const at = t => new Date(T0.getTime() + t * 3.6e6);
+  const hm = t => at(t).toLocaleString("en-US", { ...o, hour: "numeric", minute: "2-digit" }).replace(/ (AM|PM)/, m => m.toLowerCase());
+  const clock = t => t < 5 ? hm(t) : t < 113 ? at(t).toLocaleString("en-US", { ...o, weekday: "short" }) + " " + hm(t)
+    : at(t).toLocaleString("en-US", { ...o, month: "short", day: "numeric" });
+  const dur = h => h < 48 ? h.toFixed(1) + " hours" : (h / 24).toFixed(1) + " days";
+  const tday = d => (cgTime(d, "00:00") - T0) / 3.6e6;     // midnight starting day d, in hours after 7 pm
+  let g = "";
+  // grid and axis labels
+  for (let t = 0; t <= 17; t++) {
+    g += `<line class="gl" x1="${fx(t)}" x2="${fx(t)}" y1="${top - 4}" y2="${H - 6}"/>`;
+    if (t % 2 === 0 && t < 17) g += `<text class="ax" x="${fx(t)}" y="${top - 10}" text-anchor="middle">${at(t).toLocaleString("en-US", { ...o, hour: "numeric" }).toLowerCase()}</text>`;
+  }
+  g += `<text class="ax" x="${fx(5)}" y="${top - 22}" text-anchor="middle" font-weight="600">${at(5).toLocaleString("en-US", { ...o, weekday: "short" })}</text>`;
+  for (const d of [2, 3, 4, 5]) {
+    const t = tday(d);
+    g += `<line class="gd" x1="${fx(t)}" x2="${fx(t)}" y1="${top - 4}" y2="${H - 6}"/><text class="ax" x="${fx(t)}" y="${top - 10}" text-anchor="middle">${at(t).toLocaleString("en-US", { ...o, weekday: "short" })}</text>`;
+  }
+  for (const d of [7, 10, 15]) {
+    const t = tday(d);
+    if (t > 345) continue;
+    g += `<line class="gd" x1="${fx(t)}" x2="${fx(t)}" y1="${top - 4}" y2="${H - 6}"/><text class="ax" x="${fx(t)}" y="${top - 10}" text-anchor="middle">${at(t).toLocaleString("en-US", { ...o, month: "short", day: "numeric" })}</text>`;
+  }
+  for (const f of [.667, .857]) g += `<line class="brk" x1="${L + W * f}" x2="${L + W * f}" y1="4" y2="${H - 6}"/>`;
+  g += `<text class="seg" x="${L + 2}" y="12">Election night, by the hour</text><text class="seg" x="${L + W * .678}" y="12">Then by the day</text><text class="seg" x="${L + W * .867}" y="12">Later</text>`;
+  // the rows
+  const tbl = [];
+  CG_STATES.forEach((st, i) => {
+    const y = top + i * RH, c = CG_CLOSE[st.st], pace = CG_PACE[st.st];
+    if (i) g += `<line class="gl" x1="0" x2="${L + W}" y1="${y}" y2="${y}"/>`;
+    g += `<text class="nm" x="0" y="${y + 14}">${esc(st.name)}</text><text class="sub" x="0" y="${y + 26}">polls close ${hm(c)}</text>`;
+    g += `<rect x="${fx(c) - 1}" y="${y + 3}" width="2" height="${RH - 6}" fill="var(--muted)"><title>${esc(st.name)}: polls close ${hm(c)} ET</title></rect>`;
+    ["2022", "2024"].forEach((yr, k) => {
+      const e = pace && pace[yr];
+      if (!e) return;
+      const by = y + 6 + k * 11, a = c + e.first, b = c + (e.h95 != null ? e.h95 : e.end);
+      const x0 = fx(a), x1 = Math.max(fx(b), x0 + 4);
+      const tip = `${st.name}, ${yr} ${e.race}, on tonight's clock: first votes ${clock(a)}` +
+        (e.h50 != null ? ` · half counted ${clock(c + e.h50)}` : "") + (e.h90 != null ? ` · 90% ${clock(c + e.h90)}` : "") +
+        (e.h95 != null ? ` · 95% ${clock(b)}, ${dur(e.h95)} after the polls closed` : ` · ${e.end_pct}% counted when NYT's file ends (${clock(b)}); the rest came days later`);
+      let bar = `<rect class="bar" x="${x0}" y="${by}" width="${x1 - x0}" height="8" rx="3" fill="var(--y${yr.slice(2)})"/>`;
+      for (const p of [e.h50, e.h90]) {
+        if (p == null) continue;
+        const nx = fx(c + p);
+        if (nx > x0 + 3 && nx < x1 - 3) bar += `<rect x="${nx - 1}" y="${by}" width="2" height="8" fill="var(--panel)"/>`;
+      }
+      g += `<g data-tip="${esc(tip)}"><rect class="hit" x="${x0 - 3}" y="${by - 2}" width="${x1 - x0 + 6}" height="12"/>${bar}</g>`;
+      g += `<text class="end" x="${x1 + 5}" y="${by + 7.5}">${e.h95 != null ? clock(b) : e.end_pct + "% when the file ends"}</text>`;
+      tbl.push(`<tr><td>${esc(st.name)}</td><td>${yr} ${e.race}</td><td>${clock(a)}</td><td>${e.h50 != null ? clock(c + e.h50) : "–"}</td><td>${e.h90 != null ? clock(c + e.h90) : "–"}</td><td>${e.h95 != null ? clock(b) + " (" + dur(e.h95) + ")" : "not in the file (" + e.end_pct + "% when it ends)"}</td></tr>`);
+    });
+  });
+  // now
+  const tn = (now - T0) / 3.6e6;
+  if (tn >= 0 && tn <= 345)
+    g += `<line x1="${fx(tn)}" x2="${fx(tn)}" y1="${top - 4}" y2="${H - 6}" stroke="var(--proj)" stroke-width="2"/><text x="${fx(tn) + 4}" y="${H - 9}" fill="var(--proj)" font-size="10.5" font-weight="600">Now</text>`;
+  const legend = `<div class="cglegend"><span><i style="background:var(--y22, #c98500)"></i>2022 (last midterm)</span><span><i style="background:#199e70"></i>2024</span>` +
+    `<span><i class="notch"></i>notches: half and 90% counted</span><span><i class="tick"></i>tonight's poll close</span><span><i class="now"></i>now${tn < 0 ? " (before the first close)" : ""}</span></div>`;
+  return `<div class="detail"><h3>How long each state takes to count <small class="note">(each bar: first votes to 95% of the final count; hover for the times)</small></h3>${legend}` +
+    `<div class="cgrm-wrap"><svg class="cgrm" viewBox="0 0 1100 ${H}" role="img" aria-label="When each state reached 95% of its final count in 2022 and 2024, on tonight's clock">${g}</svg></div>` +
+    `<p class="note">On tonight's clock: every state's polls close at the same time as in 2022 and 2024. Measured against each state's final certified count in NYT's results timelines. 2022 is the last midterm; 2024 is the latest count (Georgia, South Carolina, Kansas, Iowa and Alaska had no 2024 Senate race, so those bars are the presidential count, whose NYT file ends at 5:40 am). The scale changes at the dashed lines: election night by the hour, the rest of the week by the day, then later. Law changes since then: Michigan's cities could count absentees for 8 days before tonight, and Ohio no longer counts mail that arrives after Election Day.</p>` +
+    `<details class="cgtable"><summary>Show as a table</summary><div class="tablewrap"><table><thead><tr><th>State</th><th>Count</th><th>First votes</th><th>Half</th><th>90%</th><th>95%</th></tr></thead><tbody>${tbl.join("")}</tbody></table></div></details></div>`;
+}
 function renderCount() {
   const el = document.getElementById("countview");
   const now = REPLAY && D ? new Date(D.generated) : new Date();
@@ -1456,6 +1550,7 @@ function renderCount() {
     <li><b>The projector is built for this.</b> It compares each county with what that county should show for a given statewide result, and a county only counts fully once it's mostly counted (a half-counted county is usually one kind of vote). So "on screen" gets fooled by the order the votes come in; the projection much less so. Where counties don't line up (Alaska), it uses each state's 2020-2024 count curves.</li>
     <li><b>For Kalshi:</b> the market knows these patterns too. "The Republican will catch up in Texas" is priced in. The edge is a state whose counties run ahead of or behind what they should (Over/under map), or a market that over-reacts to one batch.</li>
   </ul></div>`;
+  h += cgRoadmap(now);
   // the timeline, with where the night is
   const items = CG_TIMELINE.map(([d, hm, lab, st, txt]) => ({ t: cgTime(d, hm), d, lab, st, txt }));
   let tl = "", marked = false;
@@ -1494,7 +1589,9 @@ function renderCount() {
   }
   h += `</div>`;
   h += `<p class="note">Times are Eastern. "Counted by midnight" is the range in NYT's 2020-2024 timelines. "Already voted" is the UF Election Lab tracker as of Nov 2-3 (each state's own files), against each state's total 2022 vote; "registered" is the early voters' party registration, not how they voted. \"2024\" is AP's own timing (AP Decision Notes, Oct 30, 2026). The patterns come from NYT's 2020-2024 count timelines, state law and AP's previews (State election results/STATE_BY_STATE.md has the sources). Each year differs with turnout mix, law changes and staffing: these are the usual shapes, not promises.${REPLAY ? " This guide is written for Nov 3, 2026; in the replay the timeline runs on the 2024 night's clock." : ""}</p>`;
+  const open = el.querySelector(".cgtable") && el.querySelector(".cgtable").open;
   el.innerHTML = h;
+  if (open) el.querySelector(".cgtable").open = true;
 }
 function showView(v) {
   for (const [id, k] of [["v-cards", "cards"], ["v-flat", "flat"], ["v-map", "map"], ["v-st", "st"], ["v-count", "count"], ["v-how", "how"]])
@@ -1515,6 +1612,16 @@ document.getElementById("v-map").addEventListener("click", () => setView("map"))
 document.getElementById("v-st").addEventListener("click", () => setView("st"));
 document.getElementById("v-how").addEventListener("click", () => setView("how"));
 document.getElementById("v-count").addEventListener("click", () => setView("count"));
+const cgTip = document.getElementById("cgtip");
+document.getElementById("countview").addEventListener("mousemove", e => {
+  const g = e.target.closest("[data-tip]");
+  if (!g) { cgTip.hidden = true; return; }
+  cgTip.textContent = g.dataset.tip; cgTip.hidden = false;
+  const r = cgTip.getBoundingClientRect();
+  cgTip.style.left = Math.min(e.clientX + 14, innerWidth - r.width - 8) + "px";
+  cgTip.style.top = (e.clientY + 16 + r.height > innerHeight ? e.clientY - r.height - 10 : e.clientY + 16) + "px";
+});
+document.getElementById("countview").addEventListener("mouseleave", () => { cgTip.hidden = true; });
 document.getElementById("countview").addEventListener("click", e => {
   const lv = e.target.closest(".lv[data-race]");
   if (lv) { setView("cards"); ui.sel = null; select(lv.dataset.race); return; }
