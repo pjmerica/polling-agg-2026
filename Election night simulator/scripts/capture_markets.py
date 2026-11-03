@@ -38,6 +38,9 @@ INTERVAL = 20
 REDISCOVER = 1800
 LEVELS = 5
 KALSHI_GAP = 0.12          # seconds between Kalshi requests (a fast burst got HTTP 429)
+# Kalshi market statuses worth recording: trading, paused ("inactive") or closed but not yet settled. Only "active"
+# before 2026-11-03: a market caught paused at a discovery would have dropped out for 30 minutes.
+KALSHI_KEEP = {"active", "open", "inactive", "closed"}
 
 # race key (as in capture_live.py) -> (Kalshi event ticker, Polymarket event slug);
 # checked against both APIs 2026-10-28. Both venues list party markets except Polymarket
@@ -97,19 +100,25 @@ def _levels(pairs):
     return "|".join(f"{p:g}:{round(s, 2):.12g}" for p, s in pairs[:LEVELS])
 
 
-def discover(races):
-    """-> (kalshi [{race, ticker, outcome}], polymarket [{race, token, market, outcome}])."""
+def discover(races, prev=None):
+    """-> (kalshi [{race, ticker, outcome}], polymarket [{race, token, market, outcome}]).
+    prev = the last discovery's (kalshi, polymarket): a race whose lookup fails (or comes back empty) keeps
+    its markets from it, so one API error doesn't drop that race's prices until the next discovery."""
+    pk, pp = prev or ([], [])
     kal, poly = [], []
     for race, (kev, pslug) in races.items():
+        found = []
         try:
             ev = get(f"{KALSHI}/events/{kev}?with_nested_markets=true")["event"]
             for m in ev["markets"]:
-                if m.get("status") == "active":
-                    kal.append(dict(race=race, ticker=m["ticker"],
-                                    outcome=m.get("yes_sub_title") or m.get("title")))
+                if m.get("status") in KALSHI_KEEP:
+                    found.append(dict(race=race, ticker=m["ticker"],
+                                      outcome=m.get("yes_sub_title") or m.get("title")))
         except Exception as e:
             print(f"discover {race} kalshi {kev}: {e}")
+        kal += found or [m for m in pk if m["race"] == race]
         time.sleep(KALSHI_GAP)
+        found = []
         try:
             for ev in get(f"{GAMMA}/events?slug={pslug}"):
                 for m in ev["markets"]:
@@ -118,10 +127,11 @@ def discover(races):
                             or _f(m.get("bestBid")) in (None, 0.0)):
                         continue
                     tok = json.loads(m["clobTokenIds"])[0]          # YES token
-                    poly.append(dict(race=race, token=tok, market=m["slug"],
-                                     outcome=m.get("groupItemTitle") or m["question"]))
+                    found.append(dict(race=race, token=tok, market=m["slug"],
+                                      outcome=m.get("groupItemTitle") or m["question"]))
         except Exception as e:
             print(f"discover {race} polymarket {pslug}: {e}")
+        poly += found or [m for m in pp if m["race"] == race]
     return kal, poly
 
 
@@ -223,7 +233,7 @@ def main():
     while True:
         start = time.time()
         if start - found_at > REDISCOVER or not (kal or poly):
-            kal, poly = discover(RACES)
+            kal, poly = discover(RACES, (kal, poly))
             found_at = start
             print(f"discovered {len(kal)} Kalshi and {len(poly)} Polymarket markets")
         now_dt = dt.datetime.now(dt.timezone.utc)

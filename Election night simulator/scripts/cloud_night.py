@@ -193,6 +193,13 @@ def snapshot_live(archive, live_js):
 
 
 _uploading = None
+UPLOAD_FAILED = "upload_failed"   # in the workspace; the workflow keeps the archive as an artifact when it exists
+
+
+def failed(msg):
+    log(msg)
+    with open(UPLOAD_FAILED, "a", encoding="utf-8") as f:
+        f.write(f"{dt.datetime.now(dt.timezone.utc):%Y-%m-%dT%H:%M:%SZ} {msg}\n")
 
 
 def upload(archive, state, uploaded, n, final=False):
@@ -222,12 +229,12 @@ def upload(archive, state, uploaded, n, final=False):
             r = subprocess.run(["gh", "release", "upload", RELEASE, name, "--clobber",
                                 "--repo", os.environ["GITHUB_REPOSITORY"]], capture_output=True, text=True)
             if r.returncode:
-                log(f"release upload failed: {r.stderr.strip()[:300]}")
+                failed(f"release upload failed: {r.stderr.strip()[:300]}")
                 return
             uploaded.update(new)
             log(f"uploaded {os.path.basename(name)}: {len(new)} new files, {os.path.getsize(name) / 1e6:.1f} MB")
         except Exception as e:  # noqa: BLE001
-            log(f"release upload failed: {e}")
+            failed(f"release upload failed: {e}")
         finally:
             shutil.rmtree(stage, ignore_errors=True)
             if os.path.exists(name):
@@ -303,65 +310,71 @@ def main():
             log("past the end of the cloud run; stopping")
             break
         errors = []
+        # nothing in a pass may end the job: a job that dies early doesn't hand off, and the cron backstop
+        # restarts it only every 30 minutes
         try:
-            capture_live.poll(a.date, capture_live.RACES, slugs_found, last_hash)
-        except Exception as e:  # noqa: BLE001
-            errors.append(f"nyt: {e}")
-        try:
-            if start - found_at > capture_markets.REDISCOVER or not (kal or poly):
-                kal, poly = capture_markets.discover(capture_markets.RACES)
-                found_at = start
-                log(f"discovered {len(kal)} Kalshi and {len(poly)} Polymarket markets")
-            now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-            et_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=5)).strftime("%Y-%m-%d")
-            for venue, fn, mk in (("kalshi", capture_markets.poll_kalshi, kal),
-                                  ("polymarket", capture_markets.poll_polymarket, poly)):
-                try:
-                    rows = fn(mk, now)
-                    write_markets(state, et_date, venue, rows)
-                    write_full_markets(archive, et_date, venue, rows)
-                except Exception as e:  # noqa: BLE001
-                    errors.append(f"{venue}: {e}")
-        except Exception as e:  # noqa: BLE001
-            errors.append(f"markets: {e}")
-        try:
-            live_project.run_live(pa, hist, fc)
-            shutil.copyfile(os.path.join(work, "data", "raw", "dashboard", "live_data.js"),
-                            os.path.join(state, "live_data.js"))
-        except Exception as e:  # noqa: BLE001
-            errors.append(f"projector: {type(e).__name__}: {e}")
-            traceback.print_exc()
-        errors += live_project.ERRORS            # a race whose NYT file or counties didn't parse
-        prune_nyt(live_dir, archive)
-        if time.time() - last_states >= STATE_EVERY:
-            last_states = time.time()
             try:
-                k = capture_states(archive, a.date, state_hash)
-                if k:
-                    log(f"state pages: {k} changed")
+                capture_live.poll(a.date, capture_live.RACES, slugs_found, last_hash)
             except Exception as e:  # noqa: BLE001
-                errors.append(f"state pages: {e}")
-        live_js = os.path.join(state, "live_data.js")
-        if time.time() - last_snap >= STATE_EVERY and os.path.exists(live_js):
-            last_snap = time.time()
-            snapshot_live(archive, live_js)
-        n += 1
-        status = dict(pass_utc=now_dt.strftime("%Y-%m-%dT%H:%M:%SZ"), passes_this_job=n,
-                      run=os.environ.get("GITHUB_RUN_ID"), errors=errors,
-                      nyt={r: slugs_found.get(r) for r in capture_live.RACES},
-                      nyt_files={os.path.basename(d): os.path.basename(sorted(glob.glob(os.path.join(d, "*")))[-1])
-                                 for d in glob.glob(os.path.join(live_dir, a.date, "*"))
-                                 if glob.glob(os.path.join(d, "*"))})
-        with open(os.path.join(state, "status.json"), "w", encoding="utf-8") as f:
-            json.dump(status, f, indent=1)
-        if errors:
-            log("errors: " + "; ".join(errors))
-        if not a.no_push:
-            push(state, f"election-live {status['pass_utc']}")
-        if time.time() - last_up >= UPLOAD_EVERY:
-            n_up += 1
-            if upload(archive, state, uploaded, n_up):
-                last_up = time.time()
+                errors.append(f"nyt: {e}")
+            try:
+                if start - found_at > capture_markets.REDISCOVER or not (kal or poly):
+                    kal, poly = capture_markets.discover(capture_markets.RACES, (kal, poly))
+                    found_at = start
+                    log(f"discovered {len(kal)} Kalshi and {len(poly)} Polymarket markets")
+                now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                et_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=5)).strftime("%Y-%m-%d")
+                for venue, fn, mk in (("kalshi", capture_markets.poll_kalshi, kal),
+                                      ("polymarket", capture_markets.poll_polymarket, poly)):
+                    try:
+                        rows = fn(mk, now)
+                        write_markets(state, et_date, venue, rows)
+                        write_full_markets(archive, et_date, venue, rows)
+                    except Exception as e:  # noqa: BLE001
+                        errors.append(f"{venue}: {e}")
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"markets: {e}")
+            try:
+                live_project.run_live(pa, hist, fc)
+                shutil.copyfile(os.path.join(work, "data", "raw", "dashboard", "live_data.js"),
+                                os.path.join(state, "live_data.js"))
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"projector: {type(e).__name__}: {e}")
+                traceback.print_exc()
+            errors += live_project.ERRORS            # a race whose NYT file or counties didn't parse
+            prune_nyt(live_dir, archive)
+            if time.time() - last_states >= STATE_EVERY:
+                last_states = time.time()
+                try:
+                    k = capture_states(archive, a.date, state_hash)
+                    if k:
+                        log(f"state pages: {k} changed")
+                except Exception as e:  # noqa: BLE001
+                    errors.append(f"state pages: {e}")
+            live_js = os.path.join(state, "live_data.js")
+            if time.time() - last_snap >= STATE_EVERY and os.path.exists(live_js):
+                last_snap = time.time()
+                snapshot_live(archive, live_js)
+            n += 1
+            status = dict(pass_utc=now_dt.strftime("%Y-%m-%dT%H:%M:%SZ"), passes_this_job=n,
+                          run=os.environ.get("GITHUB_RUN_ID"), errors=errors,
+                          nyt={r: slugs_found.get(r) or capture_live.FROM_STATE.get(r) for r in capture_live.RACES},
+                          nyt_files={os.path.basename(d): os.path.basename(sorted(glob.glob(os.path.join(d, "*")))[-1])
+                                     for d in glob.glob(os.path.join(live_dir, a.date, "*"))
+                                     if glob.glob(os.path.join(d, "*"))})
+            with open(os.path.join(state, "status.json"), "w", encoding="utf-8") as f:
+                json.dump(status, f, indent=1)
+            if errors:
+                log("errors: " + "; ".join(errors))
+            if not a.no_push:
+                push(state, f"election-live {status['pass_utc']}")
+            if time.time() - last_up >= UPLOAD_EVERY:
+                n_up += 1
+                if upload(archive, state, uploaded, n_up):
+                    last_up = time.time()
+        except Exception as e:  # noqa: BLE001
+            log(f"pass failed, carrying on: {type(e).__name__}: {e}")
+            traceback.print_exc()
         took = time.time() - start
         log(f"pass {n} done in {took:.0f}s")
         interval = a.interval or (300 if now_dt >= SLOW_FROM else 120)

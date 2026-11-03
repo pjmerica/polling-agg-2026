@@ -356,7 +356,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
       <h3>If something looks wrong</h3>
       <ul>
         <li><b>Nothing updates</b> ("Projector" pill climbing past 5 minutes): check the "Election night (cloud)" workflow in the repo's Actions tab, or <code>status.json</code> on the <code>election-live</code> branch. The fallback is the PC: double-click <code>run_dashboard.cmd</code>.</li>
-        <li><b>A race stays at 0%</b> about 15 minutes after its first votes usually appear: NYT's file address for it is probably different from ours. <code>status.json</code> lists which files were found. The fix goes in <code>capture_live.py</code>; a running job reads code only when it starts, so cancel it and start a new one (about a minute without updates).</li>
+        <li><b>A race stays at 0%</b> about 15 minutes after its first votes usually appear: NYT has no file for it under any name we tried, and the race wasn't on NYT's page for the whole state either (that page is the automatic fallback; <code>status.json</code> then shows "state page results-…json" for the race). <code>status.json</code> lists what was found. The fix goes in <code>capture_live.py</code>; a running job reads code only when it starts, so cancel it and start a new one (about a minute without updates).</li>
         <li><b>One race shows 0% with an error in <code>status.json</code></b>: its NYT file came in a shape the reader didn't expect. The other races keep updating.</li>
         <li><b>A buy signal that disappears on the next update</b>: almost always timing. Use "Held".</li>
       </ul>
@@ -586,7 +586,7 @@ function held(r, key) {
   let n = 0, first = null;
   for (let i = h.length - 1; i >= 0; i--) {
     const x = h[i], pD = x.p_v1 ?? x.p_mkt;
-    const ask = key === "D" ? x.k_ask : (x.k_bid != null ? 1 - x.k_bid : null);
+    const ask = key === "D" ? x.k_ask : (x.k_rask != null ? x.k_rask : (x.k_bid != null ? 1 - x.k_bid : null));
     if (pD == null || ask == null) break;
     const prob = key === "D" ? pD : 1 - pD;
     if (prob - ask - KFEE(ask) < 0.05) break;

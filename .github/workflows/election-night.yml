@@ -11,8 +11,7 @@ name: Election night (cloud)
 
 on:
   schedule:
-    - cron: '*/30 16-23 3 11 *'
-    - cron: '*/30 * 4-7 11 *'
+    - cron: '*/30 * 3-7 11 *'
   workflow_dispatch:
     inputs:
       minutes:
@@ -81,6 +80,7 @@ jobs:
               --notes "Recorded by the Election night (cloud) workflow for a 2026 replay: every change of NYT's results files for the tracked races (2-minute checks), NYT's 50 state pages (10-minute checks), Kalshi/Polymarket books, the projector's inputs and its output every 10 minutes. One tar.gz per job-hour (night-<run id>-<n>.tar.gz); unpack them all into one folder."
 
       - name: Record and project
+        id: record
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
@@ -102,8 +102,11 @@ jobs:
             echo "not dispatching (ran ${ran}s)"
           fi
 
+      # The release has the archive (hourly + at the end); the artifact is the fallback when an upload failed
+      # (cloud_night.py leaves upload_failed) or the job didn't finish cleanly. Skipped otherwise: the next job
+      # can't start until this one ends, so an upload here would lengthen the hand-off gap.
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() && (hashFiles('upload_failed') != '' || steps.record.outcome != 'success') }}
         with:
           name: nyt-captures-${{ github.run_id }}
           path: archive

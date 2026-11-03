@@ -191,7 +191,8 @@ How it runs:
   each job's artifact `nyt-captures-<run id>` (30 days).
 - **Continuity:** GitHub stops a job at 6 hours. Each job runs ~5h40m, then dispatches the next, which waits in the
   `election-night` concurrency group. A job that dies within 20 minutes doesn't dispatch itself; the cron (every
-  30 min, Nov 3 11 am ET to Nov 7) restarts it. Started by hand 2026-11-02 evening.
+  30 min, all of Nov 3 through Nov 7 UTC) restarts it. Started by hand 2026-11-02 evening. Nothing inside a pass can
+  end a job (every pass is wrapped; a failure is logged and the next pass runs, 2026-11-03).
 - **The pages** are `dashboard.html` / `data_dashboard.html` unchanged, plus a loader (`build_cloud_pages.py`) that
   fetches `live_data.js` from `raw.githubusercontent.com/.../election-live/` with a fresh query string (that skips
   raw's 5-minute cache: a pass was served 18 s after its push), GitHub's API if raw fails. No Pages rebuilds per
@@ -205,6 +206,12 @@ How it runs:
   starts. Push the fix to master, then `gh run cancel <running id>` and `gh workflow run election-night.yml`; about a
   minute without updates. A race whose file doesn't parse shows 0% and is listed under `errors` in `status.json`; the
   other races keep updating (live_project `_safe`, 7fa94503).
+- **A wrong NYT file name needs no fix any more** (2026-11-03): a race that no guessed name finds is read from NYT's
+  page for its whole state (`results-{state}.json`, matched by office, the regular election before a special;
+  identical to the race file on 2024 Pennsylvania Senate). `status.json` shows "state page results-...json" for it.
+  NYT requests run in parallel with a 30 s timeout, so one slow file holds up no other race.
+- **Markets:** a race whose Kalshi or Polymarket lookup fails at a re-discovery (every 30 min) keeps the markets it had;
+  Kalshi markets that are paused or closed but not settled are kept too (only "active" before 2026-11-03).
 - **Hand-offs** come every ~5h45m and cost about a minute of updates each. None between 6:20 and 11:50 pm ET on Nov 3
   (`NO_HANDOFF`): a job that would end inside it ends at ~6:15 pm and the next covers the window. Expected: ~2:15 am,
   ~8 am, ~1:45 pm, ~6:15 pm, ~11:58 pm, ~5:40 am ET.
@@ -214,7 +221,9 @@ How it runs:
   statewide; checked on 2024 Texas: 222 races, 254 counties), the full books, the projector's inputs (forecast,
   benchmarks, early vote, state timelines, code version) and its output every 10 minutes. Every hour it is packed with a
   copy of the state folder into `night-<run>-<n>.tar.gz` and attached to the release **election-night-2026** (permanent;
-  uploaded in the background, so passes don't wait). The job artifact (90 days) is the backup. To rebuild the night:
+  uploaded in the background, so passes don't wait). The job artifact (90 days) is the backup, kept only when a
+  release upload failed (`upload_failed` in the workspace) or the job didn't finish cleanly: the next job can't start
+  until this one ends, so an artifact upload would lengthen every hand-off. To rebuild the night:
   `gh release download election-night-2026` and unpack every file into one folder.
 
 ## The data desk (`data_dashboard.html`, 2026-11-02)

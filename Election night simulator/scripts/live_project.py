@@ -593,6 +593,7 @@ def run_live(a, hist, fc):
                          best_venue=bt[0] if bt else "", best_side=bt[1] if bt else "",
                          best_ask=bt[2] if bt else "", edge=round(bt[3], 4) if bt else "",
                          k_bid=side("kalshi", "bid") or "", k_ask=side("kalshi", "ask") or "",
+                         k_rbid=side("kalshi", "bid", "R") or "", k_rask=side("kalshi", "ask", "R") or "",
                          pm_bid=side("polymarket", "bid") or "", pm_ask=side("polymarket", "ask") or ""))
         b = bench_record(race) or {}
         rep = next((c for c in (fc.get(FC_ID.get(race, f"2026_{race.split('-')[0]}_{OFFICE[race.split('-')[1]]}"))
@@ -635,7 +636,11 @@ def run_live(a, hist, fc):
 
 
 HIST_COLS = ["ts_utc", "pct", "margin", "v1_proj", "v1_sd", "p_v1", "v0_proj", "p_mkt", "p_model", "model_proj",
-             "p_now", "implied", "implied_sd", "k_bid", "k_ask"]     # Kalshi: the data desk's "held" count and line
+             "p_now", "implied", "implied_sd", "k_bid", "k_ask", "k_rbid", "k_rask"]   # Kalshi: the desk's "held" count
+# The charts are about the night: once election day reaches 4 pm ET, the history starts there (the cloud run has
+# been writing since the day before; keeping those hours only thinned the night's points and tripled the file).
+NIGHT_FROM = "T21:00:00Z"
+HIST_MAX = 400
 
 
 def write_dashboard(a, now, cards, mk):
@@ -644,10 +649,13 @@ def write_dashboard(a, now, cards, mk):
     temporary file and swapped in, so the page never reads half a file."""
     hist = pd.read_csv(OUT)
     hist = hist[hist.date.astype(str) == a.date]
+    night = a.date + NIGHT_FROM
+    if (hist.ts_utc.astype(str) >= night).any():
+        hist = hist[hist.ts_utc.astype(str) >= night]
     for c in cards:
-        h = hist[hist.race == c["race"]][HIST_COLS]
-        if len(h) > 400:                       # keep the page light: thin to ~400 points, always the latest
-            h = pd.concat([h.iloc[:: max(len(h) // 400, 1)], h.iloc[[-1]]]).drop_duplicates("ts_utc")
+        h = hist[hist.race == c["race"]].reindex(columns=HIST_COLS)
+        if len(h) > HIST_MAX:                  # keep the page light: thin to ~400 points, always the latest
+            h = pd.concat([h.iloc[:: -(-len(h) // HIST_MAX)], h.iloc[[-1]]]).drop_duplicates("ts_utc")
         c["history"] = [{k: (None if v != v else v) for k, v in r.items()} for r in h.to_dict("records")]
     control = {}
     for key in ("US-Senate", "US-House"):
