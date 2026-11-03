@@ -183,7 +183,8 @@ The same night without this PC, readable from anywhere:
 How it runs:
 - The workflow **Election night (cloud)** (`.github/workflows/election-night.yml`) runs `scripts/cloud_night.py`. Every
   pass it records NYT's county results (`capture_live.poll`), the Kalshi/Polymarket best bid/ask (`capture_markets`)
-  and runs the projector (`live_project.run_live`, market baseline). Every 2 minutes, every 5 from Wed Nov 4 1 pm ET;
+  and runs the projector (`live_project.run_live`, starting from our margin model since 2026-11-03, user call; the
+  market start is computed beside it and shown on the cards). Every 2 minutes, every 5 from Wed Nov 4 1 pm ET;
   it stops after Sat Nov 7 (`END`).
 - **State** lives on the orphan branch `election-live`: `live_data.js`, `status.json` (last pass, which NYT file per
   race, errors), `projections.csv` (the charts' history), `markets/{ET date}/` (bid/ask only) and the newest NYT file
@@ -328,7 +329,7 @@ The data desk's third view (user: "some kind of monitor on split ticket voting, 
 py "Election night simulator/scripts/live_project.py"                    # once: every race, latest captures
 py "Election night simulator/scripts/live_project.py" --watch 60         # every 60 s
 py "Election night simulator/scripts/live_project.py" --race KS-Sen --pct 40 --margin 12    # what-if
-py "Election night simulator/scripts/live_project.py" --baseline model   # best buy from our margin model instead
+py "Election night simulator/scripts/live_project.py" --baseline market  # start from the market at poll close instead
 py "Election night simulator/scripts/live_project.py" --backtest         # leave-one-year-out check
 ```
 
@@ -340,7 +341,7 @@ non-Republican wins):
 | Column | Meaning |
 |---|---|
 | `counted`, `margin` | NYT's share of the expected vote counted (`eevp`) and the visible margin |
-| `v1 proj`, `+/-80%`, `P v1` | Projector v1 (county by county): projected final margin, the half-width of its 80% band, and P(win). It starts from the markets' price at poll close by default (`--baseline model` for our model), so its edge comes from the count. Blank where the live counties don't line up with the benchmarks (Alaska's districts); then v0 is used |
+| `v1 proj`, `+/-80%`, `P v1` | Projector v1 (county by county): projected final margin, the half-width of its 80% band, and P(win). It starts from our margin model by default since 2026-11-03 (`--baseline market` for the markets' price at poll close, which makes its edge come from the count alone). Blank where the live counties don't line up with the benchmarks (Alaska's districts); then v0 is used |
 | `P v0` | The statewide projector from the same starting point. A `?` before the row means v0 is in use and past years' late votes leaned opposite ways at this point in the count, so the direction is a guess |
 | `P mod` | The same projection started from **our margin model** instead of the market (v1 where it runs, else v0): the model's projected margin from `docs/forecast_data.js`, give or take 6.1 points (its held-out 2018-24 miss). Before the count it is the margin model's own chance, which can differ from the win chance on the forecast page (a separate model): GA-Gov is +1.2 points but 78% |
 | `close` | The market price at poll close that `P mkt` starts from: the last capture before the close, averaged over venues |
@@ -354,8 +355,10 @@ Maine and Alaska are first-round margins. Ranked-choice tabulation can still cha
 both settle days or weeks later. Our model's margin there is the final-round head-to-head, so `P mod` mixes
 the two.
 
-**Market or model as the starting point.** The default (`market`) makes the best-buy edge come from the count
-alone. `--baseline model` adds the model's disagreement with the market, which is untested: there are no
+**Market or model as the starting point.** The default is `model` since 2026-11-03 (user call: "I want to use my
+model for the margin and win % chances"); the market start is computed beside it (`mkt`, `p_mstart`, `mkt_proj` in
+the data; "Market start" on the cards). `--baseline market` makes the best-buy edge come from the count alone. The
+model start adds the model's disagreement with the market, which is untested: there are no
 archived 2022/2024 forecasts. A stand-in with the model's error size helps most under 50% counted and barely
 matters after (METHODS.md). When `P mod` and `P v1` agree and both differ from the market, the count and the
 model point the same way.
