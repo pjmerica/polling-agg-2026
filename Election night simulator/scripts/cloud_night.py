@@ -213,8 +213,11 @@ def upload(archive, state, uploaded, n, final=False):
         if not final:
             return False                       # the last one is still going: try again next pass
         _uploading.join()
-    new = [p for p in glob.glob(os.path.join(archive, "**", "*"), recursive=True)
-           if os.path.isfile(p) and p not in uploaded and os.sep + "_work" + os.sep not in p]
+    # uploaded maps path -> size when packed: the full-book CSVs are appended every pass, so a file that grew is
+    # packed again (a set of paths sent each one only in the job's first upload)
+    size = {p: os.path.getsize(p) for p in glob.glob(os.path.join(archive, "**", "*"), recursive=True)
+            if os.path.isfile(p) and os.sep + "_work" + os.sep not in p}
+    new = [p for p, sz in size.items() if uploaded.get(p) != sz]
     stage = tempfile.mkdtemp(prefix="state-")  # the state folder changes every pass: pack a copy
     shutil.copytree(state, os.path.join(stage, "state"), ignore=shutil.ignore_patterns(".git"))
     run = os.environ.get("GITHUB_RUN_ID", "local")
@@ -231,7 +234,7 @@ def upload(archive, state, uploaded, n, final=False):
             if r.returncode:
                 failed(f"release upload failed: {r.stderr.strip()[:300]}")
                 return
-            uploaded.update(new)
+            uploaded.update({p: size[p] for p in new})
             log(f"uploaded {os.path.basename(name)}: {len(new)} new files, {os.path.getsize(name) / 1e6:.1f} MB")
         except Exception as e:  # noqa: BLE001
             failed(f"release upload failed: {e}")
@@ -292,7 +295,7 @@ def main():
                             baseline="model", watch=None, backtest=False)
     slugs_found, last_hash = {}, {}
     kal, poly, found_at = [], [], 0.0
-    state_hash, uploaded, n_up = {}, set(), 0
+    state_hash, uploaded, n_up = {}, {}, 0
     last_states = last_snap = 0.0
     last_up = time.time()
     stop = time.time() + a.minutes * 60
