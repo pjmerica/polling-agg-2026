@@ -74,6 +74,24 @@ select.tog { appearance: none; padding-right: 10px; }
 .sig.flip { border: 1px solid var(--good); color: var(--text); background: #11241b; }
 .sig .flag { font: 700 10.5px var(--mono); color: var(--good); letter-spacing: .06em; }
 .sig .warnf { font: 600 10.5px var(--mono); color: var(--warn); }
+.kq { font: 12px/1.5 var(--mono); color: var(--muted); }
+.kq b { color: var(--text); font-weight: 600; }
+.kq .up { color: var(--good); } .kq .dn { color: var(--faint); }
+.kboard { background: var(--panel); border: 1px solid var(--line2); border-left: 3px solid var(--good); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; }
+.kboard[hidden] { display: none; }
+.kboard h3 { margin: 0; font-size: 14px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.kboard h3 small { font-weight: 400; color: var(--muted); font-size: 12px; }
+.kboard tr { cursor: pointer; }
+.kboard tr.flip td:first-child { box-shadow: inset 3px 0 0 var(--good); }
+.kboard td.act { font-weight: 600; color: var(--text); text-align: left; }
+.kboard td.edge { color: var(--good); font-weight: 600; }
+.kboard td.act small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; white-space: normal; }
+.kboard td.act small.w { color: var(--warn); }
+.kboard td.act { white-space: normal; min-width: 170px; }
+@media (max-width: 700px) { .kboard th, .kboard td { padding: 6px 5px; } .kboard td.act { min-width: 130px; } }
+.kboard .flag { font: 700 10.5px var(--mono); color: var(--good); letter-spacing: .06em; margin-right: 6px; }
+.alert .grp { display: inline; }
+.alert .grp a { color: var(--text); text-decoration: underline dotted; cursor: pointer; }
 .result { font-size: 12.5px; color: var(--text); padding: 5px 9px; border-radius: 5px; background: #1d1930; }
 .note { font-size: 12px; color: var(--faint); }
 svg text { fill: var(--muted); font: 10.5px var(--sans); }
@@ -182,6 +200,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
   </div>
   <div id="banner" class="banner" hidden></div>
   <div id="alerts" class="alerts"></div>
+  <section id="kboard" class="kboard" hidden aria-label="Kalshi board"></section>
   <section id="flatview" class="flatview" hidden aria-label="Over/under map">
     <div class="mapbar">
       <div class="chips" id="flat-states"></div>
@@ -272,7 +291,7 @@ const BUNDLE_SRC = "../docs/election_night_replay_2024.js";
 const REPLAY = location.hash.includes("replay") || !!window.REPLAY_BUNDLE;
 const SRC = REPLAY ? "data/raw/replay/live_data.js" : "data/raw/dashboard/live_data.js";
 const REFRESH_MS = REPLAY ? 2000 : 10000;
-const ui = { sel: null, sort: "close", sig: REPLAY, res: false, tsort: "left", tdir: -1, filter: "" };
+const ui = { sel: null, sort: "close", sig: true, res: false, tsort: "left", tdir: -1, filter: "" };
 let D = null;
 let PB = null;           // playback state when a bundle is loaded: { b, i, timer, hist }
 let triedBundle = false;
@@ -292,7 +311,8 @@ function store(k, v) {
 function frameHist(f, t) {
   return { ts_utc: t, pct: f.pct ?? 0, margin: f.margin ?? 0, v1_proj: f.v1 ? f.v1.proj : null, v1_sd: f.v1 ? f.v1.sd : null,
     p_v1: f.v1 ? f.v1.p : null, v0_proj: f.v0 ? f.v0.proj : null, p_mkt: f.v0 ? f.v0.p : null, p_now: f.p_now ?? null,
-    p_model: null, model_proj: null, implied: f.track ? f.track.implied ?? null : null, implied_sd: f.track ? f.track.implied_sd ?? null : null };
+    p_model: null, model_proj: null, implied: f.track ? f.track.implied ?? null : null, implied_sd: f.track ? f.track.implied_sd ?? null : null,
+    k_bid: f.books && f.books.kalshi ? f.books.kalshi.bid ?? null : null, k_ask: f.books && f.books.kalshi ? f.books.kalshi.ask ?? null : null };
 }
 function startPlayback(b) {
   PB = { b, i: 0, timer: null, hist: b.races.map(r => r.f.map((f, i) => frameHist(f, b.steps[i]))) };
@@ -454,6 +474,84 @@ function signal(r) {
   return b;
 }
 
+/* ---------- Kalshi: both sides of every race against our projection ----------
+   Kalshi's taker fee is 0.07 x price x (1 - price) per contract (utils/fees.py; series multiplier 1). Edge = our
+   chance - ask - fee. "Worth it up to" = the highest ask that still leaves a 3c edge after the fee. "Held" = how many
+   updates in a row (and for how long) that side's edge has been 5c+: an edge that shows up for one update is usually
+   the count catching up with a market that already saw the votes (AP and Decision Desk are faster than NYT). */
+const KFEE = x => 0.07 * x * (1 - x);
+const K_CUSHION = 0.03;
+function limitPrice(prob) {                  // solve prob - x - 0.07 x (1 - x) = cushion for x
+  const c = prob - K_CUSHION;
+  if (c <= 0) return null;
+  const x = (1.07 - Math.sqrt(1.07 * 1.07 - 4 * 0.07 * c)) / (2 * 0.07);
+  return x >= 0.01 ? Math.min(0.99, x) : null;
+}
+function kalshiSides(r) {
+  const k = (r.books || {}).kalshi, p = proj(r);
+  if (!k || !p || p.p == null) return null;
+  const rAsk = k.r_ask != null ? k.r_ask : (k.bid != null ? 1 - k.bid : null);   // replay: the D book's mirror
+  const side = (key, who, prob, ask) => ask == null ? null :
+    { key, who, prob, ask, edge: prob - ask - KFEE(ask), upTo: limitPrice(prob), held: held(r, key) };
+  return { D: side("D", r.d_name, p.p, k.ask), R: side("R", r.r_name, 1 - p.p, rAsk) };
+}
+function held(r, key) {
+  const h = r.history || [];
+  let n = 0, first = null;
+  for (let i = h.length - 1; i >= 0; i--) {
+    const x = h[i], pD = x.p_v1 ?? x.p_mkt;
+    const ask = key === "D" ? x.k_ask : (x.k_bid != null ? 1 - x.k_bid : null);
+    if (pD == null || ask == null) break;
+    const prob = key === "D" ? pD : 1 - pD;
+    if (prob - ask - KFEE(ask) < 0.05) break;
+    n++; first = x.ts_utc;
+  }
+  return n ? { n, mins: Math.round((new Date(h[h.length - 1].ts_utc) - new Date(first)) / 60000) } : null;
+}
+function marketsAgeMin() {
+  if (!D || !D.markets_utc) return null;
+  return ((REPLAY ? new Date(D.generated) : new Date()) - new Date(D.markets_utc)) / 60000;
+}
+function kNotes(r, s) {
+  const n = [];
+  const age = marketsAgeMin();
+  if (age != null && age > 5) n.push(`prices ${Math.round(age)} min old`);
+  if (r.pct >= 98) n.push("count nearly done: projector overstates late uncertainty");
+  else if (r.pct > 0 && r.pct < 20) n.push("under 20% counted: weakest part of the backtest");
+  if (!r.v1) n.push(r.pct > 0 ? "statewide projector only" : "before the count: market at poll close vs now");
+  if (!(r.best && r.best.flip && r.best.side === s.key) && r.pct >= 20 && r.pct < 98) n.push(s.ask < 0.4 ? "not a FLIP: longshots like this lost in 2024" : "not a FLIP: only FLIPs paid in 2024");
+  if (s.held && s.held.n === 1) n.push("new this update: check it holds");
+  return n;
+}
+function renderBoard() {
+  const el = document.getElementById("kboard");
+  if (!ui.sig || !D) { el.hidden = true; return; }
+  const rows = [];
+  for (const r of D.races) {
+    const ks = kalshiSides(r);
+    if (!ks) continue;
+    for (const s of [ks.D, ks.R]) if (s && s.edge >= K_CUSHION) rows.push({ r, s, flip: !!(r.best && r.best.flip && r.best.side === s.key) });
+  }
+  rows.sort((a, b) => (b.flip - a.flip) || (b.s.edge - a.s.edge));
+  const age = marketsAgeMin();
+  let h = `<h3>Kalshi board <small>every race where a Kalshi price is ${Math.round(K_CUSHION * 100)}¢+ off our projection after the fee · ` +
+    `prices ${age == null ? "not recorded yet" : age < 1.5 ? Math.round(age * 60) + "s" : Math.round(age) + " min"} old · always check the live book: prices move in seconds after a vote dump</small></h3>`;
+  if (!rows.length) { el.hidden = false; el.innerHTML = h + `<p class="note">No Kalshi price is ${Math.round(K_CUSHION * 100)}¢+ off our projection right now.</p>`; return; }
+  h += `<div class="tablewrap"><table><thead><tr><th>Buy on Kalshi</th><th>Ask</th><th>Ours</th><th title="Our chance minus the ask minus Kalshi's fee">Edge</th><th title="The highest ask that still leaves a 3¢ edge after the fee">Pay up to</th><th title="Updates in a row with a 5¢+ edge on this side">Held</th></tr></thead><tbody>`;
+  for (const { r, s, flip } of rows) {
+    const notes = kNotes(r, s);
+    h += `<tr class="${flip ? "flip" : ""}" data-race="${esc(r.race)}">` +
+      `<td class="act">${flip ? '<span class="flag">FLIP</span>' : ""}${last(s.who)} YES` +
+      `<small>${esc(r.state)} ${esc(r.office)} · ${r.pct > 0 ? Math.round(r.pct) + "% counted" : "not counting yet"}</small>` +
+      `${notes.length ? `<small class="w">${esc(notes.join(" · "))}</small>` : ""}</td>` +
+      `<td>${cents(s.ask)}</td><td>${pctTxt(s.prob)}</td><td class="edge">+${Math.round(s.edge * 100)}¢</td>` +
+      `<td>${s.upTo != null ? cents(s.upTo) : "–"}</td>` +
+      `<td>${s.held ? s.held.n + (s.held.n > 1 ? ` · ${s.held.mins} min` : "") : "–"}</td></tr>`;
+  }
+  el.hidden = false;
+  el.innerHTML = h + `</tbody></table></div><p class="note">FLIP rows first (the only signals that paid in 2024), then by edge. Click a row for the race's counties and charts.</p>`;
+}
+
 function scaleSvg(r) {
   const W = 320, H = 46, pad = 10;
   const p = proj(r);
@@ -512,7 +610,12 @@ function card(r) {
     const who = b.side === "D" ? r.d_name : r.r_name;
     const late = r.pct >= 98;
     h += `<div class="sig${b.flip ? " flip" : ""}">${b.flip ? '<span class="flag">FLIP</span>' : ""}<span>Buy ${last(who)} at ${cents(b.ask)} on ${b.venue === "kalshi" ? "Kalshi" : "Polymarket"} · edge ${b.edge >= 0 ? "+" : ""}${Math.round(b.edge * 100)}¢ (${esc(b.src)})</span>` +
-      `${late ? '<span class="warnf">count nearly done: projector overstates late uncertainty</span>' : (b.flip ? "" : b.src === "v0" ? '<span class="warnf">statewide projector only: not a FLIP</span>' : '<span class="warnf">longshot type: lost in 2024</span>')}</div>`;
+      `${late ? '<span class="warnf">count nearly done: projector overstates late uncertainty</span>' : (b.flip ? "" : b.src === "v0" ? '<span class="warnf">statewide projector only: not a FLIP</span>' : b.ask < 0.4 ? '<span class="warnf">longshot type: lost in 2024</span>' : '<span class="warnf">not a FLIP: only FLIPs paid in 2024</span>')}</div>`;
+  }
+  const ks = ui.sig ? kalshiSides(r) : null;
+  if (ks) {
+    const q = s => !s ? "" : `${last(s.who)} <b>${cents(s.ask)}</b> <span class="${s.edge >= 0.05 ? "up" : "dn"}">(${s.edge >= 0 ? "+" : "−"}${Math.abs(Math.round(s.edge * 100))}¢)</span>`;
+    h += `<div class="kq">Kalshi: ${[q(ks.D), q(ks.R)].filter(Boolean).join(" · ")}</div>`;
   }
   if (ui.res && r.result) h += `<div class="result">Result: <b>${esc(r.result.winner)}</b> won · ${marTxt(r.result.margin, r)}</div>`;
   return h + `</article>`;
@@ -534,7 +637,7 @@ function renderHeader() {
   f.push(`<span class="pill">Projector <b>${ageTxt(D.generated)}</b></span>`);
   const nyAge = D.nyt_utc ? (REPLAY ? new Date(D.generated) : new Date()) - new Date(D.nyt_utc) : null;
   f.push(`<span class="pill${nyAge != null && nyAge > 600000 && !REPLAY ? " warn" : ""}">NYT <b>${D.nyt_utc ? ageTxt(D.nyt_utc) : "–"}</b></span>`);
-  if (ui.sig) f.push(`<span class="pill">Markets <b>${D.markets_utc ? ageTxt(D.markets_utc) : "none"}</b></span>`);
+  if (ui.sig) { const ma = marketsAgeMin(); f.push(`<span class="pill${ma != null && ma > 5 ? " warn" : ""}">Markets <b>${D.markets_utc ? ageTxt(D.markets_utc) : "none"}</b></span>`); }
   document.getElementById("feeds").innerHTML = f.join("");
   const bn = document.getElementById("banner");
   if (REPLAY) {
@@ -550,22 +653,28 @@ function renderHeader() {
 }
 
 function renderAlerts() {
-  const out = [];
+  const stale = [], flips = [], changes = [], off = [];
   if (!REPLAY && !D.dry_run && (new Date() - new Date(D.generated)) > 300000)
-    out.push(`<div class="alert"><span class="tag">Stale</span><span>The projector hasn't written for ${ageTxt(D.generated)}. Is live_project.py --watch still running?</span></div>`);
+    stale.push(`<div class="alert"><span class="tag">Stale</span><span>The projector hasn't written for ${ageTxt(D.generated)}. Is the Election night (cloud) workflow running?</span></div>`);
   for (const r of D.races) {
     const p = proj(r); const nm = `${esc(r.state)} ${esc(r.office)}`;
     if (p && r.pct >= 10 && r.pct < 99 && Math.abs(r.margin) >= 0.5 && Math.sign(p.proj) !== Math.sign(r.margin)) {
       const pl = p.proj > 0 ? p.p : 1 - p.p;
-      if (pl >= 0.6) out.push(`<div class="alert change" data-race="${esc(r.race)}"><span class="tag">Lead change</span><span><b>${nm}</b>: ${marTxt(r.margin, r)} on screen, projected ${marTxt(p.proj, r)} (${pctTxt(pl)}) at ${r.pct.toFixed(0)}% counted.</span></div>`);
+      if (pl >= 0.6) changes.push(`<div class="alert change" data-race="${esc(r.race)}"><span class="tag">Lead change</span><span><b>${nm}</b>: ${marTxt(r.margin, r)} on screen, projected ${marTxt(p.proj, r)} (${pctTxt(pl)}) at ${r.pct.toFixed(0)}% counted.</span></div>`);
     }
     const t = r.track;
     if (t && fresh(t) && t.implied != null && t.expected != null && r.pct >= 10 && r.pct < 99 && Math.abs(t.implied - t.expected) >= 3)
-      out.push(`<div class="alert" data-race="${esc(r.race)}"><span class="tag">Off expected</span><span><b>${nm}</b>: counted votes point to ${marTxt(t.implied, r)} vs ${marTxt(t.expected, r)} from ${esc(expLabel())}.</span></div>`);
+      off.push(`<a data-race="${esc(r.race)}">${nm}</a> ${marTxt(t.implied, r)} vs ${marTxt(t.expected, r)}`);
     const b = ui.sig ? signal(r) : null;
-    if (b && b.flip) out.push(`<div class="alert flip" data-race="${esc(r.race)}"><span class="tag">Flip</span><span><b>${nm}</b>: projector gives ${last(b.side === "D" ? r.d_name : r.r_name)} ${pctTxt(b.side === "D" ? p.p : 1 - p.p)}; ${b.venue === "kalshi" ? "Kalshi" : "Polymarket"} sells at ${cents(b.ask)}. Check which counties are left.</span></div>`);
+    if (b && b.flip) {
+      const ks = kalshiSides(r), k = ks && ks[b.side];
+      const kTxt = b.venue !== "kalshi" && k ? ` Kalshi: ${cents(k.ask)}${k.upTo != null ? ", worth it up to " + cents(k.upTo) : ""}.` :
+        k && k.upTo != null ? ` Worth it up to ${cents(k.upTo)}.` : "";
+      flips.push(`<div class="alert flip" data-race="${esc(r.race)}"><span class="tag">Flip</span><span><b>${nm}</b>: projector gives ${last(b.side === "D" ? r.d_name : r.r_name)} ${pctTxt(b.side === "D" ? p.p : 1 - p.p)}; ${b.venue === "kalshi" ? "Kalshi" : "Polymarket"} sells at ${cents(b.ask)} (${Math.round(r.pct)}% counted).${kTxt} Check which counties are left.</span></div>`);
+    }
   }
-  document.getElementById("alerts").innerHTML = out.join("");
+  const grp = off.length ? [`<div class="alert"><span class="tag">Off expected</span><span class="grp">Counted votes 3+ pts from ${esc(expLabel())}: ${off.join(" · ")}</span></div>`] : [];
+  document.getElementById("alerts").innerHTML = stale.concat(ui.sig ? [] : flips, changes, grp).join("");
 }
 
 function lineChart(h, series, opt) {
@@ -629,6 +738,7 @@ function renderDetail() {
   ], { label: "Margin through the night", fmt: v => v > 0 ? last(r.d_name) + " +" + v : v < 0 ? last(r.r_name) + " +" + (-v) : "Even", extra: exp, result: ui.res && r.result ? r.result.margin : null });
   const winSeries = [{ get: p => p.p_v1 ?? p.p_mkt, color: "#b49cff" }];
   if (ui.sig) winSeries.push({ get: p => p.p_now, color: "#3fb68b", w: 1.4 });
+  if (ui.sig) winSeries.push({ get: p => p.k_bid != null && p.k_ask != null ? (p.k_bid + p.k_ask) / 2 : null, color: "#e7ebf1", dash: "2 3", w: 1.2 });
   if (!REPLAY) winSeries.push({ get: p => p.p_model, color: "#d9a13a", dash: "4 3", w: 1.4 });
   const winChart = lineChart(h, winSeries, { label: "Win chance through the night", lo: 0, hi: 1, ticks: [0, .25, .5, .75, 1], fmt: v => Math.round(v * 100) + "%" });
   const o = outstanding(r);
@@ -657,7 +767,7 @@ function renderDetail() {
       <div class="chart"><h4>Margin through the night</h4><div class="sub">On screen, projected final with its 80% band, and what the counted counties alone imply</div>${marChart}
         <div class="legend"><span><i style="background:#e7ebf1"></i>On screen</span><span><i style="background:#b49cff"></i>Projected final</span><span><i style="background:#d9a13a"></i>Counties alone</span>${exp != null ? `<span><i style="background:#d9a13a;opacity:.6"></i>Expected (${esc(expLabel())})</span>` : ""}${ui.res && r.result ? '<span><i style="background:#39c07a"></i>Result</span>' : ""}</div></div>
       <div class="chart"><h4>${last(r.d_name)}'s win chance</h4><div class="sub">Projector${ui.sig ? " vs the market" : ""}${!REPLAY ? " and started from our model" : ""}</div>${winChart}
-        <div class="legend"><span><i style="background:#b49cff"></i>Projector</span>${ui.sig ? '<span><i style="background:#3fb68b"></i>Market</span>' : ""}${!REPLAY ? '<span><i style="background:#d9a13a"></i>From our model</span>' : ""}</div></div>
+        <div class="legend"><span><i style="background:#b49cff"></i>Projector</span>${ui.sig ? '<span><i style="background:#3fb68b"></i>Market (both venues)</span><span><i style="background:#e7ebf1"></i>Kalshi</span>' : ""}${!REPLAY ? '<span><i style="background:#d9a13a"></i>From our model</span>' : ""}</div></div>
     </div>
     <div class="desk">
       ${o.desk != null ? `<div class="line"><b>Desk math:</b> if every county's remaining votes split like its counted votes so far (the expected share where it has counted under 5%), the race finishes at <b>${marTxt(o.desk, r)}</b>. The projector says ${proj(r) ? marTxt(proj(r).proj, r) : "–"}.</div>` : ""}
@@ -1062,6 +1172,7 @@ function render(refit) {
   if (!D) return;
   renderHeader();
   renderAlerts();
+  renderBoard();
   const g = document.getElementById("grid");
   if (ui.view === "map") renderMap(refit === true);
   else if (ui.view === "st") renderST();
@@ -1072,7 +1183,8 @@ function render(refit) {
 
 document.getElementById("grid").addEventListener("click", e => { const c = e.target.closest(".card"); if (c) select(c.dataset.race); });
 document.getElementById("grid").addEventListener("keydown", e => { const c = e.target.closest(".card"); if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); select(c.dataset.race); } });
-document.getElementById("alerts").addEventListener("click", e => { const a = e.target.closest(".alert[data-race]"); if (a) { ui.sel = null; select(a.dataset.race); } });
+document.getElementById("alerts").addEventListener("click", e => { const a = e.target.closest("[data-race]"); if (a) { ui.sel = null; select(a.dataset.race); } });
+document.getElementById("kboard").addEventListener("click", e => { const a = e.target.closest("tr[data-race]"); if (a) { ui.sel = null; select(a.dataset.race); } });
 document.getElementById("t-sig").addEventListener("click", () => { ui.sig = !ui.sig; store("sig", ui.sig ? "1" : "0"); render(); });
 document.getElementById("t-res").addEventListener("click", () => { ui.res = !ui.res; store("res", ui.res ? "1" : "0"); render(); });
 document.getElementById("sort").addEventListener("change", e => { ui.sort = e.target.value; store("sort", ui.sort); render(); });

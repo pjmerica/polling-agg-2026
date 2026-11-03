@@ -568,8 +568,8 @@ def run_live(a, hist, fc):
               f"{f2(v0res and v0res['p_win'])} {f2(mod and mod['p_win'])} "
               f"{f2(p_close)} | {ba('kalshi'):>9} {ba('polymarket'):>10} | {trade}")
 
-        def side(v, k):
-            s = books.get(v, {}).get("D")
+        def side(v, k, who="D"):
+            s = books.get(v, {}).get(who)
             return _r(s[k]) if s else None
         rows.append(dict(ts_utc=now, date=a.date, race=race, nyt_file=nyt["stamp"], pct=round(nyt["pct"], 2),
                          margin=round(nyt["margin"], 2), baseline=a.baseline,
@@ -610,7 +610,8 @@ def run_live(a, hist, fc):
             p_model=_r(mod["p_win"]) if mod else None, model_proj=_r(mod["mu"], 2) if mod else None,
             model_win=pr[1] if pr else None, model_margin=pr[2] if pr else None,
             p_close=_r(p_close), p_now=_r(p_now),
-            books={v: dict(bid=side(v, "bid"), ask=side(v, "ask")) for v in ("kalshi", "polymarket") if v in books},
+            books={v: dict(bid=side(v, "bid"), ask=side(v, "ask"), r_bid=side(v, "bid", "R"), r_ask=side(v, "ask", "R"))
+                   for v in ("kalshi", "polymarket") if v in books},
             best=dict(venue=bt[0], side=bt[1], ask=_r(bt[2]), edge=_r(bt[3]), src="v1" if v1res else "v0",
                       flip=flip) if bt else None,
             track=track,
@@ -634,7 +635,7 @@ def run_live(a, hist, fc):
 
 
 HIST_COLS = ["ts_utc", "pct", "margin", "v1_proj", "v1_sd", "p_v1", "v0_proj", "p_mkt", "p_model", "model_proj",
-             "p_now", "implied", "implied_sd"]
+             "p_now", "implied", "implied_sd", "k_bid", "k_ask"]     # Kalshi: the data desk's "held" count and line
 
 
 def write_dashboard(a, now, cards, mk):

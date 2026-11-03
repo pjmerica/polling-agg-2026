@@ -150,6 +150,19 @@ def prepare():
     return races
 
 
+def _v22():
+    """{state slug: {county: 2022 vote}} from the 2026 benchmarks (any race in the state), for the turnout view."""
+    out = {}
+    for r in lp.RACES:
+        rec = lp.bench_record(r) or {}
+        if rec.get("slug") and rec.get("unit") == "county":
+            out.setdefault(rec["slug"], {f["f"]: f.get("v") for f in rec["counties"]})
+    return out
+
+
+V22 = _v22()
+
+
 def books_at(frame, t):
     out = {}
     for venue, (bid, ask) in mc.quote(frame, t).items():
@@ -201,7 +214,8 @@ def track_for(R, cap, cap_t, lag):
                              share=round(share, 4) if share is not None else None,
                              exp=round(exp_, 4) if exp_ is not None else None, tie=round(float(cp.expit(L[f])), 4),
                              net=round(net) if net is not None else None,
-                             left=round(max(expected_votes - u["total"], 0)), votes=u["total"]))
+                             left=round(max(expected_votes - u["total"], 0)), votes=u["total"],
+                             v22=V22.get(R["slug"], {}).get(f), nexp=u["expected"] or None))
     return dict(implied=implied, implied_sd=sd, expected=expected, expected_src="market at poll close",
                 market=expected, net=round(net_all), unit="county", counties=counties,
                 as_of=_iso(cap_t) if cap_t is not None else None,
@@ -249,7 +263,9 @@ def step(R, t, hist, with_history=True):
                              p_model=None, model_proj=None, p_now=lp._r(p_now),
                              implied=lp._r(track["implied"], 2) if track and track["implied"] is not None else None,
                              implied_sd=lp._r(track["implied_sd"], 2) if track and track["implied_sd"] is not None
-                             else None))
+                             else None,
+                             k_bid=lp._r(books["kalshi"]["D"]["bid"]) if "kalshi" in books else None,
+                             k_ask=lp._r(books["kalshi"]["D"]["ask"]) if "kalshi" in books else None))
     return dict(race=R["key"], state=R["state"], office=R["office"], d_name=R["d_name"], r_name=R["r_name"],
                 close_utc=_iso(R["close"]), nyt_file=_iso(nyt_t) if nyt_t is not None else "-",
                 nyt_utc=_iso(nyt_t) if nyt_t is not None else None, pct=round(pct, 1), margin=round(margin, 2),
@@ -259,7 +275,8 @@ def step(R, t, hist, with_history=True):
                         steady=v0["steady"]) if v0 else None,
                 p_model=None, model_proj=None, model_win=None, model_margin=None,
                 p_close=lp._r(p0), p_now=lp._r(p_now),
-                books={v: dict(bid=lp._r(s["D"]["bid"]), ask=lp._r(s["D"]["ask"])) for v, s in books.items()},
+                books={v: dict(bid=lp._r(s["D"]["bid"]), ask=lp._r(s["D"]["ask"]), r_bid=lp._r(s["R"]["bid"]),
+                               r_ask=lp._r(s["R"]["ask"])) for v, s in books.items()},
                 best=dict(venue=bt[0], side=bt[1], ask=lp._r(bt[2]), edge=lp._r(bt[3]), src="v1" if v1 else "v0",
                           flip=flip) if bt else None,
                 track=track, history=list(R["history"]) if with_history else None,

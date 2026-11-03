@@ -77,7 +77,10 @@ PAGES = [
     ("data_dashboard.html", "election-night-desk.html",
      [("<title>Election Night Data Desk</title>", "<title>Election Night Data Desk (cloud)</title>"),
       ('"Start run_dashboard.cmd (the projector writes it)."',
-       '"The Election night (cloud) workflow hasn\'t published yet."')]),
+       '"The Election night (cloud) workflow hasn\'t published yet."'),
+      ("Is live_project.py --watch still running?", "Is the Election night (cloud) workflow running?"),
+      # buy signals and the Kalshi board on by default here (the local page starts with them off)
+      ('const ui = { sel: null, sort: "close", sig: REPLAY,', 'const ui = { sel: null, sort: "close", sig: true,')]),
 ]
 
 
