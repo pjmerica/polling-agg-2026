@@ -114,11 +114,15 @@ a:hover { text-decoration: underline; }
 .why.big { background: var(--accent); border-color: var(--accent); color: #fff; font-size: 0.86rem; padding: 8px 14px; }
 .why.big:hover { filter: brightness(1.1); }
 .card { background: var(--panel); border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14px; }
-.rname { font-weight: 750; font-size: 0.95rem; }
-.rsub { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
-.cands { margin-top: 8px; display: grid; gap: 4px; }
-.cand { display: flex; justify-content: space-between; gap: 12px; font-size: 0.82rem; }
-.cand b { font-variant-numeric: tabular-nums; }
+/* the candidates and their chances are the biggest thing in the card; the race name and whether the
+   incumbent runs sit smaller above them (2026-11-02, user call) */
+.rname { font-weight: 750; font-size: 0.86rem; }
+.rsub { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+.cands { margin-top: 8px; display: grid; gap: 5px; align-items: baseline; }
+.cand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 1rem; font-weight: 600; }
+.cand b { font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 800; }
+.cands .cand:first-child { font-size: 1.12rem; }
+.cands .cand:first-child b { font-size: 1.45rem; }
 .pb { font-size: 0.62rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; color: #0b0e14; margin-right: 6px; }
 .pill { font-size: 0.7rem; font-weight: 750; padding: 2px 8px; border-radius: 999px; white-space: nowrap; display: inline-block; }
 .meta { margin-top: 8px; font-size: 0.74rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; }
