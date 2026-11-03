@@ -72,6 +72,7 @@ PROBE = "https://static01.nyt.com/elections-assets/pages/data/2026-08-04/results
 # Each upload also carries a copy of the state folder (projections.csv = every pass's projections, the prices).
 RELEASE = "election-night-2026"
 STATE_EVERY = 600            # seconds between state-page rounds and live_data snapshots
+PRICE_EVERY = 20             # between passes, record the books this often (archive only; pages stay on the pass)
 UPLOAD_EVERY = 3600
 STATES = ["alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware", "florida",
           "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
@@ -200,6 +201,34 @@ def failed(msg):
     log(msg)
     with open(UPLOAD_FAILED, "a", encoding="utf-8") as f:
         f.write(f"{dt.datetime.now(dt.timezone.utc):%Y-%m-%dT%H:%M:%SZ} {msg}\n")
+
+
+def record_prices(archive, kal, poly, until):
+    """Between passes: poll both venues every PRICE_EVERY seconds into markets_full until `until` (user 2026-11-03:
+    "record them as much as possible"). One poll at a time, so Kalshi sees the pass's own request rate.
+    Never raises; leaves at least the last poll's length before `until` so the next pass starts on time."""
+    took = 15.0
+    while kal or poly:
+        t0 = time.time()
+        if t0 + took + 2 > until:
+            break
+        now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        et_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=5)).strftime("%Y-%m-%d")
+        for venue, fn, mk in (("kalshi", capture_markets.poll_kalshi, kal),
+                              ("polymarket", capture_markets.poll_polymarket, poly)):
+            if not mk:
+                continue
+            try:
+                write_full_markets(archive, et_date, venue, fn(mk, now))
+            except Exception as e:  # noqa: BLE001
+                log(f"price record {venue}: {e}")
+        took = time.time() - t0
+        rest = PRICE_EVERY - took
+        if time.time() + max(rest, 0) + took + 2 > until:
+            break
+        if rest > 0:
+            time.sleep(rest)
+    time.sleep(max(0.0, until - time.time()))
 
 
 def upload(archive, state, uploaded, n, final=False):
@@ -388,7 +417,7 @@ def main():
             fc = live_project.load_forecast()
         except Exception:  # noqa: BLE001
             pass
-        time.sleep(max(5.0, interval - took))
+        record_prices(archive, kal, poly, time.time() + max(5.0, interval - took))
     upload(archive, state, uploaded, n_up + 1, final=True)
 
 
