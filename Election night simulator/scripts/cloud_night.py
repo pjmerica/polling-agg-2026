@@ -289,7 +289,7 @@ def main():
     save_inputs(archive)
     hist, fc = live_project.load_history(), live_project.load_forecast()
     pa = argparse.Namespace(date=a.date, race=None, pct=None, margin=None, prior_sd=live_project.PRIOR_SD,
-                            baseline="market", watch=None, backtest=False)
+                            baseline="model", watch=None, backtest=False)
     slugs_found, last_hash = {}, {}
     kal, poly, found_at = [], [], 0.0
     state_hash, uploaded, n_up = {}, set(), 0

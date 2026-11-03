@@ -387,7 +387,8 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
     <div class="detail">
       <h3>The projector, briefly</h3>
       <ul>
-        <li><b>Starting point:</b> the markets' price at poll close (Kalshi and Polymarket averaged), turned into an expected margin: 6 × the normal-curve value of the price, ±6 points. So the projection is "the market at poll close plus what the count says"; a gap with the market now means the market moved more or less than the counted votes justify. The "Model start" number starts from our own forecast instead.</li>
+        <li><b>Starting point (election night):</b> our margin model's margin for the race, ±6.1 points (the margin model's typical miss), so before any votes the win chance is the margin model's. The projection is "our model plus what the count says"; the counted votes pull it away from the model as they come in. Our published win model (the forecast page's win %) is shown on each card as "Win model"; it can differ from the margin model's chance (most in Georgia, Kansas and Nevada Governor).</li>
+        <li><b>Market start, beside it:</b> the same projector started from the markets' price at poll close (Kalshi and Polymarket averaged), turned into a margin: 6 × the normal-curve value of the price, ±6 points. Before the count, the gap between our model and the market is the whole Kalshi board; once votes come in, a gap between the two starts shrinks as the count takes over. The 2024 replay uses the market start (no 2024 forecast was archived), so the 2024 test says nothing about how the model start trades.</li>
         <li><b>County by county</b> (where NYT's counties match our benchmarks): every county has a lean (its share at a tied statewide result). The counted counties show how far the state is running from those leans; a county's numbers count fully only once it is mostly counted, because a half-counted county is usually one kind of vote. 4,000 simulations of the uncounted counties give the projected margin, its band and the win chance.</li>
         <li><b>Statewide</b> (otherwise): how the uncounted vote leaned at the same share counted in each state's 2020-2024 counts.</li>
         <li><b>Known limits:</b> worse than the markets on average in the 2024 test (only FLIPs paid); weakest under 20% counted; at 98%+ it keeps 5-20% for the trailing side of a finished close race; 2026 rule changes (Michigan's early processing, Georgia's 8 pm deadline, Ohio's upload deadline) may make early batches bigger than history. Maine and Alaska are first-round margins; Kalshi settles on the ranked-choice winner.</li>
@@ -399,7 +400,9 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
       <dl class="gloss">
         <dt>On screen</dt><dd>The counted votes' margin right now: Democrat (Osborn in Nebraska) minus Republican, in points of all votes.</dd>
         <dt>Projected final</dt><dd>Where the projector expects the count to finish, with the range that holds the result 80% of the time.</dd>
-        <dt>Win chance</dt><dd>The projector's chance the favourite wins. "From market at poll close" or "from our model" says where it started.</dd>
+        <dt>Win chance</dt><dd>The projector's chance the favourite wins. "From our model" or "from market at poll close" says where it started (election night: our margin model; the 2024 replay: the market).</dd>
+        <dt>Market start</dt><dd>The projected final margin and the Democrat's (Osborn's) win chance if the projector had started from the markets' price at poll close instead of our model. Also the dashed amber line on the win-chance chart.</dd>
+        <dt>Win model</dt><dd>Our published win model's chance for the Democrat (Osborn), as on the forecast page. Fixed before the count; the projector does not use it.</dd>
         <dt>Votes counted / Votes left (est.)</dt><dd>Votes in so far, and NYT's expected total minus them.</dd>
         <dt>Needs</dt><dd>The share of the remaining two-party vote the trailing candidate needs to tie. "Can't catch up" means more than all of it.</dd>
         <dt>Counties reporting</dt><dd>Counties with any votes / all counties (counties at 95%+ counted).</dd>
@@ -663,7 +666,7 @@ function kNotes(r, s) {
   if (age != null && age > 5) n.push(`prices ${Math.round(age)} min old`);
   if (r.pct >= 98) n.push("count nearly done: projector overstates late uncertainty");
   else if (r.pct > 0 && r.pct < 20) n.push("under 20% counted: weakest part of the backtest");
-  if (!r.v1) n.push(r.pct > 0 ? "statewide projector only" : "before the count: market at poll close vs now");
+  if (!r.v1) n.push(r.pct > 0 ? "statewide projector only" : !REPLAY && D.baseline === "model" ? "before the count: our model vs the market (no votes yet)" : "before the count: market at poll close vs now");
   if (!(r.best && r.best.flip && r.best.side === s.key) && r.pct >= 20 && r.pct < 98) n.push(s.ask < 0.4 ? "not a FLIP: longshots like this lost in 2024" : "not a FLIP: only FLIPs paid in 2024");
   if (s.held && s.held.n === 1) n.push("new this update: check it holds");
   return n;
@@ -740,7 +743,9 @@ function card(r) {
   h += `<div><span>${o.needs ? last(o.needs.who) + " needs" : "Needs"}</span><b>${o.needs ? (o.needs.share > 1 ? "can't catch up" : (100 * o.needs.share).toFixed(1) + "% of rest") : "–"}</b></div>`;
   if (o.rep) h += `<div><span>Counties reporting</span><b>${o.rep.nRep}/${o.rep.n} (${o.rep.nDone} done)</b></div>`;
   if (o.desk != null) h += `<div><span>Desk math</span><b>${marTxt(o.desk, r)}</b></div>`;
-  if (!REPLAY && r.p_model != null && r.p_close != null) h += `<div><span>From our model</span><b>${pctTxt(r.p_model)} D</b></div>`;
+  if (!REPLAY && D.baseline === "model" && r.mkt) h += `<div title="The same projector started from the markets' price at poll close instead of our model"><span>Market start</span><b>${marTxt(r.mkt.proj, r)} · ${last(r.d_name)} ${pctTxt(r.mkt.p)}</b></div>`;
+  else if (!REPLAY && r.p_model != null && r.p_close != null) h += `<div><span>From our model</span><b>${pctTxt(r.p_model)} D</b></div>`;
+  if (!REPLAY && r.model_win != null) h += `<div title="Our published win model (the forecast page). The projector starts from the margin model, which can differ"><span>Win model</span><b>${last(r.d_name)} ${pctTxt(r.model_win)}</b></div>`;
   h += `</div>`;
   const t = r.track;
   if (t && t.implied != null && t.expected != null && r.pct >= 5 && fresh(t)) {
@@ -884,7 +889,8 @@ function renderDetail() {
   const winSeries = [{ get: p => p.p_v1 ?? p.p_mkt, color: "#b49cff" }];
   if (ui.sig) winSeries.push({ get: p => p.p_now, color: "#3fb68b", w: 1.4 });
   if (ui.sig) winSeries.push({ get: p => p.k_bid != null && p.k_ask != null ? (p.k_bid + p.k_ask) / 2 : null, color: "#e7ebf1", dash: "2 3", w: 1.2 });
-  if (!REPLAY) winSeries.push({ get: p => p.p_model, color: "#d9a13a", dash: "4 3", w: 1.4 });
+  if (!REPLAY) winSeries.push(D.baseline === "model" ? { get: p => p.p_mstart, color: "#d9a13a", dash: "4 3", w: 1.4 }
+    : { get: p => p.p_model, color: "#d9a13a", dash: "4 3", w: 1.4 });
   const winChart = lineChart(h, winSeries, { label: "Win chance through the night", lo: 0, hi: 1, ticks: [0, .25, .5, .75, 1], fmt: v => Math.round(v * 100) + "%" });
   const o = outstanding(r);
   let rows = countyRows(r);
@@ -911,8 +917,8 @@ function renderDetail() {
     <div class="row">
       <div class="chart"><h4>Margin through the night</h4><div class="sub">On screen, projected final with its 80% band, and what the counted counties alone imply</div>${marChart}
         <div class="legend"><span><i style="background:#e7ebf1"></i>On screen</span><span><i style="background:#b49cff"></i>Projected final</span><span><i style="background:#d9a13a"></i>Counties alone</span>${exp != null ? `<span><i style="background:#d9a13a;opacity:.6"></i>Expected (${esc(expLabel())})</span>` : ""}${ui.res && r.result ? '<span><i style="background:#39c07a"></i>Result</span>' : ""}</div></div>
-      <div class="chart"><h4>${last(r.d_name)}'s win chance</h4><div class="sub">Projector${ui.sig ? " vs the market" : ""}${!REPLAY ? " and started from our model" : ""}</div>${winChart}
-        <div class="legend"><span><i style="background:#b49cff"></i>Projector</span>${ui.sig ? '<span><i style="background:#3fb68b"></i>Market (both venues)</span><span><i style="background:#e7ebf1"></i>Kalshi</span>' : ""}${!REPLAY ? '<span><i style="background:#d9a13a"></i>From our model</span>' : ""}</div></div>
+      <div class="chart"><h4>${last(r.d_name)}'s win chance</h4><div class="sub">Projector${ui.sig ? " vs the market" : ""}${!REPLAY ? (D.baseline === "model" ? " and started from the market at poll close" : " and started from our model") : ""}</div>${winChart}
+        <div class="legend"><span><i style="background:#b49cff"></i>Projector</span>${ui.sig ? '<span><i style="background:#3fb68b"></i>Market (both venues)</span><span><i style="background:#e7ebf1"></i>Kalshi</span>' : ""}${!REPLAY ? `<span><i style="background:#d9a13a"></i>${D.baseline === "model" ? "Market start" : "From our model"}</span>` : ""}</div></div>
     </div>
     <div class="desk">
       ${o.desk != null ? `<div class="line"><b>Desk math:</b> if every county's remaining votes split like its counted votes so far (the expected share where it has counted under 5%), the race finishes at <b>${marTxt(o.desk, r)}</b>. The projector says ${proj(r) ? marTxt(proj(r).proj, r) : "–"}.</div>` : ""}

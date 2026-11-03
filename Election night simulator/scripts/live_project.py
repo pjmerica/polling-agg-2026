@@ -544,6 +544,7 @@ def run_live(a, hist, fc):
         else:                                  # --baseline model, or no market price at the close
             v0res, v1res = by_mod or by_mkt, v1_mod or v1_mkt
         mod = v1_mod or by_mod                 # the 'P mod' column: from our margin model, v1 where it runs
+        mkt = v1_mkt or by_mkt                 # the same from the market at poll close (shown beside the model start)
         res = v1res or v0res
         books = latest_books(mk, race)
         bt = best_trade(res["p_win"], books) if res else None
@@ -578,7 +579,8 @@ def run_live(a, hist, fc):
                          p_v1=round(v1res["p_win"], 4) if v1res else "",
                          v0_proj=round(v0res["mu"], 2) if v0res else "",
                          v0_sd=round(v0res["sd"], 2) if v0res else "",
-                         p_mkt=round(by_mkt["p_win"], 4) if by_mkt else "",
+                         p_mkt=round(v0res["p_win"], 4) if v0res else "",   # statewide (v0), from the start in use
+                         p_mstart=round(mkt["p_win"], 4) if mkt else "", mkt_proj=round(mkt["mu"], 2) if mkt else "",
                          p_model=round(mod["p_win"], 4) if mod else "",
                          model_proj=round(mod["mu"], 2) if mod else "",
                          p_close=round(p_close, 4) if p_close is not None else "",
@@ -609,6 +611,8 @@ def run_live(a, hist, fc):
             v0=dict(proj=_r(v0res["mu"], 2), sd=_r(v0res["sd"], 2), p=_r(v0res["p_win"]),
                     steady=v0res["steady"]) if v0res else None,
             p_model=_r(mod["p_win"]) if mod else None, model_proj=_r(mod["mu"], 2) if mod else None,
+            mkt=dict(proj=_r(mkt["mu"], 2), sd=_r(mkt["sd"], 2), p=_r(mkt["p_win"]), src="v1" if v1_mkt else "v0")
+            if mkt else None,
             model_win=pr[1] if pr else None, model_margin=pr[2] if pr else None,
             p_close=_r(p_close), p_now=_r(p_now),
             books={v: dict(bid=side(v, "bid"), ask=side(v, "ask"), r_bid=side(v, "bid", "R"), r_ask=side(v, "ask", "R"))
@@ -636,7 +640,7 @@ def run_live(a, hist, fc):
 
 
 HIST_COLS = ["ts_utc", "pct", "margin", "v1_proj", "v1_sd", "p_v1", "v0_proj", "p_mkt", "p_model", "model_proj",
-             "p_now", "implied", "implied_sd", "k_bid", "k_ask", "k_rbid", "k_rask"]   # Kalshi: the desk's "held" count
+             "p_mstart", "mkt_proj", "p_now", "implied", "implied_sd", "k_bid", "k_ask", "k_rbid", "k_rask"]   # Kalshi: the desk's "held" count
 # The charts are about the night: once election day reaches 4 pm ET, the history starts there (the cloud run has
 # been writing since the day before; keeping those hours only thinned the night's points and tripled the file).
 NIGHT_FROM = "T21:00:00Z"
@@ -732,7 +736,7 @@ def main():
     ap.add_argument("--pct", type=float, help="what-if: share counted (0-100); needs --race and --margin")
     ap.add_argument("--margin", type=float, help="what-if: counted margin, non-Republican minus Republican")
     ap.add_argument("--prior-sd", type=float, default=PRIOR_SD)
-    ap.add_argument("--baseline", choices=["market", "model"], default="market",
+    ap.add_argument("--baseline", choices=["market", "model"], default="model",   # election night: our model (user, 11-03)
                     help="what the best-buy edge starts from: the markets' price at poll close "
                          "(edge = the count only) or our model (edge includes model-vs-market disagreement)")
     ap.add_argument("--watch", type=int, help="repeat every N seconds")
