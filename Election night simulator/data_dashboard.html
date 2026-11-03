@@ -148,6 +148,24 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 #flatmap .fs { fill: none; stroke: #8e99aa; stroke-width: 1.1px; vector-effect: non-scaling-stroke; pointer-events: none; }
 .mapside b.pos { color: var(--dem); } .mapside b.neg { color: var(--rep); }
 .mapside small { color: var(--faint); font-weight: 400; }
+.howview { display: grid; gap: 12px; max-width: 1100px; }
+.howview[hidden] { display: none; }
+.howview p, .howview li, .howview dd { font-size: 13.5px; line-height: 1.55; color: var(--text); }
+.howview ul, .howview ol { margin: 0; padding-left: 20px; display: grid; gap: 5px; }
+.howview code { font: 12px var(--mono); background: var(--panel2); padding: 1px 4px; border-radius: 3px; }
+.howmode { color: var(--proj) !important; font-weight: 600; }
+.wire { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 8px; align-items: center; }
+.wcol { display: grid; gap: 8px; }
+.warrow { color: var(--muted); font-size: 20px; text-align: center; }
+.wbox { border: 1px solid var(--line2); border-radius: 7px; padding: 8px 10px; display: grid; gap: 3px; background: var(--panel2); }
+.wbox b { font-size: 13px; } .wbox span { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+.wbox.src { border-left: 3px solid var(--mkt); } .wbox.run { border-left: 3px solid var(--proj); }
+.wbox.out { border-left: 3px solid var(--exp); } .wbox.page { border-left: 3px solid var(--dem); }
+@media (max-width: 900px) { .wire { grid-template-columns: 1fr; } .warrow { transform: rotate(90deg); } }
+.gloss { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+.gloss dt { font-weight: 600; font-size: 13px; color: var(--text); }
+.gloss dd { margin: 0; color: var(--muted) !important; }
+@media (max-width: 700px) { .gloss { grid-template-columns: 1fr; } .gloss dd { margin-bottom: 6px; } }
 .stview { display: grid; gap: 12px; }
 .stview[hidden] { display: none; }
 .stview h2 { margin: 6px 0 0; font-size: 15px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
@@ -174,6 +192,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
       <button id="v-flat" class="tog" aria-pressed="false">Over/under map</button>
       <button id="v-map" class="tog" aria-pressed="false">3D map</button>
       <button id="v-st" class="tog" aria-pressed="false">Splits &amp; turnout</button>
+      <button id="v-how" class="tog" aria-pressed="false">How it works</button>
       <label class="note" for="sort">Sort</label>
       <select id="sort" class="tog">
         <option value="close">Poll close</option>
@@ -232,6 +251,118 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
     <div id="map-legend" class="maplegend"></div>
   </section>
   <section id="stview" class="stview" hidden aria-label="Ticket-splitting and turnout"></section>
+  <section id="howview" class="howview" hidden aria-label="How this page works">
+    <div class="detail">
+      <h3>What this is</h3>
+      <p id="how-mode" class="howmode"></p>
+      <p>A live monitor for the competitive 2026 Senate and Governor races. Every 2 minutes it takes three things and puts them side by side:</p>
+      <ol>
+        <li><b>The count</b>: NYT's results for each race, county by county.</li>
+        <li><b>The markets</b>: what Kalshi and Polymarket are charging for each candidate.</li>
+        <li><b>Our projection</b>: where the count will most likely finish, given what is counted and which counties are still out.</li>
+      </ol>
+      <p>When our projection and Kalshi's price disagree by enough, after Kalshi's fee, the race shows up on the <b>Kalshi board</b>. That is a prompt to look, not an order: in the 2024 test only one kind of signal (a FLIP) made money.</p>
+    </div>
+
+    <div class="detail">
+      <h3>How it is wired</h3>
+      <div class="wire">
+        <div class="wcol">
+          <div class="wbox src"><b>NYT results files</b><span>16 races, every county · checked every 2 min</span></div>
+          <div class="wbox src"><b>NYT state pages</b><span>all 50 states · every 10 min (saved for later, not on this page)</span></div>
+          <div class="wbox src"><b>Kalshi + Polymarket</b><span>best bid/ask and 5 levels of each book · every 2 min</span></div>
+        </div>
+        <div class="warrow">→</div>
+        <div class="wcol">
+          <div class="wbox run"><b>The cloud run</b><span>GitHub Actions, workflow "Election night (cloud)", script <code>cloud_night.py</code>. One job runs ~5h40m, then starts the next.</span></div>
+          <div class="wbox run"><b>The projector</b><span><code>live_project.py</code>: county by county where the counties line up, statewide otherwise. Best buys, FLIPs.</span></div>
+        </div>
+        <div class="warrow">→</div>
+        <div class="wcol">
+          <div class="wbox out"><b>Branch <code>election-live</code></b><span><code>live_data.js</code> (this page's data), <code>status.json</code> (last update, errors), <code>projections.csv</code> (every update)</span></div>
+          <div class="wbox out"><b>Release <code>election-night-2026</code></b><span>the whole night, packed every hour, kept for good (a 2026 replay later)</span></div>
+        </div>
+        <div class="warrow">→</div>
+        <div class="wcol">
+          <div class="wbox page"><b>This page</b><span>downloads <code>live_data.js</code> every 30 s</span></div>
+          <div class="wbox page"><b>The dashboard</b><span><code>election-night-cloud.html</code>: the same data, card layout</span></div>
+        </div>
+      </div>
+      <p class="note">The backup is the owner's PC: a scheduled task records NYT from 6:30 pm ET (<code>capture_live.py</code>), and <code>run_dashboard.cmd</code> runs the same projector locally every 30 s for the local pages (home Wi-Fi: port 8765) and a 10-minute-delayed public copy without buy signals. The PC records Kalshi/Polymarket only if <code>register_market_tasks.ps1</code> was run.</p>
+    </div>
+
+    <div class="detail">
+      <h3>Timing</h3>
+      <ul>
+        <li><b>How fresh:</b> NYT is checked every 2 minutes and this page refreshes every 30 seconds, so a number can be up to about 2.5 minutes behind NYT. Traders watching AP and Decision Desk see vote dumps sooner. <b>Always check the live Kalshi book before buying.</b></li>
+        <li><b>Hand-offs:</b> a job stops itself before GitHub's 6-hour limit and the next one starts; about a minute without updates. None between 6:20 and 11:50 pm ET on election night (expected around 6:15 pm and 11:58 pm).</li>
+        <li><b>Slower later:</b> every 5 minutes from Wednesday 1 pm ET; the cloud run stops Saturday night.</li>
+        <li><b>The pills at the top:</b> "Projector" = age of the last update, "NYT" = age of the newest NYT file, "Markets" = age of the prices (amber at 5+ minutes). A "Stale" alert appears if nothing has been written for 5 minutes.</li>
+      </ul>
+    </div>
+
+    <div class="detail">
+      <h3>The tabs</h3>
+      <ul>
+        <li><b>Cards</b>: one card per race. Projected final margin with its 80% band, win chance, votes counted and left, what the trailing candidate needs, county over/under, the buy signal and both Kalshi sides. Click a card for charts through the night and the county table.</li>
+        <li><b>Over/under map</b>: counties blue where the Democrat (Osborn in Nebraska) is beating the share we expected there, red where the Republican is; faded until 95% counted. Click a state to zoom.</li>
+        <li><b>3D map</b>: the same counties with a column on each for net votes against expectation, points over/under, or votes still out.</li>
+        <li><b>Splits &amp; turnout</b>: ticket-splitting where a state has both a Senate and a Governor race (Georgia, Ohio, Kansas, Texas), and turnout against 2022 by county type.</li>
+        <li><b>How it works</b>: this page.</li>
+      </ul>
+    </div>
+
+    <div class="detail">
+      <h3>The Kalshi board and buy signals</h3>
+      <p>Shown when "Buy signals" is on. One row per race and side where Kalshi's price is 3¢ or more below our chance after the fee. FLIPs first, then by edge. Click a row to open the race.</p>
+      <dl class="gloss">
+        <dt>Edge</dt><dd>Our chance minus Kalshi's ask minus Kalshi's taker fee (0.07 × price × (1 − price) per contract). +12¢ means a $1 contract bought at the ask is worth 12¢ more than it costs, if our projection is right.</dd>
+        <dt>Pay up to</dt><dd>The highest price that still leaves a 3¢ edge after the fee. Use it as the limit on a limit order; never a market order during a vote dump.</dd>
+        <dt>Held</dt><dd>How many updates in a row this side's edge has been 5¢ or more, and for how long. An edge that lasts one update is usually NYT catching up with a market that already saw the votes; one that holds for several is more likely real.</dd>
+        <dt>FLIP</dt><dd>All four at once: the county-by-county projector gives the side 45% or more, it sells for 40¢ or less, the edge is 5¢ or more after fees, and 20% or more is counted. In the 2024 test these were the only signals that paid (Slotkin at 15-20¢ and Rosen at 31-33¢ won; Sam Brown at about 30¢ lost). Three trades is a small sample.</dd>
+        <dt>Warnings</dt><dd><i>prices N min old</i> (the market data is stale) · <i>under 20% counted</i> (the weakest part of every backtest) · <i>count nearly done</i> (98%+: the projector overstates late uncertainty, so the trailing side looks cheap when it isn't) · <i>statewide projector only</i> (the counties don't line up yet; Alaska always) · <i>not a FLIP</i> (other signals lost money in 2024) · <i>new this update</i>.</dd>
+      </dl>
+    </div>
+
+    <div class="detail">
+      <h3>The projector, briefly</h3>
+      <ul>
+        <li><b>Starting point:</b> the markets' price at poll close (Kalshi and Polymarket averaged), turned into an expected margin: 6 × the normal-curve value of the price, ±6 points. So the projection is "the market at poll close plus what the count says"; a gap with the market now means the market moved more or less than the counted votes justify. The "Model start" number starts from our own forecast instead.</li>
+        <li><b>County by county</b> (where NYT's counties match our benchmarks): every county has a lean (its share at a tied statewide result). The counted counties show how far the state is running from those leans; a county's numbers count fully only once it is mostly counted, because a half-counted county is usually one kind of vote. 4,000 simulations of the uncounted counties give the projected margin, its band and the win chance.</li>
+        <li><b>Statewide</b> (otherwise): how the uncounted vote leaned at the same share counted in each state's 2020-2024 counts.</li>
+        <li><b>Known limits:</b> worse than the markets on average in the 2024 test (only FLIPs paid); weakest under 20% counted; at 98%+ it keeps 5-20% for the trailing side of a finished close race; 2026 rule changes (Michigan's early processing, Georgia's 8 pm deadline, Ohio's upload deadline) may make early batches bigger than history. Maine and Alaska are first-round margins; Kalshi settles on the ranked-choice winner.</li>
+      </ul>
+    </div>
+
+    <div class="detail">
+      <h3>Every number on the cards</h3>
+      <dl class="gloss">
+        <dt>On screen</dt><dd>The counted votes' margin right now: Democrat (Osborn in Nebraska) minus Republican, in points of all votes.</dd>
+        <dt>Projected final</dt><dd>Where the projector expects the count to finish, with the range that holds the result 80% of the time.</dd>
+        <dt>Win chance</dt><dd>The projector's chance the favourite wins. "From market at poll close" or "from our model" says where it started.</dd>
+        <dt>Votes counted / Votes left (est.)</dt><dd>Votes in so far, and NYT's expected total minus them.</dd>
+        <dt>Needs</dt><dd>The share of the remaining two-party vote the trailing candidate needs to tie. "Can't catch up" means more than all of it.</dd>
+        <dt>Counties reporting</dt><dd>Counties with any votes / all counties (counties at 95%+ counted).</dd>
+        <dt>Desk math</dt><dd>A simple check: each county's remaining votes split like its counted votes, added to the current count.</dd>
+        <dt>From our model</dt><dd>The win chance the projector gives if it starts from our forecast instead of the market.</dd>
+        <dt>Running over / under</dt><dd>The margin the counted votes alone point to, compared with our model's margin (the replay: with the market at poll close), and the same in net votes.</dd>
+        <dt>Expected / Tie needs (county table)</dt><dd>The Democrat's share expected in the county if the state lands on our model's margin, and the share that would mean a statewide tie.</dd>
+        <dt>Net vs expected</dt><dd>Votes the Democrat is ahead (+) or behind (−) of that expectation in the county.</dd>
+        <dt>Market / Kalshi line</dt><dd>On the charts: the market line averages Kalshi and Polymarket (midpoints); the dashed line is Kalshi alone.</dd>
+      </dl>
+    </div>
+
+    <div class="detail">
+      <h3>If something looks wrong</h3>
+      <ul>
+        <li><b>Nothing updates</b> ("Projector" pill climbing past 5 minutes): check the "Election night (cloud)" workflow in the repo's Actions tab, or <code>status.json</code> on the <code>election-live</code> branch. The fallback is the PC: double-click <code>run_dashboard.cmd</code>.</li>
+        <li><b>A race stays at 0%</b> about 15 minutes after its first votes usually appear: NYT's file address for it is probably different from ours. <code>status.json</code> lists which files were found. The fix goes in <code>capture_live.py</code>; a running job reads code only when it starts, so cancel it and start a new one (about a minute without updates).</li>
+        <li><b>One race shows 0% with an error in <code>status.json</code></b>: its NYT file came in a shape the reader didn't expect. The other races keep updating.</li>
+        <li><b>A buy signal that disappears on the next update</b>: almost always timing. Use "Held".</li>
+      </ul>
+      <p class="note">Code: the "Election night simulator" and "State election results" folders of pjmerica/polling-agg-2026. Not financial advice.</p>
+    </div>
+  </section>
   <div id="grid" class="grid"><div class="empty">Waiting for data…</div></div>
   <div id="detail"></div>
   <p class="note">Margins are the Democrat (or the independent in Nebraska) minus the Republican, in points of all votes. "Projected" is the projector's final margin with its 80% band: county by county where the counties line up, statewide otherwise. Votes left and "needs" come from NYT's expected vote. Buy signals are prompts to look, not trades: in the 2024 test only FLIPs paid.</p>
@@ -1102,9 +1233,18 @@ function renderST() {
   h += `<p class="note">Finished = 95%+ of the county's expected vote counted. 2022 totals are the benchmarks' (each county's 2022 vote). NYT's expected vote is NYT's own estimate and moves during the night. The turnout mix holds each county's lean at its tie-line value, so it shows the effect of who turned out, not of how they voted.</p>`;
   el.innerHTML = h;
 }
+function renderHow() {
+  const cloud = !!document.querySelector('script[data-cloud], #cloud-loader') || /election-night-desk/.test(location.pathname);
+  document.getElementById("how-mode").textContent = REPLAY
+    ? "You are looking at the 2024 replay: the real 2024 count, archived county captures and real Kalshi/Polymarket minute prices, played back through the same projector and signals. Nothing here is live."
+    : cloud ? "You are looking at the cloud copy: the data comes from GitHub Actions every 2 minutes, so it works without anyone's PC."
+    : "You are looking at the local copy: the data comes from the projector running on this PC (run_dashboard.cmd).";
+}
 function showView(v) {
-  for (const [id, k] of [["v-cards", "cards"], ["v-flat", "flat"], ["v-map", "map"], ["v-st", "st"]])
+  for (const [id, k] of [["v-cards", "cards"], ["v-flat", "flat"], ["v-map", "map"], ["v-st", "st"], ["v-how", "how"]])
     document.getElementById(id).setAttribute("aria-pressed", v === k);
+  document.getElementById("howview").hidden = v !== "how";
+  if (v === "how") renderHow();          // static text: no data needed
   document.getElementById("flatview").hidden = v !== "flat";
   document.getElementById("mapview").hidden = v !== "map";
   document.getElementById("stview").hidden = v !== "st";
@@ -1115,6 +1255,7 @@ showView(ui.view);             // the last view chosen, before the first render
 document.getElementById("v-cards").addEventListener("click", () => setView("cards"));
 document.getElementById("v-map").addEventListener("click", () => setView("map"));
 document.getElementById("v-st").addEventListener("click", () => setView("st"));
+document.getElementById("v-how").addEventListener("click", () => setView("how"));
 document.getElementById("v-flat").addEventListener("click", () => setView("flat"));
 document.getElementById("flat-states").addEventListener("click", e => { const b = e.target.closest("button[data-st]"); if (b) { ui.flatSt = b.dataset.st; renderFlat(); } });
 document.getElementById("flat-office").addEventListener("click", e => { const b = e.target.closest("button[data-office]"); if (b) { ui.office = b.dataset.office; renderFlat(); } });
@@ -1130,6 +1271,7 @@ function render(refit) {
   const g = document.getElementById("grid");
   if (ui.view === "map") renderMap(refit === true);
   else if (ui.view === "st") renderST();
+  else if (ui.view === "how") renderHow();
   else if (ui.view === "flat") renderFlat();
   else g.innerHTML = D.races.length ? sorted(D.races).map(card).join("") : `<div class="empty">No races in the data file.</div>`;
   if (!document.activeElement || document.activeElement.id !== "cf") renderDetail();

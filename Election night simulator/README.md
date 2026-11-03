@@ -265,6 +265,15 @@ and the columns follow the projector's county data; in the replay, each state sh
 (time on the right). It draws with deck.gl 8.9.35 from jsdelivr (needs the internet) and `county_geo.js`
 (Oregon and Alaska have no county shapes).
 
+### How it works tab (2026-11-02)
+
+The data desk's last tab (user: "write an explainer ... of what this is and how everything is wired"): what the page is,
+a wiring diagram (NYT files and state pages, Kalshi/Polymarket -> the cloud run and projector -> the `election-live`
+branch and the `election-night-2026` release -> the pages; the PC backup), timing (lag, hand-offs, cadence, the pills),
+each tab, the Kalshi board's columns and warnings, the projector in brief, a definition of every number on the cards,
+and what to do when something looks wrong. Static HTML in `data_dashboard.html`, so it is in the local page, the cloud
+desk and the replay; a line at the top says which copy you are looking at. Update it when the wiring changes.
+
 ### Kalshi board (2026-11-02)
 
 On the data desk, under the alerts, whenever "Buy signals" is on (the cloud desk starts with it on): every race and side
