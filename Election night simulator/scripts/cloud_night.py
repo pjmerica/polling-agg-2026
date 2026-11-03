@@ -24,14 +24,20 @@ A job stops itself before GitHub's 6-hour limit (--minutes) and the workflow sta
     py "Election night simulator/scripts/cloud_night.py" --state %TEMP%/st --minutes 3 --no-push   # local test
 """
 import argparse
+import concurrent.futures
 import csv
 import datetime as dt
 import glob
+import gzip
+import hashlib
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tarfile
+import tempfile
+import threading
 import time
 import traceback
 import urllib.request
@@ -48,6 +54,27 @@ END = dt.datetime(2026, 11, 8, 5, 0, tzinfo=dt.timezone.utc)        # Sat night 
 SLOW_FROM = dt.datetime(2026, 11, 4, 18, 0, tzinfo=dt.timezone.utc)  # Wed 1 pm ET: the late counts move slowly
 MARKET_FIELDS = ["ts_utc", "race", "market", "outcome", "bid", "ask", "bid_size", "ask_size", "last", "volume"]
 PROBE = "https://static01.nyt.com/elections-assets/pages/data/2026-08-04/results-michigan-us-senate-primary.json"
+
+# ---------- the record, for a 2026 replay later (2026-11-02, user: "save the results as they come in for future races
+# as much as possible ... we can also do save states of the model") ----------
+# archive/ (each job's), packed and uploaded every hour to the GitHub release RELEASE (permanent; the job artifact
+# expires after 90 days):
+#   nyt/{date}/{race}/{stamp}.json.gz          every change of our races' NYT files (2-minute checks)
+#   states/{date}/{state}/{stamp}.json.gz      every change of NYT's 50 state pages (10-minute checks): every Senate
+#                                              and Governor race by county, every House race statewide
+#   markets_full/{ET date}/{venue}.csv         the books, 5 levels a side
+#   live_data/{stamp}.js.gz                    the projector's output (the pages' data) every 10 minutes
+#   inputs/                                    what the projector started from: forecast, benchmarks, early vote, code
+# Each upload also carries a copy of the state folder (projections.csv = every pass's projections, the prices).
+RELEASE = "election-night-2026"
+STATE_EVERY = 600            # seconds between state-page rounds and live_data snapshots
+UPLOAD_EVERY = 3600
+STATES = ["alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware", "florida",
+          "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
+          "maryland", "massachusetts", "michigan", "minnesota", "mississippi", "missouri", "montana", "nebraska",
+          "nevada", "new-hampshire", "new-jersey", "new-mexico", "new-york", "north-carolina", "north-dakota", "ohio",
+          "oklahoma", "oregon", "pennsylvania", "rhode-island", "south-carolina", "south-dakota", "tennessee", "texas",
+          "utah", "vermont", "virginia", "washington", "west-virginia", "wisconsin", "wyoming"]
 
 
 def log(msg):
@@ -70,11 +97,11 @@ def restore_mtimes(live_dir):
 
 
 def prune_nyt(live_dir, archive):
-    """Keep the newest NYT file per race in the state folder; move the rest to the archive."""
+    """Keep the newest NYT file per race in the state folder; move the rest to archive/nyt/."""
     for d in glob.glob(os.path.join(live_dir, "*", "*")):  # live/{date}/{race}
         files = sorted(glob.glob(os.path.join(d, "*.json.gz")))
         for p in files[:-1]:
-            dest = os.path.join(archive, os.path.relpath(p, live_dir))
+            dest = os.path.join(archive, "nyt", os.path.relpath(p, live_dir))
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             shutil.move(p, dest)
 
@@ -91,6 +118,121 @@ def write_markets(state, date, venue, rows):
         if new:
             w.writeheader()
         w.writerows(rows)
+
+
+def write_full_markets(archive, date, venue, rows):
+    """Every field the recorder reads, books included (the state folder keeps bid/ask only)."""
+    if not rows:
+        return
+    d = os.path.join(archive, "markets_full", date)
+    os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, f"{venue}.csv")
+    new = not os.path.exists(path)
+    with open(path, "a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=capture_markets.FIELDS, extrasaction="ignore")
+        if new:
+            w.writeheader()
+        w.writerows(rows)
+
+
+def save_inputs(archive):
+    """What the projector starts from, once per job: a 2026 replay can rebuild every pass from these."""
+    d = os.path.join(archive, "inputs")
+    os.makedirs(d, exist_ok=True)
+    res = os.path.join(REPO, "State election results", "data", "processed")
+    for src in (os.path.join(REPO, "docs", "forecast_data.js"), os.path.join(res, "county_benchmarks.json"),
+                os.path.join(res, "county_benchmarks_extra.json"), os.path.join(res, "early_vote_2026.csv"),
+                os.path.join(res, "state_timeseries.csv")):
+        if os.path.exists(src):
+            with open(src, "rb") as f, gzip.open(os.path.join(d, os.path.basename(src) + ".gz"), "wb") as g:
+                g.write(f.read())
+    with open(os.path.join(d, "run.json"), "w", encoding="utf-8") as f:
+        json.dump(dict(sha=os.environ.get("GITHUB_SHA"), run=os.environ.get("GITHUB_RUN_ID"),
+                       started=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                       races=live_project.RACES, interval_s=dict(night=120, after=300)), f, indent=1)
+
+
+def capture_states(archive, date, last_hash):
+    """NYT's page for every state, saved when it changes. Missing pages (404) are skipped quietly."""
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+    def one(st):
+        return st, capture_live.fetch(f"https://static01.nyt.com/elections-assets/pages/data/{date}/results-{st}.json")
+    saved = 0
+    with concurrent.futures.ThreadPoolExecutor(8) as ex:
+        for fut in concurrent.futures.as_completed([ex.submit(one, st) for st in STATES]):
+            try:
+                st, body = fut.result()
+            except Exception as e:  # noqa: BLE001
+                log(f"state page: {e}")
+                continue
+            if not body:
+                continue
+            h = hashlib.sha1(body).hexdigest()
+            if h == last_hash.get(st):
+                continue
+            last_hash[st] = h
+            d = os.path.join(archive, "states", date, st)
+            os.makedirs(d, exist_ok=True)
+            with gzip.open(os.path.join(d, f"{stamp}.json.gz"), "wb") as f:
+                f.write(body)
+            saved += 1
+    return saved
+
+
+def snapshot_live(archive, live_js):
+    d = os.path.join(archive, "live_data")
+    os.makedirs(d, exist_ok=True)
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    with open(live_js, "rb") as f, gzip.open(os.path.join(d, f"{stamp}.js.gz"), "wb") as g:
+        g.write(f.read())
+
+
+_uploading = None
+
+
+def upload(archive, state, uploaded, n, final=False):
+    """Pack the archive files not uploaded yet, plus a copy of the state folder, and attach them to the release.
+    Runs in the background so the 2-minute passes don't wait (the final one waits). -> True when started or done.
+    Only in GitHub Actions (needs GH_TOKEN)."""
+    global _uploading
+    if not os.environ.get("GH_TOKEN") or not os.environ.get("GITHUB_REPOSITORY"):
+        return True
+    if _uploading and _uploading.is_alive():
+        if not final:
+            return False                       # the last one is still going: try again next pass
+        _uploading.join()
+    new = [p for p in glob.glob(os.path.join(archive, "**", "*"), recursive=True)
+           if os.path.isfile(p) and p not in uploaded and os.sep + "_work" + os.sep not in p]
+    stage = tempfile.mkdtemp(prefix="state-")  # the state folder changes every pass: pack a copy
+    shutil.copytree(state, os.path.join(stage, "state"), ignore=shutil.ignore_patterns(".git"))
+    run = os.environ.get("GITHUB_RUN_ID", "local")
+    name = os.path.join(os.path.dirname(archive), f"night-{run}-{n:02d}{'-final' if final else ''}.tar.gz")
+
+    def go():
+        try:
+            with tarfile.open(name, "w:gz") as t:
+                for p in new:
+                    t.add(p, arcname=os.path.relpath(p, archive))
+                t.add(os.path.join(stage, "state"), arcname="state")
+            r = subprocess.run(["gh", "release", "upload", RELEASE, name, "--clobber",
+                                "--repo", os.environ["GITHUB_REPOSITORY"]], capture_output=True, text=True)
+            if r.returncode:
+                log(f"release upload failed: {r.stderr.strip()[:300]}")
+                return
+            uploaded.update(new)
+            log(f"uploaded {os.path.basename(name)}: {len(new)} new files, {os.path.getsize(name) / 1e6:.1f} MB")
+        except Exception as e:  # noqa: BLE001
+            log(f"release upload failed: {e}")
+        finally:
+            shutil.rmtree(stage, ignore_errors=True)
+            if os.path.exists(name):
+                os.remove(name)
+    _uploading = threading.Thread(target=go, daemon=False)
+    _uploading.start()
+    if final:
+        _uploading.join()
+    return True
 
 
 def push(state, msg):
@@ -133,11 +275,15 @@ def main():
     except Exception as e:  # noqa: BLE001
         log(f"NYT PROBE FAILED: {e}")
 
+    save_inputs(archive)
     hist, fc = live_project.load_history(), live_project.load_forecast()
     pa = argparse.Namespace(date=a.date, race=None, pct=None, margin=None, prior_sd=live_project.PRIOR_SD,
                             baseline="market", watch=None, backtest=False)
     slugs_found, last_hash = {}, {}
     kal, poly, found_at = [], [], 0.0
+    state_hash, uploaded, n_up = {}, set(), 0
+    last_states = last_snap = 0.0
+    last_up = time.time()
     stop = time.time() + a.minutes * 60
     n = 0
     while True:
@@ -161,7 +307,9 @@ def main():
             for venue, fn, mk in (("kalshi", capture_markets.poll_kalshi, kal),
                                   ("polymarket", capture_markets.poll_polymarket, poly)):
                 try:
-                    write_markets(state, et_date, venue, fn(mk, now))
+                    rows = fn(mk, now)
+                    write_markets(state, et_date, venue, rows)
+                    write_full_markets(archive, et_date, venue, rows)
                 except Exception as e:  # noqa: BLE001
                     errors.append(f"{venue}: {e}")
         except Exception as e:  # noqa: BLE001
@@ -175,6 +323,18 @@ def main():
             traceback.print_exc()
         errors += live_project.ERRORS            # a race whose NYT file or counties didn't parse
         prune_nyt(live_dir, archive)
+        if time.time() - last_states >= STATE_EVERY:
+            last_states = time.time()
+            try:
+                k = capture_states(archive, a.date, state_hash)
+                if k:
+                    log(f"state pages: {k} changed")
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"state pages: {e}")
+        live_js = os.path.join(state, "live_data.js")
+        if time.time() - last_snap >= STATE_EVERY and os.path.exists(live_js):
+            last_snap = time.time()
+            snapshot_live(archive, live_js)
         n += 1
         status = dict(pass_utc=now_dt.strftime("%Y-%m-%dT%H:%M:%SZ"), passes_this_job=n,
                       run=os.environ.get("GITHUB_RUN_ID"), errors=errors,
@@ -188,6 +348,10 @@ def main():
             log("errors: " + "; ".join(errors))
         if not a.no_push:
             push(state, f"election-live {status['pass_utc']}")
+        if time.time() - last_up >= UPLOAD_EVERY:
+            n_up += 1
+            if upload(archive, state, uploaded, n_up):
+                last_up = time.time()
         took = time.time() - start
         log(f"pass {n} done in {took:.0f}s")
         interval = a.interval or (300 if now_dt >= SLOW_FROM else 120)
@@ -199,6 +363,7 @@ def main():
         except Exception:  # noqa: BLE001
             pass
         time.sleep(max(5.0, interval - took))
+    upload(archive, state, uploaded, n_up + 1, final=True)
 
 
 if __name__ == "__main__":

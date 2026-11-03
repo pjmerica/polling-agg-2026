@@ -69,7 +69,20 @@ jobs:
           git -C state config user.email "actions@users.noreply.github.com"
           date -u +%s > started
 
+      # The raw record of the night (cloud_night.py: every NYT change, all 50 state pages, books, the projector's
+      # inputs and outputs) is attached to this release every hour, so it outlives the 90-day artifacts.
+      - name: Make sure the archive release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view election-night-2026 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 ||
+            gh release create election-night-2026 --repo "$GITHUB_REPOSITORY" --latest=false \
+              --title "Election night 2026: raw record" \
+              --notes "Recorded by the Election night (cloud) workflow for a 2026 replay: every change of NYT's results files for the tracked races (2-minute checks), NYT's 50 state pages (10-minute checks), Kalshi/Polymarket books, the projector's inputs and its output every 10 minutes. One tar.gz per job-hour (night-<run id>-<n>.tar.gz); unpack them all into one folder."
+
       - name: Record and project
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: >
           python "Election night simulator/scripts/cloud_night.py"
           --state state --archive archive --minutes "${{ inputs.minutes || '340' }}"
@@ -95,4 +108,4 @@ jobs:
           name: nyt-captures-${{ github.run_id }}
           path: archive
           if-no-files-found: ignore
-          retention-days: 30
+          retention-days: 90

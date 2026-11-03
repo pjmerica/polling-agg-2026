@@ -43,6 +43,7 @@ select.tog { appearance: none; padding-right: 10px; }
 .alert .tag { font: 600 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--warn); min-width: 92px; }
 .alert.flip { border-left-color: var(--good); } .alert.flip .tag { color: var(--good); }
 .alert.change { border-left-color: var(--proj); } .alert.change .tag { color: var(--proj); }
+.grid[hidden] { display: none; }
 .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px 12px; display: grid; gap: 9px; cursor: pointer; align-content: start; }
 .card:hover { border-color: var(--line2); }
@@ -119,6 +120,16 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 .maplegend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -2px; margin-right: 5px; }
 .deck-tooltip { font: 12.5px/1.45 var(--sans) !important; }
 @media (max-width: 900px) { .mapwrap { grid-template-columns: 1fr; } #deckmap { height: 60vh; } .mapside { max-height: none; } }
+.flatview { display: grid; gap: 10px; }
+.flatview[hidden] { display: none; }
+#flatmap { border: 1px solid var(--line); border-radius: 8px; background: radial-gradient(ellipse at 50% 40%, #151c27, #0a0d12); padding: 8px; }
+#flatmap svg { display: block; width: 100%; height: auto; max-height: 74vh; }
+#flatmap .fo { fill: #141a23; stroke: #2a3342; stroke-width: .6px; vector-effect: non-scaling-stroke; cursor: pointer; }
+#flatmap .fc { stroke: #0c1016; stroke-width: .4px; vector-effect: non-scaling-stroke; cursor: pointer; }
+#flatmap .fc:hover { stroke: #e7ebf1; stroke-width: 1.4px; }
+#flatmap .fs { fill: none; stroke: #8e99aa; stroke-width: 1.1px; vector-effect: non-scaling-stroke; pointer-events: none; }
+.mapside b.pos { color: var(--dem); } .mapside b.neg { color: var(--rep); }
+.mapside small { color: var(--faint); font-weight: 400; }
 .stview { display: grid; gap: 12px; }
 .stview[hidden] { display: none; }
 .stview h2 { margin: 6px 0 0; font-size: 15px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
@@ -142,6 +153,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
     <div class="spacer"></div>
     <div class="tools">
       <button id="v-cards" class="tog" aria-pressed="true">Cards</button>
+      <button id="v-flat" class="tog" aria-pressed="false">Over/under map</button>
       <button id="v-map" class="tog" aria-pressed="false">3D map</button>
       <button id="v-st" class="tog" aria-pressed="false">Splits &amp; turnout</button>
       <label class="note" for="sort">Sort</label>
@@ -170,6 +182,16 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
   </div>
   <div id="banner" class="banner" hidden></div>
   <div id="alerts" class="alerts"></div>
+  <section id="flatview" class="flatview" hidden aria-label="Over/under map">
+    <div class="mapbar">
+      <div class="chips" id="flat-states"></div>
+      <div class="spacer"></div>
+      <div class="chips" id="flat-office"></div>
+      <label class="note"><input type="checkbox" id="flat-done"> Finished counties only</label>
+    </div>
+    <div class="mapwrap"><div id="flatmap"></div><div id="flat-side" class="mapside"></div></div>
+    <div id="flat-legend" class="maplegend"></div>
+  </section>
   <section id="mapview" class="mapview" hidden aria-label="3D county map">
     <div class="mapbar">
       <div class="chips" id="map-races"></div>
@@ -263,7 +285,7 @@ function store(k, v) {
   const s = store("sig"); if (s !== null) ui.sig = s === "1";
   const o = store("sort"); if (o) ui.sort = o;
   const r = store("res"); if (r !== null) ui.res = r === "1";
-  ui.view = store("view") || "cards"; ui.mapRace = "all"; ui.metric = store("metric") || "net"; ui.base = "share"; ui.office = null;
+  ui.view = store("view") || "cards"; ui.mapRace = "all"; ui.flatSt = "all"; ui.flatDone = false; ui.metric = store("metric") || "net"; ui.base = "share"; ui.office = null;
 })();
 
 /* ---------- bundle playback ---------- */
@@ -714,6 +736,84 @@ function mapRaces() {
   const shown = Object.values(per).map(a => a.length > 1 ? (a.find(r => r.office === ui.office) || a[0]) : a[0]);
   return { shown, offices: multi ? offices : [] };
 }
+/* ---------- Over/under map (flat): each county blue where the Democrat (Osborn) is running ahead of what we
+   expected there, red where the Republican is; grey until it reports. "Expected" is the county's share if the
+   state lands on our model's margin (the replay: on the market's margin at poll close). Faded while a county
+   is under 95% counted: a part-counted county is mostly one kind of vote. ---------- */
+const OU_FULL = 10;            // points of two-party share at full colour
+let flatLoading = false;
+async function ensureGeo() {
+  if (GEO) return true;
+  if (flatLoading) return false;
+  flatLoading = true;
+  try {
+    if (!window.COUNTY_GEO) await loadScript("county_geo.js");
+    prepGeo();
+    return true;
+  } catch (e) {
+    document.getElementById("flatmap").innerHTML = `<div class="empty" style="margin:30px">The map needs the county shapes (county_geo.js), and they didn't load.</div>`;
+    return false;
+  } finally { flatLoading = false; }
+}
+function ouDev(c) { return c && c.share != null && c.exp != null ? 100 * (c.share - c.exp) : null; }
+function ouFill(d) {
+  const t = Math.max(-1, Math.min(1, d / OU_FULL)), k = Math.sqrt(Math.abs(t));
+  const base = [64, 70, 84], tgt = t > 0 ? C_D : C_R;
+  return `rgb(${[0, 1, 2].map(i => Math.round(base[i] + (tgt[i] - base[i]) * k)).join(",")})`;
+}
+async function renderFlat() {
+  if (!await ensureGeo()) return;
+  const g = window.COUNTY_GEO;
+  const { shown, offices } = mapRaces();
+  if (ui.flatSt !== "all" && !shown.some(r => stOf(r) === ui.flatSt)) ui.flatSt = "all";
+  document.getElementById("flat-states").innerHTML = [`<button data-st="all" aria-pressed="${ui.flatSt === "all"}">All states</button>`]
+    .concat(shown.map(r => `<button data-st="${stOf(r)}" aria-pressed="${ui.flatSt === stOf(r)}">${esc(r.state)}</button>`)).join("");
+  document.getElementById("flat-office").innerHTML = offices.map(o => `<button data-office="${esc(o)}" aria-pressed="${ui.office === o}">${esc(o)}</button>`).join("");
+  document.getElementById("flat-done").checked = !!ui.flatDone;
+  const races = ui.flatSt === "all" ? shown : shown.filter(r => stOf(r) === ui.flatSt);
+  let vb = g.viewBox;
+  const one = ui.flatSt !== "all" && g.states[ui.flatSt] && g.states[ui.flatSt].bbox;
+  if (one) { const b = one, p = 0.04 * Math.max(b[2] - b[0], b[3] - b[1]); vb = [b[0] - p, b[1] - p, b[2] - b[0] + 2 * p, b[3] - b[1] + 2 * p]; }
+  let svg = `<svg viewBox="${vb.map(v => +v.toFixed(1)).join(" ")}" role="img" aria-label="Over/under by county">`;
+  for (const [st, v] of Object.entries(g.states)) svg += `<path d="${v.d}" class="fo" data-st="${st}"/>`;
+  const side = [];
+  for (const r of races) {
+    const v = g.states[stOf(r)];
+    if (!v || !v.counties) continue;
+    const byF = new Map(r.track.counties.map(c => [c.f, c]));
+    let nShown = 0, nDone = 0;
+    for (const [f, d] of Object.entries(v.counties)) {
+      const c = byF.get(f), dev = ouDev(c);
+      const show = dev != null && (!ui.flatDone || c.pct >= 95);
+      if (c && c.pct >= 95) nDone++;
+      if (show) nShown++;
+      const op = show ? Math.min(1, 0.35 + 0.65 * c.pct / 95) : 1;
+      const tip = !c ? "no data" : dev == null ? `${c.n}: not reporting yet` :
+        `${c.n}: ${Math.round(c.pct)}% counted · ${last(r.d_name)} ${(100 * c.share).toFixed(1)}% of the two-party vote vs ${(100 * c.exp).toFixed(1)}% expected · ` +
+        `${Math.abs(dev) < 0.5 ? "as expected" : (dev > 0 ? last(r.d_name) : last(r.r_name)) + " ahead of expectation by " + Math.abs(dev).toFixed(1) + " pts"}` +
+        (c.net != null ? ` · net ${c.net >= 0 ? "+" : "−"}${fmtInt(Math.abs(c.net))} votes for ${c.net >= 0 ? last(r.d_name) : last(r.r_name)}` : "") +
+        (c.pct < 95 ? " (part-counted: mostly one kind of vote so far)" : "");
+      svg += `<path d="${d}" class="fc" data-st="${stOf(r)}" fill="${show ? ouFill(dev) : "#1c232e"}" fill-opacity="${op.toFixed(2)}"><title>${esc(tip)}</title></path>`;
+    }
+    svg += `<path d="${v.d}" class="fs" data-st="${stOf(r)}"/>`;
+    const t = r.track, imp = t.implied, exp = t.expected;
+    side.push(`<div class="row" data-race="${esc(r.race)}" style="cursor:pointer"><span>${esc(r.state)} ${esc(r.office)}<br><small>${nShown} counties reporting · ${nDone} finished</small></span>` +
+      `<b class="${nShown && t.net > 0 ? "pos" : nShown && t.net < 0 ? "neg" : ""}">${!nShown ? "not reporting" : t.net == null ? "–" : (t.net >= 0 ? last(r.d_name) : last(r.r_name)) + " +" + fmtInt(Math.abs(t.net))}<br>` +
+      `<small>${imp != null && exp != null ? "counted votes point to " + mtxtPts(imp, r) + " vs " + mtxtPts(exp, r) + " expected" : ""}</small></b></div>`);
+  }
+  svg += `</svg>`;
+  document.getElementById("flatmap").innerHTML = svg;
+  document.getElementById("flat-side").innerHTML = `<h4>Net votes vs expected</h4>` +
+    (side.length ? side.join("") : `<p class="note">No tracked race has county data yet.</p>`) +
+    `<p class="note">Net votes: the non-Republican's votes ahead (+) of what our model expected in the counties counted so far. Click a race for its detail.</p>`;
+  document.getElementById("flat-legend").innerHTML =
+    `<span><i style="background:${ouFill(-OU_FULL)}"></i>Republican ahead of expectation (${OU_FULL}+ pts)</span>` +
+    `<span><i style="background:${ouFill(-3)}"></i>3 pts</span><span><i style="background:${ouFill(0)}"></i>as expected</span>` +
+    `<span><i style="background:${ouFill(3)}"></i>3 pts</span><span><i style="background:${ouFill(OU_FULL)}"></i>Democrat ahead (${OU_FULL}+ pts)</span>` +
+    `<span><i style="background:#1c232e"></i>not reporting</span><span>Faded: under 95% counted</span>`;
+}
+function mtxtPts(m, r) { return m == null ? "–" : `${m >= 0 ? last(r.d_name) : last(r.r_name)} +${Math.abs(m).toFixed(1)}`; }
+
 function metricOf(c) {
   if (ui.metric === "left") return c.left || 0;
   if (ui.metric === "pts") return c.share != null && c.exp != null ? 100 * (c.share - c.exp) : null;
@@ -939,8 +1039,9 @@ function renderST() {
   el.innerHTML = h;
 }
 function showView(v) {
-  for (const [id, k] of [["v-cards", "cards"], ["v-map", "map"], ["v-st", "st"]])
+  for (const [id, k] of [["v-cards", "cards"], ["v-flat", "flat"], ["v-map", "map"], ["v-st", "st"]])
     document.getElementById(id).setAttribute("aria-pressed", v === k);
+  document.getElementById("flatview").hidden = v !== "flat";
   document.getElementById("mapview").hidden = v !== "map";
   document.getElementById("stview").hidden = v !== "st";
   document.getElementById("grid").hidden = v !== "cards";
@@ -950,6 +1051,12 @@ showView(ui.view);             // the last view chosen, before the first render
 document.getElementById("v-cards").addEventListener("click", () => setView("cards"));
 document.getElementById("v-map").addEventListener("click", () => setView("map"));
 document.getElementById("v-st").addEventListener("click", () => setView("st"));
+document.getElementById("v-flat").addEventListener("click", () => setView("flat"));
+document.getElementById("flat-states").addEventListener("click", e => { const b = e.target.closest("button[data-st]"); if (b) { ui.flatSt = b.dataset.st; renderFlat(); } });
+document.getElementById("flat-office").addEventListener("click", e => { const b = e.target.closest("button[data-office]"); if (b) { ui.office = b.dataset.office; renderFlat(); } });
+document.getElementById("flat-done").addEventListener("change", e => { ui.flatDone = e.target.checked; renderFlat(); });
+document.getElementById("flatmap").addEventListener("click", e => { const p = e.target.closest("path[data-st]"); if (p && GEO && GEO.box[p.dataset.st] && ui.flatSt !== p.dataset.st) { ui.flatSt = p.dataset.st; renderFlat(); } });
+document.getElementById("flat-side").addEventListener("click", e => { const r = e.target.closest(".row[data-race]"); if (r) select(r.dataset.race); });
 
 function render(refit) {
   if (!D) return;
@@ -958,6 +1065,7 @@ function render(refit) {
   const g = document.getElementById("grid");
   if (ui.view === "map") renderMap(refit === true);
   else if (ui.view === "st") renderST();
+  else if (ui.view === "flat") renderFlat();
   else g.innerHTML = D.races.length ? sorted(D.races).map(card).join("") : `<div class="empty">No races in the data file.</div>`;
   if (!document.activeElement || document.activeElement.id !== "cf") renderDetail();
 }
