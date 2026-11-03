@@ -265,6 +265,18 @@ and the columns follow the projector's county data; in the replay, each state sh
 (time on the right). It draws with deck.gl 8.9.35 from jsdelivr (needs the internet) and `county_geo.js`
 (Oregon and Alaska have no county shapes).
 
+### Kalshi board (2026-11-02)
+
+On the data desk, under the alerts, whenever "Buy signals" is on (the cloud desk starts with it on): every race and side
+where a Kalshi price is 3c+ off our projection after Kalshi's fee (0.07 x p x (1 - p)). Per row: buy which YES, the ask,
+our chance, the edge, **pay up to** (the highest ask that still leaves a 3c edge after the fee: a limit price), **held**
+(updates in a row the edge has been 5c+, and for how long: an edge that lasts one update is usually NYT catching up with a
+market that already saw the votes), and warnings (prices 5+ min old, under 20% or 98%+ counted, statewide projector only,
+not a FLIP). FLIP rows first. Cards show both Kalshi sides; the win chart has a Kalshi line beside the two-venue market.
+With the board showing, FLIP alerts aren't repeated above it; off-expected alerts are one grouped line. The projector now
+sends both sides of each book (`r_bid`/`r_ask`) and Kalshi's bid/ask in the history; the replay mirrors the D book.
+Checked on the 2024 replay: at 1:20 am it lists FLIP Slotkin YES 20c, ours 55%, +34c, pay up to 50c.
+
 ### Over/under map (2026-11-02)
 
 The data desk's flat map tab (user: "colored blue or red if the votes come in not as expected ... more of a static map as

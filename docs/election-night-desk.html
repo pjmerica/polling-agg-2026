@@ -535,7 +535,7 @@ function renderBoard() {
   rows.sort((a, b) => (b.flip - a.flip) || (b.s.edge - a.s.edge));
   const age = marketsAgeMin();
   let h = `<h3>Kalshi board <small>every race where a Kalshi price is ${Math.round(K_CUSHION * 100)}¢+ off our projection after the fee · ` +
-    `prices ${age == null ? "not recorded yet" : age < 1.5 ? Math.round(age * 60) + "s" : Math.round(age) + " min"} old · always check the live book: prices move in seconds after a vote dump</small></h3>`;
+    `${age == null ? "no prices recorded yet" : "prices " + (age < 1.5 ? Math.round(age * 60) + "s" : Math.round(age) + " min") + " old"} · always check the live book: prices move in seconds after a vote dump</small></h3>`;
   if (!rows.length) { el.hidden = false; el.innerHTML = h + `<p class="note">No Kalshi price is ${Math.round(K_CUSHION * 100)}¢+ off our projection right now.</p>`; return; }
   h += `<div class="tablewrap"><table><thead><tr><th>Buy on Kalshi</th><th>Ask</th><th>Ours</th><th title="Our chance minus the ask minus Kalshi's fee">Edge</th><th title="The highest ask that still leaves a 3¢ edge after the fee">Pay up to</th><th title="Updates in a row with a 5¢+ edge on this side">Held</th></tr></thead><tbody>`;
   for (const { r, s, flip } of rows) {
