@@ -15,6 +15,8 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[HASH]` Map race card: every candidate the same size (2026-11-02). User, on 0479ade4: "make both the candidate names the same size but I like this layout a lot more". The favourite's row is no longer larger; every candidate row is 1.08rem with its chance at 1.32rem.
+
 - `[7fa94503]` Projector: a race whose NYT file or county data doesn't parse no longer stops every other race's update (2026-11-02, before the first general-election files exist). `live_project._safe` wraps each race's NYT read, v1 and county tracking; failures go to `live_project.ERRORS`, which `cloud_night.py` writes into `status.json` on the election-live branch. Tested with a corrupt Georgia file: Georgia showed 0% with the error listed, Michigan kept projecting.
 
 - `[b7b4b9cf]` Map race card: the small asides stay small (2026-11-02). Follow-up to 0479ade4: in Win % model vs market the "(model -10 pts)" aside and the bolded venue label grew with the chance and wrapped; they are back to label size (0.68em of the chance), and so is the win % beside each margin on the Margin view.
