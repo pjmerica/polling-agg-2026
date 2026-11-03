@@ -173,6 +173,7 @@ def main():
         except Exception as e:  # noqa: BLE001
             errors.append(f"projector: {type(e).__name__}: {e}")
             traceback.print_exc()
+        errors += live_project.ERRORS            # a race whose NYT file or counties didn't parse
         prune_nyt(live_dir, archive)
         n += 1
         status = dict(pass_utc=now_dt.strftime("%Y-%m-%dT%H:%M:%SZ"), passes_this_job=n,

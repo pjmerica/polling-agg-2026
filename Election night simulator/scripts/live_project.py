@@ -475,7 +475,22 @@ def _r(x, n=4):
     return round(float(x), n) if x is not None and x == x else None
 
 
+ERRORS = []      # this pass's per-race failures (cloud_night.py puts them in status.json)
+
+
+def _safe(what, fn, *args, **kw):
+    """One race's NYT file or county data in an unexpected shape must not stop every other race's update:
+    log it, return None, carry on (2026-11-02, before the first general-election files existed)."""
+    try:
+        return fn(*args, **kw)
+    except Exception as e:  # noqa: BLE001
+        ERRORS.append(f"{what}: {type(e).__name__}: {e}")
+        print(f"  {what} failed: {type(e).__name__}: {e}")
+        return None
+
+
 def run_live(a, hist, fc):
+    ERRORS.clear()
     mk = load_markets(a.date)
     now = getattr(a, "now", None) or dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows, cards = [], []
@@ -490,14 +505,15 @@ def run_live(a, hist, fc):
         if a.pct is not None:
             nyt = dict(pct=a.pct, margin=a.margin, stamp="what-if", units={})
         else:
-            nyt = latest_nyt(a.date, race) or dict(pct=0.0, margin=0.0, stamp="-", units={})
+            nyt = (_safe(f"{race} NYT file", latest_nyt, a.date, race)
+                   or dict(pct=0.0, margin=0.0, stamp="-", units={}))
         c_utc = close_utc(a.date, state)
         p_close = market_baseline(mk, race, c_utc)
         m0 = (pr[2], MODEL_MARGIN_SD) if pr and pr[2] is not None else None
         by_mkt = _with_baseline(hist, state, nyt, p_close, a.prior_sd)
         by_mod = _with_baseline(hist, state, nyt, None, a.prior_sd, m0=m0)
-        v1_mkt = v1(nyt, race, p0=p_close) if p_close is not None else None
-        v1_mod = v1(nyt, race, m0=m0) if m0 else None
+        v1_mkt = _safe(f"{race} v1", v1, nyt, race, p0=p_close) if p_close is not None else None
+        v1_mod = _safe(f"{race} v1", v1, nyt, race, m0=m0) if m0 else None
         if a.baseline == "market" and p_close is not None:
             v0res, v1res = by_mkt, v1_mkt
         else:                                  # --baseline model, or no market price at the close
@@ -507,7 +523,7 @@ def run_live(a, hist, fc):
         books = latest_books(mk, race)
         bt = best_trade(res["p_win"], books) if res else None
         p_now = market_now(books)
-        track = tracking(nyt, race, v1res, m0, p_close) if a.pct is None else None
+        track = _safe(f"{race} county tracking", tracking, nyt, race, v1res, m0, p_close) if a.pct is None else None
 
         def ba(v):
             s = books.get(v, {}).get("D")
