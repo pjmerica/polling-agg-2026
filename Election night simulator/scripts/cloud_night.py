@@ -66,7 +66,8 @@ PROBE = "https://static01.nyt.com/elections-assets/pages/data/2026-08-04/results
 #   nyt/{date}/{race}/{stamp}.json.gz          every change of our races' NYT files (2-minute checks)
 #   states/{date}/{state}/{stamp}.json.gz      every change of NYT's 50 state pages (10-minute checks): every Senate
 #                                              and Governor race by county, every House race statewide
-#   markets_full/{ET date}/{venue}.csv         the books, 5 levels a side
+#   markets_full/{ET date}/{venue}-{run}.csv   the books, 5 levels a side, every pass and every PRICE_EVERY seconds
+#                                              between passes; re-sent whole each hour (a later copy holds the earlier)
 #   live_data/{stamp}.js.gz                    the projector's output (the pages' data) every 10 minutes
 #   inputs/                                    what the projector started from: forecast, benchmarks, early vote, code
 # Each upload also carries a copy of the state folder (projections.csv = every pass's projections, the prices).
@@ -131,7 +132,9 @@ def write_full_markets(archive, date, venue, rows):
         return
     d = os.path.join(archive, "markets_full", date)
     os.makedirs(d, exist_ok=True)
-    path = os.path.join(d, f"{venue}.csv")
+    # one file per job: every job's archive starts empty, so a shared name would overwrite the earlier jobs' books
+    # when the release files are unpacked into one folder
+    path = os.path.join(d, f"{venue}-{os.environ.get('GITHUB_RUN_ID', 'local')}.csv")
     new = not os.path.exists(path)
     with open(path, "a", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=capture_markets.FIELDS, extrasaction="ignore")

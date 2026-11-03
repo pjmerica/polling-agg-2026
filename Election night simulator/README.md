@@ -220,13 +220,17 @@ How it runs:
 - **The record, for a 2026 replay** (user: "save the results as they come in for future races as much as possible ...
   save states of the model"): each job's `archive/` holds every change of the tracked races' NYT files, NYT's 50 state
   pages every 10 minutes when they change (every Senate and Governor race by county, every House and legislative race
-  statewide; checked on 2024 Texas: 222 races, 254 counties), the full books, the projector's inputs (forecast,
+  statewide; checked on 2024 Texas: 222 races, 254 counties), the full books (5 levels a side, every pass and every 20 s
+  between passes since 2026-11-03, `markets_full/{date}/{venue}-{run}.csv`), the projector's inputs (forecast,
   benchmarks, early vote, state timelines, code version) and its output every 10 minutes. Every hour it is packed with a
   copy of the state folder into `night-<run>-<n>.tar.gz` and attached to the release **election-night-2026** (permanent;
   uploaded in the background, so passes don't wait). The job artifact (90 days) is the backup, kept only when a
   release upload failed (`upload_failed` in the workspace) or the job didn't finish cleanly: the next job can't start
   until this one ends, so an artifact upload would lengthen every hand-off. To rebuild the night:
-  `gh release download election-night-2026` and unpack every file into one folder.
+  `gh release download election-night-2026` and unpack every file into one folder, oldest first (a book file grows
+  through the job and is re-sent whole each hour, so the later copy holds the earlier). Before 2026-11-03 6:15 pm ET
+  the books were `{venue}.csv` and sent only in each job's first hourly upload: those keep one hour per job, and unpack
+  them per file, since every job used the same name.
 
 ## The data desk (`data_dashboard.html`, 2026-11-02)
 
