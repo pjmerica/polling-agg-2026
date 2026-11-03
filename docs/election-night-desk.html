@@ -166,6 +166,26 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 .gloss dt { font-weight: 600; font-size: 13px; color: var(--text); }
 .gloss dd { margin: 0; color: var(--muted) !important; }
 @media (max-width: 700px) { .gloss { grid-template-columns: 1fr; } .gloss dd { margin-bottom: 6px; } }
+.countview { max-width: 1250px; }
+.tl { display: grid; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.tlr { display: grid; grid-template-columns: 150px 110px 1fr; gap: 12px; padding: 6px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.45; cursor: pointer; }
+.tlr:first-child { border-top: 0; }
+.tlr:hover { background: var(--panel2); }
+.tlr .t { font: 600 12.5px var(--mono); white-space: nowrap; }
+.tlr .s { font: 600 11.5px var(--mono); color: var(--muted); }
+.tlr.past { opacity: .45; }
+.tlr.next { background: var(--panel2); box-shadow: inset 3px 0 0 var(--proj); }
+.tlnow { font: 600 11.5px var(--mono); color: var(--proj); padding: 5px 10px; border-top: 1px solid var(--line); background: rgba(180, 156, 255, .08); }
+.sgrid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); }
+.scard { scroll-margin-top: 80px; }
+.scard h3 small { color: var(--muted); font-weight: 400; font-size: 13px; }
+.scard .facts { display: flex; flex-wrap: wrap; gap: 6px; }
+.scard .lives { display: grid; gap: 5px; }
+.scard .lv { display: flex; gap: 8px; align-items: baseline; font-size: 13px; cursor: pointer; }
+.scard .lv .chip { margin-left: 0; }
+.scard .gloss dd { color: var(--text) !important; }
+.scard .gloss dt { color: var(--muted); font-weight: 600; }
+@media (max-width: 700px) { .tlr { grid-template-columns: 1fr; gap: 2px; } .sgrid { grid-template-columns: 1fr; } }
 .stview { display: grid; gap: 12px; }
 .stview[hidden] { display: none; }
 .stview h2 { margin: 6px 0 0; font-size: 15px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
@@ -192,6 +212,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
       <button id="v-flat" class="tog" aria-pressed="false">Over/under map</button>
       <button id="v-map" class="tog" aria-pressed="false">3D map</button>
       <button id="v-st" class="tog" aria-pressed="false">Splits &amp; turnout</button>
+      <button id="v-count" class="tog" aria-pressed="false">Tonight's count</button>
       <button id="v-how" class="tog" aria-pressed="false">How it works</button>
       <label class="note" for="sort">Sort</label>
       <select id="sort" class="tog">
@@ -251,6 +272,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
     <div id="map-legend" class="maplegend"></div>
   </section>
   <section id="stview" class="stview" hidden aria-label="Ticket-splitting and turnout"></section>
+  <section id="countview" class="howview countview" hidden aria-label="How the votes come in tonight"></section>
   <section id="howview" class="howview" hidden aria-label="How this page works">
     <div class="detail">
       <h3>What this is</h3>
@@ -308,6 +330,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
         <li><b>Over/under map</b>: counties blue where the Democrat (Osborn in Nebraska) is beating the share we expected there, red where the Republican is; faded until 95% counted. Click a state to zoom.</li>
         <li><b>3D map</b>: the same counties with a column on each for net votes against expectation, points over/under, or votes still out.</li>
         <li><b>Splits &amp; turnout</b>: ticket-splitting where a state has both a Senate and a Governor race (Georgia, Ohio, Kansas, Texas), and turnout against 2022 by county type.</li>
+        <li><b>Tonight's count</b>: how the votes come in, state by state: when polls close, what each state posts first, who usually leads early, which way the count moves and when a lead means something. An hour-by-hour timeline marks where the night is, and each state shows its live count beside the history.</li>
         <li><b>How it works</b>: this page.</li>
       </ul>
     </div>
@@ -1286,11 +1309,200 @@ function renderHow() {
     : cloud ? "You are looking at the cloud copy: the data comes from GitHub Actions every 2 minutes, so it works without anyone's PC."
     : "You are looking at the local copy: the data comes from the projector running on this PC (run_dashboard.cmd).";
 }
+// ---- Tonight's count: how the votes come in (from State election results/STATE_BY_STATE.md, NYT 2020-2024
+// timelines, state law and AP previews; early vote from the UF Election Lab tracker, Nov 2-3). Static text,
+// with each state's live count beside it.
+const CG_STATES = [
+  { st: "GA", name: "Georgia", pace: "first 7:04 pm, 90% by 10:21 pm", races: "Governor; Senate tracked for ticket-splitting", close: "7:00 pm", first: "7:03-7:15 pm", mid: "94-98% (2020: 80%)",
+    voted: "2.83M (72% of 2022's total), nearly all in person",
+    batch: "Early in-person votes and mail ballots (counties may tabulate mail from 7 am today). About four in five counties post all or almost all of them before any Election Day votes (AP). By law (SB 189) every county must report them by 8:00 pm, or within an hour of its last poll closing, so most of the state can be in by 8-8:30 pm.",
+    early: "The Democrat, briefly. 2024: Harris +11 in the first results, Trump +27 within the hour, then it tightened steadily to Trump +2 (AP). 2022: Abrams +9 an hour after the close (27% counted), Warnock +16.5.",
+    moves: "Toward the Republican as rural Election Day precincts report: Kemp took the lead at 8:34 pm in 2022, with 43% counted. After 9 pm metro Atlanta's last batches moved it back toward the Democrat (2024 +3.2, 2020 +15.5, 2022 barely).",
+    read: "Around 9:30-10 pm, once most Election Day precincts are in; then look at what metro Atlanta still has out.",
+    settled: "Election night or early Wednesday: races within about 2 points were called at 12:49 am (2022) and 12:46 am (2024).",
+    after: "Military/overseas ballots, provisionals and absentee cures due Fri Nov 6; counties certify Mon Nov 9. Governor within 0.5%: full hand recount, automatic under a June 2026 law (AP's note still says a candidate must request it; either way, result around Nov 18-20). A runoff (Dec 1) needs a majority miss; with two names on the ballot that's very unlikely.",
+    watch: "\"All precincts reporting\" can still be missing early votes (Chatham County, 2024). Go by the share of expected vote counted, not precincts." },
+  { st: "SC", name: "South Carolina", pace: "first 7:19 pm, half 8:50 pm, 90% 11:14 pm", races: "Senate", close: "7:00 pm (whole state)", first: "7:08-7:13 pm", mid: "85-96% (2020: 64%)",
+    voted: "1.08M (63% of 2022's total), nearly all in person",
+    batch: "Early in-person votes (Oct 19-31) first: almost every county posts some in its first update, and about half post all their mail then too (AP). Mail had to arrive by 7 pm: no grace period.",
+    early: "Can be the Democrat: Harrison led until 8:44 pm in 2020 (15% counted) and lost by 10. In 2022 the first two hours ran 7-10 points more Democratic than the final.",
+    moves: "Toward the Republican until about 10 pm. In 2020, between 11 pm and 1 am the count ran 4-6 points more Republican than the final, and late mail moved it back.",
+    read: "About 10 pm: in 2022, with 53% counted, the count was within 4 points of the final. A Graham lead under about 3 points at midnight isn't safe if a lot of mail is still out.",
+    settled: "Election night (2020 Senate called 9:58 pm).",
+    after: "County canvass Fri Nov 6. Automatic recount at a margin of 1% or less.",
+    watch: "The Republican is Darline Graham, appointed after Lindsey Graham's death; four names on the ballot." },
+  { st: "OH", name: "Ohio", pace: "first 7:36 pm, half 9:01 pm, 90% 11:03 pm", races: "Governor; Senate special", close: "7:30 pm", first: "7:37-7:39 pm", mid: "95-96%",
+    voted: "1.73M (41% of 2022's total)",
+    batch: "Every county releases all or almost all early and absentee votes first, before any Election Day votes, and must upload absentee totals by 8:00 pm. The early electorate ran about 27 points more Democratic than at this point in 2024 (CNN, Oct 11).",
+    early: "The Democrats (Acton, Brown), probably by more than usual. 2024 Senate: Brown +4.5 an hour after the close; 2022: Ryan +13.2.",
+    moves: "Toward the Republican as Election Day precincts come in. The Republican took the lead at 8:57 pm (2024 Senate), 9:28 pm (2022 Senate) and 10:00 pm (2020 President).",
+    read: "9:30-10:30 pm, when Election Day precincts are mostly in. Before that neither lead means much.",
+    settled: "A race decided by 3-4+ points is called 11 pm-12:30 am.",
+    after: "Only provisionals remain (about 138,000 in 2024): the mail grace period ended in March. Provisional voters have to Sat Nov 7. Automatic recount under 0.25%.",
+    watch: "Both races are on the same ballots, so they move together; the Splits & turnout tab shows the gap between them." },
+  { st: "MI", name: "Michigan", pace: "first 8:06 pm, half 12:12 am, last update 4:40 am", races: "Senate", close: "8:00 pm (4 western UP counties 9:00)", first: "8:03-8:20 pm", mid: "46-50%",
+    voted: "2.44M (54% of 2022's total), 1.75M by mail",
+    batch: "A mix of mail, early and Election Day votes. Wayne, Oakland, Macomb, Kent, Genesee and Washtenaw release relatively little in their first updates. Cities could process absentees for 8 days before, so early batches may be bigger than in the past.",
+    early: "2024: the Democrat for about 2.5 hours (Slotkin +12.6 an hour after the close), the Republican overnight (Rogers from 10:44 pm), the Democrat again Wednesday morning (7:31 am). 2020: the Republican until Wednesday.",
+    moves: "Toward the Democrat after midnight: 3.5-13.6 points in every top race 2020-2024, as Detroit and the big suburban counties finish.",
+    read: "Not tonight. Even in 2024, the calmest year, a Rogers lead of 3 points at midnight would have flipped.",
+    settled: "AP calls nothing statewide before 9 pm (the western UP). Wednesday midday to afternoon (2024 Senate: 3:12 pm Wed). A wide race can go early (2022 Governor, +10.5: 1:26 am).",
+    after: "Military/overseas ballots to Nov 9; county canvass by Nov 17. Automatic recount at 0.1% or less.",
+    watch: "Flint skipped early processing in the August primary and reported the next morning." },
+  { st: "TX", name: "Texas", pace: "first 8:00 pm, half 8:29 pm, 90% 12:17 am", races: "Senate; Governor", close: "8:00 pm (El Paso, Hudspeth 9:00)", first: "8:00-8:09 pm", mid: "84-91%",
+    voted: "7.74M, <b>95% of 2022's whole turnout</b>",
+    batch: "Early in-person and mail votes, all or nearly all in the first update. With this much already cast, the first hour brings most of the vote (62-67% counted an hour after the close in 2020 and 2024).",
+    early: "The Democrat until about 8:30-8:40 pm (Allred to 8:34 in 2024, O'Rourke to 8:37 in 2022). 2020 President: Biden led until 9:29 pm with 75% counted and lost by 5.6.",
+    moves: "Toward the Republican all evening. The rest of the count moved 8.5-18.6 points from 8:30 pm, 3.8-6.7 from 9 pm and 1.9-3.6 from 10 pm.",
+    read: "Talarico needs about 7+ points at 9:00 pm, or 4+ at 10:00 pm, to be safe; the same for Hinojosa against Abbott. AP calls no statewide race before 9 pm.",
+    settled: "Election night. Under about 2 points, after midnight: Harris County (Houston) counts centrally and has run to 1-2 am.",
+    after: "Mail postmarked by Election Day counts to 5 pm Wed Nov 4; provisionals reviewed to Nov 13; local canvass by Nov 17. Late ballots matter only within about 0.5 points.",
+    watch: "Both races are on the same ballots and move together." },
+  { st: "KS", name: "Kansas", pace: "first 8:10 pm, half 9:48 pm, 97% by 3:45 am", races: "Senate; Governor", close: "8:00 pm (Mountain-time counties up to 9:00)", first: "8:08-8:10 pm", mid: "80-92%",
+    voted: "470K (47% of 2022's total); registered 192K D / 204K R / 75K other",
+    batch: "Advance (early and mail) ballots from almost every county. About a third of counties also post all their Election Day votes in the first update; more than half post none (AP).",
+    early: "The Democrat, until about 9:35-10:05 pm. At 9:30 pm the Democrat led every top race 2020-2024.",
+    moves: "Hard toward the Republican: from 9:30 pm the rest moved 17-28 points. Holland led the 2022 Senate race at 10 pm (39% counted) and lost by 23.",
+    read: "10:30 pm (about two-thirds counted): the rest still moved 4-8 points toward the Republican, so Hamilton (or Holscher) needs about 8+ points then. Kelly was +9.2 at 10:30 in 2022 and won by 2.2.",
+    settled: "5+ points: election night. 2-3 points: maybe Wednesday (2022 Governor: 1:24 pm Wed).",
+    after: "Mail postmarked by Nov 3 counts if it arrives by Fri Nov 6 (a court restored the grace period; about 0.2% of the vote in 2024). Sedgwick County (Wichita) adds Election Day drop-box ballots Wednesday afternoon. No automatic recount.",
+    watch: "\"Registered\" is who voted early, not how they voted." },
+  { st: "ME", name: "Maine", pace: "first 8:44 pm, half 12:54 am, 90% 3:13 pm Wed", races: "Senate (ranked-choice)", close: "8:00 pm", first: "8:08-8:44 pm", mid: "29-63%",
+    voted: "300K absentee (44% of 2022's total); registered 140K D / 69K R / 91K other",
+    batch: "Whatever towns report first: about 500 towns count and report on their own, with no live state feed (NYT collects them).",
+    early: "Whoever leads the early towns. Collins will likely look better early than at the end.",
+    moves: "Toward the non-Republican: 4-8 points after the first two hours, in every race we have (2020-2024).",
+    read: "Not tonight. Counting stops in the small hours and resumes Wednesday (2024: about 90% by 3 pm Wed).",
+    settled: "First round Wed/Thu. A first-round win needs more than 50% of <b>all</b> ballots, blanks included, and six declared write-ins make it ranked-choice. If no one has it, the ranked-choice count runs in Augusta about a week later (around Nov 11-16).",
+    after: "Towns file returns within 2 business days. A free recount request at 1% or 1,000 votes or less.",
+    watch: "Our numbers are the first-round margin; Kalshi settles on the final winner. NYT reports Maine by town; the projector adds the towns into counties." },
+  { st: "IA", name: "Iowa", pace: "first 9:01 pm, half 10:33 pm, 99% by 3:20 am", races: "Senate", close: "9:00 pm", first: "9:02-9:12 pm", mid: "86-95%",
+    voted: "499K (41% of 2022's total); registered 225K D / 171K R / 103K other",
+    batch: "Mail absentees. Each county releases its absentees as one batch, only when all of them are counted (boards are staffed to finish by 11 pm ET). Most counties also post some Election Day votes at the start. Polk (Des Moines), Scott and Black Hawk post all vote types together; Linn, Johnson and Dallas post early and mail first (AP).",
+    early: "The Democrat every time, often by double digits (Franken +15.5 an hour after the close in 2022, Harris +15.3 in 2024).",
+    moves: "Toward the Republican; the Democrat's lead ended at 10:03-11:29 pm in 2020-2024.",
+    read: "About 11:00 pm (three-quarters counted): after that the rest moved under 2 points. At 10:30 pm (half counted) it still moved 4-9 points toward the Republican.",
+    settled: "Election night unless within 1-2 points; almost nothing changes after election night.",
+    after: "County canvass Nov 10. A recount only if the margin is under 0.15%.",
+    watch: "Polls closed an hour later in 2020, so 2020's times run an hour later than this year's." },
+  { st: "NE", name: "Nebraska", pace: "first 9:00 pm, half 10:55 pm, 90% 3:15 am", races: "Senate (Osborn, independent, vs Ricketts)", close: "9:00 pm (whole state)", first: "9:00-9:08 pm", mid: "61-74%",
+    voted: "237K (35% of 2022's total); registered 91K D / 105K R / 41K other",
+    batch: "Early votes from more than three-quarters of counties. Douglas (Omaha) and Lancaster (Lincoln) release few or no Election Day votes at first.",
+    early: "Osborn. In 2024 he led the 9 pm first update by 18 points with 25% counted; Fischer took the lead around 11:25 pm.",
+    moves: "Toward the Republican as rural Election Day precincts report: after 11:30 pm the rest moved 2-11 points in every top race, and after midnight still 2-9.",
+    read: "Osborn needs about 9+ points at midnight to be safe.",
+    settled: "Around midnight if it's clear (2024: 12:06 am).",
+    after: "Douglas County's leftovers (about 18,000 ballots after one recent general: provisionals and Election Day drop-box ballots) are counted later in the week and favor Osborn. Voter-ID provisionals to Nov 10. Automatic recount at 1% of the leader's votes or less.",
+    watch: "No Democrat on the ballot: Osborn is the D side on every card and map. Other independents are on the ballot too; the projector takes the strongest non-Republican." },
+  { st: "NV", name: "Nevada", pace: "first 12:54 am, half 1:02 am, 90% 8:26 pm Wed", races: "Governor", close: "10:00 pm", first: "11:50 pm-1 am", mid: "little or nothing",
+    voted: "768K (75% of 2022's total); registered 300K D / 260K R / 208K other",
+    batch: "Nothing until the last voter in line anywhere in the state has voted (state law). The first big drop (44-78% of the vote) comes around 1-2 am and mixes Republican-leaning early in-person votes with Democratic-leaning mail: Clark and Washoe post all their early in-person votes and part of the mail first, before any Election Day votes (AP).",
+    early: "2020 and 2022: the Democrat in the first big drop (2022 Senate +12.6 with 44% counted). 2024: about even.",
+    moves: "Overnight toward Lombardo as Election Day votes post; his numbers look best Wednesday morning. Then toward Ford Wed-Sat: Election Day drop-offs (about 55,000 in Clark, not counted on election night), late mail and cures moved every top race 1.6-3.5 points toward the Democrat after election night (2020-2024).",
+    read: "Wednesday morning, and even then only part of it: in 2024 Nevada reached 90% only at 8:26 pm ET Wednesday. A Lombardo lead under about 25,000-30,000 votes (2-2.5 points) is at risk; a larger one should hold.",
+    settled: "Friday or Saturday (AP, 2020-2024). Washoe posts at noon and 5 pm PT each day; Clark posted around 8 pm PT in 2024.",
+    after: "Postmarked mail to 5 pm PT Sat Nov 7; signature cures to Mon Nov 9; the mail count must finish Tue Nov 10; county canvass Nov 13. No automatic recount.",
+    watch: "Two Fords on the ballot: Aaron Ford (D) and Danielle Ford (no party). The tracker follows NYT's candidate ID, so it reads Aaron. \"None of these candidates\" is shown but never wins." },
+  { st: "AK", name: "Alaska", pace: "first 1:07 am, half 2:07 am, ~75% by 7:15 am", races: "Senate (ranked-choice)", close: "midnight (Adak 1:00 am)", first: "12:45-1:10 am", mid: "none (polls close at midnight)",
+    voted: "99K (37% of 2022's total)",
+    batch: "First choices from Election Day precincts and early in-person voting. Most mail is counted on Nov 10, 13 and 18.",
+    early: "Sullivan, usually: the mail counted later leans Democratic.",
+    moves: "Toward Peltola as mail is counted: about 2 points in 2022 and 2024, about 15 in mail-heavy 2020.",
+    read: "Not tonight: in 2024 the night ended at 7:15 am ET with about 75% counted. A Peltola deficit of a few points at 3-4 am ET is consistent with a toss-up.",
+    settled: "Nov 18: the last count and, if no one has 50% + 1, the ranked-choice tabulation. Calls in 2020 and 2022 came Nov 11-23.",
+    after: "Domestic mail postmarked by Election Day counts to Nov 13, overseas to Nov 18; certification target Nov 25. No cure process.",
+    watch: "Two Sullivans: Dan S. Sullivan (R, incumbent) and Daniel J. Sullivan Jr. (no party on the ballot), plus Heikes (R). Their second choices should mostly go to the incumbent, so a first-round Peltola lead can shrink in the ranked-choice count. Our number is the first-round margin from the statewide projector (results are by House district); Kalshi pays on the final winner." },
+];
+// [days after Election Day, ET time, label (null: from the time), states, what happens]
+const CG_TIMELINE = [
+  [0, "19:00", null, "GA SC", "Polls close in Georgia and South Carolina. First votes in 3-15 minutes: the early vote, leaning Democratic."],
+  [0, "19:30", null, "OH", "Polls close in Ohio. First votes around 7:37 pm: early and absentee votes, leaning Democratic."],
+  [0, "20:00", null, "MI TX KS ME", "Polls close in Michigan, Texas, Kansas and Maine (Michigan's western UP, El Paso and Kansas's Mountain-time counties at 9). Georgia's early vote and Ohio's absentees are due in by now."],
+  [0, "20:30", "8:30-8:40 pm", "TX", "Texas: the Democrat's early lead usually ends here (2020 President: 9:29 pm)."],
+  [0, "20:34", "8:30-9:40 pm", "GA", "Georgia: the Republican usually overtakes as Election Day precincts report (2022 Governor: 8:34 pm, 43% counted)."],
+  [0, "20:57", "9:00-10:00 pm", "OH", "Ohio: the Republican took the lead at 8:57 pm (2024 Senate), 9:28 pm (2022) and 10:00 pm (2020)."],
+  [0, "21:00", null, "IA NE TX", "Polls close in Iowa and Nebraska. AP's earliest Texas call. Texas checkpoint: Talarico needs about 7+ points."],
+  [0, "21:35", "9:35-10:05 pm", "KS", "Kansas: the Democrat's lead usually ends."],
+  [0, "22:00", null, "NV TX", "Polls close in Nevada (nothing posts until the last voter in line has voted). Texas checkpoint: Talarico needs about 4+ points."],
+  [0, "22:03", "10:00-11:30 pm", "IA", "Iowa: the Democrat's lead ends (10:03-11:29 pm in 2020-2024)."],
+  [0, "22:30", null, "KS", "Kansas checkpoint: Hamilton or Holscher needs about 8+ points."],
+  [0, "22:44", null, "MI", "Michigan 2024: Rogers took the lead here and held it overnight. A late Republican lead tonight is not the final."],
+  [0, "23:00", null, "IA", "Iowa: the real read (three-quarters counted; after this the rest moved under 2 points)."],
+  [0, "23:25", null, "NE", "Nebraska 2024: Osborn's lead ended about here."],
+  [0, "23:50", "11:50 pm-1 am", "NV", "Nevada: first votes; the first big drop around 1-2 am."],
+  [1, "00:00", null, "AK NE MI ME", "Polls close in Alaska. Midnight checkpoints: Osborn needs about 9+ points; Michigan is only about half counted; Maine 29-63%."],
+  [1, "00:45", "12:45-1:10 am", "AK", "Alaska: first results (Election Day and early in-person first choices)."],
+  [1, "07:30", null, "MI NV", "Wednesday morning: Michigan's late Detroit-area vote moves toward the Democrat (Slotkin retook the lead at 7:31 am in 2024). Lombardo's best moment in Nevada."],
+  [1, "15:00", "afternoon", "MI KS ME", "Michigan call likely (2024: 3:12 pm). Kansas: Sedgwick County's drop-box update. Maine around 90% counted."],
+  [1, "17:00", null, "TX", "Texas's late-mail deadline (postmarked by Election Day)."],
+  [3, "12:00", null, "GA KS NV", "Kansas grace-period mail, Georgia's cures and provisionals due; Nevada's no-postmark deadline. Nevada calls have come Fri-Sat."],
+  [4, "20:00", null, "NV", "5 pm PT: Nevada's postmarked-mail deadline. 2022's decisive Clark County drop came about 9:15 pm ET on the Saturday."],
+  [7, "12:00", null, "AK ME", "Alaska counts mail (Nov 10, 13, 18; ranked-choice tabulation Nov 18). Maine's ranked-choice count, if needed, around Nov 11-16."],
+];
+function cgTime(d, hm) {                // ET on election night is EST (UTC-5) in both 2024 and 2026
+  const [y, m, dd] = ((D && D.date) || "2026-11-03").split("-").map(Number);
+  const [h, mi] = hm.split(":").map(Number);
+  return new Date(Date.UTC(y, m - 1, dd + d, h + 5, mi));
+}
+function renderCount() {
+  const el = document.getElementById("countview");
+  const now = REPLAY && D ? new Date(D.generated) : new Date();
+  let h = `<div class="detail"><h3>How the votes come in</h3><ul>
+    <li><b>Votes arrive in batches.</b> Each update is one county posting one kind of vote. A batch's lean mostly tells you what kind of vote it is and where it's from, not who is winning.</li>
+    <li><b>Early first, then the Republican catches up:</b> Georgia, South Carolina, Ohio, Texas, Kansas, Iowa and Nebraska post their early and mail votes first. Those lean Democratic, so the Democrat (Osborn in Nebraska) leads early and the lead shrinks as Election Day precincts report.</li>
+    <li><b>Late count, then the Democrat catches up:</b> Michigan (Detroit and the big suburbs report late), Maine (small towns, slow), Nevada (Election Day drop-offs and late mail for days) and Alaska (mail counted Nov 10-18). Georgia's last metro Atlanta batches have also moved toward the Democrat.</li>
+    <li><b>Expect bigger early leads than usual.</b> More of the early vote is Democratic than in 2024 (Ohio's about 27 points more), and the early vote is huge (Texas has already cast 95% of its 2022 turnout). Don't read an early lead as a landslide.</li>
+    <li><b>Go by expected vote, not precincts.</b> "% counted" on this page is NYT's share of the expected vote. A county can show every precinct in and still be missing its early vote.</li>
+    <li><b>The projector is built for this.</b> It compares each county with what that county should show for a given statewide result, and a county only counts fully once it's mostly counted (a half-counted county is usually one kind of vote). So "on screen" gets fooled by the order the votes come in; the projection much less so. Where counties don't line up (Alaska), it uses each state's 2020-2024 count curves.</li>
+    <li><b>For Kalshi:</b> the market knows these patterns too. "The Republican will catch up in Texas" is priced in. The edge is a state whose counties run ahead of or behind what they should (Over/under map), or a market that over-reacts to one batch.</li>
+  </ul></div>`;
+  // the timeline, with where the night is
+  const items = CG_TIMELINE.map(([d, hm, lab, st, txt]) => ({ t: cgTime(d, hm), d, lab, st, txt }));
+  let tl = "", marked = false;
+  for (const it of items) {
+    const past = it.t <= now, next = !past && !marked;
+    if (next) { marked = true; tl += `<div class="tlnow">Now · ${etTime(now.toISOString(), true)}</div>`; }
+    const when = it.lab ? (it.d ? it.t.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short" }) + " " : "") + it.lab
+      : it.d >= 2 ? it.t.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" })
+      : etTime(it.t.toISOString(), it.d > 0).replace(" ET", "").replace(/ (AM|PM)$/, m => m.toLowerCase());
+    const cls = past ? " past" : next ? " next" : "";
+    tl += `<div class="tlr${cls}" data-st="${it.st.split(" ")[0]}"><span class="t">${when}</span><span class="s">${it.st.replace(/ /g, " · ")}</span><span>${it.txt}</span></div>`;
+  }
+  if (!marked) tl += `<div class="tlnow">Now · ${etTime(now.toISOString(), true)}</div>`;
+  h += `<div class="detail"><h3>Tonight, hour by hour <small class="note">(ET; times from 2020-2024 are what happened then, not promises)</small></h3><div class="tl">${tl}</div></div>`;
+  // the states
+  h += `<div class="sgrid">`;
+  for (const s of CG_STATES) {
+    const rs = D ? D.races.filter(r => stOf(r) === s.st) : [];
+    let live = rs.map(r => {
+      const stt = status(r), p = proj(r);
+      return `<div class="lv" data-race="${esc(r.race)}"><span class="chip ${stt.c}">${esc(stt.t)}</span><b>${esc(r.office)}</b>` +
+        (r.pct > 0 ? `<span>on screen ${marTxt(r.margin, r)} · projected ${p ? marTxt(p.proj, r) : "–"}</span>` : "") + `</div>`;
+    }).join("");
+    h += `<div class="detail scard" id="cs-${s.st}"><h3>${s.name} <small>${s.races}</small></h3>
+      <div class="facts"><span class="pill">Polls close <b>${s.close}</b></span><span class="pill">First votes <b>${s.first}</b></span><span class="pill">Counted by midnight <b>${s.mid}</b></span><span class="pill">2024 <b>${s.pace}</b></span><span class="pill">Already voted <b>${s.voted}</b></span></div>
+      ${live ? `<div class="lives">${live}</div>` : ""}
+      <dl class="gloss">
+        <dt>First batch</dt><dd>${s.batch}</dd>
+        <dt>Leads early</dt><dd>${s.early}</dd>
+        <dt>Then moves</dt><dd>${s.moves}</dd>
+        <dt>The real read</dt><dd>${s.read}</dd>
+        <dt>Settled</dt><dd>${s.settled}</dd>
+        <dt>After tonight</dt><dd>${s.after}</dd>
+        <dt>Watch out</dt><dd>${s.watch}</dd>
+      </dl></div>`;
+  }
+  h += `</div>`;
+  h += `<p class="note">Times are Eastern. "Counted by midnight" is the range in NYT's 2020-2024 timelines. "Already voted" is the UF Election Lab tracker as of Nov 2-3 (each state's own files), against each state's total 2022 vote; "registered" is the early voters' party registration, not how they voted. \"2024\" is AP's own timing (AP Decision Notes, Oct 30, 2026). The patterns come from NYT's 2020-2024 count timelines, state law and AP's previews (State election results/STATE_BY_STATE.md has the sources). Each year differs with turnout mix, law changes and staffing: these are the usual shapes, not promises.${REPLAY ? " This guide is written for Nov 3, 2026; in the replay the timeline runs on the 2024 night's clock." : ""}</p>`;
+  el.innerHTML = h;
+}
 function showView(v) {
-  for (const [id, k] of [["v-cards", "cards"], ["v-flat", "flat"], ["v-map", "map"], ["v-st", "st"], ["v-how", "how"]])
+  for (const [id, k] of [["v-cards", "cards"], ["v-flat", "flat"], ["v-map", "map"], ["v-st", "st"], ["v-count", "count"], ["v-how", "how"]])
     document.getElementById(id).setAttribute("aria-pressed", v === k);
   document.getElementById("howview").hidden = v !== "how";
   if (v === "how") renderHow();          // static text: no data needed
+  document.getElementById("countview").hidden = v !== "count";
+  if (v === "count") renderCount();      // mostly static; the live lines fill in once data arrives
   document.getElementById("flatview").hidden = v !== "flat";
   document.getElementById("mapview").hidden = v !== "map";
   document.getElementById("stview").hidden = v !== "st";
@@ -1302,6 +1514,13 @@ document.getElementById("v-cards").addEventListener("click", () => setView("card
 document.getElementById("v-map").addEventListener("click", () => setView("map"));
 document.getElementById("v-st").addEventListener("click", () => setView("st"));
 document.getElementById("v-how").addEventListener("click", () => setView("how"));
+document.getElementById("v-count").addEventListener("click", () => setView("count"));
+document.getElementById("countview").addEventListener("click", e => {
+  const lv = e.target.closest(".lv[data-race]");
+  if (lv) { setView("cards"); ui.sel = null; select(lv.dataset.race); return; }
+  const r = e.target.closest(".tlr[data-st]"), c = r && document.getElementById("cs-" + r.dataset.st);
+  if (c) c.scrollIntoView({ behavior: "smooth", block: "start" });
+});
 document.getElementById("v-flat").addEventListener("click", () => setView("flat"));
 document.getElementById("flat-states").addEventListener("click", e => { const b = e.target.closest("button[data-st]"); if (b) { ui.flatSt = b.dataset.st; renderFlat(); } });
 document.getElementById("flat-office").addEventListener("click", e => { const b = e.target.closest("button[data-office]"); if (b) { ui.office = b.dataset.office; renderFlat(); } });
@@ -1318,6 +1537,7 @@ function render(refit) {
   if (ui.view === "map") renderMap(refit === true);
   else if (ui.view === "st") renderST();
   else if (ui.view === "how") renderHow();
+  else if (ui.view === "count") renderCount();
   else if (ui.view === "flat") renderFlat();
   else g.innerHTML = D.races.length ? sorted(D.races).map(card).join("") : `<div class="empty">No races in the data file.</div>`;
   if (!document.activeElement || document.activeElement.id !== "cf") renderDetail();

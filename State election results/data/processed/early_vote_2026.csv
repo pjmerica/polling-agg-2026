@@ -1,13 +1,13 @@
 state,abbv,as_of,voted,pct_of_2022,turnout_2022,mail_requested,mail_returned,in_person,dem,rep,other,source,file
-Georgia,GA,11/2/2026,2826388,71.3,3964926,156139,121275,2705113,0,0,0,https://mvp.sos.ga.gov/s/voter-absentee-files,US_2026-11-02.csv
-South Carolina,SC,11/2/2026,1084542,63.1,1718626,57098,40732,1043810,0,0,0,https://scvotes.gov/elections-statistics/voter-participation/,US_2026-11-02.csv
-Ohio,OH,11/2/2026,1728899,41.2,4201368,730152,625647,1103252,0,0,0,https://data.ohiosos.gov/portal/election-dashboards,US_2026-11-02.csv
-Michigan,MI,11/2/2026,2313206,51.4,4500400,2184656,1628714,684492,0,0,0,Data provided by Michigan Secretary of State,US_2026-11-02.csv
-Texas,TX,11/02/2026,7736594,94.9,8151590,270349,270349,7466245,0,0,0,https://goelect.txelections.civixapps.com/ivis-evr-ui/evr,US_2026-11-02.csv
-Kansas,KS,11/2/2026,470170,46.6,1008998,108022,77986,392184,192007,203502,74661,Kansas Secretary of State,US_2026-11-02.csv
-Maine,ME,11/2/2026,300491,44.1,680909,320474,300491,0,140212,68886,91393,https://www.maine.gov/sos/cec/elec/data/index.html,US_2026-11-02.csv
-Iowa,IA,11/2/2026,464008,37.7,1230417,161779,149325,314683,213835,156900,93273,Iowa Secretary of State,US_2026-11-02.csv
-Nebraska,NE,11/2/2026,237135,34.7,682716,247561,189692,47443,91001,104872,41262,Data file provided by Nebraska Secretary of State,US_2026-11-02.csv
-Nevada,NV,11/2/2026,732715,71.6,1023617,2091499,424696,308019,289895,246681,196139,https://www.nvsos.gov/elections/election-information/vivid-project,US_2026-11-02.csv
-Oregon,OR,11/2/2026,1294451,64.8,1997689,3117439,1294451,0,534509,401636,358306,https://sos.oregon.gov/elections/Documents/2026-general-election-unofficial-ballot-returns.pdf,US_2026-11-02.csv
-Alaska,AK,11/1/2026,90570,33.9,267047,49964,32308,58262,0,0,0,https://www.elections.alaska.gov/research/statistics/#aeqstats,US_2026-11-02.csv
+Georgia,GA,11/3/2026,2834893,71.5,3964926,156269,129773,2705120,0,0,0,https://mvp.sos.ga.gov/s/voter-absentee-files,US_2026-11-03.csv
+South Carolina,SC,11/2/2026,1084542,63.1,1718626,57098,40732,1043810,0,0,0,https://scvotes.gov/elections-statistics/voter-participation/,US_2026-11-03.csv
+Ohio,OH,11/2/2026,1728899,41.2,4201368,730152,625647,1103252,0,0,0,https://data.ohiosos.gov/portal/election-dashboards,US_2026-11-03.csv
+Michigan,MI,11/3/2026,2444449,54.3,4500400,2189090,1745903,698546,0,0,0,Data provided by Michigan Secretary of State,US_2026-11-03.csv
+Texas,TX,11/02/2026,7736594,94.9,8151590,270349,270349,7466245,0,0,0,https://goelect.txelections.civixapps.com/ivis-evr-ui/evr,US_2026-11-03.csv
+Kansas,KS,11/2/2026,470170,46.6,1008998,108022,77986,392184,192007,203502,74661,Kansas Secretary of State,US_2026-11-03.csv
+Maine,ME,11/2/2026,300491,44.1,680909,320474,300491,0,140212,68886,91393,https://www.maine.gov/sos/cec/elec/data/index.html,US_2026-11-03.csv
+Iowa,IA,11/3/2026,498713,40.5,1230417,161763,153727,344986,224625,171130,102958,Iowa Secretary of State,US_2026-11-03.csv
+Nebraska,NE,11/2/2026,237135,34.7,682716,247561,189692,47443,91001,104872,41262,Data file provided by Nebraska Secretary of State,US_2026-11-03.csv
+Nevada,NV,11/3/2026,767886,75.0,1023617,2091906,445205,322681,300466,259548,207872,https://www.nvsos.gov/elections/election-information/vivid-project,US_2026-11-03.csv
+Oregon,OR,11/3/2026,1505694,75.4,1997689,3117439,1505694,0,612415,462306,430973,https://sos.oregon.gov/elections/Documents/2026-general-election-unofficial-ballot-returns.pdf,US_2026-11-03.csv
+Alaska,AK,11/2/2026,99424,37.2,267047,50428,35092,64332,0,0,0,https://www.elections.alaska.gov/research/statistics/#aeqstats,US_2026-11-03.csv
