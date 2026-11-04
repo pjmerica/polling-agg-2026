@@ -3,8 +3,10 @@
 Kalshi keeps candles after a market settles, so this fills what wasn't recorded live and can be re-run at any time:
     winner markets, House + Senate + Governor, by the minute:
       py kalshi_backfill.py --out DIR --start 2026-11-03T00:00:00Z --period 1
-    the same by the hour, back through the campaign (a request holds at most 5,000 candles):
-      py kalshi_backfill.py --out DIR --start 2026-04-15T00:00:00Z --period 60
+    the same by the hour, back through the campaign:
+      py kalshi_backfill.py --out DIR --start 2026-01-01T00:00:00Z --period 60
+    --end stops earlier than now. Each run reaches up to the moment it runs, so re-run it to extend. A request holds at most
+    5,000 candles, so long ranges are fetched in chunks. Minutes without activity have no candle.
     margin markets:
       py kalshi_backfill.py --out DIR --start 2026-11-03T00:00:00Z --period 1 --series KXMIDTERMMOV KXGENERALMOV KXAKMOV
 Columns: end_ts, yes bid/ask (close), last price (close), volume, open interest.
@@ -90,11 +92,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--start", required=True)
+    ap.add_argument("--end", help="default: now")
     ap.add_argument("--period", type=int, default=1, choices=(1, 60, 1440), help="minutes per candle")
     ap.add_argument("--series", nargs="*", help="these series instead of the winner markets")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    start, end = calendar.timegm(time.strptime(a.start[:19], "%Y-%m-%dT%H:%M:%S")), int(time.time())
+    stamp = lambda x: calendar.timegm(time.strptime(x[:19], "%Y-%m-%dT%H:%M:%S"))
+    start, end = stamp(a.start), stamp(a.end) if a.end else int(time.time())
+    chunk = 4800 * a.period * 60
     events = [e for s in a.series for e in series_events(s)] if a.series else winner_events()
     print(len(events), "events", flush=True)
     done = rows = 0
@@ -106,9 +111,13 @@ def main():
             if t in seen:
                 continue
             seen.add(t)
-            j = get(f"{KALSHI}/series/{series}/markets/{t}/candlesticks?start_ts={start}&end_ts={end}&period_interval={a.period}")
-            time.sleep(0.07)
-            cs = (j or {}).get("candlesticks") or []
+            cs, t0 = [], start
+            while t0 < end:
+                j = get(f"{KALSHI}/series/{series}/markets/{t}/candlesticks?start_ts={t0}&end_ts={min(t0 + chunk, end)}&period_interval={a.period}")
+                time.sleep(0.07)
+                cs += (j or {}).get("candlesticks") or []
+                t0 += chunk
+            cs = list({c.get("end_period_ts"): c for c in cs}.values())    # a chunk's edge can repeat
             meta.append(dict(event=e["event_ticker"], ticker=t, side=m.get("yes_sub_title"), status=m.get("status"), result=m.get("result"), candles=len(cs)))
             if not cs:
                 continue
