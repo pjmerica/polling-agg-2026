@@ -62,6 +62,63 @@ RACES = {
     "NV-Gov": ("GOVPARTYNV-26", "nevada-governor-winner-2026"),
     "OR-Gov": ("GOVPARTYOR-26", "oregon-governor-winner-2026"),
     "TX-Gov": ("GOVPARTYTX-26", "texas-governor-winner-2026"),
+    # every other Senate and Governor race (2026-11-03); None = no market found (KY-Sen on Kalshi; AK-Gov is
+    # per candidate under ranked choice, left out)
+    "AK-Gov": (None, None),
+    "AL-Gov": ("GOVPARTYAL-26", "alabama-governor-winner-2026"),
+    "AL-Sen": ("SENATEAL-26", "alabama-senate-election-winner-154"),
+    "AR-Gov": ("GOVPARTYAR-26", "arkansas-governor-winner-2026"),
+    "AR-Sen": ("SENATEAR-26", "arkansas-senate-election-winner"),
+    "AZ-Gov": ("GOVPARTYAZ-26", "arizona-governor-winner-2026"),
+    "CA-Gov": ("GOVPARTYCA-26", "california-governor-election-2026"),
+    "CO-Gov": ("GOVPARTYCO-26", "colorado-governor-winner-2026"),
+    "CO-Sen": ("SENATECO-26", "colorado-senate-election-winner"),
+    "CT-Gov": ("GOVPARTYCT-26", "connecticut-governor-winner-2026"),
+    "DE-Sen": ("SENATEDE-26", "delaware-senate-election-winner"),
+    "FL-Gov": ("GOVPARTYFL-26", "florida-governor-winner-2026"),
+    "FL-Sen": ("SENATEFLS-26", "florida-senate-election-winner"),
+    "HI-Gov": ("GOVPARTYHI-26", "hawaii-governor-winner-2026"),
+    "IA-Gov": ("GOVPARTYIA-26", "iowa-governor-winner-2026"),
+    "ID-Gov": ("GOVPARTYID-26", "idaho-governor-winner-2026"),
+    "ID-Sen": ("SENATEID-26", "idaho-senate-election-winner"),
+    "IL-Gov": ("GOVPARTYIL-26", "illinois-governor-winner-2026"),
+    "IL-Sen": ("SENATEIL-26", "illinois-senate-election-winner"),
+    "KY-Sen": (None, "kentucky-senate-election-winner"),
+    "LA-Sen": ("SENATELA-26", "louisiana-senate-election-winner"),
+    "MA-Gov": ("GOVPARTYMA-26", "massachusetts-governor-winner-2026"),
+    "MA-Sen": ("SENATEMA-26", "massachusetts-senate-election-winner"),
+    "MD-Gov": ("GOVPARTYMD-26", "maryland-governor-winner-2026"),
+    "ME-Gov": ("GOVPARTYME-26", "maine-governor-winner-2026"),
+    "MI-Gov": ("GOVPARTYMI-26", "michigan-governor-winner-2026"),
+    "MN-Gov": ("GOVPARTYMN-26", "minnesota-governor-winner-2026"),
+    "MN-Sen": ("SENATEMN-26", "minnesota-senate-election-winner"),
+    "MS-Sen": ("SENATEMS-26", "mississippi-senate-election-winner"),
+    "MT-Sen": ("SENATEMT-26", "montana-senate-election-winner"),
+    "NC-Sen": ("SENATENC-26", "north-carolina-senate-election-winner"),
+    "NE-Gov": ("GOVPARTYNE-26", "nebraska-governor-winner-2026"),
+    "NH-Gov": ("GOVPARTYNH-28", "new-hampshire-governor-winner-2026"),
+    "NH-Sen": ("SENATENH-26", "new-hampshire-senate-election-winner"),
+    "NJ-Sen": ("SENATENJ-26", "new-jersey-senate-election-winner"),
+    "NM-Gov": ("GOVPARTYNM-26", "new-mexico-governor-winner-2026"),
+    "NM-Sen": ("SENATENM-26", "new-mexico-senate-election-winner"),
+    "NY-Gov": ("GOVPARTYNY-26", "new-york-governor-winner-2026"),
+    "OK-Gov": ("GOVPARTYOK-26", "oklahoma-governor-winner-2026"),
+    "OK-Sen": ("SENATEOK-26", "oklahoma-senate-election-winner"),
+    "OR-Sen": ("SENATEOR-26", "oregon-senate-election-winner"),
+    "PA-Gov": ("GOVPARTYPA-26", "pennsylvania-governor-winner-2026"),
+    "RI-Gov": ("GOVPARTYRI-26", "rhode-island-governor-winner-2026"),
+    "RI-Sen": ("SENATERI-26", "rhode-island-senate-election-winner"),
+    "SC-Gov": ("GOVPARTYSC-26", "south-carolina-governor-winner-2026"),
+    "SD-Gov": ("GOVPARTYSD-26", "south-dakota-governor-winner-2026"),
+    "SD-Sen": ("SENATESD-26", "south-dakota-senate-election-winner"),
+    "TN-Gov": ("GOVPARTYTN-26", "tennessee-governor-winner-2026"),
+    "TN-Sen": ("SENATETN-26", "tennessee-senate-election-winner"),
+    "VA-Sen": ("SENATEVA-26", "virginia-senate-election-winner"),
+    "VT-Gov": ("GOVPARTYVT-26", "vermont-governor-winner-2026"),
+    "WI-Gov": ("GOVPARTYWI-26", "wisconsin-governor-winner-2026"),
+    "WV-Sen": ("SENATEWV-26", "west-virginia-senate-election-winner"),
+    "WY-Gov": ("GOVPARTYWY-26", "wyoming-governor-winner-2026"),
+    "WY-Sen": ("SENATEWY-26", "wyoming-senate-election-winner"),
     # chamber control: the whole night's news in one price, a check on the state markets
     "US-Senate": ("CONTROLS-2026", "which-party-will-win-the-senate-in-2026"),
     "US-House": ("CONTROLH-2026", "which-party-will-win-the-house-in-2026"),
@@ -109,18 +166,22 @@ def discover(races, prev=None):
     for race, (kev, pslug) in races.items():
         found = []
         try:
+            if not kev:
+                raise LookupError("no Kalshi event")
             ev = get(f"{KALSHI}/events/{kev}?with_nested_markets=true")["event"]
             for m in ev["markets"]:
                 if m.get("status") in KALSHI_KEEP:
                     found.append(dict(race=race, ticker=m["ticker"],
                                       outcome=m.get("yes_sub_title") or m.get("title")))
+        except LookupError:
+            pass
         except Exception as e:
             print(f"discover {race} kalshi {kev}: {e}")
         kal += found or [m for m in pk if m["race"] == race]
         time.sleep(KALSHI_GAP)
         found = []
         try:
-            for ev in get(f"{GAMMA}/events?slug={pslug}"):
+            for ev in (get(f"{GAMMA}/events?slug={pslug}") if pslug else []):
                 for m in ev["markets"]:
                     # placeholders ("Candidate C", "Party A") never have a bid
                     if (not m.get("active") or m.get("closed")

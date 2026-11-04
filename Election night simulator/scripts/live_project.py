@@ -61,8 +61,7 @@ SD_FLOOR = 0.4          # points: rounding, late corrections, provisional ballot
 # (2026-10-28; pulling g toward 0 when years disagree lowered the miss but raised both scores).
 SD_SCALE = 2.0
 
-ABBR = {"AK": "alaska", "GA": "georgia", "IA": "iowa", "KS": "kansas", "ME": "maine", "MI": "michigan",
-        "NE": "nebraska", "NV": "nevada", "OH": "ohio", "OR": "oregon", "SC": "south-carolina", "TX": "texas"}
+from capture_live import STATE_SLUG as ABBR     # every state (2026-11-03); history covers 12 of them
 OFFICE = {"Sen": "Senate", "Gov": "Governor"}
 REP = {"republican", "gop", "rep"}
 
@@ -155,6 +154,9 @@ def project(hist, state, pct, margin, prior_mu=None, prior_sd=PRIOR_SD, skip_yea
     """-> dict(mu, sd, p_win, count_mu, count_sd, steady)."""
     lean = lean_at(hist, state, pct, skip_year) if pct < 99.5 else (0.0, 0.0, [], True)
     steady = None
+    if lean is None and state not in hist and pct > 0:    # a state without count history (2026-11-03, every race
+        # tracked): no lean, the all-state spread
+        lean = (0.0, SD_SCALE * math.sqrt(pooled_var(hist, pct, skip_year)), [], None)
     if lean is None:                                      # before the first historical point
         c_mu, c_sd = margin, 60.0
     else:
@@ -177,7 +179,7 @@ def load_forecast():
     return {r["id"]: r for r in races}
 
 
-FC_ID = {"OH-Sen": "2026_OH_Senate-S"}     # Ohio's Senate race is the special election
+FC_ID = {"OH-Sen": "2026_OH_Senate-S", "FL-Sen": "2026_FL_Senate-S"}     # both states' Senate races are specials
 # Our margin model's error as a standard deviation: held-out 2018-24 margin MAE 4.85 (model repo HANDOFF,
 # 2026-10-29) x 1.25 (sd / MAE for a normal error). Its published win chance comes from a separate model and
 # can disagree (GA-Gov: +1.2 margin, 78% win); the projector forecasts margins, so it starts from the margin.
@@ -255,12 +257,13 @@ def early_vote():
 
 
 def bench_record(race_key):
-    """The race's entry in State election results/data/processed/county_benchmarks.json (the competitive races)
-    or county_benchmarks_extra.json (tracked for the splits view only: GA Senate), or None."""
+    """The race's entry in State election results/data/processed/county_benchmarks.json (the competitive races),
+    county_benchmarks_extra.json (tracked for the splits view only: GA Senate) or county_benchmarks_all.json (every
+    other Senate and Governor race, benchmarks_all.py), or None."""
     global _bench
     if _bench is None:
         _bench = {}
-        for name in ("county_benchmarks.json", "county_benchmarks_extra.json"):
+        for name in ("county_benchmarks_all.json", "county_benchmarks_extra.json", "county_benchmarks.json"):
             p = os.path.join(RESULTS, "data", "processed", name)
             if os.path.exists(p):
                 _bench.update({r["id"]: r for r in json.load(open(p, encoding="utf-8"))["races"]})
@@ -370,7 +373,9 @@ def load_markets(date):
         for race, g in df.groupby("race"):
             d = g[g.side == "D"]
             if d.market.nunique() > 1:
-                top = d.groupby("market").bid.mean().idxmax()
+                # a settled race's contracts can have no bids at all (2026-11-03): idxmax on all-NaN raised and
+                # stopped every race's projection
+                top = d.groupby("market").bid.mean().fillna(-1).idxmax()
                 g = g[(g.side == "R") | (g.market == top)]
             out.setdefault(race, {})[venue] = g
     return out
@@ -464,8 +469,11 @@ def best_trade(p_win, books):
 
 # ---------- modes ----------
 
-RACES = ["GA-Gov", "GA-Sen", "SC-Sen", "OH-Gov", "OH-Sen", "MI-Sen", "TX-Sen", "TX-Gov", "KS-Sen", "KS-Gov",
-         "ME-Sen", "IA-Sen", "NE-Sen", "NV-Gov", "AK-Sen"]     # poll-closing order
+# every 2026 Senate and Governor race since 2026-11-03 (user: "put in all the senate races, all the governors
+# races, even the ones that are settled now"), in poll-closing order
+RACES = ["KY-Sen", "FL-Gov", "FL-Sen", "GA-Gov", "GA-Sen", "SC-Gov", "SC-Sen", "VA-Sen", "VT-Gov", "AR-Gov", "AR-Sen", "NC-Sen", "OH-Gov", "OH-Sen", "WV-Sen", "AL-Gov", "AL-Sen", "CT-Gov", "DE-Sen", "IL-Gov", "IL-Sen", "KS-Gov", "KS-Sen", "MA-Gov", "MA-Sen", "MD-Gov", "ME-Gov", "ME-Sen", "MI-Gov", "MI-Sen", "MS-Sen", "NH-Gov", "NH-Sen", "NJ-Sen", "OK-Gov", "OK-Sen", "PA-Gov", "RI-Gov", "RI-Sen", "SD-Gov", "SD-Sen", "TN-Gov", "TN-Sen", "TX-Gov", "TX-Sen", "AZ-Gov", "CO-Gov", "CO-Sen", "IA-Gov", "IA-Sen", "LA-Sen", "MN-Gov", "MN-Sen", "NE-Gov", "NE-Sen", "NM-Gov", "NM-Sen", "NY-Gov", "WI-Gov", "WY-Gov", "WY-Sen", "ID-Gov", "ID-Sen", "MT-Sen", "NV-Gov", "CA-Gov", "OR-Gov", "OR-Sen", "AK-Gov", "AK-Sen", "HI-Gov"]
+# Until 2026-11-03: GA-Gov, GA-Sen, SC-Sen, OH-Gov, OH-Sen, MI-Sen, TX-Sen, TX-Gov, KS-Sen, KS-Gov, ME-Sen, IA-Sen,
+# NE-Sen, NV-Gov, AK-Sen.
 # OR-Gov dropped from live tracking 2026-10-30 (user call); capture_markets.py still records its prices.
 # GA-Sen added 2026-11-02 (user: monitor split-ticket voting, "especially for georgia/texas"): Ossoff is safe, but
 # against the Governor race on the same ballots it measures splitting.
@@ -646,6 +654,11 @@ HIST_COLS = ["ts_utc", "pct", "margin", "v1_proj", "v1_sd", "p_v1", "v0_proj", "
 # been writing since the day before; keeping those hours only thinned the night's points and tripled the file).
 NIGHT_FROM = "T21:00:00Z"
 HIST_MAX = 400
+# the races added 2026-11-03 (every Senate/Governor race) keep fewer points: 71 races at 400 would make the file
+# the pages fetch every 30 s several MB
+HIST_FULL = {"GA-Gov", "GA-Sen", "SC-Sen", "OH-Gov", "OH-Sen", "MI-Sen", "TX-Sen", "TX-Gov", "KS-Sen", "KS-Gov",
+             "ME-Sen", "IA-Sen", "NE-Sen", "NV-Gov", "AK-Sen"}
+HIST_MAX_OTHER = 120
 
 
 def write_dashboard(a, now, cards, mk):
@@ -659,8 +672,9 @@ def write_dashboard(a, now, cards, mk):
         hist = hist[hist.ts_utc.astype(str) >= night]
     for c in cards:
         h = hist[hist.race == c["race"]].reindex(columns=HIST_COLS)
-        if len(h) > HIST_MAX:                  # keep the page light: thin to ~400 points, always the latest
-            h = pd.concat([h.iloc[:: -(-len(h) // HIST_MAX)], h.iloc[[-1]]]).drop_duplicates("ts_utc")
+        cap = HIST_MAX if c["race"] in HIST_FULL else HIST_MAX_OTHER
+        if len(h) > cap:                       # keep the page light: thin to ~cap points, always the latest
+            h = pd.concat([h.iloc[:: -(-len(h) // cap)], h.iloc[[-1]]]).drop_duplicates("ts_utc")
         c["history"] = [{k: (None if v != v else v) for k, v in r.items()} for r in h.to_dict("records")]
     control = {}
     for key in ("US-Senate", "US-House"):

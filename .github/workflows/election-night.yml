@@ -44,6 +44,7 @@ jobs:
             State election results/data/processed/state_timeseries.csv
             State election results/data/processed/county_benchmarks.json
             State election results/data/processed/county_benchmarks_extra.json
+            State election results/data/processed/county_benchmarks_all.json
             State election results/data/processed/early_vote_2026.csv
             Election night simulator/scripts
 

@@ -149,7 +149,8 @@ def save_inputs(archive):
     os.makedirs(d, exist_ok=True)
     res = os.path.join(REPO, "State election results", "data", "processed")
     for src in (os.path.join(REPO, "docs", "forecast_data.js"), os.path.join(res, "county_benchmarks.json"),
-                os.path.join(res, "county_benchmarks_extra.json"), os.path.join(res, "early_vote_2026.csv"),
+                os.path.join(res, "county_benchmarks_extra.json"), os.path.join(res, "county_benchmarks_all.json"),
+                os.path.join(res, "early_vote_2026.csv"),
                 os.path.join(res, "state_timeseries.csv")):
         if os.path.exists(src):
             with open(src, "rb") as f, gzip.open(os.path.join(d, os.path.basename(src) + ".gz"), "wb") as g:

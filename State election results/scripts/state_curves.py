@@ -28,7 +28,17 @@ PROC = os.path.join(ROOT, "data", "processed")
 # Iowa closed at 9 p.m. CT (10 p.m. ET) until 2021 (SF 413 moved it to 8 p.m. from 2022).
 CLOSE_ET = {"georgia": 19.0, "ohio": 19.5, "michigan": 20.0, "texas": 20.0, "kansas": 20.0,
             "maine": 20.0, "iowa": 21.0, "nebraska": 21.0, "nevada": 22.0, "oregon": 23.0, "south-carolina": 19.0,
-            "alaska": 24.0}
+            "alaska": 24.0,
+            # every other state (2026-11-03: the desk tracks every Senate and Governor race): when most of the
+            # state's polls close, ET; states across two time zones close in the later zone an hour on
+            "alabama": 20.0, "arizona": 21.0, "arkansas": 19.5, "california": 23.0, "colorado": 21.0,
+            "connecticut": 20.0, "delaware": 20.0, "florida": 19.0, "hawaii": 24.0, "idaho": 22.0, "illinois": 20.0,
+            "indiana": 18.0, "kentucky": 18.0, "louisiana": 21.0, "maryland": 20.0, "massachusetts": 20.0,
+            "minnesota": 21.0, "mississippi": 20.0, "missouri": 20.0, "montana": 22.0, "new-hampshire": 20.0,
+            "new-jersey": 20.0, "new-mexico": 21.0, "new-york": 21.0, "north-carolina": 19.5, "north-dakota": 21.0,
+            "oklahoma": 20.0, "pennsylvania": 20.0, "rhode-island": 20.0, "south-dakota": 20.0, "tennessee": 20.0,
+            "utah": 22.0, "vermont": 19.0, "virginia": 19.0, "washington": 23.0, "west-virginia": 19.5,
+            "wisconsin": 21.0, "wyoming": 21.0}
 CHECKPOINTS = [0.5, 1, 1.5, 2, 3, 4, 5, 6, 9, 15, 24, 48]  # hours after poll close
 REP = {"republican", "gop", "rep"}
 ELECTION_DAY = {2020: dt.date(2020, 11, 3), 2022: dt.date(2022, 11, 8), 2024: dt.date(2024, 11, 5)}
