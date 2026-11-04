@@ -145,6 +145,27 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
 #flatmap .fo { fill: #141a23; stroke: #2a3342; stroke-width: .6px; vector-effect: non-scaling-stroke; cursor: pointer; }
 #flatmap .fc { stroke: #0c1016; stroke-width: .4px; vector-effect: non-scaling-stroke; cursor: pointer; }
 #flatmap .fc:hover { stroke: #e7ebf1; stroke-width: 1.4px; }
+#flatmap .fc.hl { stroke: #e7ebf1; stroke-width: 2px; }
+#ftip { position: fixed; z-index: 50; width: 310px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 6px; padding: 9px 11px; color: var(--text); pointer-events: none; box-shadow: 0 4px 16px rgba(0, 0, 0, .4); }
+#ftip[hidden] { display: none; }
+.ctip { font: 12.5px/1.45 var(--sans); }
+.ctip h5 { margin: 0; font-size: 14px; }
+.ctip .sub { color: var(--muted); margin-bottom: 5px; }
+.ctip .cbar { height: 6px; background: #2a3342; border-radius: 3px; overflow: hidden; margin: 3px 0 6px; }
+.ctip .cbar i { display: block; height: 100%; background: #c9d1dc; }
+.ctip .kv { display: grid; grid-template-columns: auto 1fr; gap: 1px 12px; }
+.ctip .kv span { color: var(--muted); text-transform: none; letter-spacing: normal; font-size: 12.5px; }
+.ctip .kv b { font-family: var(--mono); font-size: 12px; font-weight: 500; text-align: right; }
+.ctip .kv b.pos { color: var(--dem); } .ctip .kv b.neg { color: var(--rep); }
+.ctip .kv .gap { grid-column: 1 / -1; border-top: 1px solid var(--line); margin: 3px 0 1px; }
+.ctip .fine { color: var(--faint); margin-top: 5px; font-size: 11.5px; }
+.mapwrap.wide { grid-template-columns: minmax(0, 1fr) 390px; }
+.keyc { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.keyc th { color: var(--faint); font-weight: 500; text-align: right; padding: 2px 3px; border-bottom: 1px solid var(--line); }
+.keyc td { font-family: var(--mono); text-align: right; padding: 2px 3px; border-bottom: 1px solid var(--line); }
+.keyc th:first-child, .keyc td:first-child { text-align: left; font-family: var(--sans); }
+.keyc tr[data-f] { cursor: default; } .keyc tr[data-f]:hover td { background: #1a2230; }
+.keyc td.pos { color: var(--dem); } .keyc td.neg { color: var(--rep); }
 #flatmap .fs { fill: none; stroke: #8e99aa; stroke-width: 1.1px; vector-effect: non-scaling-stroke; pointer-events: none; }
 .mapside b.pos { color: var(--dem); } .mapside b.neg { color: var(--rep); }
 .mapside small { color: var(--faint); font-weight: 400; }
@@ -286,6 +307,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
     </div>
     <div class="mapwrap"><div id="flatmap"></div><div id="flat-side" class="mapside"></div></div>
     <div id="flat-legend" class="maplegend"></div>
+    <div id="ftip" class="ctip" hidden></div>
   </section>
   <section id="mapview" class="mapview" hidden aria-label="3D county map">
     <div class="mapbar">
@@ -364,7 +386,7 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
       <h3>The tabs</h3>
       <ul>
         <li><b>Cards</b>: one card per race. Projected final margin with its 80% band, win chance, votes counted and left, what the trailing candidate needs, county over/under, the buy signal and both Kalshi sides. Click a card for charts through the night and the county table.</li>
-        <li><b>Over/under map</b>: counties blue where the Democrat (Osborn in Nebraska) is beating the share we expected there, red where the Republican is; faded until 95% counted. Click a state to zoom.</li>
+        <li><b>Over/under map</b>: counties blue where the Democrat (Osborn in Nebraska) is beating the share we expected there, red where the Republican is; faded until 95% counted. Hover a county for its votes, the share expected there, over/under, net votes and votes left. Click a state to zoom: the side panel then lists its 12 biggest counties (where the votes are), and hovering a row outlines it on the map.</li>
         <li><b>3D map</b>: the same counties with a column on each for net votes against expectation, points over/under, or votes still out.</li>
         <li><b>Splits &amp; turnout</b>: ticket-splitting where a state has both a Senate and a Governor race (Georgia, Ohio, Kansas, Texas), and turnout against 2022 by county type.</li>
         <li><b>Tonight's count</b>: how the votes come in, state by state: when polls close, what each state posts first, who usually leads early, which way the count moves and when a lead means something. An hour-by-hour timeline marks where the night is, and each state shows its live count beside the history.</li>
@@ -1018,6 +1040,44 @@ async function ensureGeo() {
   } finally { flatLoading = false; }
 }
 function ouDev(c) { return c && c.share != null && c.exp != null ? 100 * (c.share - c.exp) : null; }
+/* The county hover card (Over/under and 3D maps): the votes in, what we expected there, and how far off it is.
+   dv / rv (each side's votes) come from jobs started after 2026-11-03 7:30 pm ET; before that the card shows
+   the two-party shares only. */
+function countyTip(c, r) {
+  const pc = v => v == null ? "–" : (100 * v).toFixed(1) + "%";
+  const dn = last(r.d_name), rn = last(r.r_name), dev = ouDev(c);
+  const lead = m => Math.abs(m) < 0.05 ? "tied" : `${m > 0 ? dn : rn} +${Math.abs(m).toFixed(1)}`;
+  const cls = v => v > 0 ? "pos" : v < 0 ? "neg" : "";
+  const total = (c.votes || 0) + (c.left || 0);
+  const src = REPLAY ? "the market at poll close" : "our model";
+  let h = `<h5>${esc(c.n)}</h5><div class="sub">${esc(r.state)} ${esc(r.office)} · ${pc(c.w)} of the state's vote</div>`;
+  h += `<div class="kv"><span>Counted</span><b>${(c.pct || 0).toFixed(0)}% · ${fmtInt(c.votes || 0)} of ~${fmtInt(total)}</b></div>`;
+  h += `<div class="cbar"><i style="width:${Math.min(100, c.pct || 0).toFixed(1)}%"></i></div><div class="kv">`;
+  if (c.share != null) {
+    if (c.dv != null && c.rv != null) {
+      h += `<span>${esc(dn)}</span><b>${fmtInt(c.dv)} · ${pc(c.share)}</b><span>${esc(rn)}</span><b>${fmtInt(c.rv)} · ${pc(1 - c.share)}</b>`;
+    } else {
+      h += `<span>${esc(dn)}</span><b>${pc(c.share)}</b><span>${esc(rn)}</span><b>${pc(1 - c.share)}</b>`;
+    }
+    h += `<span>Margin so far</span><b class="${cls(2 * c.share - 1)}">${lead(100 * (2 * c.share - 1))}</b>`;
+  } else {
+    h += `<span>Votes</span><b>${c.votes ? "too few to read" : "not reporting yet"}</b>`;
+  }
+  h += `<i class="gap"></i>`;
+  if (c.exp != null) h += `<span>Expected here</span><b>${lead(100 * (2 * c.exp - 1))}</b>`;
+  h += `<span>Tie statewide needs</span><b>${esc(dn)} ${pc(c.tie)}</b>`;
+  if (dev != null) {
+    h += `<span>Over/under</span><b class="${cls(dev)}">${Math.abs(dev) < 0.5 ? "as expected" : (dev > 0 ? esc(dn) : esc(rn)) + " +" + Math.abs(dev).toFixed(1) + " pts"}</b>`;
+    if (c.net != null) h += `<span>Net vs expected</span><b class="${cls(c.net)}">${c.net === 0 ? "0" : (c.net > 0 ? esc(dn) : esc(rn)) + " +" + fmtInt(Math.abs(c.net))} votes</b>`;
+  }
+  h += `<span>Votes left</span><b>~${fmtInt(c.left || 0)}</b>`;
+  if (c.v22) h += `<span>Turnout 2022${c.nexp ? " / now (NYT)" : ""}</span><b>${fmtInt(c.v22)}${c.nexp ? " / " + fmtInt(c.nexp) : ""}</b>`;
+  h += `</div>`;
+  h += `<div class="fine">Shares are of the two-party vote. Expected: the county's usual lean, shifted so the state lands on ${src}.` +
+    (c.share != null && c.pct < 95 ? " Part-counted: mostly one kind of vote so far (early/mail first in most states)." : "") + `</div>`;
+  return h;
+}
+let flatIdx = new Map();
 function ouFill(d) {
   const t = Math.max(-1, Math.min(1, d / OU_FULL)), k = Math.sqrt(Math.abs(t));
   const base = [64, 70, 84], tgt = t > 0 ? C_D : C_R;
@@ -1038,11 +1098,14 @@ async function renderFlat() {
   if (one) { const b = one, p = 0.04 * Math.max(b[2] - b[0], b[3] - b[1]); vb = [b[0] - p, b[1] - p, b[2] - b[0] + 2 * p, b[3] - b[1] + 2 * p]; }
   let svg = `<svg viewBox="${vb.map(v => +v.toFixed(1)).join(" ")}" role="img" aria-label="Over/under by county">`;
   for (const [st, v] of Object.entries(g.states)) svg += `<path d="${v.d}" class="fo" data-st="${st}"/>`;
-  const side = [];
+  const side = [], keys = [];
+  flatIdx = new Map();
   for (const r of races) {
     const v = g.states[stOf(r)];
     if (!v || !v.counties) continue;
     const byF = new Map(r.track.counties.map(c => [c.f, c]));
+    for (const c of r.track.counties) flatIdx.set(r.race + "|" + c.f, [c, r]);
+    if (one) keys.push(keyCounties(r));
     let nShown = 0, nDone = 0;
     for (const [f, d] of Object.entries(v.counties)) {
       const c = byF.get(f), dev = ouDev(c);
@@ -1050,12 +1113,7 @@ async function renderFlat() {
       if (c && c.pct >= 95) nDone++;
       if (show) nShown++;
       const op = show ? Math.min(1, 0.35 + 0.65 * c.pct / 95) : 1;
-      const tip = !c ? "no data" : dev == null ? `${c.n}: not reporting yet` :
-        `${c.n}: ${Math.round(c.pct)}% counted · ${last(r.d_name)} ${(100 * c.share).toFixed(1)}% of the two-party vote vs ${(100 * c.exp).toFixed(1)}% expected · ` +
-        `${Math.abs(dev) < 0.5 ? "as expected" : (dev > 0 ? last(r.d_name) : last(r.r_name)) + " ahead of expectation by " + Math.abs(dev).toFixed(1) + " pts"}` +
-        (c.net != null ? ` · net ${c.net >= 0 ? "+" : "−"}${fmtInt(Math.abs(c.net))} votes for ${c.net >= 0 ? last(r.d_name) : last(r.r_name)}` : "") +
-        (c.pct < 95 ? " (part-counted: mostly one kind of vote so far)" : "");
-      svg += `<path d="${d}" class="fc" data-st="${stOf(r)}" fill="${show ? ouFill(dev) : "#1c232e"}" fill-opacity="${op.toFixed(2)}"><title>${esc(tip)}</title></path>`;
+      svg += `<path d="${d}" class="fc" data-st="${stOf(r)}" data-race="${esc(r.race)}" data-f="${f}" fill="${show ? ouFill(dev) : "#1c232e"}" fill-opacity="${op.toFixed(2)}"/>`;
     }
     svg += `<path d="${v.d}" class="fs" data-st="${stOf(r)}"/>`;
     const t = r.track, imp = t.implied, exp = t.expected;
@@ -1065,9 +1123,11 @@ async function renderFlat() {
   }
   svg += `</svg>`;
   document.getElementById("flatmap").innerHTML = svg;
+  document.querySelector("#flatview .mapwrap").classList.toggle("wide", !!one);
   document.getElementById("flat-side").innerHTML = `<h4>Net votes vs expected</h4>` +
     (side.length ? side.join("") : `<p class="note">No tracked race has county data yet.</p>`) +
-    `<p class="note">Net votes: the non-Republican's votes ahead (+) of what our model expected in the counties counted so far. Click a race for its detail.</p>`;
+    `<p class="note">Net votes: the non-Republican's votes ahead (+) of what our model expected in the counties counted so far. Click a race for its detail.</p>` +
+    keys.join("") + (one ? "" : `<p class="note">Click a state for the counties that matter there.</p>`);
   document.getElementById("flat-legend").innerHTML =
     `<span><i style="background:${ouFill(-OU_FULL)}"></i>Republican ahead of expectation (${OU_FULL}+ pts)</span>` +
     `<span><i style="background:${ouFill(-3)}"></i>3 pts</span><span><i style="background:${ouFill(0)}"></i>as expected</span>` +
@@ -1075,6 +1135,26 @@ async function renderFlat() {
     `<span><i style="background:#1c232e"></i>not reporting</span><span>Faded: under 95% counted</span>`;
 }
 function mtxtPts(m, r) { return m == null ? "–" : `${m >= 0 ? last(r.d_name) : last(r.r_name)} +${Math.abs(m).toFixed(1)}`; }
+/* Zoomed into a state: its counties that matter, the biggest share of the state's vote first (where the
+   votes are, so where the race is decided), with how each is running against expectation. */
+const KEY_N = 12;
+function keyCounties(r) {
+  const cs = r.track.counties.slice().sort((a, b) => (b.w || 0) - (a.w || 0)).slice(0, KEY_N);
+  const dn = last(r.d_name), sg = v => (v >= 0.05 ? "+" : v <= -0.05 ? "−" : "") + Math.abs(v).toFixed(1);
+  const cls = v => v > 0 ? "pos" : v < 0 ? "neg" : "";
+  const top = cs.reduce((s, c) => s + (c.w || 0), 0);
+  let h = `<h4 style="margin-top:6px">Counties that matter: ${esc(r.state)} ${esc(r.office)}</h4>` +
+    `<p class="note" style="margin:0">The ${cs.length} biggest hold ${(100 * top).toFixed(0)}% of the state's vote. + = ${esc(dn)} ahead of expectation. Hover a row to find it on the map.</p>` +
+    `<table class="keyc"><thead><tr><th>County</th><th>Of state</th><th>Counted</th><th>Over/under</th><th>Net</th><th>Left</th></tr></thead><tbody>`;
+  for (const c of cs) {
+    const dev = ouDev(c);
+    h += `<tr data-race="${esc(r.race)}" data-f="${c.f}"><td>${esc(c.n)}</td><td>${(100 * (c.w || 0)).toFixed(1)}%</td><td>${(c.pct || 0).toFixed(0)}%</td>` +
+      `<td class="${dev == null ? "" : cls(dev)}">${dev == null ? "–" : sg(dev)}</td>` +
+      `<td class="${c.net == null ? "" : cls(c.net)}">${c.net == null ? "–" : (c.net > 0 ? "+" : c.net < 0 ? "−" : "") + fmtInt(Math.abs(c.net))}</td>` +
+      `<td>${fmtInt(c.left || 0)}</td></tr>`;
+  }
+  return h + `</tbody></table>`;
+}
 
 function metricOf(c) {
   if (ui.metric === "left") return c.left || 0;
@@ -1130,12 +1210,8 @@ function mapLayers(shown) {
 function tooltip({ object }) {
   if (!object) return null;
   const c = object.rec || object, r = c.race;
-  const pc = v => v == null ? "–" : (100 * v).toFixed(1) + "%";
-  const dev = c.share != null && c.exp != null ? 100 * (c.share - c.exp) : null;
-  return { html: `<b>${esc(c.n)}</b> · ${esc(r.state)} ${esc(r.office)}<br>Counted ${c.pct.toFixed(0)}% · ${fmtInt(c.votes)} votes · ${fmtInt(c.left)} left<br>` +
-      `${last(r.d_name)} share ${pc(c.share)} vs expected ${pc(c.exp)} (tie needs ${pc(c.tie)})<br>` +
-      `Over/under ${dev == null ? "–" : (dev > 0 ? "+" : "") + dev.toFixed(1) + " pts"} · net vs expected ${c.net == null ? "–" : (c.net > 0 ? "+" : "") + fmtInt(c.net)}`,
-    style: { background: "#131922", color: "#e7ebf1", border: "1px solid #2f3a4a", borderRadius: "6px", padding: "8px 10px", maxWidth: "320px" } };
+  return { html: `<div class="ctip">${countyTip(c, r)}</div>`,
+    style: { background: "#131922", color: "#e7ebf1", border: "1px solid #2f3a4a", borderRadius: "6px", padding: "9px 11px", width: "310px" } };
 }
 function mapSide(shown) {
   const rows = shown.map(r => {
@@ -1670,6 +1746,31 @@ document.getElementById("flat-office").addEventListener("click", e => { const b 
 document.getElementById("flat-done").addEventListener("change", e => { ui.flatDone = e.target.checked; renderFlat(); });
 document.getElementById("flatmap").addEventListener("click", e => { const p = e.target.closest("path[data-st]"); if (p && GEO && GEO.box[p.dataset.st] && ui.flatSt !== p.dataset.st) { ui.flatSt = p.dataset.st; renderFlat(); } });
 document.getElementById("flat-side").addEventListener("click", e => { const r = e.target.closest(".row[data-race]"); if (r) select(r.dataset.race); });
+const fTip = document.getElementById("ftip");
+function placeTip(el, e) {
+  const b = el.getBoundingClientRect();
+  el.style.left = (e.clientX + 16 + b.width > innerWidth ? e.clientX - b.width - 12 : e.clientX + 16) + "px";
+  el.style.top = Math.max(6, Math.min(e.clientY + 14, innerHeight - b.height - 6)) + "px";
+}
+document.getElementById("flatmap").addEventListener("mousemove", e => {
+  const p = e.target.closest("path.fc[data-f]"), hit = p && flatIdx.get(p.dataset.race + "|" + p.dataset.f);
+  if (!hit) { fTip.hidden = true; return; }
+  if (fTip.dataset.k !== p.dataset.race + "|" + p.dataset.f + "|" + D.generated) {
+    fTip.innerHTML = countyTip(hit[0], hit[1]);
+    fTip.dataset.k = p.dataset.race + "|" + p.dataset.f + "|" + D.generated;
+  }
+  fTip.hidden = false;
+  placeTip(fTip, e);
+});
+document.getElementById("flatmap").addEventListener("mouseleave", () => { fTip.hidden = true; });
+function flatHL(row, on) {
+  const p = row && document.querySelector(`#flatmap path.fc[data-race="${CSS.escape(row.dataset.race)}"][data-f="${CSS.escape(row.dataset.f)}"]`);
+  if (!p) return;
+  p.classList.toggle("hl", on);
+  if (on) p.parentNode.appendChild(p);       // on top, so the outline shows
+}
+document.getElementById("flat-side").addEventListener("mouseover", e => flatHL(e.target.closest("tr[data-f]"), true));
+document.getElementById("flat-side").addEventListener("mouseout", e => flatHL(e.target.closest("tr[data-f]"), false));
 
 function render(refit) {
   if (!D) return;

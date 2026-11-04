@@ -337,6 +337,7 @@ def tracking(nyt, race_key, v1res, m0, p_close):
                              exp=round(exp_, 4) if exp_ is not None else None, tie=round(tie, 4),
                              net=round(net) if net is not None else None,
                              left=round(max(expected - u["total"], 0)), votes=u["total"],
+                             dv=u["d"] if u["total"] else None, rv=u["r"] if u["total"] else None,
                              v22=bc.get(f, {}).get("v"), nexp=u["expected"] or None))
     return dict(implied=implied, implied_sd=sd, expected=m0[0] if m0 else None,
                 market=PRIOR_SD * phi_inv(p_close) if p_close is not None else None,
