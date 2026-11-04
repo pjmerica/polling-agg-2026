@@ -62,9 +62,9 @@ RACES = {
     "NV-Gov": ("GOVPARTYNV-26", "nevada-governor-winner-2026"),
     "OR-Gov": ("GOVPARTYOR-26", "oregon-governor-winner-2026"),
     "TX-Gov": ("GOVPARTYTX-26", "texas-governor-winner-2026"),
-    # every other Senate and Governor race (2026-11-03); None = no market found (KY-Sen on Kalshi; AK-Gov is
-    # per candidate under ranked choice, left out)
-    "AK-Gov": (None, None),
+    # every other Senate and Governor race (2026-11-03); None = no market found (KY-Sen on Kalshi: its SENATEKY series has no events;
+    # AK-Gov on Polymarket)
+    "AK-Gov": ("KXGOVPARTYAK-26", None),      # the party market; Kalshi's KXGOVAK-26 is per candidate
     "AL-Gov": ("GOVPARTYAL-26", "alabama-governor-winner-2026"),
     "AL-Sen": ("SENATEAL-26", "alabama-senate-election-winner-154"),
     "AR-Gov": ("GOVPARTYAR-26", "arkansas-governor-winner-2026"),

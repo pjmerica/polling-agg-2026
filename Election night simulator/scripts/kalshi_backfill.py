@@ -17,17 +17,13 @@ import csv
 import gzip
 import json
 import os
-import sys
+import re
 import time
 import urllib.error
 import urllib.request
 
 KALSHI = "https://api.elections.kalshi.com/trade-api/v2"
 UA = {"User-Agent": "polling-agg election record"}
-HERE = os.path.dirname(os.path.abspath(__file__))
-STATES = ("AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD "
-          "TN TX UT VT VA WA WV WI WY").split()
-MANY_SEATS = {"CA": 52, "TX": 38, "FL": 28, "NY": 26, "PA": 17, "IL": 17, "OH": 15, "GA": 14, "NC": 14, "MI": 13, "NJ": 12, "VA": 11}
 
 
 def get(url):
@@ -67,23 +63,17 @@ def one_event(ev):
 
 
 def winner_events():
-    """Every House event (KXHOUSERACE, and the older per-district events), then each Senate and Governor race's."""
-    events = series_events("KXHOUSERACE")
-    for st in STATES:
-        seats = MANY_SEATS.get(st, 10)
-        for n in ["AL"] + [str(i) for i in range(1, seats + 1)]:
-            for ev in (f"HOUSE{st}{n}-26", f"KXHOUSE{st}{n}-26"):
-                e = one_event(ev)
-                if e:
-                    events.append(e)
-                time.sleep(0.07)
-    sys.path.insert(0, HERE)
-    sys.path.insert(0, os.path.join(HERE, "..", "..", "State election results", "scripts"))
-    import capture_markets
-    for kev, _ in capture_markets.RACES.values():
-        e = one_event(kev) if kev else None
-        if e:
-            events.append(e)
+    """Every 2026 House, Senate and Governor winner market, from Kalshi's own series list rather than guessed tickers
+    (HOUSEPA7, KXHOUSEPA07, KXHOUSEUT01, KXHOUSERACE, HOUSECA40, SENATEOHS, GOVPARTYAK, KXGOVPARTYAK, KXGOVAK ...). Cycle: -26,
+    plus the Governor races Kalshi names by a later year (GOVPARTYKS-27, GOVPARTYNH-28). Primaries, nominee and combo series
+    don't match. Kentucky Senate: Kalshi's SENATEKY series has no events."""
+    race = re.compile(r"^(?:KX)?(?:HOUSE(?:RACE)?(?:[A-Z]{2}(?:\d{1,2}|AL))?|SENATE[A-Z]{2}S?|GOV(?:PARTY)?[A-Z]{2})$")
+    later = {"GOVPARTYKS-27", "GOVPARTYNH-28"}
+    names = [x["ticker"] for x in (get(f"{KALSHI}/series") or {}).get("series", []) if race.match(x["ticker"])]
+    print(len(names), "series", flush=True)
+    events = []
+    for name in names:
+        events += [e for e in series_events(name) if e["event_ticker"].endswith("-26") or e["event_ticker"] in later]
         time.sleep(0.07)
     return events
 
