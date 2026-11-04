@@ -2,12 +2,20 @@
 you can on polymarket and kalshi. And save the price history"). Run by .github/workflows/market-archive.yml in parallel
 shards; each shard's tar.gz goes to the release election-night-2026 as it grows.
 
-  kalshi      every market in Kalshi's Elections category that closes on or after --since (about 21,000): by the hour from
-              --hour-start, by the minute from --minute-start. Columns: end_ts, bid, ask, price, volume, open_interest.
-  polymarket  every market in events tagged elections or midterms ending on or after --since: the YES token's whole history by
-              the hour (Polymarket keeps roughly the last month at that fidelity), by the minute from --minute-start.
-              Columns: ts, price. It has no bid or ask history. Its event list stops at an offset of about 2,100 per tag and
-              closed/open state, newest end dates first, so older closed events can be missing.
+  kalshi      every market in Kalshi's Elections category that closes on or after --since: by the hour from --hour-start, by
+              the minute from --minute-start, and by the minute over the last 9 days of any market that closed before that
+              (a primary's final days and night). Columns: end_ts, bid, ask, price, volume, open_interest.
+  polymarket  every market in events with one of TAGS ending on or after --since: the YES token's whole life by the hour, by
+              the minute from --minute-start, by the minute from --core-minute-start for general-election winner markets, and
+              by the minute over the last 9 days of any market that stopped before --minute-start. Columns: ts, price. It has
+              no bid or ask history. A request for a whole history (interval=max) returns nothing finer than 12 hours on a
+              closed market, but a date range of up to 15 days returns every minute, so history is walked in 14-day ranges; the
+              daily interval=max call only finds where a market's prices start and stop. Its event list stops at an offset of
+              about 2,100 per tag and closed/open state, newest end dates first; on 2026-11-04 that reached back to November 2025.
+              A market with no price history at all is usually a placeholder ("Will Person A win ...").
+
+A request that still fails after retries counts in the index as errors, per market and per file, so a failed fetch can't pass
+for a market with no prices.
 
 Files: market_archive/{venue}/{hour,minute}/{ticker or token}.csv.gz, and index-{shard}.json (what each market is).
 
@@ -15,6 +23,7 @@ Files: market_archive/{venue}/{hour,minute}/{ticker or token}.csv.gz, and index-
 """
 import argparse
 import calendar
+import concurrent.futures
 import csv
 import gzip
 import json
@@ -32,6 +41,11 @@ GAMMA = "https://gamma-api.polymarket.com"
 CLOB = "https://clob.polymarket.com"
 UA = {"User-Agent": "polling-agg election record"}
 RELEASE = "election-night-2026"
+TAGS = ("elections", "midterms", "primaries", "global-elections", "congress", "governor", "house")
+RANGE = 14 * 86400      # the longest date range to ask Polymarket for (15 days works, 20 returns 400, at any fidelity)
+LAST_DAYS = 9 * 86400   # by the minute before a market that stopped earlier closed
+POLY_THREADS = 3        # at once per job, 8 jobs: about 70 requests a second against a published limit of 100
+WINNER = re.compile(r"-(house|senate|governor)-election-winner|-governor-winner-2026|which-party-will-win-the-house-race")
 UPLOAD_EVERY = 1800
 
 
@@ -54,6 +68,15 @@ def get(url, tries=6):
 
 def stamp(x):
     return calendar.timegm(time.strptime(x[:19], "%Y-%m-%dT%H:%M:%S"))
+
+
+def ranges(a, b, step=RANGE):
+    """[a, b] cut into consecutive ranges of at most step seconds."""
+    out = []
+    while a < b:
+        out.append((a, min(a + step, b)))
+        a += step
+    return out
 
 
 def mine(key, shard, of):
@@ -83,7 +106,7 @@ def kalshi_markets(since, shard, of):
 
 def polymarket_markets(since, shard, of):
     seen, out = set(), []
-    for tag in ("elections", "midterms"):
+    for tag in TAGS:
         for closed in ("false", "true"):
             off = 0
             while True:
@@ -101,7 +124,8 @@ def polymarket_markets(since, shard, of):
                             continue
                         if mine(tok, shard, of):
                             out.append(dict(event=e.get("slug"), title=e.get("title"), market=m.get("slug"), question=m.get("question"),
-                                            outcome=m.get("groupItemTitle"), token=tok, closed=m.get("closed"), prices=m.get("outcomePrices"), volume=m.get("volume")))
+                                            outcome=m.get("groupItemTitle"), token=tok, closed=m.get("closed"), prices=m.get("outcomePrices"), volume=m.get("volume"),
+                                            vol=float(m.get("volumeNum") or m.get("volume") or 0)))
                 off += 100
                 if len(d) < 100:
                     break
@@ -129,16 +153,54 @@ def write_kalshi(path, cs):
                         (c.get("price") or {}).get("close_dollars"), c.get("volume_fp"), c.get("open_interest_fp")])
 
 
-def poly_history(tok, q):
-    return (get(f"{CLOB}/prices-history?market={tok}&{q}") or {}).get("history") or []
+def poly_range(tok, a, b, fidelity, rec):
+    """Prices between two times, walked in 14-day ranges. A failed request counts in rec["errors"]."""
+    seen = {}
+    for x, y in ranges(a, b):
+        j = get(f"{CLOB}/prices-history?market={tok}&startTs={x}&endTs={y}&fidelity={fidelity}")
+        if j is None:
+            rec["errors"] += 1
+        for p in (j or {}).get("history") or []:
+            seen[p.get("t")] = p
+        time.sleep(0.02)
+    return [seen[t] for t in sorted(seen)]
+
+
+def poly_market(m, ms, core_ms, end, rec, v):
+    """The hour and minute files for one Polymarket market."""
+    tok = m["token"]
+    j = get(f"{CLOB}/prices-history?market={tok}&interval=max&fidelity=1440")
+    if j is None:
+        rec["errors"] += 1
+    days = (j or {}).get("history") or []
+    if days:
+        first, last = days[0]["t"] - 86400, min(days[-1]["t"] + 86400, end)
+    elif m.get("closed"):       # a closed market with no daily price never traded (or the request failed: errors says so)
+        return
+    else:                       # open and younger than a day, or nothing yet: only the recent range can hold anything
+        first, last = ms, end
+    rec["first"], rec["last"] = first, last
+    hours = poly_range(tok, first, last, 60, rec)
+    if hours:
+        write_poly(os.path.join(v, "hour", tok + ".csv.gz"), hours)
+    rec["hour"] = len(hours)
+    start = core_ms if WINNER.search(m.get("event") or "") else ms
+    if last <= start:
+        start = last - LAST_DAYS    # stopped before the minute window: its last days
+    mins = poly_range(tok, max(start, first), last, 1, rec)
+    if mins:
+        write_poly(os.path.join(v, "minute", tok + ".csv.gz"), mins)
+    rec["minute"] = len(mins)
 
 
 def write_poly(path, h):
-    with gzip.open(path, "wt", newline="", encoding="utf-8") as f:
+    tmp = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))), os.path.basename(path) + ".part")
+    with gzip.open(tmp, "wt", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["ts", "price"])
         for x in h:
             w.writerow([x.get("t"), x.get("p")])
+    os.replace(tmp, path)       # an upload running meanwhile sees whole files only
 
 
 def upload(out, name):
@@ -158,10 +220,12 @@ def main():
     ap.add_argument("--shard", type=int, default=0)
     ap.add_argument("--of", type=int, default=1)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--since", default="2026-06-01")
+    ap.add_argument("--since", default="2026-01-01")
     ap.add_argument("--hour-start", default="2026-01-01T00:00:00Z")
     ap.add_argument("--minute-start", default="2026-11-03T00:00:00Z")
+    ap.add_argument("--core-minute-start", default="2026-10-01T00:00:00Z")
     ap.add_argument("--minutes", type=float, default=330)
+    ap.add_argument("--label", default="", help="in the asset's name, so a new run doesn't replace a good copy until it is checked")
     ap.add_argument("--limit", type=int, help="only this many markets (test)")
     a = ap.parse_args()
     stop = time.time() + a.minutes * 60
@@ -170,46 +234,52 @@ def main():
     os.makedirs(os.path.join(v, "minute"), exist_ok=True)
     markets = kalshi_markets(a.since, a.shard, a.of) if a.venue == "kalshi" else polymarket_markets(a.since, a.shard, a.of)
     print(len(markets), "markets in this shard", flush=True)
+    if a.venue == "polymarket":
+        markets.sort(key=lambda m: -m["vol"])       # if time runs out, the least traded go
     if a.limit:
         markets = markets[:a.limit]
     hs, ms, end = stamp(a.hour_start), stamp(a.minute_start), int(time.time())
-    name = f"market-archive-{a.venue}-{a.shard + 1}of{a.of}.tar.gz"
+    core_ms = stamp(a.core_minute_start)
+    name = f"market-archive-{a.label + '-' if a.label else ''}{a.venue}-{a.shard + 1}of{a.of}.tar.gz"
     index, done, last_up, cut = [], 0, time.time(), None
     idx_path = os.path.join(v, f"index-{a.shard + 1}of{a.of}.json")
-    for i, m in enumerate(markets):
+
+    def fetch(m):
         if time.time() > stop:
-            cut = i
-            print("time up at", i, "of", len(markets), flush=True)
-            break
-        rec = dict(m, hour=0, minute=0)
+            return None
+        rec = dict(m, hour=0, minute=0, errors=0)
         if a.venue == "kalshi":
             key = re.sub(r"[^\w.-]", "_", m["ticker"])
-            for res, st, period in (("hour", hs, 60), ("minute", ms, 1)):
-                cs = kalshi_candles(m, st, end, period)
+            closed_at = stamp(m["close"]) if m.get("close") else end
+            for res, st, period in (("hour", hs, 60), ("minute", ms if closed_at > ms else closed_at - LAST_DAYS, 1)):
+                cs = kalshi_candles(m, st, min(end, closed_at + 3600), period)
                 if cs:
                     write_kalshi(os.path.join(v, res, key + ".csv.gz"), cs)
                     rec[res] = len(cs)
         else:
-            key = m["token"]
-            for res, q in (("hour", "interval=max&fidelity=60"), ("minute", f"startTs={ms}&endTs={end}&fidelity=1")):
-                h = poly_history(m["token"], q)
-                if h:
-                    write_poly(os.path.join(v, res, key + ".csv.gz"), h)
-                    rec[res] = len(h)
-                time.sleep(0.03)
-        index.append(rec)
-        done += bool(rec["hour"] or rec["minute"])
-        if (i + 1) % 500 == 0:
-            print(i + 1, "of", len(markets), "markets;", done, "with prices", flush=True)
-        if time.time() - last_up > UPLOAD_EVERY:
-            with open(idx_path, "w", encoding="utf-8") as f:
-                json.dump(dict(total=len(markets), done=i + 1, end=end, markets=index), f)
-            upload(a.out, name)
-            last_up = time.time()
+            poly_market(m, ms, core_ms, end, rec, v)
+        return rec
+
+    with concurrent.futures.ThreadPoolExecutor(POLY_THREADS if a.venue == "polymarket" else 1) as pool:
+        for i, rec in enumerate(pool.map(fetch, markets)):
+            if rec is None:
+                cut = i if cut is None else cut
+                continue
+            index.append(rec)
+            done += bool(rec["hour"] or rec["minute"])
+            if (i + 1) % 500 == 0:
+                print(i + 1, "of", len(markets), "markets;", done, "with prices;", sum(r["errors"] for r in index), "failed requests", flush=True)
+            if time.time() - last_up > UPLOAD_EVERY:
+                with open(idx_path, "w", encoding="utf-8") as f:
+                    json.dump(dict(total=len(markets), done=i + 1, end=end, markets=index), f)
+                upload(a.out, name)
+                last_up = time.time()
+    if cut is not None:
+        print("time up at", cut, "of", len(markets), flush=True)
     with open(idx_path, "w", encoding="utf-8") as f:
         json.dump(dict(total=len(markets), done=len(index), cut_at=cut, end=end, markets=index), f)
     upload(a.out, name)
-    print(f"done: {len(index)} of {len(markets)} markets, {done} with prices", flush=True)
+    print(f"done: {len(index)} of {len(markets)} markets, {done} with prices, {sum(r['errors'] for r in index)} failed requests", flush=True)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 name: Market archive
 
 # Price history for every election market on Kalshi and Polymarket, into the release election-night-2026 as
-# market-archive-{venue}-{n}of8.tar.gz (Election night simulator/scripts/market_archive.py). By hand only; re-run when
-# the count is done, each run replaces the last copy. Start: gh workflow run market-archive.yml
+# market-archive-{label}-{venue}-{n}of8.tar.gz (Election night simulator/scripts/market_archive.py). By hand only; re-run
+# when the count is done, a run replaces the last copy with the same label. Start: gh workflow run market-archive.yml
 
 on:
   workflow_dispatch:
@@ -10,6 +10,9 @@ on:
       minute_start:
         description: 'minute prices from (UTC)'
         default: '2026-11-03T00:00:00Z'
+      label:
+        description: 'in the asset names; a new label keeps the last copy until this one is checked'
+        default: 'v2'
 
 jobs:
   archive:
@@ -37,4 +40,4 @@ jobs:
         run: >
           python "Election night simulator/scripts/market_archive.py"
           --venue ${{ matrix.venue }} --shard ${{ matrix.shard }} --of 8 --out market_archive
-          --minute-start "${{ inputs.minute_start }}" --minutes 330
+          --minute-start "${{ inputs.minute_start }}" --minutes 330 --label "${{ inputs.label }}"
