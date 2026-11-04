@@ -50,7 +50,11 @@ import capture_live  # noqa: E402
 import capture_markets  # noqa: E402
 import live_project  # noqa: E402
 
-END = dt.datetime(2026, 11, 8, 5, 0, tzinfo=dt.timezone.utc)        # Sat night after Nevada's postmark deadline
+# Through the late count (user 2026-11-04: Mississippi "will take weeks, I wanna make sure we keep recording those votes
+# as they come in"; NYT's own vote timelines stopped at 07:59 UTC on Nov 4, so later votes exist only if recorded here).
+# Was Nov 8. To go longer, change this and the date and cron in election-night.yml.
+END = dt.datetime(2026, 12, 15, 5, 0, tzinfo=dt.timezone.utc)
+LATE_FROM = dt.datetime(2026, 11, 8, 5, 0, tzinfo=dt.timezone.utc)   # from here the archive goes up every LATE_UPLOAD s
 SLOW_FROM = dt.datetime(2026, 11, 4, 18, 0, tzinfo=dt.timezone.utc)  # Wed 1 pm ET: the late counts move slowly
 # No job hand-off (about a minute without updates) inside these: a job that would end inside one ends just before
 # it instead, and the next job covers the whole window (6:20-11:50 pm ET = first poll close through Iowa/Nebraska;
@@ -66,6 +70,11 @@ PROBE = "https://static01.nyt.com/elections-assets/pages/data/2026-08-04/results
 #   nyt/{date}/{race}/{stamp}.json.gz          every change of our races' NYT files (2-minute checks)
 #   states/{date}/{state}/{stamp}.json.gz      every change of NYT's 50 state pages (10-minute checks): every Senate
 #                                              and Governor race by county, every House race statewide
+#   districts/{date}/{XX-NN}/{stamp}.json.gz   every change of each House district's own file, every pass since
+#                                              2026-11-04: its counties (towns in New England), expected votes, call,
+#                                              NYT's timeline ({races, timeseries, resultsMeta} of the file)
+# Since 2026-11-04 nyt/, states/ and districts/ keep a file only when the votes, share counted, expected vote or call
+# changed (vote_sig): NYT re-stamps its files between vote changes (Mississippi: 26 files in an hour, 2 with new votes).
 #   markets_full/{ET date}/{venue}-{run}.csv   the books, 5 levels a side, every pass and every PRICE_EVERY seconds
 #                                              between passes; re-sent whole each hour (a later copy holds the earlier)
 #   live_data/{stamp}.js.gz                    the projector's output (the pages' data) every 10 minutes
@@ -75,6 +84,8 @@ RELEASE = "election-night-2026"
 STATE_EVERY = 600            # seconds between state-page rounds and live_data snapshots
 PRICE_EVERY = 20             # between passes, record the books this often (archive only; pages stay on the pass)
 UPLOAD_EVERY = 3600
+LATE_UPLOAD = 3 * 3600
+AT_LARGE = {"AK", "DE", "ND", "SD", "VT", "WY"}     # results-{state}-us-house-at-large.json; else -us-house-{n}
 STATES = ["alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware", "florida",
           "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
           "maryland", "massachusetts", "michigan", "minnesota", "mississippi", "missouri", "montana", "nebraska",
@@ -102,14 +113,95 @@ def restore_mtimes(live_dir):
             pass
 
 
-def prune_nyt(live_dir, archive):
-    """Keep the newest NYT file per race in the state folder; move the rest to archive/nyt/."""
+def vote_sig(races):
+    """A hash of what the count says: each race's call and every unit's votes, share counted and expected vote. Stays
+    the same when NYT only re-stamps a file."""
+    rows = []
+    for r in races or []:
+        units = [[u.get("nyt_id"), u.get("total_votes"), u.get("eevp"), u.get("total_expected_vote"),
+                  [[c.get("nyt_id"), (c.get("votes") or {}).get("total")] for c in u.get("candidates") or []]]
+                 for u in r.get("reporting_units") or []]
+        rows.append([r.get("nyt_id"), r.get("race_call_status"), (r.get("outcome") or {}).get("won"), units])
+    return hashlib.sha1(json.dumps(rows, sort_keys=True).encode()).hexdigest()
+
+
+def prune_nyt(live_dir, archive, sigs):
+    """Keep the newest NYT file per race in the state folder; move the rest to archive/nyt/, dropping those whose
+    count is the same as the last one archived for the race."""
     for d in glob.glob(os.path.join(live_dir, "*", "*")):  # live/{date}/{race}
         files = sorted(glob.glob(os.path.join(d, "*.json.gz")))
         for p in files[:-1]:
+            try:
+                with gzip.open(p) as f:
+                    sig = vote_sig(json.load(f).get("races"))
+            except Exception:  # noqa: BLE001  - unreadable: keep it, don't judge it
+                sig = None
+            race = os.path.basename(d)
+            if sig is not None and sigs.get(race) == sig:
+                os.remove(p)
+                continue
+            sigs[race] = sig
             dest = os.path.join(archive, "nyt", os.path.relpath(p, live_dir))
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             shutil.move(p, dest)
+
+
+def prune_markets(state, archive, date):
+    """The state folder's price files: keep election day (the poll-close prices) and the two newest days, which is all
+    live_project.load_markets reads; older days go to the archive, so weeks of them don't weigh on every pass."""
+    root = os.path.join(state, "markets")
+    days = sorted(d for d in os.listdir(root) if d[:2] == "20" and d > date) if os.path.isdir(root) else []
+    for d in days[:-2]:
+        dest = os.path.join(archive, "markets_state", d)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        if not os.path.exists(dest):
+            shutil.move(os.path.join(root, d), dest)
+
+
+def house_files(fc):
+    """{'OH-09': 'ohio-us-house-9'} for every House race in the forecast."""
+    out = {}
+    for r in fc.values():
+        aid = str(r.get("agg_id") or "")
+        if aid.startswith("2026-H-"):
+            st, n = aid.split("-")[2:4]
+            slug = capture_live.STATE_SLUG[st]
+            out[f"{st}-{n}"] = f"{slug}-us-house-at-large" if st in AT_LARGE else f"{slug}-us-house-{int(n)}"
+    return out
+
+
+def capture_districts(archive, date, files, sigs):
+    """Each House district's NYT file, saved when its count changed (the state pages carry only district totals; the
+    counties are here). -> (read, saved). Keeps races, timeseries and resultsMeta (the rest is precinct and demographic
+    data, 25 times the size, unchanged between files)."""
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+    def one(item):
+        key, slug = item
+        return key, capture_live.fetch(f"https://static01.nyt.com/elections-assets/pages/data/{date}/results-{slug}.json")
+    read = saved = 0
+    with concurrent.futures.ThreadPoolExecutor(16) as ex:
+        for fut in concurrent.futures.as_completed([ex.submit(one, x) for x in files.items()]):
+            try:
+                key, body = fut.result()
+                if not body:
+                    continue
+                d = json.loads(body)
+            except Exception as e:  # noqa: BLE001  - this file again next pass
+                log(f"district file: {e}")
+                continue
+            read += 1
+            sig = vote_sig(d.get("races"))
+            if sig == sigs.get(key):
+                continue
+            sigs[key] = sig
+            folder = os.path.join(archive, "districts", date, key)
+            os.makedirs(folder, exist_ok=True)
+            keep = {k: d.get(k) for k in ("races", "timeseries", "resultsMeta")}
+            with gzip.open(os.path.join(folder, f"{stamp}.json.gz"), "wb") as f:
+                f.write(json.dumps(keep, separators=(",", ":")).encode())
+            saved += 1
+    return read, saved
 
 
 def write_markets(state, date, venue, rows):
@@ -177,7 +269,10 @@ def capture_states(archive, date, last_hash):
                 continue
             if not body:
                 continue
-            h = hashlib.sha1(body).hexdigest()
+            try:
+                h = vote_sig(json.loads(body).get("races"))
+            except ValueError:
+                h = hashlib.sha1(body).hexdigest()
             if h == last_hash.get(st):
                 continue
             last_hash[st] = h
@@ -328,7 +423,16 @@ def main():
                             baseline="model", watch=None, backtest=False)
     slugs_found, last_hash = {}, {}
     kal, poly, found_at = [], [], 0.0
-    state_hash, uploaded, n_up = {}, {}, 0
+    # what was last archived, carried across jobs in the state folder, or each hand-off would save every file again
+    sig_path = os.path.join(state, "record_sigs.json")
+    try:
+        with open(sig_path, encoding="utf-8") as f:
+            sigs = json.load(f)
+    except (OSError, ValueError):
+        sigs = {}
+    state_hash, nyt_sigs, district_sigs = (sigs.setdefault(k, {}) for k in ("states", "nyt", "districts"))
+    uploaded, n_up = {}, 0
+    district_info = None
     last_states = last_snap = 0.0
     last_up = time.time()
     stop = time.time() + a.minutes * 60
@@ -370,6 +474,7 @@ def main():
                         errors.append(f"{venue}: {e}")
             except Exception as e:  # noqa: BLE001
                 errors.append(f"markets: {e}")
+            live_project.SKIP_UNCHANGED = now_dt >= SLOW_FROM      # weeks of passes: only rows that say something new
             try:
                 live_project.run_live(pa, hist, fc)
                 shutil.copyfile(os.path.join(work, "data", "raw", "dashboard", "live_data.js"),
@@ -378,7 +483,15 @@ def main():
                 errors.append(f"projector: {type(e).__name__}: {e}")
                 traceback.print_exc()
             errors += live_project.ERRORS            # a race whose NYT file or counties didn't parse
-            prune_nyt(live_dir, archive)
+            prune_nyt(live_dir, archive, nyt_sigs)
+            prune_markets(state, archive, a.date)
+            try:
+                files = house_files(fc)
+                district_info = capture_districts(archive, a.date, files, district_sigs)
+                if district_info[0] < len(files):
+                    errors.append(f"district files: read {district_info[0]} of {len(files)}")
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"district files: {e}")
             if time.time() - last_states >= STATE_EVERY:
                 last_states = time.time()
                 try:
@@ -394,17 +507,20 @@ def main():
             n += 1
             status = dict(pass_utc=now_dt.strftime("%Y-%m-%dT%H:%M:%SZ"), passes_this_job=n,
                           run=os.environ.get("GITHUB_RUN_ID"), errors=errors,
+                          districts=dict(read=district_info[0], saved=district_info[1]) if district_info else None,
                           nyt={r: slugs_found.get(r) or capture_live.FROM_STATE.get(r) for r in capture_live.RACES},
                           nyt_files={os.path.basename(d): os.path.basename(sorted(glob.glob(os.path.join(d, "*")))[-1])
                                      for d in glob.glob(os.path.join(live_dir, a.date, "*"))
                                      if glob.glob(os.path.join(d, "*"))})
             with open(os.path.join(state, "status.json"), "w", encoding="utf-8") as f:
                 json.dump(status, f, indent=1)
+            with open(sig_path, "w", encoding="utf-8") as f:
+                json.dump(sigs, f)
             if errors:
                 log("errors: " + "; ".join(errors))
             if not a.no_push:
                 push(state, f"election-live {status['pass_utc']}")
-            if time.time() - last_up >= UPLOAD_EVERY:
+            if time.time() - last_up >= (LATE_UPLOAD if now_dt >= LATE_FROM else UPLOAD_EVERY):
                 n_up += 1
                 if upload(archive, state, uploaded, n_up):
                     last_up = time.time()

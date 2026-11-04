@@ -362,6 +362,8 @@ def load_markets(date):
     # capture_markets.py starts a new folder each Eastern day: read election day and every day after it,
     # or prices would freeze at midnight ET (the overnight count is where 2024's misreads were)
     days = sorted(d for d in os.listdir(MARKETS) if d[:2] == "20" and d >= date) if os.path.isdir(MARKETS) else []
+    # election day for the poll-close prices, the last two days for the latest: weeks of files would slow every pass
+    days = days[:1] + days[-2:] if len(days) > 3 else days
     for venue in ("kalshi", "polymarket"):
         paths = [os.path.join(MARKETS, d, f"{venue}.csv") for d in days]
         paths = [p for p in paths if os.path.exists(p)]
@@ -523,6 +525,13 @@ def _safe(what, fn, *args, **kw):
         return None
 
 
+# Set by cloud_night.py for the late count: a race's row goes to projections.csv only when its count, prices or
+# projection changed. 71 rows every 5 minutes through December would make the file hundreds of MB, read every pass.
+SKIP_UNCHANGED = False
+_ROW_SAME = ("pct", "margin", "v1_proj", "v0_proj", "p_model", "k_bid", "k_ask", "k_rbid", "k_rask", "pm_bid", "pm_ask")
+_last_row = {}
+
+
 def run_live(a, hist, fc):
     ERRORS.clear()
     mk = load_markets(a.date)
@@ -639,11 +648,19 @@ def run_live(a, hist, fc):
                     f.close()
                     os.replace(OUT, OUT.replace(".csv", "_old.csv"))
         new = not os.path.exists(OUT)
+        write = rows
+        if SKIP_UNCHANGED:
+            write = []
+            for r in rows:
+                k = tuple(r[c] for c in _ROW_SAME)
+                if _last_row.get(r["race"]) != k:
+                    _last_row[r["race"]] = k
+                    write.append(r)
         with open(OUT, "a", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0]))
             if new:
                 w.writeheader()
-            w.writerows(rows)
+            w.writerows(write)
         if not a.race:
             write_dashboard(a, now, cards, mk)
 

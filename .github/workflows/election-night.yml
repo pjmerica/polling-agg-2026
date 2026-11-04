@@ -7,11 +7,12 @@ name: Election night (cloud)
 #
 # A job runs ~5h40m (GitHub stops jobs at 6h), then dispatches the next one, which waits in the
 # concurrency group and starts when this one ends. The cron is only a backstop if a job dies:
-# GitHub's scheduled runs start late or not at all. Stops after Sat Nov 7 (cloud_night.END).
+# GitHub's scheduled runs start late or not at all. Stops after Dec 14 (cloud_night.END; was Nov 7): the late count.
 
 on:
   schedule:
-    - cron: '*/30 * 3-7 11 *'
+    - cron: '*/30 * * 11 *'
+    - cron: '*/30 * 1-14 12 *'
   workflow_dispatch:
     inputs:
       minutes:
@@ -96,7 +97,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           ran=$(( $(date -u +%s) - $(cat started) ))
-          if [ "$ran" -gt 1200 ] && [ "$(date -u +%s)" -lt "$(date -u -d 2026-11-08T05:00:00Z +%s)" ]; then
+          if [ "$ran" -gt 1200 ] && [ "$(date -u +%s)" -lt "$(date -u -d 2026-12-15T05:00:00Z +%s)" ]; then
             gh workflow run election-night.yml --repo "$GITHUB_REPOSITORY" --ref master
             echo "dispatched the next job after ${ran}s"
           else

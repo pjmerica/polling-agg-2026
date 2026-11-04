@@ -185,14 +185,14 @@ How it runs:
   pass it records NYT's county results (`capture_live.poll`), the Kalshi/Polymarket best bid/ask (`capture_markets`)
   and runs the projector (`live_project.run_live`, starting from our margin model since 2026-11-03, user call; the
   market start is computed beside it and shown on the cards). Every 2 minutes, every 5 from Wed Nov 4 1 pm ET;
-  it stops after Sat Nov 7 (`END`).
+  it stops after Dec 14 (`END`; was Sat Nov 7, extended 2026-11-04 for the late count).
 - **State** lives on the orphan branch `election-live`: `live_data.js`, `status.json` (last pass, which NYT file per
   race, errors), `projections.csv` (the charts' history), `markets/{ET date}/` (bid/ask only) and the newest NYT file
   per race. One commit, amended and force-pushed each pass, so the branch has no history. Older NYT files go into
   each job's artifact `nyt-captures-<run id>` (30 days).
 - **Continuity:** GitHub stops a job at 6 hours. Each job runs ~5h40m, then dispatches the next, which waits in the
   `election-night` concurrency group. A job that dies within 20 minutes doesn't dispatch itself; the cron (every
-  30 min, all of Nov 3 through Nov 7 UTC) restarts it. Started by hand 2026-11-02 evening. Nothing inside a pass can
+  30 min, through Dec 14 UTC) restarts it. Started by hand 2026-11-02 evening. Nothing inside a pass can
   end a job (every pass is wrapped; a failure is logged and the next pass runs, 2026-11-03).
 - **The pages** are `dashboard.html` / `data_dashboard.html` unchanged, plus a loader (`build_cloud_pages.py`) that
   fetches `live_data.js` from `raw.githubusercontent.com/.../election-live/` with a fresh query string (that skips
