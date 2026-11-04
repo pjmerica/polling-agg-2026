@@ -461,20 +461,31 @@ td.pos { color: var(--dem); } td.neg { color: var(--rep); }
   const API = "https://api.github.com/repos/" + REPO + "/contents/live_data.js?ref=" + BRANCH;
   const RAW = "https://raw.githubusercontent.com/" + REPO + "/" + BRANCH + "/live_data.js";
   const MIN_GAP = 30000;                    // the pages ask every 10-15 s; the data changes every 2 min
-  let text = null, at = 0, apiOffUntil = 0;
+  // raw's cache can ignore the query string (2026-11-03 election night: the same pass served for 7 minutes
+  // while the branch moved on), so a copy older than STALE also asks the API, at most once per API_GAP
+  // (~30 an hour, under its 60 an hour per address)
+  const STALE = 150000, API_GAP = 115000;
+  const genAt = s => { const i = s ? s.indexOf('"generated":"') : -1; return i < 0 ? 0 : Date.parse(s.slice(i + 13, i + 33)) || 0; };
+  let text = null, at = 0, apiOffUntil = 0, apiAt = 0;
   async function get() {
     if (text && Date.now() - at < MIN_GAP) return text;
     let t = null;
-    try {                                   // a new query string each time skips raw's 5-minute cache
+    try {
       const r = await fetch(RAW + "?t=" + Date.now(), { cache: "no-store" });
       if (r.ok) t = await r.text();
     } catch (e) { /* try the API */ }
-    if (t === null && Date.now() > apiOffUntil) {
-      const r = await fetch(API, { headers: { Accept: "application/vnd.github.raw" }, cache: "no-cache" });
-      if (r.status === 403 || r.status === 429) apiOffUntil = Date.now() + 10 * 60000;
-      if (r.ok) t = await r.text();
+    const old = t === null || Date.now() - genAt(t) > STALE;
+    if (old && Date.now() > apiOffUntil && Date.now() - apiAt > API_GAP) {
+      apiAt = Date.now();
+      try {
+        const r = await fetch(API, { headers: { Accept: "application/vnd.github.raw" }, cache: "no-cache" });
+        if (r.status === 403 || r.status === 429) apiOffUntil = Date.now() + 10 * 60000;
+        if (r.ok) { const a = await r.text(); if (t === null || genAt(a) > genAt(t)) t = a; }
+      } catch (e) { /* keep raw's copy */ }
     }
+    if (t === null && text) return text;
     if (t === null) throw new Error("no data");
+    if (text && genAt(t) < genAt(text)) t = text;   // never step back to an older pass
     text = t; at = Date.now();
     return t;
   }
