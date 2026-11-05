@@ -7,6 +7,11 @@ shards; each shard's tar.gz goes to the release election-night-2026 as it grows.
               (a primary's final days and night). Columns: end_ts, bid, ask, price, volume, open_interest. Kalshi moves markets
               settled before its cutoff (2026-09-05 when written; /historical/cutoff) out of /events and /series to
               /historical/markets, with field names that drop "_dollars" and "_fp"; both are read.
+  kalshi-older  settled markets from the historical API that --venue kalshi leaves out: Elections closing before --since (2024
+              President, popular vote, Senate; 2025 mayors and Governors) and every election-looking series filed under Politics
+              since 2021, some of which aren't about elections (shutdowns, approval). By the hour for the market's whole life; by
+              the minute over its last 9 days and around each November election it was open for (ELECTION_NIGHTS), because the
+              2024 general-election markets stayed open until inauguration, so their last days aren't election night.
   polymarket  every market in events with one of TAGS ending on or after --since: the YES token's whole life by the hour, by
               the minute from --minute-start, by the minute from --core-minute-start for general-election winner markets, and
               by the minute over the last 9 days of any market that stopped before --minute-start. Columns: ts, price. It has
@@ -49,6 +54,9 @@ TAGS = ("elections", "midterms", "primaries", "global-elections", "congress", "g
 RANGE = 14 * 86400      # the longest date range to ask Polymarket for (15 days works, 20 returns 400, at any fidelity)
 LAST_DAYS = 9 * 86400   # by the minute before a market that stopped earlier closed
 POLY_THREADS = 3        # at once per job, 8 jobs: about 70 requests a second against a published limit of 100
+ELECTION_NIGHTS = [("2022-11-01", "2022-11-20"), ("2023-11-01", "2023-11-15"), ("2024-11-01", "2024-11-20"), ("2025-11-01", "2025-11-15")]
+OLDER_WORD = re.compile(r"\b(presiden\w*|senat\w*|house|congress\w*|governor\w*|gubernat\w*|elect\w*|nomin\w*|primar\w*|mayor\w*|ballot|vote\w*|runoff|midterm\w*|speaker|party)\b", re.I)
+OLDER_TICK = re.compile(r"^(KX)?(PRES|SENATE|HOUSE|GOV|ELECT|ECWIN|POPVOTE|POWER|CONTROL|ECMOV|NOMINEE|RUNNING|VP)", re.I)
 WINNER = re.compile(r"-(house|senate|governor)-election-winner|-governor-winner-2026|which-party-will-win-the-house-race")
 UPLOAD_EVERY = 1800
 
@@ -122,6 +130,38 @@ def kalshi_markets(since, shard, of):
     return out
 
 
+def kalshi_older_markets(since, shard, of):
+    series = (get(f"{KALSHI}/series") or {}).get("series", [])
+    keep = [s for s in series if s.get("category") == "Elections"
+            or (s.get("category") == "Politics" and (OLDER_WORD.search(s.get("title") or "") or OLDER_TICK.match(s["ticker"])))]
+    print(len(keep), "series", flush=True)
+    out = []
+    for s in keep:
+        cursor = ""
+        while True:
+            d = get(f"{KALSHI}/historical/markets?series_ticker={s['ticker']}&limit=1000" + (f"&cursor={cursor}" if cursor else "")) or {}
+            for m in d.get("markets") or []:
+                if m.get("close_time") and (s.get("category") == "Politics" or m["close_time"] < since) and mine(m["ticker"], shard, of):
+                    out.append(dict(series=s["ticker"], category=s.get("category"), event=m.get("event_ticker"), title=m.get("title"), ticker=m["ticker"], side=m.get("yes_sub_title"),
+                                    status=m.get("status"), result=m.get("result"), open=m.get("open_time"), close=m["close_time"], historical=True))
+            cursor = d.get("cursor")
+            if not cursor:
+                break
+            time.sleep(0.05)
+        time.sleep(0.05)
+    return out
+
+
+def older_windows(o, c):
+    """When to fetch minute prices for a market open from o to c: its last days, and any November election it was open for."""
+    out = [(c - LAST_DAYS, c + 3600)]
+    for a, b in ELECTION_NIGHTS:
+        x, y = stamp(a + "T00:00:00"), stamp(b + "T00:00:00")
+        if x < c and y > o and y < c - LAST_DAYS:
+            out.append((max(x, o), y))
+    return out
+
+
 def polymarket_markets(since, shard, of):
     seen, out = set(), []
     for tag in TAGS:
@@ -152,11 +192,14 @@ def polymarket_markets(since, shard, of):
     return out
 
 
-def kalshi_candles(m, start, end, period):
+def kalshi_candles(m, start, end, period, rec=None):
+    """Candles between two times. A failed request counts in rec["errors"]."""
     chunk, t0, cs = 4800 * period * 60, start, []
     path = f"historical/markets/{m['ticker']}" if m.get("historical") else f"series/{m['series']}/markets/{m['ticker']}"
     while t0 < end:
         j = get(f"{KALSHI}/{path}/candlesticks?start_ts={t0}&end_ts={min(t0 + chunk, end)}&period_interval={period}")
+        if j is None and rec is not None:
+            rec["errors"] += 1
         cs += (j or {}).get("candlesticks") or []
         t0 += chunk
         time.sleep(0.03)
@@ -245,7 +288,7 @@ def upload(out, name):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--venue", required=True, choices=("kalshi", "polymarket"))
+    ap.add_argument("--venue", required=True, choices=("kalshi", "kalshi-older", "polymarket"))
     ap.add_argument("--shard", type=int, default=0)
     ap.add_argument("--of", type=int, default=1)
     ap.add_argument("--out", required=True)
@@ -261,7 +304,7 @@ def main():
     v = os.path.join(a.out, a.venue)
     os.makedirs(os.path.join(v, "hour"), exist_ok=True)
     os.makedirs(os.path.join(v, "minute"), exist_ok=True)
-    markets = kalshi_markets(a.since, a.shard, a.of) if a.venue == "kalshi" else polymarket_markets(a.since, a.shard, a.of)
+    markets = dict(kalshi=kalshi_markets, polymarket=polymarket_markets)[a.venue](a.since, a.shard, a.of) if a.venue != "kalshi-older" else kalshi_older_markets(a.since, a.shard, a.of)
     print(len(markets), "markets in this shard", flush=True)
     if a.venue == "polymarket":
         markets.sort(key=lambda m: -m["vol"])       # if time runs out, the least traded go
@@ -281,10 +324,25 @@ def main():
             key = re.sub(r"[^\w.-]", "_", m["ticker"])
             closed_at = stamp(m["close"]) if m.get("close") else end
             for res, st, period in (("hour", hs, 60), ("minute", ms if closed_at > ms else closed_at - LAST_DAYS, 1)):
-                cs = kalshi_candles(m, st, min(end, closed_at + 3600), period)
+                cs = kalshi_candles(m, st, min(end, closed_at + 3600), period, rec)
                 if cs:
                     write_kalshi(os.path.join(v, res, key + ".csv.gz"), cs)
                     rec[res] = len(cs)
+        elif a.venue == "kalshi-older":
+            key = re.sub(r"[^\w.-]", "_", m["ticker"])
+            c = stamp(m["close"])
+            o = stamp(m["open"]) if m.get("open") else c - 365 * 86400
+            cs = kalshi_candles(m, o - 3600, c + 3600, 60, rec)
+            if cs:
+                write_kalshi(os.path.join(v, "hour", key + ".csv.gz"), cs)
+                rec["hour"] = len(cs)
+            mins = {}
+            for x, y in older_windows(o, c):
+                for k in kalshi_candles(m, x, y, 1, rec):
+                    mins[k.get("end_period_ts")] = k
+            if mins:
+                write_kalshi(os.path.join(v, "minute", key + ".csv.gz"), [mins[t] for t in sorted(mins)])
+                rec["minute"] = len(mins)
         else:
             poly_market(m, ms, core_ms, hs, end, rec, v)
         return rec

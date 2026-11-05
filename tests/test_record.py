@@ -114,3 +114,25 @@ def test_kalshi_candles_read_in_both_api_shapes(tmp_path):
         rows = list(csv.reader(f))
     assert rows[1][1:] == ["0.40", "0.42", "0.41", "5.00", "9.00"] == rows[2][1:]
     assert rows[3][1:] == ["0.40", "0.42", "", "0.00", "9.00"]
+
+
+def test_older_market_open_on_election_night_gets_that_night_by_the_minute():
+    """2024 general-election markets stayed open until inauguration: their last 9 days aren't election night."""
+    o = market_archive.stamp("2024-01-05T00:00:00")
+    c = market_archive.stamp("2025-01-20T15:00:00")
+    w = market_archive.older_windows(o, c)
+    night = market_archive.stamp("2024-11-06T03:00:00")
+    assert any(a <= night <= b for a, b in w) and any(a <= c <= b for a, b in w)
+    assert not any(a <= market_archive.stamp("2022-11-09T03:00:00") <= b for a, b in w)
+
+
+def test_older_market_that_closed_at_the_election_has_one_window():
+    c = market_archive.stamp("2024-11-06T12:00:00")
+    assert market_archive.older_windows(c - 30 * 86400, c) == [(c - market_archive.LAST_DAYS, c + 3600)]
+
+
+def test_failed_kalshi_request_is_counted(monkeypatch):
+    monkeypatch.setattr(market_archive, "get", lambda url: None)
+    monkeypatch.setattr(market_archive.time, "sleep", lambda s: None)
+    rec = dict(errors=0)
+    assert market_archive.kalshi_candles(dict(series="S", ticker="T"), 0, 3600, 60, rec) == [] and rec["errors"] == 1
