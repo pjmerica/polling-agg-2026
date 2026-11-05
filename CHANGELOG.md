@@ -15,6 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[4b5d21cb]` Market archive: Kalshi markets only a series lists (2026-11-05) - a check of every Elections and Politics series found 1,738 Elections markets the archive skipped, 8 of them traded (NC Supreme Court, PA State House), because `/events` doesn't return them. The lister now reads `/markets` too; the next run picks them up.
 - `[5977d27a]` Precinct record for all 50 states; market archive can't overwrite an old version (2026-11-05) - user asked for individual precinct reporting and when ballots came in, in every state, and not to delete old versions. New `Precinct data 2026/`: `precinct_record.py` every 2 hours saves official precinct files only when they change, each pass its own release asset. GA, VA, NC, HI, MN, UT, ID and WA have precinct numbers now; the other 42 states' pages are watched for a 2026 general file. Only counts go in (NC names and VA officials' names removed, with tests). `market-archive.yml` now needs a new label and refuses one already on the release; superseded copies go to `Election night simulator/archive/market-history/` (gitignored).
 - `[2be94186]` Market archive: Kalshi hourly prices for a market's whole life (2026-11-05). They started on Jan 1 2026, so every 2026 race's 2025 prices were left out (Georgia Senate opened December 2024) and a market that stopped trading in 2025 came back empty. Each market now starts at its own open time. Polymarket already walked whole lives.
 

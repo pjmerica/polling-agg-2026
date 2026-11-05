@@ -136,3 +136,22 @@ def test_failed_kalshi_request_is_counted(monkeypatch):
     monkeypatch.setattr(market_archive.time, "sleep", lambda s: None)
     rec = dict(errors=0)
     assert market_archive.kalshi_candles(dict(series="S", ticker="T"), 0, 3600, 60, rec) == [] and rec["errors"] == 1
+
+
+def test_kalshi_market_only_the_series_listing_has_is_kept(monkeypatch):
+    """/events can miss a market its series lists: NC Supreme Court and PA State House were left out this way."""
+    def get(url):
+        if url.endswith("/series"):
+            return {"series": [{"ticker": "KXNCSUPREMECOURT", "category": "Elections"}, {"ticker": "KXTRUMPGOLF", "category": "Politics"}]}
+        if "/events?" in url:
+            return {"events": [{"event_ticker": "E", "title": "t", "markets": [{"ticker": "IN-EVENTS", "close_time": "2026-11-04T00:00:00Z"}]}]}
+        if "/historical/markets?" in url:
+            return {"markets": []}
+        if "/markets?" in url:
+            return {"markets": [{"ticker": "IN-EVENTS", "close_time": "2026-11-04T00:00:00Z"}, {"ticker": "ONLY-IN-SERIES", "event_ticker": "E2", "close_time": "2026-11-04T00:00:00Z"}, {"ticker": "TOO-OLD", "close_time": "2025-01-01T00:00:00Z"}]}
+        raise AssertionError(url)
+    monkeypatch.setattr(market_archive, "get", get)
+    monkeypatch.setattr(market_archive.time, "sleep", lambda s: None)
+    got = market_archive.kalshi_markets("2026-01-01", 0, 1)
+    assert sorted(m["ticker"] for m in got) == ["IN-EVENTS", "ONLY-IN-SERIES"]
+    assert not next(m for m in got if m["ticker"] == "ONLY-IN-SERIES").get("historical")
