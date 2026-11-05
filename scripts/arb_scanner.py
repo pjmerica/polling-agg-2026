@@ -1542,6 +1542,13 @@ def run():
                   f"{r['platform_a']}={r['prob_a']*100:5.1f}%  {r['platform_b']}={r['prob_b']*100:5.1f}%")
     rows.extend(prim)
 
+    if not rows:
+        # After the election the markets settle and close: from Nov 4 2026 no race had prices on two platforms, and
+        # every refresh crashed here sorting an empty table, so nothing after it (data.js, the map's prices) updated.
+        print("\nNo cross-platform pairs this run (the election markets have settled or closed): writing an empty board.")
+        write_board([])
+        return
+
     arb = pd.DataFrame(rows).sort_values(["arb_type", "raw_gap_pp"], ascending=[True, False])
 
     # Volume is exposed in JSON so the dashboard can filter live.
@@ -1832,6 +1839,10 @@ def run():
     records = [{k: clean(v) for k, v in row.items()} for row in arb.to_dict(orient="records")]
 
     _write_job_summary(arb)
+    write_board(records)
+
+
+def write_board(records):
     out = ROOT / "docs" / "arb_data.js"
     with open(out, "w") as f:
         f.write("const ARB = ")

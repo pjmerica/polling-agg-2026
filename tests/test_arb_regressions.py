@@ -169,3 +169,21 @@ def test_polymarket_loader_keeps_every_equivalent_dem_market(tmp_path, monkeypat
     monkeypatch.setattr(arb, "RAW", tmp_path)
     out = arb.load_polymarket_general()
     assert sorted(out["pm_dem"]) == [0.0025, 0.027]
+
+
+def test_no_pairs_writes_an_empty_board_instead_of_crashing(monkeypatch, tmp_path):
+    """After the election (Nov 4 2026) no race had prices on two platforms; the sort on an empty table crashed every refresh."""
+    import json
+    (tmp_path / "docs").mkdir()
+    monkeypatch.setattr(arb, "ROOT", tmp_path)
+    monkeypatch.setattr(arb, "_assert_scrape_freshness", lambda: None)
+    empty = pd.DataFrame(columns=["race_id"])
+    for f in ("load_kalshi_general", "load_predictit_general", "load_polymarket_general"):
+        monkeypatch.setattr(arb, f, lambda: empty.copy())
+    monkeypatch.setattr(arb, "get_race_meta", lambda: pd.DataFrame(columns=["race_id"]))
+    monkeypatch.setattr(arb, "general_candidate_pairs", lambda meta: [])
+    monkeypatch.setattr(arb, "primary_pairs", lambda meta: [])
+    arb.run()
+    t = (tmp_path / "docs" / "arb_data.js").read_text()
+    assert t.startswith("const ARB = ") and t.endswith(";")
+    assert json.loads(t[len("const ARB = "):-1])["races"] == []
