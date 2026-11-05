@@ -51,3 +51,6 @@ Thumbs.db
 
 # 2026 congressional plan downloads + ACS caches (scripts/build_house_map.py, build_district_demographics.py): ~1 GB, regenerable
 data/raw/districts_2026/
+
+# Superseded market-price archives, kept on disk only
+Election night simulator/archive/

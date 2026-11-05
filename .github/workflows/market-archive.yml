@@ -2,7 +2,9 @@ name: Market archive
 
 # Price history for every election market on Kalshi and Polymarket, into the release election-night-2026 as
 # market-archive-{label}-{venue}-{n}of8.tar.gz (Election night simulator/scripts/market_archive.py). By hand only; re-run
-# when the count is done, a run replaces the last copy with the same label. Start: gh workflow run market-archive.yml
+# when the count is done, under a new label: a label already on the release stops the run, so no older copy is overwritten.
+# Superseded copies go to Election night simulator/archive/market-history/ and are never deleted (user call 2026-11-05).
+# Start: gh workflow run market-archive.yml -f label=v5
 
 on:
   workflow_dispatch:
@@ -11,14 +13,32 @@ on:
         description: 'minute prices from (UTC)'
         default: '2026-11-03T00:00:00Z'
       label:
-        description: 'in the asset names; a new label keeps the last copy until this one is checked'
-        default: 'v4'
+        description: 'in the asset names; must be new for this venue'
+        required: true
       venues:
         description: 'JSON list: kalshi, polymarket, kalshi-older (settled markets before 2026 and Politics)'
         default: '["kalshi", "polymarket"]'
 
 jobs:
+  new-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse a label already on the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          LABEL: ${{ inputs.label }}
+          VENUES: ${{ inputs.venues }}
+        run: |
+          names=$(gh release view election-night-2026 --repo "$REPO" --json assets --jq '.assets[].name')
+          for v in $(echo "$VENUES" | jq -r '.[]'); do
+            if echo "$names" | grep -q "^market-archive-$LABEL-$v-[0-9]of8"; then
+              echo "market-archive-$LABEL-$v is already on the release: pick a new label"; exit 1
+            fi
+          done
+
   archive:
+    needs: new-label
     runs-on: ubuntu-latest
     timeout-minutes: 350
     permissions:

@@ -1,0 +1,421 @@
+{
+ "AK": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.elections.alaska.gov/results/26GENR/"
+   ]
+  }
+ ],
+ "AL": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.alabama.gov/alabama-votes/voter/election-data"
+   ]
+  }
+ ],
+ "AR": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://results.enr.clarityelections.com/AR/"
+   ]
+  }
+ ],
+ "AZ": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://azsos.gov/elections/results-data"
+   ]
+  }
+ ],
+ "CA": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://statewidedatabase.org/election.html"
+   ]
+  }
+ ],
+ "CO": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.state.co.us/pubs/elections/Results/Archives.html"
+   ]
+  }
+ ],
+ "CT": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://portal.ct.gov/sots/election-services/statement-of-vote/statement-of-vote"
+   ]
+  }
+ ],
+ "DE": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://elections.delaware.gov/results/"
+   ]
+  }
+ ],
+ "FL": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://dos.fl.gov/elections/data-statistics/elections-data/precinct-level-election-results/"
+   ]
+  }
+ ],
+ "GA": [
+  {
+   "election": "11032026GeneralAndSpecialElection",
+   "host": "results.sos.ga.gov",
+   "jurisdiction": "Georgia",
+   "kind": "enhanced_voting"
+  }
+ ],
+ "HI": [
+  {
+   "kind": "files",
+   "urls": [
+    "https://elections.hawaii.gov/wp-content/results/2026%20General/media.txt",
+    "https://elections.hawaii.gov/wp-content/results/2026%20General/precinct.pdf"
+   ]
+  }
+ ],
+ "IA": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sos.iowa.gov/elections/results/index.html"
+   ]
+  }
+ ],
+ "ID": [
+  {
+   "election": "nov2026",
+   "host": "results.voteidaho.gov",
+   "jurisdiction": "id",
+   "kind": "enhanced_voting"
+  },
+  {
+   "kind": "watch",
+   "pages": [
+    "https://voteidaho.gov/election-results/"
+   ]
+  }
+ ],
+ "IL": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.elections.il.gov/electionoperations/downloadvotetotals.aspx"
+   ]
+  }
+ ],
+ "IN": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.in.gov/sos/elections/election-results/"
+   ]
+  }
+ ],
+ "KS": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sos.ks.gov/elections/election-results.html"
+   ]
+  }
+ ],
+ "KY": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.elect.ky.gov/results/2020-2029/Pages/2026.aspx"
+   ]
+  }
+ ],
+ "LA": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://electionstatistics.sos.la.gov/"
+   ]
+  }
+ ],
+ "MA": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://electionstats.state.ma.us/"
+   ]
+  }
+ ],
+ "MD": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://elections.maryland.gov/elections/2026/election_data/index.html"
+   ]
+  }
+ ],
+ "ME": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.maine.gov/sos/elections-voting/results"
+   ]
+  }
+ ],
+ "MI": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://mvic.sos.state.mi.us/votehistory/Index"
+   ]
+  }
+ ],
+ "MN": [
+  {
+   "kind": "files",
+   "urls": [
+    "https://electionresultsfiles.sos.mn.gov/20261103/allracesbyprecinct.txt"
+   ]
+  }
+ ],
+ "MO": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.mo.gov/elections/s_default"
+   ]
+  }
+ ],
+ "MS": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.ms.gov/elections-voting/election-results"
+   ]
+  }
+ ],
+ "MT": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sosmt.gov/elections/results/"
+   ]
+  }
+ ],
+ "NC": [
+  {
+   "kind": "files",
+   "urls": [
+    "https://s3.amazonaws.com/dl.ncsbe.gov/ENRS/2026_11_03/results_pct_20261103.zip"
+   ]
+  },
+  {
+   "kind": "counts_only",
+   "name": "ballot-returns-by-precinct.csv",
+   "reducer": "nc",
+   "url": "https://s3.amazonaws.com/dl.ncsbe.gov/ENRS/2026_11_03/absentee_20261103.zip"
+  }
+ ],
+ "ND": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.nd.gov/elections/election-results"
+   ]
+  }
+ ],
+ "NE": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://electionresults.nebraska.gov/"
+   ]
+  }
+ ],
+ "NH": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.nh.gov/elections/elections/election-results"
+   ]
+  }
+ ],
+ "NJ": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.nj.gov/state/elections/election-information-results.shtml"
+   ]
+  }
+ ],
+ "NM": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.nm.gov/voting-and-elections/election-results/"
+   ]
+  }
+ ],
+ "NV": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.nvsos.gov/sos/elections/election-resources"
+   ]
+  }
+ ],
+ "NY": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://elections.ny.gov/2026-election-results"
+   ]
+  }
+ ],
+ "OH": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.ohiosos.gov/elections/election-results-and-data/2026/"
+   ]
+  }
+ ],
+ "OK": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://oklahoma.gov/elections.html"
+   ]
+  }
+ ],
+ "OR": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sos.oregon.gov/elections/Pages/electionhistory.aspx"
+   ]
+  }
+ ],
+ "PA": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.electionreturns.pa.gov/ReportCenter/Reports"
+   ]
+  }
+ ],
+ "RI": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://elections.ri.gov/elections/results/"
+   ]
+  }
+ ],
+ "SC": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.enr-scvotes.org/SC/"
+   ]
+  }
+ ],
+ "SD": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sdsos.gov/elections-voting/election-resources/election-history/default.aspx"
+   ]
+  }
+ ],
+ "TN": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sos.tn.gov/elections/results"
+   ]
+  }
+ ],
+ "TX": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://www.sos.state.tx.us/elections/historical/elections.shtml"
+   ]
+  }
+ ],
+ "UT": [
+  {
+   "election": "General11032026",
+   "host": "electionresults.utah.gov",
+   "jurisdiction": "Utah",
+   "kind": "enhanced_voting"
+  }
+ ],
+ "VA": [
+  {
+   "election": "2026-November-General",
+   "host": "enr.elections.virginia.gov",
+   "jurisdiction": "Virginia",
+   "kind": "enhanced_voting",
+   "wait_for": [
+    "Election Turnout",
+    "Election Results",
+    "Election Change Log Report"
+   ],
+   "wait_minutes": 30
+  }
+ ],
+ "VT": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sos.vermont.gov/elections/election-info-resources/elections-results-data/"
+   ]
+  }
+ ],
+ "WA": [
+  {
+   "election": "20261103",
+   "host": "results.votewa.gov",
+   "jurisdiction": "washington",
+   "kind": "enhanced_voting"
+  }
+ ],
+ "WI": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://elections.wi.gov/elections/election-results"
+   ]
+  }
+ ],
+ "WV": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sos.wv.gov/elections/Pages/default.aspx"
+   ]
+  }
+ ],
+ "WY": [
+  {
+   "kind": "watch",
+   "pages": [
+    "https://sos.wyo.gov/Elections/"
+   ]
+  }
+ ]
+}

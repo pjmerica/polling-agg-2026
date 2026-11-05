@@ -1,0 +1,39 @@
+name: Precinct record
+
+# Official precinct results and ballot counts for the 2026 general, every 2 hours through the late count
+# (Precinct data 2026/README.md). Only files that changed are saved, each pass as its own asset on the release
+# election-night-2026, so older copies are never overwritten. Stops itself Dec 15.
+
+on:
+  schedule:
+    - cron: '23 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      states:
+        description: 'comma list of states; blank = all'
+        default: ''
+
+concurrency:
+  group: precinct-record
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            Precinct data 2026/
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Record
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATES: ${{ inputs.states }}
+        run: python "Precinct data 2026/precinct_record.py" --out precinct_out --upload --states "$STATES"
