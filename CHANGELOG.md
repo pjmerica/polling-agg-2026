@@ -15,6 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[3f11e507]` `Election night simulator/scripts/archive_download.py` (2026-11-05, user: keep a local copy that can't be lost or edited): copies every asset of the release election-night-2026 to `Election night simulator/archive/releases/` and a git bundle of polling-agg, house-night, mississippi-night and florida-night to `archive/repos/`. Checked against GitHub's sha256, never overwrites (a changed asset is saved beside the old copy), files read-only, `MANIFEST.csv` with every checksum. Re-run it to fetch what's new.
 - `[bd069d9d]` Precinct record: GitHub skipped the 16:23 and 18:23 UTC scheduled runs on Nov 5 (this repo's crons start hours late), so each job now takes three passes 2 hours apart and dispatches the next job, like the election-night job; the cron restarts the chain if it breaks.
 - `[d668fc55]` Market archive: two new venues (2026-11-05, user call). `kalshi-trades`: every trade in the Elections markets, from `/historical/trades` and `/markets/trades`, de-duplicated by trade id (some trades are on both). Checked on real markets: contracts add up to Kalshi's reported volume. `kalshi-politics`: every Politics market, open or settled, hourly for its life and by the minute over its last 9 days and around each November election.
 - `[7c51f100]` Precinct record README: what the first cloud pass found, state by state.
