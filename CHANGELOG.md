@@ -15,6 +15,7 @@ Format: `[hash] commit subject â€” one-sentence summary of WHY.`
 
 ## Unreleased
 
+- `[bd069d9d]` Precinct record: GitHub skipped the 16:23 and 18:23 UTC scheduled runs on Nov 5 (this repo's crons start hours late), so each job now takes three passes 2 hours apart and dispatches the next job, like the election-night job; the cron restarts the chain if it breaks.
 - `[d668fc55]` Market archive: two new venues (2026-11-05, user call). `kalshi-trades`: every trade in the Elections markets, from `/historical/trades` and `/markets/trades`, de-duplicated by trade id (some trades are on both). Checked on real markets: contracts add up to Kalshi's reported volume. `kalshi-politics`: every Politics market, open or settled, hourly for its life and by the minute over its last 9 days and around each November election.
 - `[7c51f100]` Precinct record README: what the first cloud pass found, state by state.
 - `[a9f4c26a]` Precinct record: ballot counts by county from the UF Election Lab (47 states) and Pennsylvania's ballot returns by date, reduced to counts.
