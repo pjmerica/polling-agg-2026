@@ -2,7 +2,7 @@
 you can on polymarket and kalshi. And save the price history"). Run by .github/workflows/market-archive.yml in parallel
 shards; each shard's tar.gz goes to the release election-night-2026 as it grows.
 
-  kalshi      every market in Kalshi's Elections category that closes on or after --since: by the hour from --hour-start, by
+  kalshi      every market in Kalshi's Elections category that closes on or after --since: by the hour for its whole life, by
               the minute from --minute-start, and by the minute over the last 9 days of any market that closed before that
               (a primary's final days and night). Columns: end_ts, bid, ask, price, volume, open_interest. Kalshi moves markets
               settled before its cutoff (2026-09-05 when written; /historical/cutoff) out of /events and /series to
@@ -108,7 +108,7 @@ def kalshi_markets(since, shard, of):
                     if (m.get("close_time") or "9") >= since and mine(m["ticker"], shard, of):
                         seen.add(m["ticker"])
                         out.append(dict(series=s["ticker"], event=e["event_ticker"], title=e.get("title"), ticker=m["ticker"], side=m.get("yes_sub_title"),
-                                        status=m.get("status"), result=m.get("result"), close=m.get("close_time")))
+                                        status=m.get("status"), result=m.get("result"), open=m.get("open_time"), close=m.get("close_time")))
             cursor = d.get("cursor")
             if not cursor:
                 break
@@ -121,7 +121,7 @@ def kalshi_markets(since, shard, of):
                 if m["ticker"] not in seen and (m.get("close_time") or "9") >= since and mine(m["ticker"], shard, of):
                     seen.add(m["ticker"])
                     out.append(dict(series=s["ticker"], event=m.get("event_ticker"), title=m.get("title"), ticker=m["ticker"], side=m.get("yes_sub_title"),
-                                    status=m.get("status"), result=m.get("result"), close=m.get("close_time"), historical=True))
+                                    status=m.get("status"), result=m.get("result"), open=m.get("open_time"), close=m.get("close_time"), historical=True))
             cursor = d.get("cursor")
             if not cursor:
                 break
@@ -293,7 +293,7 @@ def main():
     ap.add_argument("--of", type=int, default=1)
     ap.add_argument("--out", required=True)
     ap.add_argument("--since", default="2026-01-01")
-    ap.add_argument("--hour-start", default="2026-01-01T00:00:00Z")
+    ap.add_argument("--hour-start", default="2021-01-01T00:00:00Z", help="no hourly prices before this; a Kalshi market starts at its own open")
     ap.add_argument("--minute-start", default="2026-11-03T00:00:00Z")
     ap.add_argument("--core-minute-start", default="2026-10-01T00:00:00Z")
     ap.add_argument("--minutes", type=float, default=330)
@@ -323,7 +323,8 @@ def main():
         if a.venue == "kalshi":
             key = re.sub(r"[^\w.-]", "_", m["ticker"])
             closed_at = stamp(m["close"]) if m.get("close") else end
-            for res, st, period in (("hour", hs, 60), ("minute", ms if closed_at > ms else closed_at - LAST_DAYS, 1)):
+            opened = stamp(m["open"]) - 3600 if m.get("open") else hs
+            for res, st, period in (("hour", max(hs, opened), 60), ("minute", ms if closed_at > ms else closed_at - LAST_DAYS, 1)):
                 cs = kalshi_candles(m, st, min(end, closed_at + 3600), period, rec)
                 if cs:
                     write_kalshi(os.path.join(v, res, key + ".csv.gz"), cs)
