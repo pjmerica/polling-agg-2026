@@ -12,7 +12,7 @@ on:
         default: '2026-11-03T00:00:00Z'
       label:
         description: 'in the asset names; a new label keeps the last copy until this one is checked'
-        default: 'v2'
+        default: 'v3'
 
 jobs:
   archive:
