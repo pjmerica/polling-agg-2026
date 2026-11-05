@@ -3,6 +3,9 @@ name: Precinct record
 # Official precinct results and ballot counts for the 2026 general, every 2 hours through the late count
 # (Precinct data 2026/README.md). Only files that changed are saved, each pass as its own asset on the release
 # election-night-2026, so older copies are never overwritten. Stops itself Dec 15.
+# GitHub starts this repo's scheduled runs hours late or not at all (the 30-minute election-night cron ran about every
+# 8 hours on Nov 4-5), so each job takes a pass every 2 hours for about 5 hours and then dispatches the next job; the
+# cron only restarts the chain if it breaks.
 
 on:
   schedule:
@@ -12,6 +15,10 @@ on:
       states:
         description: 'comma list of states; blank = all'
         default: ''
+      chain:
+        description: 'keep going: passes every 2 hours, then dispatch the next job'
+        type: boolean
+        default: true
 
 concurrency:
   group: precinct-record
@@ -20,9 +27,10 @@ concurrency:
 jobs:
   record:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 350
     permissions:
       contents: write
+      actions: write         # dispatch the next job
     steps:
       - uses: actions/checkout@v5
         with:
@@ -36,4 +44,30 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           STATES: ${{ inputs.states }}
-        run: python "Precinct data 2026/precinct_record.py" --out precinct_out --upload --states "$STATES"
+          CHAIN: ${{ github.event_name == 'schedule' || inputs.chain }}
+        run: |
+          date -u +%s > started
+          n=0
+          while :; do
+            t0=$(date -u +%s)
+            rm -rf precinct_out
+            python "Precinct data 2026/precinct_record.py" --out precinct_out --upload --states "$STATES" || echo "pass $n failed"
+            n=$((n + 1))
+            if [ "$CHAIN" != "true" ] || [ $(( $(date -u +%s) - $(cat started) + 7200 )) -gt 18000 ]; then break; fi
+            wait=$(( 7200 - ($(date -u +%s) - t0) ))
+            if [ "$wait" -gt 0 ]; then sleep "$wait"; fi
+          done
+
+      # Only after a full-length job: a job that dies early must not dispatch itself in a loop (the cron restarts it).
+      - name: Dispatch the next job
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.chain) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ran=$(( $(date -u +%s) - $(cat started) ))
+          if [ "$ran" -gt 7000 ] && [ "$(date -u +%s)" -lt "$(date -u -d 2026-12-15T05:00:00Z +%s)" ]; then
+            gh workflow run precinct-record.yml --repo "$GITHUB_REPOSITORY" --ref master
+            echo "dispatched the next job after ${ran}s"
+          else
+            echo "not dispatching (ran ${ran}s)"
+          fi

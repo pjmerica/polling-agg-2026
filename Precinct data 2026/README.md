@@ -4,9 +4,9 @@ Official precinct results and ballot counts for the Nov 3 2026 general, from eac
 
 ## How it runs
 
-`.github/workflows/precinct-record.yml` runs `precinct_record.py` every 2 hours through Dec 15. A file is saved only when its content changed, so the copies show when each state's numbers moved during the late count. Nothing is overwritten: each pass with changes is its own release asset.
+`.github/workflows/precinct-record.yml` runs `precinct_record.py` every 2 hours through Dec 15. GitHub starts this repo's scheduled runs hours late, so each job takes three passes 2 hours apart and then dispatches the next job; the cron only restarts the chain if it breaks. `precinct-log.csv` shows every pass. A file is saved only when its content changed, so the copies show when each state's numbers moved during the late count. Nothing is overwritten: each pass with changes is its own release asset.
 
-To change a state, edit `make_sources.py` and run it (it writes `sources.json`). A pass for some states only: `gh workflow run precinct-record.yml -f states=GA,VA`.
+To change a state, edit `make_sources.py` and run it (it writes `sources.json`). A pass for some states only: `gh workflow run precinct-record.yml -f states=GA,VA -f chain=false` (it waits for the running job to end).
 
 ## Where the data is
 
