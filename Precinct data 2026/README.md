@@ -62,9 +62,11 @@ On the release `election-night-2026`:
 | ID | Every contest by precinct, plus ballots cast by precinct |
 | WA | Every contest by precinct (Excel) |
 
-**Watched: the site answers, no 2026 general precinct file yet (29).** These are AL, CA, CO, CT, DE, FL, IL, IN, KS, KY, LA, MA, MD, MO, MS, ND, NE, NJ, NM, NV, OK, OR, PA, RI, SC, SD, VT, WV, WY. AL, KS, FL, CO, CA, OR and MO have posted precinct files for earlier elections, so those should come after certification. The rest were not checked for a past pattern. Some publish by town or county rather than precinct (VT).
+**Watched: the site answers, no 2026 general precinct file yet (30).** These are AL, AR, AZ, CA, CO, CT, DE, FL, IL, IN, KS, KY, LA, MA, MD, MO, MS, ND, NE, NJ, NM, OK, OR, PA, RI, SC, SD, VT, WV, WY. AL, KS, FL, CO, CA, OR and MO have posted precinct files for earlier elections, so those should come after certification. The rest were not checked for a past pattern. Some publish by town or county rather than precinct (VT).
 
-**Refused this script from a home connection (13).** These are AK, AR, AZ, IA, ME, MI, MT, NH, NY, OH, TN, TX, WI. The cloud pass may get a different answer: `precinct-log.csv` is the current state. Refusals are logged and left alone; don't work around them. Those files can be downloaded by hand in a browser and added.
+**Refused the cloud job (11).** These are IA, ME, MI, MT, NH, NV, NY, OH, TN, TX, WI, as of the first pass. Refusals are logged and left alone; don't work around them. Those files can be downloaded by hand in a browser and added. `precinct-log.csv` is the current state.
+
+**Alaska:** the cloud job can't verify the site's security certificate, and a home connection got a 403. Checking stays on; don't turn it off.
 
 Ohio requires each county board to upload a precinct file after certification, by a 2016 directive (not checked against current rules).
 
