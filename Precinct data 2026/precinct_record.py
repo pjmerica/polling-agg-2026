@@ -156,15 +156,25 @@ def enhanced_voting(src):
 
 
 def files(src):
+    missing = []
     for url in src["urls"]:
-        b = get(url)
+        try:
+            b = get(url)
+        except urllib.error.HTTPError as e:  # one missing file must not cost the rest of the list
+            missing.append(f"{url.rsplit('/', 1)[-1]} {e.code}")
+            continue
         yield safe_name(urllib.parse.unquote(url.rsplit("/", 1)[-1])), b, b
+    if missing:
+        raise ValueError("missing: " + ", ".join(missing))
 
 
 def counts_only(src):
-    if src["reducer"] != "nc":
+    if src["reducer"] == "nc":
+        out = nc_counts(get(src["url"]))
+    elif src["reducer"] == "server":  # the state's own server does the counting; individual rows never reach this script
+        out = get(src["url"])
+    else:
         raise ValueError(src["reducer"])
-    out = nc_counts(get(src["url"]))
     yield src["name"], out, out
 
 

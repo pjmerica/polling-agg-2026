@@ -69,6 +69,12 @@
    "pages": [
     "https://dos.fl.gov/elections/data-statistics/elections-data/precinct-level-election-results/"
    ]
+  },
+  {
+   "kind": "files",
+   "urls": [
+    "https://countyfilesvbm-ev.floridados.gov/VoteByMailEarlyVotingReports/PublicStats"
+   ]
   }
  ],
  "GA": [
@@ -314,6 +320,12 @@
    "pages": [
     "https://www.electionreturns.pa.gov/ReportCenter/Reports"
    ]
+  },
+  {
+   "kind": "counts_only",
+   "name": "ballot-returns-by-date.csv",
+   "reducer": "server",
+   "url": "https://data.pa.gov/resource/nbwd-pfn4.csv?$select=countyname,congressional,party,ballot_status,ballotreturneddate,count(*)%20as%20ballots&$group=countyname,congressional,party,ballot_status,ballotreturneddate&$order=countyname,congressional,party,ballot_status,ballotreturneddate&$limit=2000000"
   }
  ],
  "RI": [
@@ -356,6 +368,61 @@
    ]
   }
  ],
+ "US": [
+  {
+   "kind": "files",
+   "urls": [
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/US.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/AR_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/AZ_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/CA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/CO_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/CT_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/DE_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/FL_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/GA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/HI_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/IA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/ID_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/IL_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/IN_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/KS_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/KY_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/LA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/MA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/MD_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/ME_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/MI_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/MN_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/MO_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/MS_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/MT_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/NC_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/ND_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/NE_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/NJ_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/NM_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/NV_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/NY_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/OH_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/OK_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/OR_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/PA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/RI_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/SC_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/SD_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/TN_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/TX_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/UT_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/VA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/VT_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/WA_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/WI_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/WV_county.csv",
+    "https://election.lab.ufl.edu/data-downloads/earlyvote/2026/WY_county.csv"
+   ]
+  }
+ ],
  "UT": [
   {
    "election": "General11032026",
@@ -392,6 +459,12 @@
    "host": "results.votewa.gov",
    "jurisdiction": "washington",
    "kind": "enhanced_voting"
+  },
+  {
+   "kind": "files",
+   "urls": [
+    "https://www.sos.wa.gov/elections/data-research/election-data-and-maps/ballot-return-statistics"
+   ]
   }
  ],
  "WI": [

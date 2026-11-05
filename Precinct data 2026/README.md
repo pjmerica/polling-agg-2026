@@ -68,12 +68,24 @@ On the release `election-night-2026`:
 
 Ohio requires each county board to upload a precinct file after certification, by a 2016 directive (not checked against current rules).
 
+## Ballots cast and when
+
+| Source | What's in it | Date of return? |
+|---|---|---|
+| NC | Ballots by precinct, party, method | Yes, by day |
+| PA | Mail ballots by county, congressional district, party, status | Yes, by day |
+| VA | Change log of the count, by precinct, contest, method | When entered, to the second (not when the voter returned it) |
+| US (UF Election Lab) | `US.csv` and `{state}_county.csv`: requested and accepted ballots by county in 47 states, split by party, age, race and gender where the state reports them. `US.csv` names each state's source. Licensed CC BY-NC-ND (non-commercial, credit UF) | No, totals only |
+| WA, FL | Each state's ballot-count page, saved when it changes | Only as the copies change |
+
+Copies from before this record exist only for UF's national file: `State election results/data/raw/early_vote/` has Oct 23, Oct 27, Nov 2 and Nov 3.
+
 ## What isn't here
 
-- **Ballot-return dates** exist only for NC so far, with timestamps by precinct for VA. Other states' ballot-return files aren't surveyed yet.
+- **Ballot-return dates in other states.** `US.csv` lists every state's source; GA, TX, OH, WI and others may have daily files, not yet read. Voter-level files must be reduced to counts.
 - **NYT's precinct page** answers 403. It is not probed or worked around.
 - **County sites.** Many states' precinct numbers sit on county sites (TX, PA, MI, OH, WI, NJ, NY), which this doesn't read. Third-party sets (UF Election Lab, OpenElections) usually arrive months later.
 
 ## Privacy
 
-Only counts go in. NC's absentee file has names and addresses: `nc_counts` reduces it to counts and never writes the raw file. VA's change log names the local official who typed each entry: `drop_column` removes that column. `watch` skips links that look like voter files. `tests/test_precinct_record.py` covers all three.
+Only counts go in. NC's absentee file has names and addresses: `nc_counts` reduces it to counts and never writes the raw file. PA's has birth months and home coordinates: its server counts them and the rows never arrive. VA's change log names the local official who typed each entry: `drop_column` removes that column. `watch` skips links that look like voter files. `tests/test_precinct_record.py` covers all three.

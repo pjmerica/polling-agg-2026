@@ -1,6 +1,7 @@
 """Writes sources.json. Run by hand after changing a state's entry."""
 import json
 import os
+from urllib.parse import quote
 
 EV = {
     "GA": ("results.sos.ga.gov", "Georgia", "11032026GeneralAndSpecialElection"),
@@ -68,6 +69,18 @@ for st, p in PAGES.items():
     out.setdefault(st, []).append({"kind": "watch", "pages": p})
 out["VA"][0].update(wait_for=["Election Turnout", "Election Results", "Election Change Log Report"], wait_minutes=30)
 out["NC"].append({"kind": "counts_only", "reducer": "nc", "url": "https://s3.amazonaws.com/dl.ncsbe.gov/ENRS/2026_11_03/absentee_20261103.zip", "name": "ballot-returns-by-precinct.csv"})
-assert len(out) == 50, sorted(out)
+PA_QUERY = (
+    "$select=countyname,congressional,party,ballot_status,ballotreturneddate,count(*) as ballots"
+    "&$group=countyname,congressional,party,ballot_status,ballotreturneddate"
+    "&$order=countyname,congressional,party,ballot_status,ballotreturneddate&$limit=2000000"
+)
+out.setdefault("PA", []).append({"kind": "counts_only", "reducer": "server", "name": "ballot-returns-by-date.csv", "url": "https://data.pa.gov/resource/nbwd-pfn4.csv?" + quote(PA_QUERY, safe="$=&,*()")})
+# Pages that show ballot counts by county, saved when they change.
+out["WA"].append({"kind": "files", "urls": ["https://www.sos.wa.gov/elections/data-research/election-data-and-maps/ballot-return-statistics"]})
+out["FL"].append({"kind": "files", "urls": ["https://countyfilesvbm-ev.floridados.gov/VoteByMailEarlyVotingReports/PublicStats"]})
+# UF Election Lab's compiled ballot counts: the national file and each state's county file (none for AK, AL, NH).
+UF = "https://election.lab.ufl.edu/data-downloads/earlyvote/2026"
+out["US"] = [{"kind": "files", "urls": [f"{UF}/US.csv"] + [f"{UF}/{s}_county.csv" for s in sorted(set(out) - {"AK", "AL", "NH", "US"})]}]
+assert len(out) == 51, sorted(out)
 json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "sources.json"), "w", encoding="utf-8"), indent=1, sort_keys=True)
 print(len(out), "states", sum(len(v) for v in out.values()), "sources")
