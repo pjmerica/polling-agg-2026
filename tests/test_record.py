@@ -155,3 +155,52 @@ def test_kalshi_market_only_the_series_listing_has_is_kept(monkeypatch):
     got = market_archive.kalshi_markets("2026-01-01", 0, 1)
     assert sorted(m["ticker"] for m in got) == ["IN-EVENTS", "ONLY-IN-SERIES"]
     assert not next(m for m in got if m["ticker"] == "ONLY-IN-SERIES").get("historical")
+
+
+def test_kalshi_trades_from_both_apis_once_each_oldest_first(monkeypatch):
+    t = lambda i, when: {"trade_id": i, "created_time": when, "count_fp": "2.50", "yes_price_dollars": "0.40", "no_price_dollars": "0.60", "taker_side": "yes"}
+    pages = {"historical/trades?ticker=A&limit=1000": {"trades": [t("b", "2026-08-02"), t("a", "2026-08-01")], "cursor": "n"},
+             "historical/trades?ticker=A&limit=1000&cursor=n": {"trades": [t("c", "2026-07-01")], "cursor": ""},
+             "markets/trades?ticker=A&limit=1000": {"trades": [t("d", "2026-11-01"), t("b", "2026-08-02")], "cursor": ""}}
+    monkeypatch.setattr(market_archive, "get", lambda url: pages[url.split("/v2/")[1]])
+    monkeypatch.setattr(market_archive.time, "sleep", lambda s: None)
+    rec = dict(errors=0)
+    assert [x["trade_id"] for x in market_archive.kalshi_trades(dict(ticker="A"), rec)] == ["c", "a", "b", "d"]
+    assert rec["errors"] == 0
+
+
+def test_failed_trades_request_is_counted_and_keeps_what_it_has(monkeypatch):
+    def get(url):
+        if "historical" in url:
+            return None
+        return {"trades": [{"trade_id": "x", "created_time": "2026-11-01"}], "cursor": "n"} if "cursor" not in url else None
+    monkeypatch.setattr(market_archive, "get", get)
+    monkeypatch.setattr(market_archive.time, "sleep", lambda s: None)
+    rec = dict(errors=0)
+    assert [x["trade_id"] for x in market_archive.kalshi_trades(dict(ticker="A"), rec)] == ["x"]
+    assert rec["errors"] == 2
+
+
+def test_trades_file_has_every_column(tmp_path):
+    d = tmp_path / "out" / "kalshi-trades" / "trades"
+    d.mkdir(parents=True)
+    path = str(d / "A.csv.gz")
+    market_archive.write_trades(path, [{"created_time": "2026-11-01T00:00:00Z", "trade_id": "x", "yes_price_dollars": "0.40", "no_price_dollars": "0.60", "count_fp": "2.50",
+                                        "taker_side": "no", "taker_book_side": "ask", "taker_outcome_side": "no", "is_block_trade": False}])
+    with gzip.open(path, "rt", newline="") as f:
+        rows = list(csv.reader(f))
+    assert rows == [market_archive.TRADE_COLUMNS, ["2026-11-01T00:00:00Z", "x", "0.40", "0.60", "2.50", "no", "ask", "no", "False"]]
+
+
+def test_kalshi_politics_lists_only_its_category(monkeypatch):
+    def get(url):
+        if url.endswith("/series"):
+            return {"series": [{"ticker": "KXSAVEACT", "category": "Politics"}, {"ticker": "HOUSEPA", "category": "Elections"}]}
+        assert "KXSAVEACT" in url, url
+        if "/events?" in url:
+            return {"events": [{"event_ticker": "E", "title": "t", "markets": [{"ticker": "OPEN", "close_time": "2029-01-01T00:00:00Z"}]}]}
+        return {"markets": [{"ticker": "OLD", "close_time": "2021-01-01T00:00:00Z"}]} if "/historical/" in url else {"markets": []}
+    monkeypatch.setattr(market_archive, "get", get)
+    monkeypatch.setattr(market_archive.time, "sleep", lambda s: None)
+    got = market_archive.kalshi_markets("2000-01-01", 0, 1, "Politics")
+    assert sorted(m["ticker"] for m in got) == ["OLD", "OPEN"]

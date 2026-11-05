@@ -16,7 +16,7 @@ on:
         description: 'in the asset names; must be new for this venue'
         required: true
       venues:
-        description: 'JSON list: kalshi, polymarket, kalshi-older (settled markets before 2026 and Politics)'
+        description: 'JSON list: kalshi, polymarket, kalshi-older (settled before 2026), kalshi-politics (all Politics), kalshi-trades (every trade in Elections)'
         default: '["kalshi", "polymarket"]'
 
 jobs:

@@ -12,6 +12,14 @@ shards; each shard's tar.gz goes to the release election-night-2026 as it grows.
               since 2021, some of which aren't about elections (shutdowns, approval). By the hour for the market's whole life; by
               the minute over its last 9 days and around each November election it was open for (ELECTION_NIGHTS), because the
               2024 general-election markets stayed open until inauguration, so their last days aren't election night.
+  kalshi-politics  every market in Kalshi's Politics category, whatever its date, open or settled: confirmations, bills, shutdowns,
+              Trump's calendar, and the election-looking series kalshi-older also has. Prices as for kalshi-older, with "last 9 days"
+              meaning the 9 days before the run for a market still open.
+  kalshi-trades  every trade in the Elections markets --venue kalshi lists, for the market's whole life, from /markets/trades and
+              /historical/trades (Kalshi moves trades before its cutoff to the second). Files: trades/{ticker}.csv.gz, oldest first.
+              Columns: created_time (UTC), trade_id, yes_price and no_price (dollars), count (contracts), taker_side,
+              taker_book_side, taker_outcome_side (as Kalshi reports them: which side took the resting order), is_block_trade.
+              Nothing identifies the traders.
   polymarket  every market in events with one of TAGS ending on or after --since: the YES token's whole life by the hour, by
               the minute from --minute-start, by the minute from --core-minute-start for general-election winner markets, and
               by the minute over the last 9 days of any market that stopped before --minute-start. Columns: ts, price. It has
@@ -26,7 +34,7 @@ shards; each shard's tar.gz goes to the release election-night-2026 as it grows.
 A request that still fails after retries counts in the index as errors, per market and per file, so a failed fetch can't pass
 for a market with no prices.
 
-Files: market_archive/{venue}/{hour,minute}/{ticker or token}.csv.gz, and index-{shard}.json (what each market is).
+Files: market_archive/{venue}/{hour,minute,trades}/{ticker or token}.csv.gz, and index-{shard}.json (what each market is).
 
     py market_archive.py --venue kalshi --shard 0 --of 4 --out DIR --minutes 330
 """
@@ -54,7 +62,7 @@ TAGS = ("elections", "midterms", "primaries", "global-elections", "congress", "g
 RANGE = 14 * 86400      # the longest date range to ask Polymarket for (15 days works, 20 returns 400, at any fidelity)
 LAST_DAYS = 9 * 86400   # by the minute before a market that stopped earlier closed
 POLY_THREADS = 3        # at once per job, 8 jobs: about 70 requests a second against a published limit of 100
-ELECTION_NIGHTS = [("2022-11-01", "2022-11-20"), ("2023-11-01", "2023-11-15"), ("2024-11-01", "2024-11-20"), ("2025-11-01", "2025-11-15")]
+ELECTION_NIGHTS = [("2022-11-01", "2022-11-20"), ("2023-11-01", "2023-11-15"), ("2024-11-01", "2024-11-20"), ("2025-11-01", "2025-11-15"), ("2026-11-01", "2026-11-20")]
 OLDER_WORD = re.compile(r"\b(presiden\w*|senat\w*|house|congress\w*|governor\w*|gubernat\w*|elect\w*|nomin\w*|primar\w*|mayor\w*|ballot|vote\w*|runoff|midterm\w*|speaker|party)\b", re.I)
 OLDER_TICK = re.compile(r"^(KX)?(PRES|SENATE|HOUSE|GOV|ELECT|ECWIN|POPVOTE|POWER|CONTROL|ECMOV|NOMINEE|RUNNING|VP)", re.I)
 WINNER = re.compile(r"-(house|senate|governor)-election-winner|-governor-winner-2026|which-party-will-win-the-house-race")
@@ -95,9 +103,9 @@ def mine(key, shard, of):
     return zlib.crc32(key.encode()) % of == shard
 
 
-def kalshi_markets(since, shard, of):
-    series = [s for s in (get(f"{KALSHI}/series") or {}).get("series", []) if s.get("category") == "Elections"]
-    print(len(series), "Elections series", flush=True)
+def kalshi_markets(since, shard, of, category="Elections"):
+    series = [s for s in (get(f"{KALSHI}/series") or {}).get("series", []) if s.get("category") == category]
+    print(len(series), category, "series", flush=True)
     out, seen = [], set()
     for s in series:
         cursor = ""
@@ -219,6 +227,40 @@ def kalshi_candles(m, start, end, period, rec=None):
     return list({c.get("end_period_ts"): c for c in cs}.values())
 
 
+TRADE_COLUMNS = ["created_time", "trade_id", "yes_price", "no_price", "count", "taker_side", "taker_book_side", "taker_outcome_side", "is_block_trade"]
+
+
+def kalshi_trades(m, rec):
+    """Every trade in a market, oldest first. A failed request counts in rec["errors"]; the trades found before it are kept."""
+    seen = {}
+    for base in ("historical/trades", "markets/trades"):
+        cursor = ""
+        while True:
+            j = get(f"{KALSHI}/{base}?ticker={m['ticker']}&limit=1000" + (f"&cursor={cursor}" if cursor else ""))
+            if j is None:
+                rec["errors"] += 1
+                break
+            for x in j.get("trades") or []:
+                seen[x.get("trade_id")] = x
+            cursor = j.get("cursor")
+            if not cursor or not j.get("trades"):
+                break
+            time.sleep(0.03)
+        time.sleep(0.03)
+    return sorted(seen.values(), key=lambda x: x.get("created_time") or "")
+
+
+def write_trades(path, trades):
+    tmp = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))), os.path.basename(path) + ".part")
+    with gzip.open(tmp, "wt", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(TRADE_COLUMNS)
+        for x in trades:
+            w.writerow([x.get("created_time"), x.get("trade_id"), x.get("yes_price_dollars"), x.get("no_price_dollars"), x.get("count_fp"),
+                        x.get("taker_side"), x.get("taker_book_side"), x.get("taker_outcome_side"), x.get("is_block_trade")])
+    os.replace(tmp, path)       # an upload running meanwhile sees whole files only
+
+
 def write_kalshi(path, cs):
     with gzip.open(path, "wt", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
@@ -301,7 +343,7 @@ def upload(out, name):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--venue", required=True, choices=("kalshi", "kalshi-older", "polymarket"))
+    ap.add_argument("--venue", required=True, choices=("kalshi", "kalshi-older", "kalshi-politics", "kalshi-trades", "polymarket"))
     ap.add_argument("--shard", type=int, default=0)
     ap.add_argument("--of", type=int, default=1)
     ap.add_argument("--out", required=True)
@@ -317,7 +359,15 @@ def main():
     v = os.path.join(a.out, a.venue)
     os.makedirs(os.path.join(v, "hour"), exist_ok=True)
     os.makedirs(os.path.join(v, "minute"), exist_ok=True)
-    markets = dict(kalshi=kalshi_markets, polymarket=polymarket_markets)[a.venue](a.since, a.shard, a.of) if a.venue != "kalshi-older" else kalshi_older_markets(a.since, a.shard, a.of)
+    os.makedirs(os.path.join(v, "trades"), exist_ok=True)
+    if a.venue == "kalshi-older":
+        markets = kalshi_older_markets(a.since, a.shard, a.of)
+    elif a.venue == "kalshi-politics":
+        markets = kalshi_markets("2000-01-01", a.shard, a.of, "Politics")
+    elif a.venue == "polymarket":
+        markets = polymarket_markets(a.since, a.shard, a.of)
+    else:
+        markets = kalshi_markets(a.since, a.shard, a.of)
     print(len(markets), "markets in this shard", flush=True)
     if a.venue == "polymarket":
         markets.sort(key=lambda m: -m["vol"])       # if time runs out, the least traded go
@@ -332,7 +382,7 @@ def main():
     def fetch(m):
         if time.time() > stop:
             return None
-        rec = dict(m, hour=0, minute=0, errors=0)
+        rec = dict(m, hour=0, minute=0, trades=0, errors=0)
         if a.venue == "kalshi":
             key = re.sub(r"[^\w.-]", "_", m["ticker"])
             closed_at = stamp(m["close"]) if m.get("close") else end
@@ -342,9 +392,15 @@ def main():
                 if cs:
                     write_kalshi(os.path.join(v, res, key + ".csv.gz"), cs)
                     rec[res] = len(cs)
-        elif a.venue == "kalshi-older":
+        elif a.venue == "kalshi-trades":
+            trades = kalshi_trades(m, rec)
+            if trades:
+                write_trades(os.path.join(v, "trades", re.sub(r"[^\w.-]", "_", m["ticker"]) + ".csv.gz"), trades)
+                rec["trades"] = len(trades)
+                rec["contracts"] = round(sum(float(x.get("count_fp") or 0) for x in trades), 2)
+        elif a.venue in ("kalshi-older", "kalshi-politics"):
             key = re.sub(r"[^\w.-]", "_", m["ticker"])
-            c = stamp(m["close"])
+            c = min(stamp(m["close"]), end) if m.get("close") else end     # a market still open: up to now
             o = stamp(m["open"]) if m.get("open") else c - 365 * 86400
             cs = kalshi_candles(m, o - 3600, c + 3600, 60, rec)
             if cs:
@@ -367,9 +423,9 @@ def main():
                 cut = i if cut is None else cut
                 continue
             index.append(rec)
-            done += bool(rec["hour"] or rec["minute"])
+            done += bool(rec["hour"] or rec["minute"] or rec["trades"])
             if (i + 1) % 500 == 0:
-                print(i + 1, "of", len(markets), "markets;", done, "with prices;", sum(r["errors"] for r in index), "failed requests", flush=True)
+                print(i + 1, "of", len(markets), "markets;", done, "with data;", sum(r["errors"] for r in index), "failed requests", flush=True)
             if time.time() - last_up > UPLOAD_EVERY:
                 with open(idx_path, "w", encoding="utf-8") as f:
                     json.dump(dict(total=len(markets), done=i + 1, end=end, markets=index), f)
@@ -380,7 +436,7 @@ def main():
     with open(idx_path, "w", encoding="utf-8") as f:
         json.dump(dict(total=len(markets), done=len(index), cut_at=cut, end=end, markets=index), f)
     upload(a.out, name)
-    print(f"done: {len(index)} of {len(markets)} markets, {done} with prices, {sum(r['errors'] for r in index)} failed requests", flush=True)
+    print(f"done: {len(index)} of {len(markets)} markets, {done} with data, {sum(r['errors'] for r in index)} failed requests", flush=True)
 
 
 if __name__ == "__main__":
