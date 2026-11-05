@@ -127,6 +127,19 @@ def kalshi_markets(since, shard, of):
                 break
             time.sleep(0.05)
         time.sleep(0.05)
+        cursor = ""
+        while True:     # /events misses some markets a series lists (NC Supreme Court, PA State House)
+            d = get(f"{KALSHI}/markets?series_ticker={s['ticker']}&limit=1000" + (f"&cursor={cursor}" if cursor else "")) or {}
+            for m in d.get("markets") or []:
+                if m["ticker"] not in seen and (m.get("close_time") or "9") >= since and mine(m["ticker"], shard, of):
+                    seen.add(m["ticker"])
+                    out.append(dict(series=s["ticker"], event=m.get("event_ticker"), title=m.get("title"), ticker=m["ticker"], side=m.get("yes_sub_title"),
+                                    status=m.get("status"), result=m.get("result"), open=m.get("open_time"), close=m.get("close_time")))
+            cursor = d.get("cursor")
+            if not cursor:
+                break
+            time.sleep(0.05)
+        time.sleep(0.05)
     return out
 
 
