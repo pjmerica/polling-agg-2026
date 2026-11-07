@@ -1,1 +1,1 @@
-const ARB = {"updated_at":"2026-11-07T07:48:15.100374+00:00","fees":{"kalshi":0.02,"predictit":0.12,"polymarket":0.02},"races":[]};
+const ARB = {"updated_at":"2026-11-07T15:57:20.731872+00:00","fees":{"kalshi":0.02,"predictit":0.12,"polymarket":0.02},"races":[]};
