@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-08T17:59:38",
+ "generated_at": "2026-11-08T18:23:37",
  "polls_max_end_date": "2026-11-02",
  "n_poll_rows": 3887,
  "n_races": 184,
@@ -26,7 +26,7 @@
    8.8
   ]
  ],
- "run_id": "20261108T175855",
+ "run_id": "20261108T182257",
  "feature_fill": {
   "fund_receipts_ln": 0.6966,
   "fund_share": 0.6987,
