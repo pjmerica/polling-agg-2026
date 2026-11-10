@@ -204,3 +204,12 @@ def test_kalshi_politics_lists_only_its_category(monkeypatch):
     monkeypatch.setattr(market_archive.time, "sleep", lambda s: None)
     got = market_archive.kalshi_markets("2000-01-01", 0, 1, "Politics")
     assert sorted(m["ticker"] for m in got) == ["OLD", "OPEN"]
+
+
+def test_pass_interval_slows_with_the_count():
+    import datetime as dt
+    at = lambda *a: dt.datetime(*a, tzinfo=dt.timezone.utc)
+    assert cloud_night.pass_interval(at(2026, 11, 4, 1)) == 120
+    assert cloud_night.pass_interval(at(2026, 11, 4, 18)) == 300
+    assert cloud_night.pass_interval(at(2026, 11, 9, 23, 59)) == 300
+    assert cloud_night.pass_interval(at(2026, 11, 10, 0)) == 1800

@@ -1,7 +1,7 @@
 """Election night in the cloud: the NYT recorder, the market recorder and the projector in one loop,
 run by GitHub Actions (.github/workflows/election-night.yml) so the night doesn't depend on this PC.
 
-Every pass (2 min on election night, 5 min from Wed Nov 4 18:00 UTC):
+Every pass (2 min on election night, 5 min from Wed Nov 4 18:00 UTC, 30 min from Nov 10 00:00 UTC):
   capture_live.poll        NYT's results file for each race, every county (saved when it changes)
   capture_markets          Kalshi and Polymarket best bid/ask for each race
   live_project.run_live    v1/v0 projections, best buys, FLIPs -> live_data.js
@@ -55,6 +55,7 @@ import live_project  # noqa: E402
 # Was Nov 8. To go longer, change this and the date and cron in election-night.yml.
 END = dt.datetime(2026, 12, 15, 5, 0, tzinfo=dt.timezone.utc)
 LATE_FROM = dt.datetime(2026, 11, 8, 5, 0, tzinfo=dt.timezone.utc)   # from here the archive goes up every LATE_UPLOAD s
+QUIET_FROM = dt.datetime(2026, 11, 10, 0, 0, tzinfo=dt.timezone.utc)  # user 2026-11-09: the desk can update every 30 minutes now
 SLOW_FROM = dt.datetime(2026, 11, 4, 18, 0, tzinfo=dt.timezone.utc)  # Wed 1 pm ET: the late counts move slowly
 # No job hand-off (about a minute without updates) inside these: a job that would end inside one ends just before
 # it instead, and the next job covers the whole window (6:20-11:50 pm ET = first poll close through Iowa/Nebraska;
@@ -250,7 +251,7 @@ def save_inputs(archive):
     with open(os.path.join(d, "run.json"), "w", encoding="utf-8") as f:
         json.dump(dict(sha=os.environ.get("GITHUB_SHA"), run=os.environ.get("GITHUB_RUN_ID"),
                        started=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                       races=live_project.RACES, interval_s=dict(night=120, after=300)), f, indent=1)
+                       races=live_project.RACES, interval_s=dict(night=120, after=300, from_nov_10=1800)), f, indent=1)
 
 
 def capture_states(archive, date, last_hash):
@@ -300,6 +301,11 @@ def failed(msg):
     log(msg)
     with open(UPLOAD_FAILED, "a", encoding="utf-8") as f:
         f.write(f"{dt.datetime.now(dt.timezone.utc):%Y-%m-%dT%H:%M:%SZ} {msg}\n")
+
+
+def pass_interval(now):
+    """Seconds between passes at this moment."""
+    return 1800 if now >= QUIET_FROM else 300 if now >= SLOW_FROM else 120
 
 
 def record_prices(archive, kal, poly, until):
@@ -395,7 +401,7 @@ def main():
     ap.add_argument("--archive", default="archive", help="older NYT files go here (uploaded as an artifact)")
     ap.add_argument("--date", default="2026-11-03")
     ap.add_argument("--minutes", type=float, default=340, help="stop after this long (GitHub's limit is 360)")
-    ap.add_argument("--interval", type=int, help="seconds between passes (default 120, 300 after Wed 1 pm ET)")
+    ap.add_argument("--interval", type=int, help="seconds between passes (default pass_interval: 120, then 300, then 1800)")
     ap.add_argument("--no-push", action="store_true")
     a = ap.parse_args()
     state, archive = os.path.abspath(a.state), os.path.abspath(a.archive)
@@ -529,7 +535,7 @@ def main():
             traceback.print_exc()
         took = time.time() - start
         log(f"pass {n} done in {took:.0f}s")
-        interval = a.interval or (300 if now_dt >= SLOW_FROM else 120)
+        interval = a.interval or pass_interval(now_dt)
         if time.time() + interval > stop:
             log("job time used up; the workflow starts the next job")
             break

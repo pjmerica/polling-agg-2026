@@ -2,7 +2,7 @@ name: Election night (cloud)
 
 # Election night without the PC: "Election night simulator/scripts/cloud_night.py" records NYT's
 # county results and Kalshi/Polymarket prices and runs the projector every 2 minutes (5 from
-# Wed 1 pm ET), keeping its state on the orphan branch `election-live` (one commit, force-pushed).
+# Wed Nov 4 1 pm ET, 30 from Nov 10), keeping its state on the orphan branch `election-live` (one commit, force-pushed).
 # docs/election-night-cloud.html and docs/election-night-desk.html read live_data.js from that branch.
 #
 # A job runs ~5h40m (GitHub stops jobs at 6h), then dispatches the next one, which waits in the

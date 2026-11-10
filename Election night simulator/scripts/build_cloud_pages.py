@@ -8,8 +8,8 @@ file (data/raw/dashboard/live_data.js) it gets live_data.js from the orphan bran
 fetched rather than loaded as a script because GitHub serves raw files as plain text. From
 raw.githubusercontent.com with a fresh query string each time (tested 2026-11-02: that skipped its 5-minute
 cache; on election night it didn't, serving one pass for 7 minutes); GitHub's API (60 requests an hour per
-address) when raw fails or its copy is over 2.5 minutes old, at most every ~2 minutes. Re-run after editing
-either page.
+address) when raw fails or its copy is over 31 minutes old (a pass every 30 minutes since Nov 10), at most every
+~2 minutes. Re-run after editing either page.
 
     py "Election night simulator/scripts/build_cloud_pages.py"
 """
@@ -22,17 +22,17 @@ MARKER = '<script>\n"use strict";'
 
 LOADER = """<script>
 // Cloud copy (build_cloud_pages.py): the data file comes from the election-live branch, written every
-// 2 minutes by cloud_night.py in GitHub Actions. Any script whose src is the live data file is fetched
+// 30 minutes by cloud_night.py in GitHub Actions. Any script whose src is the live data file is fetched
 // from there instead; every other script loads as usual.
 (function () {
   const REPO = "pjmerica/polling-agg-2026", BRANCH = "election-live";
   const API = "https://api.github.com/repos/" + REPO + "/contents/live_data.js?ref=" + BRANCH;
   const RAW = "https://raw.githubusercontent.com/" + REPO + "/" + BRANCH + "/live_data.js";
-  const MIN_GAP = 30000;                    // the pages ask every 10-15 s; the data changes every 2 min
+  const MIN_GAP = 30000;                    // the pages ask every 10-15 s; the data changes every 30 min
   // raw's cache can ignore the query string (2026-11-03 election night: the same pass served for 7 minutes
   // while the branch moved on), so a copy older than STALE also asks the API, at most once per API_GAP
   // (~30 an hour, under its 60 an hour per address)
-  const STALE = 150000, API_GAP = 115000;
+  const STALE = 31 * 60000, API_GAP = 115000;
   const genAt = s => { const i = s ? s.indexOf('"generated":"') : -1; return i < 0 ? 0 : Date.parse(s.slice(i + 13, i + 33)) || 0; };
   let text = null, at = 0, apiOffUntil = 0, apiAt = 0;
   async function get() {
@@ -83,6 +83,8 @@ PAGES = [
     ("dashboard.html", "election-night-cloud.html",
      [("<title>Election Night Live</title>", "<title>Election Night Live (cloud)</title>"),
       ("Is live_project.py --watch still running?", "Is the Election night (cloud) workflow running?"),
+      # a pass every 30 minutes since Nov 10: warn when one is really missing
+      ("!PUBLIC && !D.dry_run && ageS(D.generated) > 300", "!PUBLIC && !D.dry_run && ageS(D.generated) > 2400"),
       ('"No data yet. Start the projector: py \\"Election night simulator/scripts/live_project.py\\" --watch 30 '
        '(or run scripts/run_dashboard.cmd). " +\n      "This page reads " + SRC + " next to it."',
        '"No data yet: the Election night (cloud) workflow hasn\'t published (branch election-live)."')]),
@@ -91,6 +93,16 @@ PAGES = [
       ('"Start run_dashboard.cmd (the projector writes it)."',
        '"The Election night (cloud) workflow hasn\'t published yet."'),
       ("Is live_project.py --watch still running?", "Is the Election night (cloud) workflow running?"),
+      # a pass every 30 minutes since Nov 10: warn when one is really missing, and say how often it updates
+      ("(new Date() - new Date(D.generated)) > 300000", "(new Date() - new Date(D.generated)) > 2400000"),
+      ("Senate and Governor races. Every 2 minutes it takes", "Senate and Governor races. Every 30 minutes (every 2 on election night) it takes"),
+      ("every county · checked every 2 min", "every county · checked every 30 min"),
+      ("5 levels of each book · every 2 min", "5 levels of each book · on the page every 30 min, recorded every 20 s"),
+      ("NYT is checked every 2 minutes and this page refreshes every 30 seconds, so a number can be up to about 2.5 minutes behind NYT.",
+       "NYT is checked every 30 minutes and this page refreshes every 30 seconds, so a number or a price can be up to about 35 minutes old."),
+      ("every 5 minutes from Wednesday 1 pm ET; the cloud run stops Saturday night.", "every 5 minutes from Wednesday Nov 4 at 1 pm ET, every 30 minutes from Nov 10; the cloud run stops Dec 15."),
+      ("A \"Stale\" alert appears if nothing has been written for 5 minutes.", "A \"Stale\" alert appears if nothing has been written for 40 minutes."),
+      ("the data comes from GitHub Actions every 2 minutes", "the data comes from GitHub Actions every 30 minutes"),
       # buy signals and the Kalshi board on by default here (the local page starts with them off)
       ('const ui = { sel: null, sort: "close", sig: REPLAY,', 'const ui = { sel: null, sort: "close", sig: true,')]),
 ]
