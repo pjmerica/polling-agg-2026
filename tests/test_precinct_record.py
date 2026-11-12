@@ -63,3 +63,31 @@ def test_stable_ignores_publish_stamps_but_not_votes():
     c = b'{"asOf":"2026-11-05T02:00:00Z","publishVersionId":"y","blobName":"a_2.csv","voteCount":6}'
     assert pr.stable(a) == pr.stable(b)
     assert pr.stable(a) != pr.stable(c)
+
+
+def test_alaska_links_come_from_the_results_page_and_only_its_2026_folders():
+    page = "https://www.elections.alaska.gov/election-results/"
+    html = '''<a href="https://www.elections.alaska.gov/enr/26GENR/results/GA_ENR_Precinct_State_of_Alaska.csv">csv</a>
+      <a href='/enr/26GENR/results/HD1.pdf'>HD01</a> <a href="/results/26GENR/RCV-Governor.pdf#top">rounds</a>
+      <a href="/results/24GENR/ENRbyPrecinct.csv">2024</a> <a href="/election-results/e/?id=26prim">primary</a>
+      <a href="https://example.com/enr/26GENR/results/x.csv">elsewhere</a>
+      <a href="http://www.elections.alaska.gov/enr/26GENR/results/plain.csv">not https</a>'''
+    import json
+    src = json.load(open(os.path.join(ROOT, "Precinct data 2026", "sources.json"), encoding="utf-8"))["AK"][0]
+    assert src["kind"] == "linked" and src["pages"] == [page]
+    assert pr.links_matching(html, page, src["match"]) == [
+        "https://www.elections.alaska.gov/enr/26GENR/results/GA_ENR_Precinct_State_of_Alaska.csv",
+        "https://www.elections.alaska.gov/enr/26GENR/results/HD1.pdf",
+        "https://www.elections.alaska.gov/results/26GENR/RCV-Governor.pdf",
+    ]
+
+
+def test_a_prove_you_are_human_page_is_not_saved_as_data(monkeypatch):
+    challenge = b'<!DOCTYPE html><html lang="en"><head><title>Human Verification</title><script>window.awsWafCookieDomainList = [];</script>'
+    assert pr.is_challenge(challenge)
+    assert not pr.is_challenge(b"Precinct_name,Reporting_flag\n01-446 Aurora,captcha county\n")
+    pages = {"https://s.gov/r/": b'<a href="/enr/26GENR/results/a.csv">a</a><a href="/enr/26GENR/results/b.html">b</a>',
+             "https://s.gov/enr/26GENR/results/a.csv": b"x,y\n1,2\n", "https://s.gov/enr/26GENR/results/b.html": challenge}
+    monkeypatch.setattr(pr, "get", lambda url: pages[url])
+    st, src, rows, status = pr.fetch(("AK", {"kind": "linked", "pages": ["https://s.gov/r/"], "match": r"/enr/26GENR/.+\.(csv|html)$"}))
+    assert [r[0] for r in rows] == ["a.csv"] and "b.html refused challenge" in status

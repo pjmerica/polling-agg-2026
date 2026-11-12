@@ -6,7 +6,8 @@ shows when each state's numbers moved during the late count. precinct-state.json
 the history across passes. README.md defines every column.
 
 Only counts go in. Voter-level files (NC's absentee list has names and addresses) are reduced to counts here and the raw
-file is never written. A site that refuses this script (403) is logged as "refused" and left alone.
+file is never written. A site that refuses this script (403, or a "prove you are human" page) is logged as "refused" and
+left alone.
 """
 import argparse
 import collections
@@ -43,8 +44,17 @@ FILE_EXT = re.compile(r"\.(xlsx?|csv|zip|txt|pdf|json|tsv)$", re.I)
 NC_KEYS = ["county_desc", "precinct_desc", "cong_dist_desc", "voter_party_code", "ballot_req_delivery_type", "ballot_req_type", "ballot_rtn_dt", "ballot_rtn_status"]
 
 
+CHALLENGE = re.compile(rb"awswaf|Human Verification|cf-challenge|captcha", re.I)
+
+
 class Refused(Exception):
     pass
+
+
+def is_challenge(b):
+    """A "prove you are human" page served in place of the file. That is a refusal: it is logged and not worked around."""
+    head = b[:4000]
+    return b"<html" in head.lower() and bool(CHALLENGE.search(head))
 
 
 def get(url, attempts=3):
@@ -168,6 +178,41 @@ def files(src):
         raise ValueError("missing: " + ", ".join(missing))
 
 
+def links_matching(html, base, pattern):
+    """Every link on a page, on that state's own site, whose address matches the source's pattern."""
+    host = ".".join(urllib.parse.urlparse(base).hostname.split(".")[-2:])
+    pat, found = re.compile(pattern, re.I), set()
+    for m in re.finditer(r"""href=["']([^"']+)["']""", html, re.I):
+        url = urllib.parse.urljoin(base, m.group(1).strip().replace("&amp;", "&")).split("#")[0]
+        parts = urllib.parse.urlparse(url)
+        if parts.scheme == "https" and parts.hostname and parts.hostname.endswith(host) and pat.search(parts.path):
+            found.add(url)
+    return sorted(found)
+
+
+def linked(src):
+    """The files a results page links to under a known folder. The page names them, so a renamed or added file (Alaska's
+    ranked-choice reports, its final copies) is picked up without a change here."""
+    problems, n = [], 0
+    for page in src["pages"]:
+        for url in links_matching(get(page).decode("utf-8", "replace"), page, src["match"]):
+            name = safe_name(urllib.parse.unquote(url.rsplit("/", 1)[-1]))
+            try:
+                b = get(url)
+            except (urllib.error.HTTPError, Refused) as e:  # one file must not cost the rest
+                problems.append(f"{name} {getattr(e, 'code', None) or 'refused ' + str(e)}")
+                continue
+            if is_challenge(b):
+                problems.append(f"{name} refused challenge")
+                continue
+            n += 1
+            yield name, b, b
+    if problems:
+        raise ValueError("missing: " + ", ".join(problems))
+    if not n:
+        raise ValueError("no file linked from the page matches")
+
+
 def counts_only(src):
     if src["reducer"] == "nc":
         out = nc_counts(get(src["url"]))
@@ -187,7 +232,7 @@ def watch(src):
             yield "file-" + safe_name(urllib.parse.unquote(url.rsplit("/", 1)[-1])), b, b
 
 
-KINDS = {"enhanced_voting": enhanced_voting, "files": files, "counts_only": counts_only, "watch": watch}
+KINDS = {"enhanced_voting": enhanced_voting, "files": files, "counts_only": counts_only, "watch": watch, "linked": linked}
 
 
 def fetch(item):

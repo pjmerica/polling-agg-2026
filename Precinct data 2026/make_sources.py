@@ -16,7 +16,6 @@ FILES = {
     "NC": ["https://s3.amazonaws.com/dl.ncsbe.gov/ENRS/2026_11_03/results_pct_20261103.zip"],
 }
 PAGES = {
-    "AK": ["https://www.elections.alaska.gov/results/26GENR/"],
     "AL": ["https://www.sos.alabama.gov/alabama-votes/voter/election-data"],
     "AR": ["https://results.enr.clarityelections.com/AR/"],
     "AZ": ["https://azsos.gov/elections/results-data"],
@@ -67,6 +66,10 @@ for st, u in FILES.items():
     out.setdefault(st, []).append({"kind": "files", "urls": u})
 for st, p in PAGES.items():
     out.setdefault(st, []).append({"kind": "watch", "pages": p})
+# Alaska: the results page links every file. During the count they sit under /enr/26GENR/results/ (precinct CSV with
+# vote method, summary, one PDF per House district, the ballot-by-ballot record with every ranking); in 2024 the final
+# copies and the ranked-choice round reports went to /results/24GENR/ under other names, so both folders are matched.
+out["AK"] = [{"kind": "linked", "pages": ["https://www.elections.alaska.gov/election-results/"], "match": r"/(enr|results)/26GENR/.+\.(csv|pdf|zip|txt|json|xlsx?|html?)$"}]
 out["VA"][0].update(wait_for=["Election Turnout", "Election Results", "Election Change Log Report"], wait_minutes=30)
 out["NC"].append({"kind": "counts_only", "reducer": "nc", "url": "https://s3.amazonaws.com/dl.ncsbe.gov/ENRS/2026_11_03/absentee_20261103.zip", "name": "ballot-returns-by-precinct.csv"})
 PA_QUERY = (

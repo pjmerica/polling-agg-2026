@@ -1,9 +1,10 @@
 {
  "AK": [
   {
-   "kind": "watch",
+   "kind": "linked",
+   "match": "/(enr|results)/26GENR/.+\\.(csv|pdf|zip|txt|json|xlsx?|html?)$",
    "pages": [
-    "https://www.elections.alaska.gov/results/26GENR/"
+    "https://www.elections.alaska.gov/election-results/"
    ]
   }
  ],

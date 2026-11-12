@@ -22,9 +22,9 @@ On the release `election-night-2026`:
 |---|---|
 | `pass_utc` | When the pass ran (UTC) |
 | `state` | Two-letter state |
-| `kind` | `enhanced_voting`, `files`, `counts_only` or `watch` (below) |
+| `kind` | `enhanced_voting`, `files`, `linked`, `counts_only` or `watch` (below) |
 | `file` | The file, blank when the source gave none |
-| `status` | `new` (changed, so saved), `same`, `nothing yet` (no 2026 general precinct file on the page), `refused 403` (the site refuses this script), or `error ...` |
+| `status` | `new` (changed, so saved), `same`, `nothing yet` (no 2026 general precinct file on the page), `refused 403` (the site refuses this script), or `error ...` (`refused challenge` inside it: the site answered with a "prove you are human" page, which is not saved) |
 | `bytes` | File size |
 | `sha` | First 16 characters of the content hash |
 
@@ -44,12 +44,13 @@ On the release `election-night-2026`:
 |---|---|
 | `enhanced_voting` | Results software used by GA, VA, UT, ID and WA: the election record, its published reports, and the whole-state export |
 | `files` | Fixed file addresses |
+| `linked` | Reads a results page and fetches every file it links under a named folder (Alaska) |
 | `counts_only` | A voter-level file reduced to counts; the raw file is never stored |
 | `watch` | Reads a state's results page and fetches any 2026 general precinct file that appears on it |
 
 ## What each state had on 2026-11-05
 
-**Precinct numbers being recorded (8)**
+**Precinct numbers being recorded (9; Alaska since 2026-11-12)**
 
 | State | What's in it |
 |---|---|
@@ -57,6 +58,7 @@ On the release `election-night-2026`:
 | VA | Results by precinct; turnout by precinct split by Election Day, early, mailed absentee, provisional, post-election; absentee counts by locality, district, age and gender; **a change log with a timestamp to the second for each entry, by precinct, contest and voting method** |
 | NC | Results by precinct; ballots returned by precinct, party, method and **return date** |
 | HI | Every contest by precinct, split into mail and in-person |
+| AK | Every contest by precinct, split into Election Day, absentee, early, questioned and remote (`GA_ENR_Precinct_State_of_Alaska.csv`); the summary; one report per House district (`HD*.pdf`); **the ballot-by-ballot record with every ranking** (`CVR_Export.zip`, no voter names), which is what the ranked-choice rounds are run from |
 | MN | Every contest by precinct |
 | UT | Every contest by precinct |
 | ID | Every contest by precinct, plus ballots cast by precinct |
@@ -66,7 +68,9 @@ On the release `election-night-2026`:
 
 **Refused the cloud job (11).** These are IA, ME, MI, MT, NH, NV, NY, OH, TN, TX, WI, as of the first pass. Refusals are logged and left alone; don't work around them. Those files can be downloaded by hand in a browser and added. `precinct-log.csv` is the current state.
 
-**Alaska:** the cloud job can't verify the site's security certificate, and a home connection got a 403. Checking stays on; don't turn it off.
+**Alaska (fixed 2026-11-12):** until then the job watched `/results/26GENR/`, a guess from 2024's final address. That folder has no listing (a 403 from a home connection; the certificate error in the cloud log came from the same address), so nothing was saved for nine days. The files are linked from `https://www.elections.alaska.gov/election-results/` and sit under `/enr/26GENR/results/` during the count. The job now reads that page and takes every file it links under `/enr/26GENR/` or `/results/26GENR/`, so the ranked-choice round reports (Nov 18) and the final copies are picked up under whatever names they get. Copies start with the Nov 11 publish; Alaska's earlier publishes (Nov 3-10) were not kept by anyone here. The ballot-count report under `/wp-content/uploads/` answers scripts with a "prove you are human" page and is left alone.
+
+The lesson for the 11 refusing states and the 30 watched ones: their addresses were also written before the election and never checked in a browser. A 403 on a folder is not always a refusal.
 
 Ohio requires each county board to upload a precinct file after certification, by a 2016 directive (not checked against current rules).
 
