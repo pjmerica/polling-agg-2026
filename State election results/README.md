@@ -42,6 +42,14 @@ means X) and projected to a final result.
 | `StateResults-LateCount` | Nov 6 noon to Nov 25 | `capture_live.py`, every 30 minutes (AK count days, ME RCV) |
 
 The PC must be on (tasks are set to wake it from sleep, not from shutdown).
+
+**What went wrong (found 2026-11-12).** Each capture task started once and ran as one long process, so
+a restart or shutdown ended it for good. The PC restarted five times after Nov 3: it holds 7 captures
+of Georgia Governor from Nov 3, 3 from Nov 4 and none from Nov 5 to 10. The cloud job
+(`Election night simulator/scripts/cloud_night.py`) recorded the same NYT files throughout, so the
+release `election-night-2026` is the full record. `StateResults-LateCount` now also starts every 30
+minutes and at logon (a start is ignored while it is running), and `capture_live.py` reads the
+newest saved file of each race at start-up so a restart does not save every race again.
 Remove them after the election: `Get-ScheduledTask -TaskName "StateResults-*" | Unregister-ScheduledTask -Confirm:$false`.
 
 ## Data we have, and what is missing

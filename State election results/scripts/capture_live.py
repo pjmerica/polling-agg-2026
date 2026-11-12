@@ -226,6 +226,26 @@ def keep_awake():
             print("WARNING: could not hold off sleep; keep the PC awake by hand")
 
 
+def seed_hashes(date):
+    """Each race's newest saved file -> its hash, so a restarted capture does not save every race
+    again (2026-11-12: the task now restarts itself after a reboot; before that a restart or a
+    shutdown ended the capture for good, and Nov 5-10 2026 went unrecorded on this PC)."""
+    out = {}
+    base = os.path.join(OUT, date)
+    if not os.path.isdir(base):
+        return out
+    for race in os.listdir(base):
+        files = sorted(f for f in os.listdir(os.path.join(base, race)) if f.endswith(".json.gz"))
+        if not files:
+            continue
+        try:
+            with gzip.open(os.path.join(base, race, files[-1]), "rb") as f:
+                out[race] = hashlib.sha1(f.read()).hexdigest()
+        except (OSError, EOFError):     # a file cut short by a shutdown: record the race again
+            pass
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="2026-11-03")
@@ -236,7 +256,7 @@ def main():
     a = ap.parse_args()
     races = {a.race: [a.race]} if a.race else RACES
     until = dt.datetime.fromisoformat(a.until).replace(tzinfo=dt.timezone.utc) if a.until else None
-    slugs_found, last_hash = {}, {}
+    slugs_found, last_hash = {}, seed_hashes(a.date)
     if not a.once:
         keep_awake()
     while True:
