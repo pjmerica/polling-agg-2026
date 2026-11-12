@@ -425,7 +425,7 @@ print(f"polls_data.js: {len(out)} races")
 # mismatch_data.js generation REMOVED 2026-07-21 (model-repo audit): it fed the old raw
 # poll-vs-Kalshi "Polling vs Markets Mismatch" tab, superseded by the real XGBoost-based
 # Model-vs-Markets tab (docs/index.html, live since 2026-07-05, analysis/model_compare.py).
-# AUDIT.md (2026-06-24) explicitly said keep generating it "until the model tab is live and
+# history/AUDIT.md (2026-06-24) explicitly said keep generating it "until the model tab is live and
 # stable" -- confirmed true and stable for 16+ days (gh run list: all green). No HTML file
 # has read docs/mismatch_data.js since the real tab shipped (verified: no `mismatch_data.js`
 # <script> tag and no `MISMATCH` reference anywhere in docs/*.html). Removed the dead output

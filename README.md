@@ -1,86 +1,67 @@
 # polling-agg-2026
 
-A live dashboard that aggregates **2026 US election data** — polling and
-prediction-market prices — into one view. Published at
+Polls, a forecast and prediction-market prices for every 2026 US Senate, House and Governor
+race, plus the election-night desk and the record of the count. Published at
 [pjmerica.github.io/polling-agg-2026](https://pjmerica.github.io/polling-agg-2026/).
 
-## What it shows
+**Status (2026-11-12):** the election was Nov 3. The forecast is frozen as published before
+the count (tag `forecast-before-polls-2026`). The poll, market and model refreshes are switched
+off. The count is still being recorded, through Dec 15.
 
-Six tabs:
+## The pages
 
-- **Model vs Markets (General)** and **(Primary)** — the polling model's probability next to
-  Kalshi / Polymarket for each race, with the edge.
-- **Poll Explorer** — per-race detail with the underlying polls.
-- **Raw Polls** — every individual poll. Click a row to filter to that race only.
-- **Arb Scanner** — cross-platform price mismatches across Kalshi / Polymarket / PredictIt,
-  with stake sizing and tradeable depth.
-- **Primaries** — 2026 primary calendar from Ballotpedia, with primary type
-  (open/closed/jungle/etc), voting method (FPTP/Runoff/RCV), races on ballot,
-  and runoff date if applicable.
+| Page | What it shows |
+|---|---|
+| [Main dashboard](https://pjmerica.github.io/polling-agg-2026/) | Model vs Markets (general and primary), Poll Explorer, Raw Polls, Arb Scanner, Primaries |
+| [Forecast](https://pjmerica.github.io/polling-agg-2026/predictions.html) | The model's prediction for every race: each candidate, margin, win chance, and what drives it |
+| [Forecast map](https://pjmerica.github.io/polling-agg-2026/map.html) | Senate, House and Governor maps by margin, win chance, or model against the markets |
+| [Counting guide](https://pjmerica.github.io/polling-agg-2026/election-night.html) | How and when each state counts and reports its votes |
+| [Election desk](https://pjmerica.github.io/polling-agg-2026/election-night-desk.html) | The live count against the model, county by county, with both markets' prices |
+| [2024 replay](https://pjmerica.github.io/polling-agg-2026/election-night-replay.html) | Election night 2024 replayed minute by minute |
 
-Plus a separate **Forecast** page ([predictions.html](https://pjmerica.github.io/polling-agg-2026/predictions.html)):
-the model's prediction for every polled race, with every candidate, projected margin, rating
-and a per-race explainer of the factors behind the number.
+## What is in the repo
 
-## How it works
+| Folder | What it is |
+|---|---|
+| `scrapers/`, `scripts/`, `analysis/`, `utils/` | The dashboard pipeline: scrape polls and markets, match them, scan for arbitrage, build the data files |
+| `docs/` | The GitHub Pages site |
+| `Election night simulator/` | The live projector, the cloud desk, the 2024 replay, the market price archive |
+| `State election results/` | State-by-state counting guides and county benchmarks |
+| `Precinct data 2026/` | Precinct results and ballot returns for all 50 states |
+| `tests/`, `tools/` | Regression tests, page smoke tests, link and deploy checks |
+| `history/` | Older handoff notes and audits |
 
-A GitHub Actions workflow (`.github/workflows/refresh.yml`) runs twice
-daily (**12:00 + 00:00 UTC** — 08:00 and 20:00 ET) and:
+The forecast itself comes from a separate repo, `pjmerica/Polls-prediction-model`.
 
-1. Scrapes Kalshi, Polymarket, PredictIt, NYT polls, and Ballotpedia.
-2. Aggregates polls per race, matches markets across platforms, and computes
-   cross-platform price gaps.
-3. Filters out fake "arbs" caused by broken books, stale prices, mismatched
-   resolution criteria, and 3-way race partition errors. The
-   `scripts/scrutiny.py` module fetches each market's resolution rules for
-   any pair > 30pp gap and flags pairs whose rules text looks different.
-   Election party legs must pass a shared allowlist
-   (`utils/election_shapes.py`), so margin-of-victory, "within 5%" and
-   combo markets are never treated as "party wins". A basket that looks
-   too good (one leg already settled, rules differ, or > 15% return) is
-   shown as **Unverified**, never Guaranteed. Regression tests (`tests/`)
-   run before every refresh.
-4. Commits the refreshed `docs/*.js` data feeds back to master.
+## The raw record
 
-GitHub Pages auto-redeploys from `/docs`. Cron is best-effort — actual
-fire time can lag 5–30 min.
+Everything recorded on and after election night is on the release
+[`election-night-2026`](https://github.com/pjmerica/polling-agg-2026/releases/tag/election-night-2026):
+NYT's count as it changed, all 435 districts by county, both markets' order books, the
+projector's inputs and outputs, precinct files and market price history. Its notes say what is
+where and list the known gaps.
 
-If any scraper returns empty data (transient outage or API change), the
-run fails fast and the commit step is skipped, so the live dashboard
-keeps showing the last good snapshot rather than going stale silently.
-Ballotpedia's primaries scraper is the one exception — it tolerates an
-empty calendar (which happens naturally late in the cycle) and keeps the
-prior `docs/primaries_data.js`.
+## Running the dashboard pipeline locally
 
-## Running locally
-
-Requires **Python 3.12** (the version pinned in
-`.github/workflows/refresh.yml`).
+Python 3.12.
 
 ```bash
 pip install -r requirements.txt
-python run_all.py
+python run_all.py                # everything, 10 to 15 minutes
+python run_all.py --markets-only # markets and arb scan only
+python -m pytest tests -q
 ```
 
-A full run takes ~10–15 minutes — most of that is the Polymarket scrape
-and `scripts/fetch_depth.py` polling orderbooks for every matched pair.
-During iterative development you can re-run just one step against the
-already-cached CSVs in `data/raw/`:
-
-```bash
-python scripts/regen_data.py     # rebuild docs/data.js + polls_data.js
-python scripts/arb_scanner.py    # re-score arb pairs
-```
-
-Outputs land in `data/raw/` (gitignored) and `docs/` (tracked).
-Open `docs/index.html` directly to view the dashboard.
+Outputs land in `data/raw/` (gitignored) and `docs/` (tracked). If a scraper gets no usable
+data the run stops and nothing is committed, so the site keeps its last good copy.
 
 ## Documentation
 
-- [`HANDOFF.md`](./HANDOFF.md) — full architecture, file map, gotchas,
-  failure semantics, and history of known bugs.
+- [`HANDOFF.md`](./HANDOFF.md): what is running, the pipeline, the arb scanner, gotchas.
+- [`CHANGELOG.md`](./CHANGELOG.md): every hand-written change and why.
+- Each project folder has its own README.
 
 ## License
 
-See [`LICENSE`](./LICENSE). All rights reserved — personal project, not
-open source. No license is granted to copy, modify, or redistribute.
+See [`LICENSE`](./LICENSE). All rights reserved: a personal project, not open source. No
+license is granted to copy, modify, or redistribute.

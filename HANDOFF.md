@@ -1,131 +1,137 @@
-# Handoff — Polling Aggregator & Prediction Markets
+# Handoff: Polling Aggregator and Prediction Markets
 
-**Last updated:** 2026-10-08
-**Status:** Live dashboard at https://pjmerica.github.io/polling-agg-2026/.
-GitHub Actions runs the full pipeline twice daily (12:00 + 00:00 UTC) and a
-fast markets-only loop every 2h on odd hours at :30 (`market-refresh.yml`),
-both pushing refreshed `docs/*.js` back to master. Pages auto-redeploys.
+**Last updated:** 2026-11-12 (rewritten as a current-state guide; the April to October
+version is [history/HANDOFF_2026-04_to_10.md](history/HANDOFF_2026-04_to_10.md))
+**Live:** https://pjmerica.github.io/polling-agg-2026/ (GitHub Pages from `docs/` on `master`)
 
-> **2026-07-03 major rework** — real-quote arb math (YES+NO baskets),
-> tag-based Polymarket scrape, bulk Kalshi scrape, settle dates/annualized
-> returns, freshness guard, 2h market cadence. Read
-> `AGENT_EXECUTION_NOTES.md` "What was implemented" for the full delta;
-> sections below are updated but that file is the authoritative record.
-
-> **2026-10-08 update - read this first.** CHANGELOG "Unreleased" has each commit.
->
-> - **Forecast page** `docs/predictions.html` (+ `docs/forecast_data.js`): the model's prediction for every polled race, all candidates (independents included), margins, ratings, market price and per-race explainer (the per-race Fragile flag and polling-miss stress test were dropped 2026-11-02; the Senate and House control odds note that a miss moves races together). Data built by `scripts/build_forecast.py`, called at the end of `analysis/model_compare.py`; both workflows commit it and regenerate it on push conflicts. Test: `tests/test_build_forecast.py`.
->   **Explainer (2026-11-01):** "What's driving this prediction" is ONE block of JavaScript, byte-identical in `predictions.html` and `map.html` between the `===== EXPLAINER` / `===== end of the shared explainer block` markers; edit one copy and paste it over the other (`tests/test_explainer_shared.py` fails otherwise, and runs the block over every race). It explains the race's favourite (a losing Democrat's model-repo block is flipped: head-to-heads are symmetric), shows each input's effect on its own from an even race, both candidates' values in readable units and the input's definition, plus an "all other inputs" row so the rows account for the whole number. The full input list rides in `FORECAST.inputs` from `scripts/model_inputs.py` (`data/processed/model_inputs_2026.json`, rebuilt from the sibling model repo whenever `build_forecast.py` runs where that repo exists, else the committed copy); the forecast page's "Every input the model uses" section (`#inputs`) renders it.
-> - **Wikipedia scraper** (`scrapers/wikipedia_polls.py`): the "Post-primary endorsements" sub-heading inside General election sections tagged ~3,000 general polls as primary (general rows 239 -> 3,291); stage headings now reset party context; `question_id` includes the matchup's candidate set. Test: `tests/test_wikipedia_polls.py`. After any parser change check the stage counts in `data/raw/wikipedia_polls.csv`.
-> - **Louisiana House** is an all-party Nov 3 round with a Dec 12 runoff (post-Callais) - the Dashboard and Model-vs-Markets use the market price there. LA Senate had normal party primaries.
-> - **Top-two / top-four party chance** = the party's share of the whole field (an independent opponent such as Kiley in CA-6 used to make it read 100% Dem); same-party finals (CA D-v-D) read 1.0 / 0.0 on the Dashboard.
-> - Model-side changes (ranked-choice handling, Louisiana jungle data, dedup fixes, experience levels with 3.5 = appointed federal) are in the model repo's `docs/HANDOFF.md`.
-
-If you're picking this up cold, read this top-to-bottom once. The
-"Gotchas" section is where most of the weeks-of-pain debugging lives.
-
-> **2026-09-24 update — read this first.** The Arb Scanner and Model vs Markets tabs were audited and fixed alongside pred-arbitrage (its `MATCHING_REVIEW.md` has the full diagnosis). CHANGELOG "Unreleased" (2026-09-24) has every change. Anything below that conflicts with this is stale.
->
-> - **Party legs** (all three general loaders + `analysis/model_compare.py`) go through `utils/election_shapes.party_win_side`, an allowlist shared with pred-arb. Substring matching had made Polymarket margin-of-victory buckets the Dem leg: all 3 live "guaranteed" arbs (56–81%) were fake, and AK-Sen on the model tab was priced off a governor+Senate combo.
-> - **Stakes are proportional to price** (equal contracts on both legs). The inverse-odds split was backwards. Return and profit are per $ staked.
-> - **Kalshi race_id** (from the series ticker) must agree with the state in the title: `SENATELA-26` is the Kentucky race.
-> - **Links:** Kalshi uses `/markets/{series}/{event}`; Polymarket uses `/event/{event}/{market}`. Each leg's question is stored and shown.
-> - **`unverified` tier:** a guaranteed basket is downgraded when one leg is effectively settled, when the rules text looks different (scrutiny now warns and never drops), or when the return is above 15%.
-> - **Model tab missing-slot guard:** no edge is shown when the model lacks a candidate for a party the markets price above 5% (OK-Sen had shown +98 pts).
-> - **`tests/test_arb_regressions.py`** runs in refresh.yml and market-refresh.yml before the pipeline, and **`tests/dash_smoke.js`** runs the dashboard JS against the fresh data after it, before the commit step (a runtime exception fails the run). The scanner writes guaranteed/unverified rows to the Actions job summary.
+Other docs:
+- [CHANGELOG.md](CHANGELOG.md): every hand-written change and why.
+- [history/](history/): the old handoff and the July to September audits.
+- Each project folder below has its own README.
+- `Documents/AGENTS.md` (outside this repo): the rules that apply to this repo, pred-arbitrage
+  and the model repo, and the list of work still open.
 
 ---
 
-## What this project does
+## 1. Where things stand (2026-11-12)
 
-Aggregates 2026 US election data (Senate, House, Governor) from polling
-sources and prediction markets, and surfaces several views in one
-dashboard:
+The election was Nov 3. The forecast is frozen and the count is still being recorded.
 
-| Tab | What it shows |
-|---|---|
-| **Model vs Markets (General / Primary)** | The polling model's probability next to Kalshi / Polymarket for each race, with the edge. |
-| **Poll Explorer** | Per-race detail view with the underlying polls and aggregate. |
-| **Raw Polls** | Every individual poll. Click a row to filter to that race only. |
-| **Forecast** (`predictions.html`, separate page) | The model's prediction for every polled race with explainers (2026-10-08). |
-| **Arb Scanner** | Cross-platform price mismatches across Kalshi / Polymarket / PredictIt, with stake sizing and tradeable depth. |
-| **Primaries** | 2026 primary calendar from Ballotpedia. Includes type (open/closed/jungle/etc), voting method (FPTP/Runoff/RCV), races on ballot, and runoff date if applicable. |
+- **The forecast is the record.** The tag `forecast-before-polls-2026` and the release
+  `forecast-2026-11-03-6pm-et` hold what was published before the count. No margin or win
+  number has changed since 19:30 UTC on Nov 3. Do not re-publish a forecast for 2026.
+- **The three refresh workflows are switched off** (Daily refresh, Market refresh, Model
+  refresh; disabled 2026-11-12). The election markets settled, the arb board is empty and
+  there are no new polls. To run one again: `gh workflow enable "Market refresh"`.
+- **The recording jobs run until mid-December** (table below). Do not stop them, and do not
+  queue enough other jobs to hit GitHub's 20-job limit: a queued hand-off leaves a gap in the
+  vote record.
+- **Still to do after the count:** the model evaluation, the 2026 replay, results on the
+  pages. `Documents/AGENTS.md` "Still open" has the list.
 
-The sibling repo `pred-arbitrage` is a generalized version of the Arb
-Scanner across *every* market category (sports, entertainment, etc.) —
-not just elections. Most pipeline-shape fixes here apply there too;
-they're kept loosely in sync.
+### Workflows
+
+| Workflow | State | What it does |
+|---|---|---|
+| `election-night.yml` "Election night (cloud)" | running to Dec 15 | `Election night simulator/scripts/cloud_night.py`: NYT counts, 435 district files, both venues' books and the projector, every 30 minutes. State on the orphan branch `election-live` (`status.json` shows the last pass); the archive goes to the release `election-night-2026` each hour. Each job dispatches the next; the cron is the backstop, so cancelled scheduled runs are normal. |
+| `precinct-record.yml` "Precinct record" | running to Dec 15 | `Precinct data 2026/`: precinct results and ballot returns for all 50 states, saved when they change, to the same release. |
+| `market-archive.yml` "Market archive" | manual | Price history for every Kalshi and Polymarket election market. Re-run once after the count with a new label, one venue at a time. Never delete a superseded copy. |
+| `save-6pm-copy.yml` | done (Nov 3) | Made the 6 p.m. Election Day release. |
+| `refresh.yml` "Daily refresh" | **off** | Full pipeline (`run_all.py`): polls, markets, arb scan. Was 00:00 and 12:00 UTC. |
+| `market-refresh.yml` "Market refresh" | **off** | Markets and arb scan only. Was :41 on odd hours. |
+| `model-refresh.yml` "Model refresh" | **off** | Clones the model repo, re-predicts, rebuilds the forecast. Ran after each Daily refresh. |
+
+The three refresh workflows share `concurrency: group: refresh`, run `tests/` before the
+pipeline and the dashboard smoke tests after it, and end by checking that Pages serves the
+commit (`tools/verify_pages.py`, which also asks GitHub for a rebuild if the Pages build never
+ran). GitHub starts this repo's crons late, sometimes by hours.
+
+Two sibling repos record their own pages through Dec 14: `pjmerica/house-night-2026` (every
+House race) and `pjmerica/mississippi-night-2026`.
+
+### On the owner's PC
+
+- `StateResults-LateCount` (Windows task): `State election results/scripts/capture_live.py`
+  every 30 minutes to Nov 26, a second copy of NYT's files. Since 2026-11-12 the task starts
+  again every 30 minutes and at logon if it is not running; before that a restart ended it,
+  and Nov 5 to 10 were not captured on the PC.
+- `Election night simulator/scripts/archive_download.py`: a read-only local copy of the
+  release and git bundles of the four repos. Re-run it while recording continues and once after.
+- Remove the `StateResults-*` tasks after Nov 26 (`State election results/README.md`).
+
+### Project folders
+
+| Folder | What it is | Start at |
+|---|---|---|
+| `scrapers/`, `scripts/`, `analysis/`, `utils/`, `tools/`, `tests/` | The dashboard pipeline (sections 2 to 4) | this file |
+| `docs/` | The Pages site | list below |
+| `Election night simulator/` | The live projector, the cloud desk, the 2024 replay, the market archive | its `README.md`, `METHODS.md` |
+| `State election results/` | How each state counts and reports; county benchmarks; the local capture | `MASTER.md` |
+| `Precinct data 2026/` | The precinct record | `README.md` |
+
+### Pages in `docs/`
+
+| Page | Shows | Built by |
+|---|---|---|
+| `index.html` | Model vs Markets (general, primary), Poll Explorer, Raw Polls, Arb Scanner, Primaries | `scripts/regen_data.py`, `scripts/arb_scanner.py`, `analysis/model_compare*.py` |
+| `predictions.html` | The forecast for every race, with the explainer | `scripts/build_forecast.py` -> `forecast_data.js` |
+| `map.html` | The forecast map: Margin, Win %, Model vs markets | reads `forecast_data.js` + `data.js` |
+| `polls.html`, `primaries-vs-markets.html` | Poll explorer; primaries against markets | the pipeline |
+| `election-night.html` | The state-by-state counting guide | `State election results/scripts/build_election_night.py` |
+| `election-night-desk.html`, `election-night-cloud.html` | The live desk and dashboard, reading `election-live` | `Election night simulator/scripts/build_cloud_pages.py` |
+| `election-night-replay.html` | The 2024 replay | `replay_2024.py --publish` |
+| `election-night-live.html` | A delayed public copy, last updated Oct 30 | by hand |
+
+`map.html` and `predictions.html` are mirrored on ezdubsanalytics.com (section 6).
+
+### Rules
+
+- **Plain commits. No Claude co-author line.** Every hand-written commit gets a CHANGELOG entry.
+- Python is `py` on the owner's machine.
+- Old versions are archived, never deleted (replays, market archives, published pages).
+- Every variable shown on a page is defined on that page (`GLOSS` in `map.html`).
+- The explainer script is one block, byte-identical in `predictions.html` and `map.html`
+  (`tests/test_explainer_shared.py`).
 
 ---
 
-## Architecture
+## 2. The dashboard pipeline
 
-### Pipeline (top to bottom — this is what `run_all.py` runs)
+`run_all.py` runs these in order (`--markets-only` skips the poll scrapers):
 
 ```
-scrapers/kalshi.py            → data/raw/kalshi_markets.csv
-scrapers/polymarket.py        → data/raw/polymarket_markets.csv
-scrapers/predictit.py         → data/raw/predictit_markets.csv
-scrapers/nytimes.py           → data/raw/nyt_polls.csv
-scrapers/house_incumbents.py  → data/processed/house_incumbents.{json,csv}
-scrapers/primaries.py         → data/raw/primaries.json + docs/primaries_data.js
-scripts/regen_data.py         → docs/data.js + docs/polls_data.js + docs/mismatch_data.js
-scripts/arb_scanner.py        → docs/arb_data.js + data/processed/depth_targets.csv
-                                (also runs scrutiny.py for >30pp pairs)
-scripts/fetch_depth.py        → data/raw/orderbook_depth.csv
-scripts/arb_scanner.py        → docs/arb_data.js (re-run, joins depth)
+scrapers/kalshi.py            -> data/raw/kalshi_markets.csv
+scrapers/polymarket.py        -> data/raw/polymarket_markets.csv
+scrapers/predictit.py         -> data/raw/predictit_markets.csv
+scrapers/nytimes.py           -> data/raw/nyt_polls.csv
+scrapers/wikipedia_polls.py   -> data/raw/wikipedia_polls.csv
+scrapers/house_incumbents.py  -> data/processed/house_incumbents.{json,csv}
+scrapers/primaries.py         -> data/raw/primaries.json + docs/primaries_data.js
+scripts/regen_data.py         -> docs/data.js + docs/polls_data.js + docs/mismatch_data.js
+scripts/arb_scanner.py        -> docs/arb_data.js + data/processed/depth_targets.csv
+scripts/fetch_depth.py        -> data/raw/orderbook_depth.csv
+scripts/arb_scanner.py        -> docs/arb_data.js (second pass, joins depth)
 ```
 
-The double-run of `arb_scanner.py` around `fetch_depth.py` is
-intentional — the scanner emits the depth-target list on pass 1, then
-fetch_depth populates the orderbook ladders, then the scanner re-runs
-to join depth onto pairs and recompute `suspicion_reasons` /
-`criteria_warn` flags that depend on depth data.
+The scanner runs twice on purpose: pass 1 lists the books to fetch, `fetch_depth.py` fetches
+them, pass 2 reprices every basket on the live books.
 
-### Failure semantics (read this!)
+**Failure semantics.** Each scraper raises `SystemExit` when the upstream API returns no usable
+rows, which stops `run_all.py`, which skips the commit, so the site keeps its last good data.
+The HTTP layer retries 4 times (2/4/8 s) on 403/408/429/5xx and network errors first.
+`scrapers/primaries.py` is softer: Ballotpedia's calendar drops past primaries, so an empty
+parse with an existing `docs/primaries_data.js` keeps the old data and exits 0. With no open
+election market (after Nov 4 2026) the scanner writes an empty board instead of failing.
 
-Each scraper raises `SystemExit` if the upstream API returns no usable
-rows, which kills `run_all.py` with a non-zero exit code, which causes
-the workflow's commit step to be skipped, which means the dashboard
-keeps showing the last good data. The HTTP layer in each scraper does
-4 retries with 2/4/8s backoff on 403/408/429/5xx/network errors before
-raising — so transient blips don't cause this.
-
-`scrapers/primaries.py` is **softer**: if the Ballotpedia calendar
-parses to zero matching rows but a prior `docs/primaries_data.js`
-exists, it keeps the old data and exits 0. That's because the
-Ballotpedia calendar rolls past primaries off as the year progresses,
-which legitimately produces zero matches by mid-year — that's not an
-outage.
-
-### GitHub Actions
-
-Two workflows sharing `concurrency: group: refresh` (they queue, never
-race each other's commit step):
-
-- `.github/workflows/refresh.yml` — full pipeline, `0 12 * * *` and
-  `0 0 * * *`. Commit prefix `data refresh:`.
-- `.github/workflows/market-refresh.yml` (added 2026-07-03) — market
-  scrapers + arb scan only (`run_all.py --markets-only`, ~2-3 min),
-  every 2h at :30 on odd hours. Commit prefix `market refresh:`. Odd
-  hours keep it clear of the full runs and of pred-arb's 12:30 cron.
-
-The full-refresh job:
-
-1. `actions/checkout@v4` — gets the latest master (incl. yesterday's
-   tracked `docs/*` and `data/processed/excluded_pairs.json`).
-2. `actions/setup-python@v5` + `pip install -r requirements.txt`.
-3. `python -u run_all.py`.
-4. `git add data/ docs/` + commit + push, with a 3-attempt rebase-retry
-   loop to survive race conditions when a manual push lands between
-   checkout and push.
-
-The bot's git identity is `github-actions[bot]`. Manual commits from a
-maintainer's laptop use whatever local git config is set.
+**Other files.** `utils/races.py` is the one list of races (race_id, state, office).
+`utils/election_shapes.py` and `utils/fees.py` are identical copies of pred-arbitrage's.
+`analysis/margin_markets.py` reads both venues' margin markets. `tools/linkcheck.py` re-derives
+and repairs market links; `tools/health.py` keeps the "Board health" issue.
+`scrapers/fivethirtyeight.py` and `scrapers/realclearpolitics.py` are dead stubs.
 
 ---
 
-## Arb Scanner deep dive
+## 3. Arb Scanner deep dive
 
 This is the most complex part of the project and where most bugs hide.
 
@@ -197,23 +203,17 @@ John E. Sununu collapsed without it).
 
 ### Suspicion + scrutiny pipeline
 
-After both matching paths, each pair runs through several filter layers
+After the matching paths, each pair runs through several filter layers
 in order:
 
 1. **Scraper-time filters** drop unrealistic markets at the source —
    Polymarket markets with liquidity < $200 or bid-ask spread > 20pp get
    dropped before they ever reach the scanner.
-2. **Cross-flip safety** (`safe_rep` in `compute_arb_math`) — only
-   allows the "1 − P(Rep)" inference for Dem-win probability if the
-   same platform's Dem + Rep markets sum to ~1 (within 3pp). This kills
-   the 3-way race bug: Nebraska 2026 had Osborn (independent) priced at
-   30% on Polymarket, so 1 − P(Rep) ≠ P(Dem), and the cross-flipped
-   basket overstated edge by 30pp.
-3. **Depth-derived spread filter** (after `fetch_depth`) — pairs where
+2. **Depth-derived spread filter** (after `fetch_depth`) — pairs where
    either side's live CLOB book has spread > 25pp get dropped. The
    gamma snapshot lags the live book, so this catches stale entries
    that survived (1).
-4. **Rules-text scrutiny** (`scripts/scrutiny.py`) — for any pair with
+3. **Rules-text scrutiny** (`scripts/scrutiny.py`) — for any pair with
    raw gap > 30pp, fetches both markets' resolution rules and computes a
    text similarity score. <75 tagged `criteria_warn` (and a guaranteed pair
    is downgraded). Low scores no longer DROP pairs (2026-09-24): Kalshi and
@@ -223,107 +223,31 @@ in order:
    criteria mismatches (Iran nuclear deal is the only entry today;
    Kalshi requires a signed agreement w/ enrichment limits + sanctions
    relief while Polymarket accepts any publicly announced agreement).
-5. **Suspicion reasons** — surfaces multiple warning codes
+4. **Suspicion reasons** — surfaces multiple warning codes
    (`wide_gap`, `wide_spread_a/b`, `one_sided_a/b`, `thin_depth_a/b`,
    `criteria_warn`) on the dashboard's `⚠ verify` badge so the user
    knows WHY a pair is flagged.
 
-### Fees (round-trip)
+### Fees
 
-`scripts/arb_scanner.py` top (the `FEES` dict is the single source of
-truth — `compute_arb_math`, `make_pair`, `general_candidate_pairs`,
-and `primary_pairs` all read from it, and the dict is also exported
-into `docs/arb_data.js` so the frontend pulls the same numbers):
-
-| Platform | Fee |
-|---|---|
-| Kalshi | 2% |
-| Polymarket | 2% |
-| PredictIt | 12% |
-
-> **Superseded 2026-09-24 for guaranteed baskets:** basket math uses REAL per-leg fees from
-> `utils/fees.py` (Kalshi 0.07 x multiplier x P(1-P); Polymarket rate x p(1-p); PredictIt 10% of
-> profit + 5% withdrawal; plus a 0.5c margin). The flat `FEES` dict below is still used only for
-> the one-sided "net gap" display and the midpoint math, and is exported to `arb_data.js`.
-
-Bumped down from 3% / 3% on 2026-06-18 — Kalshi and Polymarket both
-cap around 1% each way in practice (Kalshi taker, Polymarket gas + fee).
-The 2% number is still conservative but stops burying real arbs under
-fake-fee math. PredictIt stays at 12% (5% on profits + 5% on
-withdrawals, applied per-leg).
-
-**Real per-leg fees (2026-09-24/25).** The guaranteed-basket math no
-longer uses the flat numbers above. `utils/fees.py` (identical copy in
-pred-arbitrage) charges each leg its platform's published taker fee at
-the price it trades, plus a 0.5¢ per-basket margin:
+Guaranteed-basket math charges each leg its platform's real taker fee at the price it trades
+(`utils/fees.py`, identical copy in pred-arbitrage), plus a 0.5c margin per basket. A basket
+needs a net return of 0.25% or more to be "guaranteed".
 
 | Platform | Taker fee | Where the parameters come from |
 |---|---|---|
-| Kalshi | 0.07 × multiplier × P(1−P) | `fee_multiplier` per series, from `/series` |
-| Polymarket | rate × p(1−p) | each market's `feeSchedule.rate` when `feesEnabled`; politics is 0.04 |
+| Kalshi | 0.07 x multiplier x P(1-P) | `fee_multiplier` per series, from `/series` (event overrides from `/events/fee_changes`) |
+| Polymarket | rate x p(1-p) | each market's `feeSchedule.rate` when `feesEnabled`; politics is 0.04 |
 | PredictIt | 10% of profit + 5% withdrawal | no API; conservative model |
 
-- The scrapers store `fee_type`/`fee_multiplier` (Kalshi, with event-level overrides from `/events/fee_changes` applied) and `fee_rate` (Polymarket).
-- `compute_arb(..., leg_fees=...)` applies them.
-- Unknown parameters fall back to the flat `FEES` numbers, which now only drive the display-level Net gap.
-
-When changing this number: update the `FEES` dict, the dashboard
-explainer text in `docs/index.html` (search "Net gap subtracts"), and
-note the rationale in this file. Don't hard-code fees anywhere else.
+The flat `FEES` dict at the top of `scripts/arb_scanner.py` (Kalshi 2%, Polymarket 2%,
+PredictIt 12%) is only the fallback when a leg's parameters are unknown, and drives the
+display-level "Net gap". It is exported to `docs/arb_data.js`; the dashboard explainer text
+(search "Net gap subtracts" in `docs/index.html`) must match it.
 
 ---
 
-## File map
-
-```
-.github/workflows/refresh.yml  Daily refresh, schedule + commit logic.
-
-run_all.py                     One-shot entrypoint. Calls each step in order.
-requirements.txt               pandas, numpy, requests, beautifulsoup4, lxml, pyyaml.
-
-scrapers/
-  kalshi.py            Kalshi v2 trade-api. DO NOT REVERT to v1.
-  polymarket.py        gamma-api.polymarket.com. Captures yes_token_id / no_token_id.
-  predictit.py         predictit.org/api/marketdata/all/.
-  nytimes.py           NYT poll CSVs (Senate/House/Gov).
-  house_incumbents.py  Open-seats list (retirements). Read by utils/races.py.
-  primaries.py         Ballotpedia calendar + primary-types page. → primaries_data.js.
-  fivethirtyeight.py   DEAD STUB — 538 shut down. Don't touch.
-  realclearpolitics.py BLOCKED STUB — needs Selenium, low priority.
-
-scripts/
-  regen_data.py        Aggregates raw_polls + markets → docs/data.js, polls_data.js,
-                       mismatch_data.js.
-  arb_scanner.py       The big one. Reads all 3 markets CSVs, produces docs/arb_data.js.
-                       Runs twice (pass 1 emits depth targets, pass 2 joins depth).
-  fetch_depth.py       Reads depth_targets.csv, fetches Kalshi/Polymarket orderbook
-                       ladders, writes orderbook_depth.csv.
-  scrutiny.py          Fetches resolution rules + similarity scoring. Caches in
-                       data/processed/scrutiny_cache.json (gitignored).
-
-utils/
-  races.py             ~511 races with metadata, mapping race_id → state/office/etc.
-
-data/
-  raw/                 Scraper outputs (gitignored — regenerated each run).
-  processed/
-    excluded_pairs.json    Manual scrutiny excludes. TRACKED in git.
-    depth_targets.csv      arb_scanner pass-1 output, fetch_depth input.
-    scrutiny_cache.json    Gitignored.
-
-docs/                  GitHub Pages site. Tracked.
-  index.html           Six-tab dashboard (Dashboard, Poll Explorer, Raw Polls,
-                       Polling vs Markets, Arb Scanner, Primaries).
-  data.js              Per-race aggregate feed.
-  polls_data.js        Raw polls feed.
-  mismatch_data.js     Polling-vs-markets feed.
-  arb_data.js          Arb pairs feed.
-  primaries_data.js    Primaries tab feed (Ballotpedia).
-```
-
----
-
-## Common gotchas (the hard-won list)
+## 4. Common gotchas (the hard-won list)
 
 **Pipeline shape**
 - **GitHub Pages deploys from `/docs` on push to master.** No build step.
@@ -425,10 +349,9 @@ docs/                  GitHub Pages site. Tracked.
   B" does NOT pay $1 in every outcome — it can pay $1 in the Indep
   case (NO Rep wins) but $0 in the Indep case (YES Dem loses). The
   apparent arb is illusory.
-- Mitigation: `safe_rep` in `arb_scanner.compute_arb_math` only allows
-  the cross-flip when same-platform Dem + Rep prices sum to within 3pp
-  of 1.0. Otherwise the pair stays "one-sided" with no guaranteed-arb
-  claim.
+- Fixed 2026-07-03: baskets are YES and NO on the SAME question (a binary partition), so an
+  independent cannot break them. The `safe_rep` guard that used to cover this is gone. Never
+  build a basket from "Dem YES" on one platform and "Rep YES" on the other.
 
 **Resolution-criteria divergence**
 - **Party-win markets (verified 2026-09-25).** Kalshi resolves on the party of the person SWORN IN or inaugurated for the 2027 term. Polymarket resolves on the winner of the November election. They differ only if the winner dies, withdraws, switches party or the result is overturned before January. The risk is rare but real; treat party-win "guaranteed" baskets as near-certain, not certain.
@@ -436,9 +359,10 @@ docs/                  GitHub Pages site. Tracked.
   nuclear deal: Kalshi requires a signed agreement WITH specific
   enrichment limits + sanctions relief; Polymarket accepts any publicly
   announced agreement. Same gap, different bets.
-- Mitigation: `scripts/scrutiny.py` fetches rules text + similarity
-  score for any pair > 30pp. Below 50, dropped. 50–75 tagged
-  `criteria_warn`. Plus manual `excluded_pairs.json` for known cases.
+- Mitigation: `scripts/scrutiny.py` fetches both rules texts for any pair over 30pp (and for
+  every promoted candidate pair) and scores their similarity. A score under 75 tags
+  `criteria_warn` and downgrades a guaranteed pair. Low scores never drop a pair (since
+  2026-09-24): only `data/processed/excluded_pairs.json` entries are dropped.
 
 **Date / cycle**
 - **Ballotpedia's calendar rolls past dates off** as the year goes on.
@@ -448,48 +372,7 @@ docs/                  GitHub Pages site. Tracked.
 
 ---
 
-## Mirrored on ezdubsanalytics.com (2026-10-31)
-
-`docs/map.html` and `docs/predictions.html` also appear on the user's site,
-ezdubsanalytics.com (repo `pjmerica/ez-dubs-website`), as **"The EZ Dub Election
-Forecast"** under a Politics menu: `/dashboards/politics-map/` and
-`/dashboards/politics-forecast/`. Nothing here pushes to it. That repo's
-`scripts/pull_politics.py` runs every two hours (`politics-pull.yml`), fetches
-this repo's **published Pages site** (so a change shows there after the Pages
-deploy, within about two hours) and:
-
-- copies `forecast_data.js`, `data.js`, `us_map_geo.js` and
-  `us_house_2026_geo.js` byte for byte, checking each is `const NAME = <json>;`;
-- rebuilds both pages from the published HTML: the markup and the **last inline
-  `<script>`** verbatim, the `.top` header dropped, the site's nav and footer
-  around it, this page's CSS re-themed to the site's newsprint look.
-
-So changes made here reach the site on their own. What it relies on, which is
-worth keeping in mind when editing these two pages:
-
-- **The page logic stays in one inline `<script>`** at the end of `<body>`, and
-  the data files keep their `const NAME = {...};` form.
-- **The element ids** its `PAGES` table lists (`map`, `metric`, `src`, `tabs`,
-  `tally`, `legend`, `detail`, `rows`, `thead`, `more`, `drawer`, `d-body`,
-  `tip`, `title`, `lede`, `asof`; on predictions.html `chambers`, `grid`,
-  `count`, `q`).
-- **Colours as hex literals** in the script. It maps each known one to a
-  newsprint colour; a new hex still works but shows in this page's colour there
-  until added to its `JS_HEX`. The map's `const PCOL = {...};` statement is
-  swapped whole (a required match), as are `function ink(col)` and the
-  `const pill = v => ...` line (optional).
-- **Links between the two pages** (`map.html#...`, `predictions.html#...`) are
-  rewritten to the site's URLs. A link from either page to any OTHER page here
-  (index.html, polls.html, election-night.html) has no counterpart on the site,
-  so it stops that page rebuilding until the site's script is taught about it.
-
-If something it relies on changes, that site page is not rebuilt (its last good
-version stays live, the data keeps updating) and the site's workflow goes red.
-Nothing here breaks.
-
----
-
-## Do not
+## 5. Do not
 
 - **Pick an election market leg by "the title mentions Democrat".** Use
   `utils/election_shapes.party_win_side` (identical copy in pred-arbitrage).
@@ -533,75 +416,48 @@ Nothing here breaks.
 
 ---
 
-## Recent work (post-2026-05-15)
+## 6. Mirrored on ezdubsanalytics.com (2026-10-31)
 
-In rough order:
-- **General-election candidate matching path (2026-06-18)**: new
-  `match_type: general_candidate`. Joins per-candidate general-election
-  markets ("Will Dan Sullivan win the 2026 Alaska Senate race?")
-  across Kalshi / Polymarket / PredictIt on `(state, office, district,
-  last, first_initial)`. Emits one-sided rows (no Dem-yes vs Rep-yes
-  complement available). Initial run: 12 new pairs across AK Senate,
-  AK Governor, CA Governor. See "Pair construction" for the exclusion
-  regexes that drop noise templates.
-- **Lowered Kalshi / Polymarket fees from 3% to 2% (2026-06-18)**:
-  reflects actual fee caps better. Surfaced 6 guaranteed arbs vs 0
-  under the old rate. See the Fees section for change procedure.
-- **Ripped out inferred-complement fallback (2026-06-18)**: both general
-  loaders used to fill a missing Dem/Rep side with `1 - other_side` and
-  tag the row `*_inferred`. Two bugs piled on: `bool(NaN) is True` in
-  Python, so the flag fired on every row; and the suspicion `reasons()`
-  function read `row.get('a_inferred')` returning NaN (also truthy) on
-  primary-candidate rows that never set the column. End result: 100% of
-  pairs flagged suspicious. Removed the inference entirely — inferred
-  prices aren't tradeable, so they don't belong in the arb scanner.
-  Both loaders now `inner`-join Dem and Rep. The `a_inferred` /
-  `b_inferred` fields are gone from `make_pair`, the `inferred_a/b`
-  branch is gone from `reasons()`, and the dashboard's `reasonText`
-  map no longer references them. ~11 pairs dropped, 2 fake guaranteed
-  arbs killed. See the "Do not" list for why this stays out.
-- **Scraper resilience pass**: `_safe_read_csv` everywhere, fail-fast on
-  empty API responses, 4-attempt retry with exponential backoff on
-  transient HTTP errors (403/408/429/5xx + network errors).
-- **Suspicion + scrutiny pipeline**: dropped suspicious threshold from
-  40pp → 20pp, added per-pair `suspicion_reasons` array with detailed
-  badges in the dashboard.
-- **`scripts/scrutiny.py`**: rules-text similarity scoring for >30pp
-  pairs, with hand-curated `excluded_pairs.json` for known
-  criteria-mismatch pairs.
-- **Cross-flip safety** for 3-way races in `compute_arb_math`.
-- **Polymarket / PredictIt broken-book heuristics** at scrape time.
-- **State / cycle disambiguation fixes**: surname-state false matches,
-  cross-cycle Kalshi tickers.
-- **Polling tab UX**: race-click pinning (`rawPinnedRaceId` /
-  `rawPinnedStateAbbrev`) with blue banner + "show all polls" escape.
-- **Primaries tab** (new): Ballotpedia calendar + state types,
-  Type/Method/Races on ballot/Runoff columns, glossary modal, pill
-  tooltips. Wired into `run_all.py`.
-- **Workflow hardening**: rebase-retry on push, race-condition fixes,
-  Node 20 deprecation warning ignored (advisory, not blocking).
+`docs/map.html` and `docs/predictions.html` also appear on the user's site,
+ezdubsanalytics.com (repo `pjmerica/ez-dubs-website`), as **"The EZ Dub Election
+Forecast"** under a Politics menu: `/dashboards/politics-map/` and
+`/dashboards/politics-forecast/`. Nothing here pushes to it. That repo's
+`scripts/pull_politics.py` runs every two hours (`politics-pull.yml`), fetches
+this repo's **published Pages site** (so a change shows there after the Pages
+deploy, within about two hours) and:
+
+- copies `forecast_data.js`, `data.js`, `us_map_geo.js` and
+  `us_house_2026_geo.js` byte for byte, checking each is `const NAME = <json>;`;
+- rebuilds both pages from the published HTML: the markup and the **last inline
+  `<script>`** verbatim, the `.top` header dropped, the site's nav and footer
+  around it, this page's CSS re-themed to the site's newsprint look.
+
+So changes made here reach the site on their own. What it relies on, which is
+worth keeping in mind when editing these two pages:
+
+- **The page logic stays in one inline `<script>`** at the end of `<body>`, and
+  the data files keep their `const NAME = {...};` form.
+- **The element ids** its `PAGES` table lists (`map`, `metric`, `src`, `tabs`,
+  `tally`, `legend`, `detail`, `rows`, `thead`, `more`, `drawer`, `d-body`,
+  `tip`, `title`, `lede`, `asof`; on predictions.html `chambers`, `grid`,
+  `count`, `q`).
+- **Colours as hex literals** in the script. It maps each known one to a
+  newsprint colour; a new hex still works but shows in this page's colour there
+  until added to its `JS_HEX`. The map's `const PCOL = {...};` statement is
+  swapped whole (a required match), as are `function ink(col)` and the
+  `const pill = v => ...` line (optional).
+- **Links between the two pages** (`map.html#...`, `predictions.html#...`) are
+  rewritten to the site's URLs. A link from either page to any OTHER page here
+  (index.html, polls.html, election-night.html) has no counterpart on the site,
+  so it stops that page rebuilding until the site's script is taught about it.
+
+If something it relies on changes, that site page is not rebuilt (its last good
+version stays live, the data keeps updating) and the site's workflow goes red.
+Nothing here breaks.
 
 ---
 
-## Open work / known issues
-
-- **Node 20 deprecation** — GitHub will force Node 24 from June 2026.
-  Currently advisory only. Bumping `actions/checkout` and
-  `actions/setup-python` to their Node-24-compatible versions before
-  then is the fix.
-- **`scrapers/realclearpolitics.py`** is a stub blocked by 403. Would
-  need a Selenium-based scraper. Low priority.
-- **`scrapers/fivethirtyeight.py`** dead — 538 shut down. Stub remains.
-- **The Primaries tab's "View polls" link** filters Raw Polls by
-  `state_abbrev` (exact match). For a *specific* race within a
-  multi-race primary day there's currently no deep-link — the table row
-  is the primary, not the race.
-- **Pred-arbitrage repo is loosely synced.** Most pipeline-shape fixes
-  here are also pushed there, but verify before assuming.
-
----
-
-## When something breaks at 3am
+## 7. When something breaks
 
 1. Check **Actions** tab: https://github.com/pjmerica/polling-agg-2026/actions
 2. Click the failing run, expand the failing step.

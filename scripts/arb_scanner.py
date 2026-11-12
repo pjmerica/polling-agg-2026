@@ -334,7 +334,7 @@ def get_race_meta():
 #
 # Ported from pred-arbitrage scripts/arb_scanner.py:compute_arb on 2026-07-03,
 # replacing the old midpoint-based compute_arb_math. See
-# AGENT_EXECUTION_NOTES.md Findings 1+2 for the full rationale. Key changes:
+# history/AGENT_EXECUTION_NOTES.md Findings 1+2 for the full rationale. Key changes:
 #
 #   1. The basket is now YES + NO on the SAME question across platforms
 #      (Buy Dem-YES on cheap platform + Buy Dem-NO on expensive platform).
