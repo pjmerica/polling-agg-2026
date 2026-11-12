@@ -34,6 +34,7 @@ jobs:
     timeout-minutes: 55
     permissions:
       contents: write
+      pages: write            # tools/verify_pages.py may request a Pages rebuild
     steps:
       - uses: actions/checkout@v5
         with:
@@ -148,4 +149,6 @@ jobs:
       - name: Verify the live site serves this commit
         working-directory: 'Polling Agg/Polling agg and Prediction markets'
         timeout-minutes: 25
+        env:
+          GH_TOKEN: ${{ github.token }}     # verify_pages asks for a Pages rebuild if the build never ran
         run: python tools/verify_pages.py docs/forecast_data.js docs/model_data.js docs/data.js --minutes 20

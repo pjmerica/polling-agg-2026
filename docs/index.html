@@ -1283,6 +1283,8 @@ document.querySelectorAll('th[data-col]').forEach(th => {
   });
 });
 
+// The refresh workflows were switched off on 2026-11-12, after the election (see HANDOFF.md).
+const ELECTION_OVER = Date.now() > Date.parse('2026-11-04T05:00:00Z');
 // Use the freshest timestamp across data sources. ARB.updated_at is
 // written by scripts/arb_scanner.py at the end of the daily refresh —
 // closest proxy for "when did the last GitHub Actions run finish".
@@ -1295,8 +1297,10 @@ document.querySelectorAll('th[data-col]').forEach(th => {
   if (!candidates.length) return;
   const latest = new Date(Math.max(...candidates.map(s => new Date(s).getTime())));
   const ageDays = (Date.now() - latest.getTime()) / 86400000;
-  const color = ageDays < 2 ? '#34d399' : ageDays < 7 ? '#facc15' : '#f87171';
-  const rel = ageDays < 1
+  const frozen = ELECTION_OVER && ageDays >= 2;      // refreshes are off after the election
+  const color = frozen ? '#94a3b8' : ageDays < 2 ? '#34d399' : ageDays < 7 ? '#facc15' : '#f87171';
+  const rel = frozen ? 'final, the 2026 election is over'
+    : ageDays < 1
     ? `${Math.round(ageDays * 24)}h ago`
     : `${Math.round(ageDays)}d ago`;
   const abs = latest.toLocaleString('en-US', {
@@ -2169,7 +2173,9 @@ function renderModelTab(){
   mvChart(rows); mvTable(rows);
   const nD = rows.filter(r=>r.edge>0).length, nR = rows.filter(r=>r.edge<0).length;
   const ageH = (Date.now()-Date.parse(MODEL_COMPARE.generated_at))/36e5;
-  const stale = ageH > 30 ? ' ⚠ DATA STALE ('+ageH.toFixed(0)+'h old - check the Actions/compare step!)' : '';
+  // After the election the refreshes are switched off on purpose: an old file is the final one, not a fault.
+  const stale = ageH <= 30 ? '' : ELECTION_OVER ? ' · final: the 2026 election is over and this page no longer updates'
+    : ' ⚠ DATA STALE ('+ageH.toFixed(0)+'h old - check the Actions/compare step!)';
   renderThinWarning('mv-thinwarn', mvReliableOnly, rows, 'general');
   document.getElementById('mv-meta').textContent=
     `${rows.length} races \u00b7 primaries decided in ${MODEL_COMPARE.decided_states.length} states \u00b7 ${MODEL_COMPARE.generated_at.slice(0,16).replace('T',' ')} | exposure: ${nD} D-lean vs ${nR} R-lean edges${stale}`

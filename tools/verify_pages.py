@@ -10,6 +10,7 @@ query) until its bytes match the committed file, and fails the job if they still
 """
 import argparse
 import hashlib
+import os
 import subprocess
 import sys
 import time
@@ -41,12 +42,32 @@ def live(path, bust):
         return r.read()
 
 
+def request_build():
+    """Ask GitHub for a fresh Pages build, once, part-way through the wait. On 2026-11-11 the build for a
+    push ended in "startup_failure" (it never ran), nothing rebuilt it, and the site stayed 3.5 hours
+    behind until the next push. Needs GH_TOKEN with `pages: write` (the workflows pass it); without a
+    token, or if GitHub refuses, the wait just carries on and fails as before."""
+    token, repo = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
+    if not (token and repo):
+        print("  no token: not requesting a Pages rebuild")
+        return
+    req = urllib.request.Request(f"https://api.github.com/repos/{repo}/pages/builds", method="POST",
+                                 headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
+                                          "User-Agent": "polling-agg deploy check"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            print(f"  site still behind: asked GitHub for a Pages rebuild (HTTP {r.status})")
+    except Exception as e:  # noqa: BLE001  - a refused request must not end the wait
+        print(f"  Pages rebuild request failed ({e})")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="+")
     ap.add_argument("--minutes", type=float, default=20)
     a = ap.parse_args()
     deadline = time.time() + a.minutes * 60
+    rebuild_at, asked = time.time() + a.minutes * 60 * 0.4, False
     pending = set(a.files)
     while pending and time.time() < deadline:
         for f in sorted(pending):
@@ -58,6 +79,9 @@ def main():
             if got in acceptable(f):
                 print(f"live: {f} matches the commit")
                 pending.discard(f)
+        if pending and not asked and time.time() > rebuild_at:
+            asked = True
+            request_build()
         if pending:
             time.sleep(30)
     if pending:
