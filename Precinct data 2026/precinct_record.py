@@ -19,9 +19,12 @@ import io
 import json
 import os
 import re
+import socket
+import ssl
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -57,11 +60,45 @@ def is_challenge(b):
     return b"<html" in head.lower() and bool(CHALLENGE.search(head))
 
 
+def context_with_issuer(host):
+    """A normal verifying context plus the one certificate the server forgot to send.
+
+    Some servers send only their own certificate and leave out the issuer's (Alaska's did, Nov 5-12 2026: every pass
+    failed with "unable to get local issuer certificate"). Browsers and Windows fetch the missing one from the address
+    the certificate itself names; Linux does not. This does the same, once. Nothing is trusted on its say-so: the
+    chain must still end at a root this machine already trusts, and the host name must still match."""
+    with socket.create_connection((host, 443), timeout=30) as sock:
+        unverified = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
+        with unverified.wrap_socket(sock, server_hostname=host) as t:  # handshake only: no request is sent
+            pem = ssl.DER_cert_to_PEM_cert(t.getpeercert(True))
+    ctx = ssl.create_default_context()
+    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_PARTIAL_CHAIN", 0)  # a fetched certificate is never a trust anchor
+    for _ in range(4):  # up the chain: each fetched certificate may name its own issuer
+        with tempfile.NamedTemporaryFile("w", suffix=".pem", delete=False) as f:
+            f.write(pem)
+        try:
+            issuers = ssl._ssl._test_decode_cert(f.name).get("caIssuers") or ()
+        finally:
+            os.remove(f.name)
+        if not issuers:
+            break
+        with urllib.request.urlopen(urllib.request.Request(issuers[0], headers={"User-Agent": UA["User-Agent"]}), timeout=30) as r:
+            raw = r.read(100_000)
+        pem = raw.decode("ascii") if raw.lstrip().startswith(b"-----BEGIN") else ssl.DER_cert_to_PEM_cert(raw)
+        ctx.load_verify_locations(cadata=pem)
+    return ctx
+
+
+CONTEXTS = {}
+
+
 def get(url, attempts=3):
     last = None
+    host = urllib.parse.urlparse(url).hostname
     for i in range(attempts):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=180) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=180, context=CONTEXTS.get(host)) as r:
                 b = r.read(MAX_BYTES + 1)
                 if len(b) > MAX_BYTES:
                     raise ValueError(f"over {MAX_BYTES} bytes")
@@ -74,6 +111,12 @@ def get(url, attempts=3):
                 break
         except (OSError, ValueError) as e:
             last = e
+            if isinstance(getattr(e, "reason", e), ssl.SSLCertVerificationError) and host not in CONTEXTS:
+                try:
+                    CONTEXTS[host] = context_with_issuer(host)
+                    continue
+                except Exception:  # could not build it: the certificate error stands
+                    CONTEXTS[host] = None
         time.sleep(3 * (i + 1))
     raise last
 

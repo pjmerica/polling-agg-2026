@@ -91,3 +91,27 @@ def test_a_prove_you_are_human_page_is_not_saved_as_data(monkeypatch):
     monkeypatch.setattr(pr, "get", lambda url: pages[url])
     st, src, rows, status = pr.fetch(("AK", {"kind": "linked", "pages": ["https://s.gov/r/"], "match": r"/enr/26GENR/.+\.(csv|html)$"}))
     assert [r[0] for r in rows] == ["a.csv"] and "b.html refused challenge" in status
+
+
+def test_certificate_fallback_only_after_a_certificate_error_and_only_once(monkeypatch):
+    import ssl
+    import urllib.error
+    calls, built = [], []
+
+    class Resp:
+        headers = {}
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def read(self, n): return b"ok"
+
+    def fake_urlopen(req, timeout=0, context=None):
+        calls.append(context)
+        if context is None:
+            raise urllib.error.URLError(ssl.SSLCertVerificationError(1, "unable to get local issuer certificate"))
+        return Resp()
+    monkeypatch.setattr(pr.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(pr, "context_with_issuer", lambda host: built.append(host) or "CTX")
+    monkeypatch.setattr(pr.time, "sleep", lambda s: None)
+    monkeypatch.setattr(pr, "CONTEXTS", {})
+    assert pr.get("https://state.example/a.csv") == b"ok" and pr.get("https://state.example/b.csv") == b"ok"
+    assert built == ["state.example"] and calls == [None, "CTX", "CTX"]
