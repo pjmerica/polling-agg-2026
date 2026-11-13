@@ -28,6 +28,13 @@ The election was Nov 3. The forecast is frozen and the count is still being reco
   vote record.
 - **Still to do after the count:** the model evaluation, the 2026 replay, results on the
   pages. `Documents/AGENTS.md` "Still open" has the list.
+- **Alaska (fixed 2026-11-12 evening).** Its precinct results had not been recorded since
+  Nov 5: Alaska's server failed certificate checks from Linux until that evening, and the
+  watched address was a guess that answers 403. The recorder now reads Alaska's results page
+  and fetches a missing issuer certificate itself (`Precinct data 2026/README.md`). Alaska runs
+  its ranked-choice rounds on **Nov 18**: NYT's totals then become the final round, so check
+  the desk and the House page that day. The other states' precinct addresses were never checked
+  in a browser; a logged 403 may be a wrong address, not a refusal.
 
 ### Workflows
 
@@ -57,6 +64,7 @@ House race) and `pjmerica/mississippi-night-2026`.
   and Nov 5 to 10 were not captured on the PC.
 - `Election night simulator/scripts/archive_download.py`: a read-only local copy of the
   release and git bundles of the four repos. Re-run it while recording continues and once after.
+  It does not bundle the model repo or pred-arbitrage yet.
 - Remove the `StateResults-*` tasks after Nov 26 (`State election results/README.md`).
 
 ### Project folders
