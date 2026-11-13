@@ -54,3 +54,6 @@ data/raw/districts_2026/
 
 # Superseded market-price archives, kept on disk only
 Election night simulator/archive/
+
+# Written by the PC's StateResults-SourceWatch task every run; kept on disk only (2026-11-13)
+State election results/sources/watch_log.csv

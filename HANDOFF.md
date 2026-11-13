@@ -115,7 +115,7 @@ scrapers/nytimes.py           -> data/raw/nyt_polls.csv
 scrapers/wikipedia_polls.py   -> data/raw/wikipedia_polls.csv
 scrapers/house_incumbents.py  -> data/processed/house_incumbents.{json,csv}
 scrapers/primaries.py         -> data/raw/primaries.json + docs/primaries_data.js
-scripts/regen_data.py         -> docs/data.js + docs/polls_data.js + docs/mismatch_data.js
+scripts/regen_data.py         -> docs/data.js + docs/polls_data.js + docs/other_polls_data.js
 scripts/arb_scanner.py        -> docs/arb_data.js + data/processed/depth_targets.csv
 scripts/fetch_depth.py        -> data/raw/orderbook_depth.csv
 scripts/arb_scanner.py        -> docs/arb_data.js (second pass, joins depth)
@@ -135,7 +135,7 @@ election market (after Nov 4 2026) the scanner writes an empty board instead of 
 `utils/election_shapes.py` and `utils/fees.py` are identical copies of pred-arbitrage's.
 `analysis/margin_markets.py` reads both venues' margin markets. `tools/linkcheck.py` re-derives
 and repairs market links; `tools/health.py` keeps the "Board health" issue.
-`scrapers/fivethirtyeight.py` and `scrapers/realclearpolitics.py` are dead stubs.
+Code and files from the April design that nothing uses any more are in `history/` (its README lists them).
 
 ---
 
@@ -392,8 +392,8 @@ display-level "Net gap". It is exported to `docs/arb_data.js`; the dashboard exp
   legs, so dollars are proportional to price (`compute_arb`, 2026-09-24).
 - **Add Claude as co-author on commits.** Plain commits only.
 - **Revert Kalshi to v1.** Endpoints stopped returning markets weeks ago.
-- **Touch `scrapers/fivethirtyeight.py`.** 538 shut down. Stub stays
-  for historical reference.
+- **Bring back the 538 or RealClearPolitics scrapers.** 538 shut down. The stubs are in
+  `history/old_code/` for reference.
 - **Read `polymarket_markets.csv` without `dtype={"yes_token_id": str,
   "no_token_id": str}`.** Numerical corruption is silent.
 - **Hide the `⚠ verify` badge or remove `suspicion_reasons` from the

@@ -94,7 +94,7 @@ Travis (TX), Lancaster and Sarpy (NE), Linn and Johnson (IA), Oakland and Kent (
 - results-schedule news for the large counties;
 - secretary-of-state election-night announcements.
 
-New items go to `sources/watch_log.csv`. AP **general-election** editions for our states are also listed in
+New items go to `sources/watch_log.csv` (on the PC only since 2026-11-13: the task rewrites it every run, so it is no longer tracked; the copy up to that day is in git history). AP **general-election** editions for our states are also listed in
 `sources/NEW_AP_GENERAL.md`. Windows task `StateResults-SourceWatch` runs it twice a day through Nov 3.
 When an AP general edition appears: read it (WTOP and local TV station sites republish AP and load fine;
 apnews.com and US News block scripts), save the text to `data/raw/ap_2026/`, and update the table above.

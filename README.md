@@ -29,7 +29,7 @@ off. The count is still being recorded, through Dec 15.
 | `State election results/` | State-by-state counting guides and county benchmarks |
 | `Precinct data 2026/` | Precinct results and ballot returns for all 50 states |
 | `tests/`, `tools/` | Regression tests, page smoke tests, link and deploy checks |
-| `history/` | Older handoff notes and audits |
+| `history/` | Older handoff notes, audits, changelog entries before November, and code and files no longer used (its README lists them) |
 
 The forecast itself comes from a separate repo, `pjmerica/Polls-prediction-model`.
 

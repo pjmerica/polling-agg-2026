@@ -139,7 +139,7 @@ else:
 
 # ── data.js ──
 # One row per race on the real 2026 ballot (utils/races.py), rebuilt every run (2026-09-25).
-# This used to read data/processed/aggregated.csv, written by analysis/aggregator.py - which
+# This used to read data/processed/aggregated.csv, written by analysis/aggregator.py (now history/old_code/) - which
 # run_all.py never calls, so every market number on the Dashboard tab was frozen at
 # 2026-04-14. It also averaged EVERY market touching a race (Dem-win and Rep-win contracts,
 # nominee and margin markets, raw poll shares) into one "probability", and let off-cycle
