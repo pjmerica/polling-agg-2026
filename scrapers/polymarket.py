@@ -20,6 +20,7 @@ Market object key fields (verified):
   marketType, closed, resolutionSource
 """
 
+import gzip
 import sys
 import time
 import re
@@ -148,10 +149,15 @@ def _get(path: str, params: dict = None, max_retries: int = 4) -> list | dict:
     if params:
         url += "?" + urllib.parse.urlencode(params)
     for attempt in range(max_retries):
-        req = urllib.request.Request(url, headers=HEADERS)
+        # Accept-Encoding: since ~2026-11-12 gamma answers /events and /events/keyset pages with limit > 50 with
+        # HTTP 406 {"error":"gzip_required"} unless the request accepts gzip (pred-arb's refreshes failed on it Nov 12-17).
+        req = urllib.request.Request(url, headers={**HEADERS, "Accept-Encoding": "gzip"})
         try:
             with urllib.request.urlopen(req, timeout=15) as r:
-                return json.loads(r.read())
+                body = r.read()
+                if r.headers.get("Content-Encoding", "").lower() == "gzip":
+                    body = gzip.decompress(body)
+                return json.loads(body)
         except urllib.error.HTTPError as e:
             if e.code in RETRY_CODES and attempt < max_retries - 1:
                 wait = 2 ** (attempt + 1)

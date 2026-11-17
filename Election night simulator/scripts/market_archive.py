@@ -56,7 +56,8 @@ import zlib
 KALSHI = "https://api.elections.kalshi.com/trade-api/v2"
 GAMMA = "https://gamma-api.polymarket.com"
 CLOB = "https://clob.polymarket.com"
-UA = {"User-Agent": "polling-agg election record"}
+# Accept-Encoding: since Nov 12 2026 gamma refuses /events pages over 50 with HTTP 406 "gzip_required" without it.
+UA = {"User-Agent": "polling-agg election record", "Accept-Encoding": "gzip"}
 RELEASE = "election-night-2026"
 TAGS = ("elections", "midterms", "primaries", "global-elections", "congress", "governor", "house")
 RANGE = 14 * 86400      # the longest date range to ask Polymarket for (15 days works, 20 returns 400, at any fidelity)
@@ -73,7 +74,8 @@ def get(url, tries=6):
     for i in range(tries):
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as r:
-                return json.loads(r.read())
+                b = r.read()
+                return json.loads(gzip.decompress(b) if r.headers.get("Content-Encoding", "").lower() == "gzip" else b)
         except urllib.error.HTTPError as e:
             if e.code == 429:
                 time.sleep(3 * (i + 1))
