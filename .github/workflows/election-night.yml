@@ -23,12 +23,39 @@ on:
         type: boolean
         default: true
 
-concurrency:
-  group: election-night
-  cancel-in-progress: false
-
 jobs:
+  # A scheduled run used to queue behind the running chain in the concurrency group and was then cancelled by the next
+  # dispatched job: several "cancelled" runs a day (and GitHub's cancel emails) while everything was working. Now a
+  # scheduled run first looks for a live run of this workflow and, if there is one, ends as skipped. Dispatched runs
+  # (the chain itself) never check: the job that dispatched them is still running at that moment.
+  guard:
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    outputs:
+      busy: ${{ steps.check.outputs.busy }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=0
+          for s in in_progress queued waiting pending requested; do
+            c=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/election-night.yml/runs?status=$s&per_page=20" \
+                  --jq "[.workflow_runs[] | select(.id != $GITHUB_RUN_ID and (.event != \"schedule\" or .id < $GITHUB_RUN_ID))] | length")
+            n=$((n + c))
+          done
+          echo "other live runs: $n"
+          if [ "$n" -gt 0 ]; then echo "busy=true" >> "$GITHUB_OUTPUT"; else echo "busy=false" >> "$GITHUB_OUTPUT"; fi
+
   night:
+    needs: guard
+    if: ${{ always() && (github.event_name != 'schedule' || needs.guard.outputs.busy == 'false') }}
+    concurrency:
+      group: election-night
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 355
     permissions:
