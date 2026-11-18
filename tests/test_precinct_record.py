@@ -115,3 +115,57 @@ def test_certificate_fallback_only_after_a_certificate_error_and_only_once(monke
     monkeypatch.setattr(pr, "CONTEXTS", {})
     assert pr.get("https://state.example/a.csv") == b"ok" and pr.get("https://state.example/b.csv") == b"ok"
     assert built == ["state.example"] and calls == [None, "CTX", "CTX"]
+
+
+# Throwaway test certificates (keys discarded): a self-signed root, and a leaf it signed whose
+# "CA Issuers" link points at that root - what someone in the network path could serve.
+FAKE_ROOT = """-----BEGIN CERTIFICATE-----
+MIIBjTCCATOgAwIBAgIUKGSvHSZJlo4+7Ulv5I3kStfGGXYwCgYIKoZIzj0EAwIw
+GzEZMBcGA1UEAwwQVGVzdCBSb290IChmYWtlKTAgFw0yNjExMTgyMTQ5NTNaGA8y
+MTI2MTAyNTIxNDk1M1owGzEZMBcGA1UEAwwQVGVzdCBSb290IChmYWtlKTBZMBMG
+ByqGSM49AgEGCCqGSM49AwEHA0IABJHgEFhWvKhlFqbSUohcGR+xYRihRTTeioh3
+f+dH/5NT9A39ppG47fwkbVwUwNCch+3XFHVJIHKOjivCMrZzVzWjUzBRMB0GA1Ud
+DgQWBBTrmn7hhMP6y0lPEJ1PXiLcgQlckzAfBgNVHSMEGDAWgBTrmn7hhMP6y0lP
+EJ1PXiLcgQlckzAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gAMEUCIQCQ
+iM+kQclZb/7J7YaqBX+rgTavkQXCxJ5FmZilxl76ngIgB+rI/VXiVPcvzttEmEX9
+xbaKoOcN+cMcxiZkq/EyMZo=
+-----END CERTIFICATE-----
+"""
+FAKE_LEAF = """-----BEGIN CERTIFICATE-----
+MIIBsDCCAVagAwIBAgIUCTJPfhELVPc77kWonAWRjqhfXvYwCgYIKoZIzj0EAwIw
+GzEZMBcGA1UEAwwQVGVzdCBSb290IChmYWtlKTAgFw0yNjExMTgyMTUwMDdaGA8y
+MTI2MTAyNTIxNTAwN1owFDESMBAGA1UEAwwJbGVhZi50ZXN0MFkwEwYHKoZIzj0C
+AQYIKoZIzj0DAQcDQgAE85YncFFLslLDxNUynn94Q6tvKbJYUzmzWrESmIFkVLQO
+uDCjOTM4dHSQCKSeNfKOEsH6F6SV4/q9JvFW0rqIqKN9MHswOQYIKwYBBQUHAQEE
+LTArMCkGCCsGAQUFBzAChh1odHRwOi8vYXR0YWNrZXIudGVzdC9yb290LmNydDAd
+BgNVHQ4EFgQUgIGqSK4vBC61vpt7YxBi9zv3MgkwHwYDVR0jBBgwFoAU65p+4YTD
++stJTxCdT14i3IEJXJMwCgYIKoZIzj0EAwIDSAAwRQIgUw0qeU+lmnriEuKDxANA
+FiVFoPyYBHgBHSzeCxkgA2YCIQD63C8IUjlnz2F1bn02gdldplqdSHqhQXWmUt8f
+XC2T+w==
+-----END CERTIFICATE-----
+"""
+
+
+def test_certificate_fallback_never_trusts_a_root_the_server_points_to(monkeypatch):
+    """Security (2026-11-18): the fallback once loaded whatever the certificate's issuer link served, so a
+    self-signed root from someone in the network path became trusted and the forged chain verified."""
+    import ssl
+    assert pr.is_self_signed(FAKE_ROOT) and not pr.is_self_signed(FAKE_LEAF)
+
+    class Conn:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    class Tls(Conn):
+        def getpeercert(self, binary_form=False): return ssl.PEM_cert_to_DER_cert(FAKE_LEAF)
+
+    class Resp(Conn):
+        def read(self, n): return FAKE_ROOT.encode()
+
+    fetched = []
+    monkeypatch.setattr(pr.socket, "create_connection", lambda addr, timeout=0: Conn())
+    monkeypatch.setattr(ssl.SSLContext, "wrap_socket", lambda self, sock, server_hostname=None: Tls())
+    monkeypatch.setattr(pr.urllib.request, "urlopen", lambda req, timeout=0: fetched.append(req.full_url) or Resp())
+    ctx = pr.context_with_issuer("leaf.test")
+    assert fetched == ["http://attacker.test/root.crt"]
+    assert not any("Test Root (fake)" in str(c.get("subject")) for c in ctx.get_ca_certs())

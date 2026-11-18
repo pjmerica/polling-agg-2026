@@ -73,21 +73,34 @@ def context_with_issuer(host):
         with unverified.wrap_socket(sock, server_hostname=host) as t:  # handshake only: no request is sent
             pem = ssl.DER_cert_to_PEM_cert(t.getpeercert(True))
     ctx = ssl.create_default_context()
-    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_PARTIAL_CHAIN", 0)  # a fetched certificate is never a trust anchor
+    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_PARTIAL_CHAIN", 0)  # a fetched intermediate is never a trust anchor
     for _ in range(4):  # up the chain: each fetched certificate may name its own issuer
-        with tempfile.NamedTemporaryFile("w", suffix=".pem", delete=False) as f:
-            f.write(pem)
-        try:
-            issuers = ssl._ssl._test_decode_cert(f.name).get("caIssuers") or ()
-        finally:
-            os.remove(f.name)
+        issuers = decode_cert(pem).get("caIssuers") or ()
         if not issuers:
             break
         with urllib.request.urlopen(urllib.request.Request(issuers[0], headers={"User-Agent": UA["User-Agent"]}), timeout=30) as r:
             raw = r.read(100_000)
         pem = raw.decode("ascii") if raw.lstrip().startswith(b"-----BEGIN") else ssl.DER_cert_to_PEM_cert(raw)
+        if is_self_signed(pem):
+            # A root is never taken on the server's word: loading it would make it a trust anchor, and anyone
+            # between us and the server could hand over their own. The real root is already in the system store.
+            break
         ctx.load_verify_locations(cadata=pem)
     return ctx
+
+
+def decode_cert(pem):
+    with tempfile.NamedTemporaryFile("w", suffix=".pem", delete=False) as f:
+        f.write(pem)
+    try:
+        return ssl._ssl._test_decode_cert(f.name)
+    finally:
+        os.remove(f.name)
+
+
+def is_self_signed(pem):
+    d = decode_cert(pem)
+    return d.get("subject") == d.get("issuer")
 
 
 CONTEXTS = {}

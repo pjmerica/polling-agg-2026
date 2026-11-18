@@ -120,6 +120,8 @@
 </div>
 
 <script>
+// Scraped text (pollster and candidate names) is escaped before it goes into innerHTML.
+const escH = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let activeRaceId = null;
 let filterOffice = 'ALL';
 let filterStage = 'ALL';
@@ -211,7 +213,7 @@ function renderDetail() {
       const partyCode = c.party === 'DEM' ? 'D' : c.party === 'REP' ? 'R' : (c.party || 'NONE');
       return `<div class="cand-row">
         <span class="cand-party ${partyCode}">${partyCode}</span>
-        <span class="cand-name" title="${c.name}">${c.name}</span>
+        <span class="cand-name" title="${escH(c.name)}">${escH(c.name)}</span>
         <div class="bar-bg"><div class="bar-fill" style="width:${barW}%;background:${barColor};opacity:${0.5 + 0.5 * (barW / 100)}"></div></div>
         <span class="cand-pct" style="color:${c.over50 ? '#facc15' : '#94a3b8'}">${pct}%</span>
         ${markerHtml}
@@ -221,7 +223,7 @@ function renderDetail() {
     return `<div class="poll-card${p.any_over50 ? ' has-flag' : ''}">
       <div class="poll-header">
         <div class="poll-header-left">
-          <span class="poll-pollster">${p.pollster}</span>
+          <span class="poll-pollster">${escH(p.pollster)}</span>
           <span class="poll-meta">${p.end_date}${nHtml ? ' &nbsp;·&nbsp; ' + nHtml : ''}</span>
         </div>
         <div class="poll-badges">${stageHtml}${partisanHtml}${flagHtml}</div>
